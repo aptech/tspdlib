@@ -1,0 +1,158 @@
+
+/*
+**> PD_nkarul
+**  Reference:
+**  Nazlioglu, S., Karul, C. (2017),
+**  "The panel stationary test with gradual shifts:
+**  an application to international commodity price shocks",
+** Economic Modelling 61 (2017). pp.181-192.
+**
+**  Format:  { Nkpss, FZk, pval } = PDfzk(y, model, k, varm);
+**
+**  Input:   Y	     -  TxN matrix, data,
+**           model   - 	1= level shift model
+**                      2= level and trend shift model
+**
+**           k       -  number of single frequency
+**           varm    -  Long-run consistent variance estimation method
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Qudratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
+**                      6 = Kurozumi with Bartlett
+**                      7 = Kurozumi with QS
+**                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**                      See:
+**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
+**
+**  Output:  Nkpss   - KPSS statistic with common factor for each cross-section
+**			 FZK     - Panel stationarity statistic with N(0,1)
+**           pval    - p-value of FZk
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(3) = PDfzk(y, model, k, varm);
+    local t, n, ft, Nkpss, i, fpk, d, mu, var, fzk;
+    
+    t = rows(y);
+    n = cols(y);
+    
+    // Cross-section averages
+    ft = meanc(y');
+    
+    Nkpss = zeros(N, 1);
+    
+    for i(1, N, 1);
+        // Individual statistics
+        { Nkpss[i] } = _get_Fkpss_Ft(y[., i], model, k, varm, ft);
+    endfor;
+    
+    FPk = meanc(Nkpss);
+    
+    if model == 1 and k == 1;
+        mu = 0.0658;
+        var = 0.0029;
+    endif;
+    
+    if model == 1 and k == 2;
+        mu = 0.1410;
+        var = 0.0176;
+    endif;
+    
+    if model == 1 and k == 3;
+        mu = 0.1550;
+        var = 0.0202;
+    endif;
+    
+    if model == 1 and k == 4;
+        mu = 0.1600;
+        var = 0.0214;
+    endif;
+    
+    if model == 1 and k == 5;
+        mu = 0.1630;
+        var = 0.0219;
+    endif;
+    
+    if model == 2 and k == 1;
+        mu = 0.0295;
+        var = 0.00017;
+    endif;
+    
+    if model == 2 and k == 2;
+        mu = 0.0523;
+        var = 0.00150;
+    endif;
+    
+    if model == 2 and k == 3;
+        mu = 0.0601;
+        var = 0.00169;
+    endif;
+    
+    if model == 2 and k == 4;
+        mu = 0.0633;
+        var = 0.00180;
+    endif;
+    
+    if model == 2 and k == 5;
+        mu = 0.0642;
+        var = 0.00179;
+    endif;
+     
+    FZk = sqrt(n) * (FPk - mu)/sqrt(var);
+    
+    retp(Nkpss, FZk, 1 - cdfn(FZk));
+endp;
+
+
+proc(1) = _get_FKPSS_Ft(y, model, k, varm, ft);
+    local t, sink, cosk, z, s, lrv, kpss;
+    local b, e1, sig2, se, ssr;
+    local vare, l, bw, w;
+    
+    t = rows(y);
+    sink = sin(2 * pi * k * seqa(1, 1, t)/t);
+    cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
+    
+    if model == 1;
+        z = ones(t, 1)~sink~cosk~ft;
+    endif;
+    
+    if model ==2 ;
+        z = ones(t, 1)~seqa(1, 1, t)~sink~cosk~ft;
+    endif;
+    
+    { b, e1, sig2, se, ssr } = myols(y, z);
+    
+    // Partial sum of residuals
+    S = cumsumc(e1);              
+    
+    if varm == 1;
+        lrv = ssr/t;
+    elseif varm == 2;
+        lrv = bartlett(e1);
+    elseif varm == 3;
+        lrv = qs(e1);
+    elseif varm == 4;
+        lrv = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 5;
+        lrv = spc_qs(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 6;
+        lrv = kurozumi_bartlett(e1);
+    elseif varm == 7;
+        lrv = kurozumi_bartlett(e1);
+    endif;
+    
+    KPSS = sumc(s .* s)/(t^2 * lrv);
+    
+    retp(KPSS);
+endp;

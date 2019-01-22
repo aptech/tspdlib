@@ -1,0 +1,169 @@
+
+
+/*
+**> lstrazicich1
+**  Reference:
+**  Lee,J and Strazicich, Mark C. (2013),
+**  "Minimum LM Unit Root Test with One Structural Break"
+**  Economics Bulletin 33(4), 2483-2492.
+**
+**  Format:  {tstat,tb, p,lambda,cv}  =   LM_1break(y,model, pmax,ic,trimm);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 =  Model A: break in level
+**                      2 =  Model C: break in level and trend
+**           pmax    -  Maximum number of lags for Ds; 0 =  no lags
+**           ic      -  Information Criterion:
+**                      1 =  Akaike
+**                      2 =  Schwarz
+**                      3 =  t-stat significance
+**			 trim    - 	Trimming rate
+**                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
+**
+**  Output:  tstat   - minimum test statistic
+**			 tb      - location of break
+**			 p       - number of lags selected by chosen information criterion
+**           lambda  - fraction of break (tb/T)
+**			 cv      - 1%, 5%, 10% critical values for the break location
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/*22 January 2015*/
+
+proc(5) = LM_1break(y, model, pmax, ic, trimm);
+    local t, tb1, tb1_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
+    local dy, dz, b0, s0, st, ls, dst, ds, lmat, x, tau, lmt, j, p, aicp, sicp, tstatp;
+    local lm_k, b, e1, sig2, se, ssr, cv, crit, lambda;
+    
+    t = rows(y);
+    tb1_min = 0;
+    LM_min = 1000;
+    
+    T1 = round(trimm * rows(y));
+    T2 = round((1 - trimm) * rows(y));
+    
+    if T1 < (pmax + 2);
+        T1 = pmax + 3;
+    endif;
+    
+    tb1 = T1;
+    do while tb1 <= T2;
+        
+        // Deterministic term =  constant
+        dc = ones(t, 1);  
+
+        // Deterministic term =  trend
+        dt = seqa(1, 1, t);              
+        
+        if model == 1;
+            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+            z = dt~du1;
+        endif;
+        
+        if model == 2;
+            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+            dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
+            z = dt~du1~dt1;
+        endif;
+        
+        dy = diff(y, 1);
+        dz = diff(z, 1);
+        dy = trimr(dy, 1, 0);
+        dz = trimr(dz, 1, 0);
+        
+        b0 = dy/dz;  // b0 =  inv(dz'dz)*dz'y;
+        s0 = y[1] - z[1,.] * b0;
+        st = y - s0 - z * b0;
+        
+        if pmax == 0;
+            ls = lagn(st, 1);
+            ls = trimr(ls, 1, 0);
+            x = ls~dz;
+            {b, e1, sig2, se, ssr} =  myols(dy, x);
+            tau =  b[1]/se[1];
+        endif;
+        
+        if pmax > 0;
+            dst = trimr(diff(st, 1), 1, 0);
+            aicp = zeros(pmax + 1, 1);
+            sicp = zeros(pmax + 1, 1);
+            tstatp = zeros(pmax + 1, 1);
+            lmt = zeros(pmax + 1 , 1);
+            p = 0;
+            
+            do while p <= pmax;
+                lmat = zeros(rows(dst), p + 1);
+                
+                j = 1;
+                
+                do while j <= p;
+                    lmat[., j] = lagn(dst, j);
+                    j = j + 1;
+                endo;
+                
+                dy = trimr(diff(y, 1), p + 1, 0);
+                ls = trimr(lagn(st, 1), p + 1, 0);
+                dz = trimr(diff(z, 1), p + 1, 0);
+                ds = trimr(lmat, p, 0);
+                
+                //rows(ls);;rows(dz);;rows(ds);
+                if p == 0;
+                    x = ls~dz;
+                elseif p > 0;
+                    x = ls~dz~ds[., 1:p];
+                endif;
+                
+                {b, e1, sig2, se, ssr} = myols(dy, x);
+                aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
+                sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
+                tstatp[p+1] = b[cols(x)]/se[cols(x)];
+                lmt[p+1] = b[1]/se[1];
+                p = p + 1;
+            endo;
+        endif;
+        
+        if  pmax == 0;
+            lm_k = tau;
+            p = 0;
+        else;
+            p =  _get_lag(ic, pmax, aicp, sicp, tstatp);
+            lm_k = lmt[p];
+        endif;
+        
+        if  lm_k < LM_min;
+            // First break date
+            tb1_min = tb1;    
+            
+            // LM statistic with break
+            LM_min = lm_k;   
+        endif;
+        
+        tb1 =  tb1 + 1;
+    endo;
+    
+    // Critical Values (see, Lee & Strazicih, 2013, Table 1) 
+    if model == 1;
+        cv = -4.239~-3.566~-3.211;
+    endif;
+    
+    if model == 2;
+        crit = {-5.11 -4.50 -4.21,
+            -5.07 -4.47 -4.20,
+            -5.15 -4.45 -4.18,
+            -5.05 -4.50 -4.18,
+            -5.11 -4.51 -4.17};
+        lambda =  floor(10 * (tb1_min/rows(y)));
+        
+        if lambda > 5;
+            lambda = 10 - lambda;
+        endif;
+        
+        cv = crit[lambda, .];
+    endif;
+    
+    retp(LM_min, tb1_min, p - 1, tb1_min/rows(y), cv);
+endp;

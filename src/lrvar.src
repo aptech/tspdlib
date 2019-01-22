@@ -1,0 +1,305 @@
+
+/*
+**> lrvar :Long-run consistent variance estimation methods
+**  References:
+**  Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
+**  A guide to the computation of stationarity tests.
+**  Empirical Economics, 31(2), 433-448.
+**
+**  Carrion-i-Silvestre, J. Ll. and Sansó, A. (2007)
+**  “The KPSS test with two structural breaks”,
+**  Spanish Economic Review, 9, 2, 105-127.
+**
+**  Sul, D., Phillips, P.C.B., Choi, C.-Y., 2005.
+**  Prewhitening Bias in HAC Estimation.
+**  Oxford Bulletin of Economics and Statistics, 67 (4), 517–546.
+**
+**  Kurozumi, E. (2002)
+**  “Testing for stationarity with a break”,
+**  Journal of Econometrics 108, 105-127.
+**
+**  Kernel methods:
+**  bartlett
+**  quadratic spectral
+**  SPC_bartlett        From Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**  SPC_qs              From Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**  Kurozumi_bartlett   From Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**  Kurozumi_qs         Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+*/
+
+
+/*13 May 2016*/
+
+proc(1) = bartlett(e);
+    local t, vare, l, bw, w, lrv;
+    
+    T = rows(e);
+    varE = e'e/T;
+    
+    // bandwidth
+    l = round(4 * (T/100)^(2/9));   
+    
+    bw = 1;
+    
+    do while bw <= trunc(l);
+        w = (1 - bw/(l + 1));
+        lrv = varE + 2 * e[1:T-bw]' * e[1+bw:T] * w/T;
+        bw = bw + 1;
+    endo;
+    
+    retp(lrv);
+endp;
+
+proc(1) = qs(e);
+    local t, vare, l, bw, w, lrv;
+    
+    T = rows(e);
+    varE = e'e/T;
+    
+    // bandwidth
+    l = round(4 * (T/100)^(2/9));   
+    
+    bw = 1;
+    
+    do while bw <= trunc(l);
+        w = 25/(12 * pi^2 * (bw/l)^2) * (sin(6 * pi * bw/(l * 5))/(6 * pi * bw/(l * 5)) - cos(6 * pi * bw/(l * 5)));
+        lrv = varE + 2 * e[1:T-bw]' * e[1+bw:T] * w/T;
+        bw = bw + 1;
+    endo;
+    
+    retp(lrv);
+endp;
+
+
+
+/*Procedures for long-run consistent variance estimations*/
+/* From Carrion-i-Silvestre & Sanso (2006) and (2007)*/
+
+/* Sul, Phillips and Choi (2003). Bartlett kernel*/
+proc(1) = spc_bartlett(e, lags);
+    local t, i, temp, j, rho_temp, res_temp, rho, a, res;
+    local BIC, min_BIC, k, l, lrv, w, lrv_recolored;
+    
+    t = rows(e);
+    if lags <= 0;
+        lags = 1;
+    endif;
+    
+    min_BIC = 1e25;
+    i = 1;
+    do until i > lags;
+        temp = e;
+        j = 1;
+        
+        do until j > i;
+            temp = temp~lagn(e, j);
+            j = j + 1;
+        endo;
+        
+        temp = trimr(temp, i, 0);
+        
+        // Autoregressive coefficients
+        rho_temp = temp[., 1]/temp[., 2:cols(temp)];            
+        
+        // OLS residuals
+        res_temp = temp[., 1] - temp[., 2:cols(temp)] * rho_temp;  
+        
+        BIC = ln(res_temp'res_temp/(t-lags)) + (i * ln(t - lags)/(t - lags));
+        if BIC < min_BIC;
+            min_BIC = BIC;
+            k = i;
+            rho = rho_temp;
+            
+            //Prewithening
+            res = res_temp; 
+        endif;
+        
+        i = i + 1;
+    endo;
+    
+    temp = trimr(res~lag1(res), 1, 0);
+    
+    /* 
+    ** We use an AR(1) approximation as in Andrews and Monahan
+    ** (1992, pag. 958) 
+    */
+    a = temp[., 1]/temp[., 2]; 
+    
+    // Obtaining the bandwidth for the spectral window
+    l = 1.1447 * (4 * a^2*T/((1 + a)^2 * (1 - a)^2))^(1/3); 
+    
+    // Truncate the estimated bandwidth
+    l = trunc(l); 
+    
+    // Short-run variance 
+    lrv = res'res/t;
+    
+    i = 1;
+    
+    // long-run variance 
+    do until i > l; 
+        
+        // Bartlett kernel
+        w = (1 - i/(l + 1)); 
+        
+        lrv = lrv + 2 * res[1:rows(res)-i]'res[1+i:rows(res)] * w/t;
+        i = i + 1;
+    endo;
+    
+    // Recoloring
+    lrv_recolored = lrv/(1 - sumc(rho))^2;
+    
+    // Sul, Phillips and Choi (2003) boundary rule
+    lrv = minc(lrv_recolored|(T * lrv)); 
+    retp(lrv);
+endp;
+
+
+/* Sul, Phillips and Choi (2003). Quadratic Spectral kernel*/
+proc(1) = spc_qs(e,lags);
+    local t, i, temp, j, rho_temp, res_temp, rho, a, res;
+    local BIC, min_BIC, k, l, lrv, w, lrv_recolored;
+    
+    t = rows(e);
+    if lags <= 0;
+        lags = 1;
+    endif;
+    
+    min_BIC = 1e25;
+    i = 1;
+    do until i > lags;
+        temp = e;
+        j = 1;
+        do until j > i;
+            temp = temp~lagn(e,j);
+            j = j + 1;
+        endo;
+        
+        temp = trimr(temp, i, 0);
+        
+        // Autoregressive coefficients
+        rho_temp = temp[., 1]/temp[., 2:cols(temp)];
+        
+        // OLS residuals
+        res_temp = temp[.,1] - temp[., 2:cols(temp)] * rho_temp;
+        
+        BIC = ln(res_temp'res_temp/(t - lags)) + (i * ln(t - lags)/(t - lags));
+        
+        if BIC < min_BIC;
+            min_BIC = BIC;
+            k = i;
+            rho = rho_temp;
+            
+            // Prewithening
+            res = res_temp; 
+        endif;
+        i = i + 1;
+    endo;
+    
+    temp = trimr(res~lag1(res), 1, 0);
+    
+    /* 
+    ** We use an AR(1) approximation as in Andrews and Monahan
+    ** (1992, pag. 958) 
+    */
+    a = temp[., 1]/temp[., 2]; 
+    
+    // Obtaining the bandwidth for the spectral window
+    l = 1.3221 * (4 * a^2 * T/((1 + a)^2 * (1 - a)^2))^(1/5); 
+    
+    // Truncate the estimated bandwidth
+    l=trunc(l);
+    
+    // Short-run variance 
+    lrv = res'res/t; 
+    
+    i = 1;
+    
+    // long-run variance
+    do until i > l; 
+        
+        // Quadratic spectral kernel 
+        w = 25/(12 * pi^2 * (i/l)^2) * (sin(6 * pi * i/(l * 5))/(6 * pi * i/(l * 5)) - cos(6 * pi * i/(l * 5))); 
+        lrv = lrv + 2 * res[1:rows(res)-i]'res[1+i:rows(res)] * w/t;
+        i = i + 1;
+    endo;
+    
+    // Recoloring 
+    lrv_recolored = lrv/(1-sumc(rho))^2; 
+    
+    // Sul, Phillips and Choi (2003) boundary rule
+    lrv = minc(lrv_recolored|(T * lrv)); 
+    
+    retp(lrv);
+endp;
+
+
+
+/*Andrews (1991) and Kurozumi (2002)*/
+proc(1) = Kurozumi_bartlett(e);
+    local t, a, k, l, lrv, i, w, res;
+    
+    t = rows(e);
+    
+    // AR(1) estimate
+    a = e[2:t]/e[1:t-1]; 
+    
+    // Defines the upper bound
+    k=0.7; 
+    
+    // Bandwidth
+    l = minc(1.1447 * (4 * a^2 * T/((1 + a)^2 * (1 - a)^2))^(1/3)
+        |1.1447 * (4 * k^2 * T/((1 + k)^2 * (1 - k)^2))^(1/3));
+   
+    // Truncate the estimated bandwidth
+    l = trunc(l); 
+    
+    // Conventional variance estimation
+    lrv = e'e/t; 
+    
+    i = 1;
+    // long-run variance
+    do until i > l; @  @
+        
+        // Bartlett kernel 
+        w = (1 - i/(l + 1));  
+        lrv = lrv + 2 * e[1:t-i]'e[1+i:t] * w/t;
+        i = i + 1;
+    endo;
+    
+    retp(lrv);
+endp;
+
+/*Andrews (1991) and Kurozumi (2002)*/
+proc(1) = kurozumi_qs(e);
+    local t, a, k, l, lrv, i, w, res;
+    
+    t = rows(e);
+    
+    // AR(1) estimate
+    a = e[2:t]/e[1:t-1];                                
+    
+    // Defines the upper bound
+    k = 0.7;           
+
+    // Bandwidth
+    l = minc(1.3221 * (4 * a^2*T/((1 + a)^2 * (1 - a)^2))^(1/5)
+        |1.3221 * (4 * k^2*T/((1 + k)^2 * (1 - k)^2))^(1/5));
+    
+    // Truncate the estimated bandwidth
+    l = trunc(l);                                        
+    
+    // Short-run variance
+    lrv = e'e/t;                                          
+    i = 1;
+    
+    do until i > l;
+        
+        // Quadratic spectral kernel
+        w =25/(12 * pi^2 * (i/l)^2) * (sin(6 * pi * i/(l * 5))/(6 * pi * i/(l * 5)) - cos(6 * pi * i/(l * 5))); 
+        lrv = lrv + 2 * e[1:rows(e)-i]'e[1+i:rows(e)] * w/t;
+        i = i + 1;
+    endo;
+    
+    retp(lrv);
+endp;

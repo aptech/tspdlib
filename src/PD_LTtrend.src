@@ -1,0 +1,525 @@
+/*
+**> PD_LTtrend
+**  Reference:
+**  Lee, J., Tieslau, M. (2017),
+**  "Panel LM Unit-root Tests with Level and Trend Shifts",
+**  Economic Modelling ??, ???–???.
+**
+**  Format:  {Nlm, Ntb, Np, PDlm, pval} = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
+**
+**  Input:   Y	     -  TxN matrix, data,
+**           model   - 	2= level and trend break model
+**
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**			 trim    - 	Trimming rate
+**                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
+**      	 nbreak  - 	number of breaks are allowed
+**                      1= one break  test
+**                      2= two breaks test
+**
+**  Output:  Nlm     - minimum test statistic for each cross-section
+**			 Ntb     - location of break(s) for each cross-section
+**			 Np      - number of lags selected by choosen information criterion for each cross-section
+**			 PDlm    - Panel LM statistic with N(0,1)
+**           pval    - p-value of PDlm
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
+    local n, t, Nlm, Ntb, Np, i;
+    local LM, tb1, tb2, p;
+    local meanp, varp, PDlm;
+    
+    n = cols(y);
+    t = rows(y);
+    Nlm = zeros(N, 1);
+    Np = zeros(N, 1);
+    
+    if nbreak == 1;
+        Ntb = zeros(N, 1);
+        
+        for i(1, N, 1);
+            {LM, tb1, p} = _get_LMtrend_1break(y[., i], model, pmax, ic, trimm);
+            
+            // i~LM~tb1~p;
+            Nlm[i] = LM;
+            Ntb[i] = tb1;
+            Np[i] = p;
+        endfor;
+        
+        {meanp, varp} = _get_LTmoments(T, N, Nlm, Np, nbreak);
+    endif;
+    
+    if nbreak == 2;
+        Ntb = zeros(N, 2);
+        for i(1, N, 1);
+            {LM, tb1, tb2, p} = _get_LMtrend_2breaks(y[., i], model, pmax, ic, trimm);
+            //i~LM~tb1~p;
+            Nlm[i] = LM;
+            Ntb[i,1] = tb1;
+            Ntb[i,2] = tb2;
+            Np[i] = p;
+        endfor;
+        
+        {meanp, varp} = _get_LTmoments(T, N, Nlm, Np, nbreak);
+    endif;
+    
+    PDlm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
+    
+    retp(Nlm, Ntb, Np, PDlm, 1 - cdfnc(PDlm));
+endp;
+
+
+
+
+proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
+    local t, tb1, tb1_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
+    local dy, b0, s0, ylm, dylm, lmat, dep, ls, dz, ds, x;
+    local taup, aicp, sicp, tstatp, j, p, lagt, laglm, stat;
+    local b, e1, sig2, se, ssr;
+    
+    // Locals for transformation
+    local nobs, pos, s2, st;   
+    
+    t = rows(y);
+    tb1_min = 0;
+    LM_min = 1000;
+    
+    T1 = round(trimm * rows(y));
+    T2 = round((1 - trimm) * rows(y));
+    
+    if T1 < (pmax + 2);
+        T1 = pmax + 3;
+    endif;
+    
+    tb1 = T1;
+    do while tb1 <= T2;
+        
+        // Deterministic term = constant
+        dc = ones(t, 1);                
+        
+        // Deterministic term=trend
+        dt = seqa(1, 1, t);              
+        
+        if model == 1;
+            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+            z = dt~du1;
+        endif;
+        
+        if model == 2;
+            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+            dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
+            z = dt~du1~dt1;
+        endif;
+        
+        dy = diff(y, 1);
+        dz = diff(z, 1);
+        dy = trimr(dy, 1, 0);
+        dz = trimr(dz, 1, 0);
+        b0 = dy/dz;  //b0=inv(dz'dz)*dz'y;
+        s0 = y[1] - z[1, .] * b0;
+        st = y - s0 - z * b0;
+        
+        // Transformation starts
+        nobs = t;
+        pos = tb1;
+        s2 = zeros(nobs, 1);
+        s2[ 1:pos, 1 ] = st[ 1:pos, 1 ] / (pos/nobs);
+        s2[ pos+1:nobs, 1 ] = st[ pos+1:nobs, 1 ] / ((nobs-pos)/nobs);
+        // Transformation ends
+        
+        ylm = s2;
+        
+        taup = zeros(pmax + 1, 1);
+        aicp = zeros(pmax + 1, 1);
+        sicp = zeros(pmax + 1, 1);
+        tstatp = zeros(pmax + 1, 1);
+        
+        dylm = trimr(diff(ylm, 1), 1, 0);
+        
+        lmat = zeros(rows(dylm), pmax);
+        
+        j = 1;
+        
+        do while j <= pmax;
+            lmat[ ., j ] = lagn(dylm, j);
+            j = j + 1;
+        endo;
+        
+        p = 0;
+        do while p <= pmax;
+            
+            dep = trimr(diff(y, 1), p + 1, 0);
+            ls = trimr(lagn(ylm, 1), p + 1, 0);
+            dz = trimr(diff(z, 1),p + 1, 0);
+            ds = trimr(lmat, p, 0);
+            
+            if p == 0;
+                x = ls~dz;
+            elseif p > 0;
+                x = ls~dz~ds[ ., 1:p ];
+            endif;
+            
+            { b, e1, sig2, se, ssr } = myols(dep, x);
+            taup[ p+1 ] = b[ 1 ]/se[ 1 ];
+            aicp[ p+1 ] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
+            sicp[ p+1 ] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
+            tstatp[ p+1 ] = abs(b[cols(x)]/se[cols(x)]);
+            p = p + 1;
+        endo;
+        
+        if ic == 1;
+            laglm = minindc(aicp);
+        elseif ic == 2;
+            laglm = minindc(sicp);
+        elseif ic == 3;
+            lagt = maxindc(tstatp);
+            if (abs(tstatp[ lagt ]) >= 1.645);
+                laglm = lagt;
+            elseif (abs(tstatp[ lagt ]) < 1.645);
+                laglm = 1;
+            endif;
+        endif;
+        
+        stat = taup[ laglm ];
+        if stat < LM_min;
+            
+            // First break date 
+            tb1_min = tb1;    
+            
+            // LM statistic with break
+            LM_min = stat;  
+        endif;
+        
+        tb1 = tb1 + 1;
+    endo;
+    /*        LM_min;
+    tb1_min;
+    lag-1;      */
+    retp(LM_min, tb1_min, laglm - 1);
+endp;
+
+
+proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
+    local t, tb1, tb2, tb1_min, tb2_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
+    local dy, b0, s0, ylm, dylm, lmat, dep, ls, dz, ds, x;
+    local taup, aicp, sicp, tstatp, j, p, lagt, laglm, stat;
+    local b, e1, sig2, se, ssr;
+    
+    // Locals for transformation
+    local nobs, pos1, pos2, s2, st;   
+    
+    t = rows(y);
+    tb1_min = 0;
+    tb2_min = 0;
+    LM_min = 1000;
+    
+    T1 = round(trimm * rows(y));
+    T2 = round((1 - trimm) * rows(y));
+    
+    // Bounds as in LS
+    if T1 < (pmax + 2);
+        T1 = pmax + 3;
+    endif;  
+    
+    // Bounds as in LS
+    tb1 = T1;
+    do while tb1 <= T2;
+        if model == 1;
+            tb2 = tb1 + 2;
+        endif;    
+        
+        if model == 2;
+            tb2 = tb1 + 3;
+        endif;
+        
+        do while tb2 <= T2;
+            
+            // Deterministic term=constant
+            dc = ones(t, 1);           
+            
+            // Deterministic term=trend
+            dt = seqa(1, 1, t);              
+            
+            if model == 1;
+                du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+                du2 = zeros(tb2, 1)|ones(t - tb2, 1);
+                z = dt~du1~du2;
+            endif;
+            
+            if model == 2;
+                du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+                du2 = zeros(tb2, 1)|ones(t - tb2, 1);
+                dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
+                dt2 = zeros(tb2, 1)|seqa(1, 1, (t - tb2));
+                z = dt~du1~dt1~du2~dt2;
+            endif;
+            
+            dy = trimr(diff(y, 1), 1, 0);
+            dz = trimr(diff(z, 1), 1, 0);
+            b0 = dy/dz;
+            s0 = y[1] - z[1,.] * b0;
+            st = y - s0- z * b0;
+            
+            // Transformation starts
+            nobs = t;
+            pos1 = tb1;
+            pos2 = tb2;
+            s2 = zeros(nobs, 1);
+            s2[ 1:pos1, 1 ] = st[ 1:pos1, 1 ] / (pos1/nobs);
+            s2[ pos1+1:pos2, 1] = st[ pos1+1:pos2, 1 ] / ((pos2-pos1)/nobs);
+            s2[ pos2+1:nobs, 1 ] = st[ pos2+1:nobs, 1 ] / ((nobs-pos2)/nobs);
+            // Transformation ends
+            
+            ylm = s2;
+            
+            taup = zeros(pmax + 1, 1);
+            aicp = zeros(pmax + 1, 1);
+            sicp = zeros(pmax + 1, 1);
+            tstatp = zeros(pmax + 1, 1);
+            
+            dylm = trimr(diff(ylm, 1), 1, 0);
+            
+            lmat = zeros(rows(dylm), pmax);
+            
+            j = 1;
+            
+            do while j <= pmax;
+                lmat[ ., j ] = lagn(dylm, j);
+                j = j + 1;
+            endo;
+            
+            p = 0;
+            do while p <= pmax;
+                
+                dep = trimr(diff(y, 1), p + 1, 0);
+                ls = trimr(lagn(ylm, 1), p + 1, 0);
+                dz = trimr(diff(z, 1), p + 1, 0);
+                ds = trimr(lmat, p, 0);
+                
+                if p == 0;
+                    x = ls~dz;
+                elseif p > 0;
+                    x = ls~dz~ds[ ., 1:p ];
+                endif;
+                
+                { b, e1, sig2, se, ssr } = myols(dep, x);
+                taup[ p+1 ] = b[ 1 ]/se[ 1 ];
+                aicp[ p+1 ] = ln(e1'e1/rows(x)) + 2 * (cols(x)+2)/rows(x);
+                sicp[ p+1 ] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
+                tstatp[ p+1 ] = abs(b[ cols(x) ]/se[ cols(x) ]);
+                p = p + 1;
+            endo;
+            
+            if ic == 1;
+                laglm = minindc(aicp);
+            elseif ic == 2;
+                laglm = minindc(sicp);
+            elseif ic == 3;
+                lagt=maxindc(tstatp);
+                if (abs(tstatp[ lagt ]) >= 1.645);
+                    laglm = lagt;
+                elseif (abs(tstatp[ lagt ]) < 1.645);
+                    laglm = 1;
+                endif;
+            endif;
+            
+            stat = taup[laglm];
+            
+            if  stat < LM_min;
+                
+                // First break date
+                tb1_min = tb1;    
+                
+                // Second break date
+                tb2_min = tb2;   
+                
+                // LM statistic with breaks
+                LM_min = stat;   
+            endif;
+            
+            tb2 = tb2 + 1;
+        endo;
+        tb1 = tb1 + 1;
+    endo;
+    
+    /*    LM_min;
+    tb1_min;
+    tb2_min;
+    lag-1;
+    */
+    retp(LM_min, tb1_min, tb2_min, laglm - 1);
+endp;
+
+proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
+    local panel_k, meanp, varp, row_n, mmm, optk, ct1, ct2, ct, crit, crit_tr;
+    
+    crit = loadd(__FILE_DIR $+ "ILTlevel_crit.dat");
+    crit_tr = loadd(__FILE_DIR $+ "LTtrend_crit.dat");
+    
+    panel_k = Np;
+    meanp = 0;
+    varp = 0;
+    
+    // Row location 
+    if R == 0;
+        if T < 10;
+            row_n = 1;
+        endif;
+        
+        if T > 10 and T < 25;
+            row_n = T - 10 + 1;
+        endif;
+        
+        if T > 24 and T < 28;
+            row_n = 16;
+        endif;
+        
+        if T > 27 and T < 33;
+            row_n = 17;
+        endif;
+        
+        if T > 32 and T < 38;
+            row_n = 18;
+        endif;
+        
+        if T > 37 and T < 43;
+            row_n = 19;
+        endif;
+        
+        if T > 42 and T < 48;
+            row_n = 20;
+        endif;
+        
+        if T > 47 and T < 53;
+            row_n = 21;
+        endif;
+        
+        if T > 54 and T < 65;
+            row_n = 22;
+        endif;
+        
+        if T > 64 and T < 75;
+            row_n = 23;
+        endif;
+        
+        if T > 74 and T < 85;
+            row_n = 24;
+        endif;
+        
+        if T > 84 and T < 95;
+            row_n = 25;
+        endif;
+        
+        if T > 94 and T < 150;
+            row_n = 26;
+        endif;
+        
+        if T > 149;
+            row_n = 27;
+        endif;
+        
+        mmm = 1;
+        do while mmm <= n;
+            // Column location 
+            if panel_k[ mmm ] > 8;
+                optk = 8;
+            else;
+                optk = panel_k[ mmm ];
+            endif;
+            
+            ct1 = crit[ row_n, 2+2*optk ];
+            ct2 = crit[ row_n, 3+2*optk ];
+            ct = ct1~ct2;
+            
+            meanp = meanp + crit[ row_n, 2+2*optk ];
+            varp = varp + crit[ row_n, 3+2*optk ];
+            mmm = mmm + 1;
+        endo;
+    endif;
+    
+    if R == 1;
+        if T <= 33;
+            row_n = 1;
+        endif;
+        
+        if T > 33 and T <= 75;
+            row_n = 2;
+        endif;
+        
+        if T > 75 and T <= 150;
+            row_n = 3;
+        endif;
+        
+        if T > 150;
+            row_n = 4;
+        endif;
+        
+        mmm=1;
+        do while mmm <= n;
+            
+            // column location 
+            if panel_k[mmm] > 8;
+                optk = 8;
+            else;
+                optk = panel_k[mmm];
+            endif;
+            
+            ct1 = crit_tr[row_n, 2+2*optk];
+            ct2 = crit_tr[row_n, 3+2*optk];
+            ct = ct1~ct2 ;
+            
+            meanp = meanp + ct1;
+            varp = varp + ct2;
+            mmm = mmm + 1;
+        endo;
+    endif;
+    
+    if R == 2;
+        
+        if T <= 75;
+            row_n = 5;
+        endif;
+        
+        if T >75 and T<= 150;
+            row_n = 6;
+        endif;
+        
+        if T > 150;
+            row_n = 7;
+        endif;
+        
+        mmm = 1;
+        do while mmm <= n;
+            // Column location 
+            if panel_k[mmm] > 8;
+                optk = 8;
+            else;
+                optk = panel_k[mmm];
+            endif;
+            
+            ct1 = crit_tr[row_n, 2+2*optk];
+            ct2 = crit_tr[row_n, 3+2*optk];
+            ct = ct1~ct2;
+            
+            meanp = meanp + ct1;
+            varp = varp + ct2;
+            mmm = mmm + 1;
+        endo;
+    endif;
+    
+    meanp= meanp/n;
+    varp = varp/n;
+    
+    retp(meanp, varp);
+endp;

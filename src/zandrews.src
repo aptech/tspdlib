@@ -1,0 +1,133 @@
+
+/*
+**> zandrews
+**  Reference:
+**  Zivot,E. and Andrews, W.K. (1992),
+**  "Further Evidence on the Great Crasch, the Oil-Price Shokc, and the Unit-Root Hypothesis"
+**  Journal of Business & Economic Statistics 10(3), 251-270.
+**
+**  Format:  {tstat,tb,p,cv} = ADF_1break(y,model,pmax,ic,trimm);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1=Model A: break in level
+**                      2=Model C: break in level and trend
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**			 trim    - 	Trimming rate
+**                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
+**           _print  -  print option "true" for printing results
+**
+**  Output:  tstat   - minimum test statistic
+**			 tb      - location of break
+**			 p      - number of lags selected by chosen information criterion
+**			 cv      - 1%, 5%, 10% critical values for the chosen model
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(4)=ADF_1break(y, model, pmax, ic, trimm);
+    local t, tb1, tb1_min, ADF_min, T1, T2, dc, dt, du1, dt1, z;
+    local taup, aicp, sicp, tstatp, dy, y1, z1, lmat, j, p;
+    local dep, ldy, ly, lz, x, stat;
+    local b, e1, sig2, se, ssr, cv;
+    
+    t = rows(y);
+    tb1_min = 0;
+    ADF_min = 1000;
+    
+    T1 = round(trimm * rows(y));
+    T2 = round((1 - trimm) * rows(y));
+    
+    if T1 < (pmax + 2);
+        T1 = pmax + 3;
+    endif;
+    
+    tb1 = T1;
+    do while tb1 <= T2;
+        
+        // Deterministic term=constant
+        dc = ones(t, 1); 
+        
+        // Deterministic term=trend
+        dt=seqa(1, 1, t);             
+        
+        if  model == 1;
+            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+            z = dc~dt~du1;
+        endif;
+        
+        if  model == 2;
+            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+            dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
+            z = dc~dt~du1~dt1;
+        endif;
+        
+        t = rows(y);
+        taup = zeros(pmax + 1, 1);
+        aicp = zeros(pmax + 1, 1);
+        sicp = zeros(pmax + 1, 1);
+        tstatp = zeros(pmax + 1, 1);
+        
+        dy = trimr(diff(y, 1), 1, 0);
+        y1 = trimr(lagn(y, 1), 1, 0);
+        z1 = trimr(lagn(z, 1), 1, 0);
+        
+        lmat = zeros(rows(dy), pmax);
+        
+        j = 1;
+        do while j<= pmax;
+            lmat[., j]=lagn(dy, j);
+            j = j + 1;
+        endo;
+        
+        p = 0;
+        do while p <= pmax;
+            dep = trimr(dy, p + 1, 0);
+            ldy = trimr(lmat, p + 1, 0);
+            ly = trimr(y1, p + 1, 0);
+            lz = trimr(z1, p + 1, 0);
+            if p == 0;
+                x = ly~lz;
+            elseif p > 0;
+                x = ly~lz~ldy[., 1:p];
+            endif;
+            
+            {b, e1, sig2, se, ssr} = myols(dep, x);
+            taup[p+1] = b[1]/se[1];
+            aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
+            sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
+            tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
+            p = p + 1;
+        endo;
+        
+        p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
+        stat = taup[p];
+        
+        if  stat < ADF_min;
+            // First break date
+            tb1_min=tb1;   
+            
+            // t-statistic with break
+            ADF_min =stat;  
+        endif;
+        
+        tb1 = tb1 + 1;
+    endo;
+    
+    if model == 1;
+        cv = -5.34|-4.80|-4.58;
+    endif;
+    
+    if model == 2;
+        cv = -5.57|-5.08|-4.82;
+    endif;
+    
+    retp(ADF_min, tb1_min, p-1, cv);
+endp;

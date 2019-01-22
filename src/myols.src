@@ -1,0 +1,13 @@
+  
+proc(5) = myols(y, x);
+   local m, b, e, sig2, se, ssr;
+   
+   m = inv(moment(x, 0));
+   b = m * (x'y);
+   e = y - x * b;
+   ssr = e'e; 
+   sig2 = (e'e)/(rows(y) - cols(x));
+   se = sqrt(diag(m) * sig2);
+   
+   retp(b, e, sig2, se, ssr);   
+endp;

@@ -1,0 +1,222 @@
+
+/*
+**> kurozumi
+**  Reference:
+**  Kurozumi, E. (2002)
+**  “Testing for stationarity with a break”,
+**  Journal of Econometrics 108, 105-127.
+**
+**  Format:  {stat,tb,lambda,crit[tb,.]} = KPSS_1break(y,model,varm);
+**           {PS,cv}              = STps(y,model,varm,tb);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = Case 0 (Level shift);
+**                      2 = Case 3 (Level and trend shift)
+**           varm    -  Long-run consistent variance estimation method
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Qudratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
+**                      6 = Kurozumi with Bartlett
+**                      7 = Kurozumi with QS
+**                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**                      See:
+**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
+**
+**  Output:  stat    - LM statistic with a break
+**           PS      - PS statistic with a break
+**			 tb      - break location
+**           lambda  - break fraction (tb/T)
+**			 cv      - 1%, 5%, 10% critical values for the break location
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/*13 May 2016*/
+
+proc(4) = KPSS_1break(y, model, varm);
+    local t, ssr_min, tb1_min, KPSS_min;
+    local t1, t2, tb1, tb2, dc, dt, du1, dt1, z;
+    local b, e1, ssr, St, lrv, vare, l, bw, w, KPSS, crit, TBi;
+    
+    T = rows(y);
+    ssr_min = 1e6;
+    tb1_min = 0;
+    KPSS_min = 0;
+    
+    T1 = round(trimm * rows(y));
+    T2 = round((1 - trimm) * rows(y));
+    
+    // First break
+    tb1 = t1;              
+    do until tb1 > t2;
+        // Deterministic term=constant
+        dc = ones(t, 1);   
+
+        // Deterministic term=trend
+        dt = seqa(1, 1, t);             
+        if model == 1;
+            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+            z = dc~dt~du1;
+        endif;
+        
+        if model == 2;
+            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+            dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
+            z = dc~dt~du1~dt1;
+        endif;
+        
+        // OLS estimation
+        b = y/z;     
+
+        // Residuals
+        e1 = y - z * b;  
+
+        // Sum of sqaured residuals
+        ssr = e1'e1;  
+
+        // Partial sum of residuals
+        St = cumsumc(e1);     
+        
+        if varm == 1;
+            lrv = ssr/t;
+        elseif varm == 2;
+            lrv = bartlett(e1);
+        elseif varm == 3;
+            lrv = qs(e1);
+        elseif varm == 4;
+            lrv = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
+        elseif varm == 5;
+            lrv = spc_qs(e1, round(4 * (T/100)^(2/9)));
+        elseif varm == 6;
+            lrv = kurozumi_bartlett(e1);
+        elseif varm == 7;
+            lrv = kurozumi_qs(e1);
+        endif;
+        
+        // KPSS statistic
+        KPSS = T^(-2) * (St'St)/lrv;  
+        
+        // Global minimization
+        if ssr < ssr_min;
+            // Select minimum SSR
+            ssr_min = ssr;    
+            
+            // First break date
+            tb1_min = tb1;   
+            
+            // KPSS statistic with break
+            KPSS_min = KPSS;   
+        endif;
+        tb1 = tb1 + 1;
+    endo;
+    
+    crit = zeros(5, 3);
+    if model == 1;
+        crit = {0.28299 0.37538 0.60388,
+            0.22915 0.30212 0.48265,
+            0.18678 0.24247 0.38052,
+            0.16007 0.20106 0.30162,
+            0.15176 0.18688 0.26842};
+    endif;
+    
+    if model == 2;
+        crit = {0.09724 0.12046 0.17704,
+            0.09724 0.12046 0.14208,
+            0.06485 0.07889 0.11308,
+            0.05570 0.06615 0.09122,
+            0.05267 0.06163 0.08216};
+    endif;
+    
+    TBi = floor(10 * (tb1_min/rows(y)));
+    if TBi > 5;
+        TBi = 10 - TBi;
+    endif;
+    
+    retp(KPSS_min, tb1_min, tb1_min/rows(y), crit[TBi, .]);
+endp;
+
+proc(2) = STps(y, model, varm, tb);
+    local t, tt, dc, dt, du1, dt1, ystar, z;
+    local b, e1, ssr, St, lrv, vare, l, bw, w, ps, cv, tb1;
+    
+    t = rows(y);
+    tb1 = tb;
+    ystar = zeros(t, 1);
+    tt = 1;
+    do while tt <= T;
+        if tt <= tb;
+            ystar[tt] = (tt/tb) * y[tt];
+        endif;
+        
+        if tt > tb;
+            ystar[tt] = (tt/(t-tb)) * y[tt];
+        endif;
+        tt = tt + 1;
+    endo;
+    
+    // Deterministic term=constant
+    dc = ones(t, 1);   
+
+    // Deterministic term=trend
+    dt = seqa(1, 1, t);             
+    
+    if model == 1;
+        du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+        z = dc~dt~du1;
+    endif;
+    
+    if model == 2;
+        du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+        dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
+        z = dc~dt~du1~dt1;
+    endif;
+    
+    // OLS estimation
+    b = ystar/z;      
+
+    // Residuals
+    e1 = ystar - z * b;    
+
+    // Sum of sqaured residuals
+    ssr = e1'e1;     
+
+    // Partial sum of residuals
+    St = cumsumc(e1);     
+    
+    if varm == 1;
+        lrv = ssr/t;
+    elseif varm == 2;
+        lrv = bartlett(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 2;
+        lrv = qs(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 4;
+        lrv = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 5;
+        lrv = spc_qs(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 6;
+        lrv = kurozumi_bartlett(e1);
+    elseif varm == 7;
+        lrv = kurozumi_qs(e1);
+    endif;
+    
+    // STps statistic
+    ps = T^(-2) * (St'St)/lrv;  
+    
+    if model == 1;
+        cv = 0.60704|0.74752|1.07366;
+    endif;
+    
+    if model == 2;
+        cv = 0.21067|0.24654|0.32862;
+    endif;
+    
+    retp(ps, cv);
+endp;

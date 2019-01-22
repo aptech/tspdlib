@@ -1,0 +1,7 @@
+
+proc(1) = diff(x, k) ;
+    if ( k == 0);
+        retp(x);
+    endif ;
+    retp(zeros(k, cols(x))|trimr(x, k, 0)-trimr(lagn(x, k), k, 0)) ;
+endp ;

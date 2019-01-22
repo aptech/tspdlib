@@ -1,0 +1,148 @@
+
+/*
+**> eleeFlm
+**  Reference:
+**  Enders, W., and Lee, J. (2012),
+**  "A Unit Root Test Using a Fourier Series to Approximate Smooth Breaks"
+**  Oxford Bulletin of Economics and Statistics,74,4(2012),574-599.
+**
+**  Format:  { LMk, k, p, cv[k, .] } = Fourier_LM(y, pmax, kmax, ic);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           pmax    -  Maximum number of lags for Ds; 0=no lags
+**           kmax    -  Maximumum number of single Fourier frequency
+**                      (upper bound is 5)
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**
+**  Output:  LMk     -  LM(k) statistic
+**           k       -  Number of singlefrequency
+**			 p       -  number of lags selected by chosen information criterion
+**			 cv      -  1%, 5%, 10% critical values for the chosen model and k
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/*03 February 2015 */
+
+proc(4) = Fourier_LM(y, pmax, kmax, ic);
+    local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
+        k, dc, dt, sink, cosk, dy, dsink, dcosk, dz,
+        b0, psi, ylm, ly, lmat, dep, y1, ldy,
+        sbt, trnd, sinp, cosp, z, jj, isw, f, lm,
+        b, e1, sig2, se, ssr, crit;
+    
+    t = rows(y);
+    taup = zeros(pmax + 1, 1);
+    aicp = zeros(pmax + 1, 1);
+    sicp = zeros(pmax + 1, 1);
+    tstatp = zeros(pmax + 1, 1);
+    ssrp = zeros(pmax + 1, 1);
+    ssrk = zeros(kmax, 1);
+    tauk = zeros(kmax, 1);
+    
+    k = 1;
+    do while k <= kmax;
+        dc = ones(t, 1);
+        dt = seqa(1, 1, t);
+        sink = sin(2 * pi * k * seqa(1, 1, t)/t);
+        cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
+        z = dt~sink~cosk;
+        dy = trimr(diff(y, 1), 1, 0);
+        dsink = trimr(diff(sink, 1), 1, 0);
+        dcosk = trimr(diff(cosk, 1), 1, 0);
+        dz = ones(rows(dy), 1)~dsink~dcosk;
+        b0 = dy/dz;
+        psi = y[1] - dz[1,.] * b0;
+        ylm = y - psi - z * b0;
+        
+        t = rows(ylm);
+        dy = diff(ylm, 1);
+        ly = lagn(ylm, 1);
+        
+        // Deterministic term=constant
+        dc = ones(t, 1);
+        
+        // Deterministic term=trend
+        dt = seqa(1, 1, t);
+        sink = diff(sin(2 * pi * k  *seqa(1, 1, t)/t), 1);
+        cosk = diff(cos(2 * pi * k * seqa(1, 1, t)/t), 1);
+        
+        p = 0;
+        do while p <= pmax;
+            lmat = zeros(rows(dy), p + 1);
+            j = 1;
+            do while j <= p;
+                lmat[., j] = lagn(dy, j);
+                j = j + 1;
+            endo;
+            dep = trimr(dy, p + 1, 0);
+            y1 = trimr(ly, p + 1, 0);
+            ldy = trimr(lmat, p + 1, 0);
+            sbt = trimr(dc, p + 1, 0);
+            trnd = trimr(dt, p + 1, 0);
+            sinp = trimr(sink, p + 1, 0);
+            cosp = trimr(cosk, p + 1, 0);
+            if p == 0;
+                z = y1~sbt~sinp~cosp;
+            elseif p > 0;
+                z = y1~sbt~sinp~cosp~ldy[., 1:p];
+            endif;
+            {b, e1, sig2, se, ssr} = myols(dep, z);
+            taup[p+1] = b[1]/se[1];
+            aicp[p+1] = ln(e1'e1/rows(z)) + 2 * (k + 2)/rows(z);
+            sicp[p+1] = ln(e1'e1/rows(z)) + (cols(z) + 2) * ln(rows(z))/rows(z);
+            tstatp[p+1] = b[cols(z)]/se[cols(z)];
+            ssrp[p+1] = ssr;
+            p = p + 1;
+        endo;
+        p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
+        ssrk[k] = ssrp[p];
+        tauk[k] = taup[p];
+        k = k + 1;
+    endo;
+    f = minindc(ssrk);
+    LM = tauk[f];
+    
+    // Critical Values (see, Enders & Lee, 2012, Table 1)
+    crit = zeros(5, 3);
+    
+    if T <= 150;
+        crit = {-4.69 -4.10 -3.82,
+            -4.25 -3.57 -3.23,
+            -3.98 -3.31 -2.96,
+            -3.85 -3.18 -2.86,
+            -3.75 -3.11 -2.81};
+    endif;
+    
+    if 151 < T and T <= 349;
+        crit = {-4.61 -4.07 -3.79,
+            -4.18 -3.55 -3.23,
+            -3.94 -3.30 -2.98,
+            -3.80 -3.18 -2.88,
+            -3.73 -3.12 -2.83};
+    endif;
+    
+    if 350 < T and T <= 500;
+        crit = {-4.57 -4.05 -3.78,
+            -4.13 -3.54 -3.22,
+            -3.94 -3.31 -2.98,
+            -3.81 -3.19 -2.88,
+            -3.75 -3.14 -2.83};
+    endif;
+    
+    if 500 < T;
+        crit = {-4.56 -4.03 -3.77,
+            -4.15 -3.54 -3.22,
+            -3.94 -3.30 -2.98,
+            -3.80 -3.19 -2.88,
+            -3.74 -3.13 -2.83};
+    endif;
+    
+    retp(LM, f, p - 1, crit[f, .]);
+endp;

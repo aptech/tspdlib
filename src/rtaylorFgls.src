@@ -1,0 +1,263 @@
+
+
+/*
+**> rtaylorFgls
+**  Reference:
+** Rodrigues, P. M. M and Taylor, A. M. T (2012),
+** "The Flexible Fourier Form and Local Generalised Least Squares
+**  De-trended Unit Root Tests."
+**  Oxford Bulletin of Economics and Statistics,74,5(2012),736-759.
+**
+**  Format:  { GLSk, k, p, cv[k,.] } = Fourier_GLS(y, model, pmax, kmax, ic);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = Constant
+**                      2 = Constant and trend
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           kmax    -  Maximumum number of single Fourier frequency
+**                      (upper bound is 5)
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**
+**  Output:  GLSk    - GLS(k) statistic
+**           k       - Number of single frequency
+**			 p       - number of lags selected by chosen information criterion
+**			 cv      - 1%, 5%, 10% critical values for the chosen model and k
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/*14 December 2014*/
+
+
+proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
+    local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk, 
+        k, cbar, sink, cosk, abar, ya, za, bhat, ygls, 
+        dy, ly, dc, dt, lmat, dep, y1, ldy, sbt, trnd, 
+        sinp, cosp, z, f, gls, crit, d, 
+        b, e1, sig2, se, ssr;
+    
+    t = rows(y);
+    d = model;
+    taup = zeros(pmax + 1, 1);
+    aicp = zeros(pmax + 1, 1);
+    sicp = zeros(pmax + 1, 1);
+    tstatp = zeros(pmax + 1, 1);
+    ssrp = zeros(pmax + 1, 1);
+    ssrk = zeros(fmax, 1);
+    tauk = zeros(fmax, 1);
+    
+    k = 1;
+    do while k <= fmax;
+        if d == 1;
+            if k == 0;
+                cbar = -7.00;
+            endif;
+        endif;
+        
+        if d == 1;
+            if k == 1;
+                cbar = -12.25;
+            endif;
+        endif;
+        
+        if d == 1;
+            if k == 2;
+                cbar = -8.25;
+            endif;
+        endif;
+        
+        if d == 1;
+            if k == 3;
+                cbar = -7.75;
+            endif;
+        endif;
+        
+        if d == 1;
+            if k == 4;
+                cbar = -7.50;
+            endif;
+        endif;
+        
+        if d == 1;
+            if k == 5;
+                cbar = -7.25;
+            endif;
+        endif;
+        
+        if d == 2;
+            if k == 0;
+                cbar = -13.50;
+            endif;
+        endif;
+        
+        if d == 2;
+            if k == 1;
+                cbar = -22.00;
+            endif;
+        endif;
+        
+        if d == 2;
+            if k == 2;
+                cbar = -16.25;
+            endif;
+        endif;
+        
+        if d == 2;
+            if k == 3;
+                cbar = -14.75;
+            endif;
+        endif;
+        
+        if d == 2;
+            if k == 4;
+                cbar = -14.25;
+            endif;
+        endif;
+        
+        if d == 2;
+            if k == 5;
+                cbar = -14.00;
+            endif;
+        endif;
+        //"cbar    = ";;cbar;
+        
+        sink = sin(2 * pi * k * seqa(1, 1, t)/t);
+        cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
+        
+        if model == 1;
+            z = ones(t, 1)~sink~cosk;
+        endif;
+        
+        if model == 2;
+            z = ones(t, 1)~seqa(1, 1, t)~sink~cosk;
+        endif;
+        
+        abar = 1 + cbar/t;
+        ya = zeros(t, 1);
+        za = zeros(t, cols(z));
+        ya[1:1, 1] = y[1:1, 1];
+        za[1:1, .] = z[1:1, .];
+        ya[2:t, 1] = y[2:t, 1] - abar * y[1:t-1, 1];
+        za[2:t, .] = z[2:t, .] - abar * z[1:t-1, .];
+        
+        // Constructing GLS detrended series
+        bhat = inv(za'za) * za'ya;
+        
+        // GLS trending data
+        ygls= y - z * bhat;                      
+        
+        t = rows(ygls);
+        dy = diff(ygls, 1);
+        ly = lagn(ygls, 1);
+        
+        // Deterministic term=constant
+        dc = ones(t, 1);       
+        
+        // Deterministic term=trend
+        dt = seqa(1, 1, t);     
+        
+        p = 0;
+        do while p <= pmax;
+            lmat = zeros(rows(dy), p + 1);
+            
+            j = 1;
+            do while j <= p;
+                lmat[., j] = lagn(dy, j);
+                j = j + 1;
+            endo;
+            
+            dep = trimr(dy, p + 1, 0);
+            y1 = trimr(ly, p + 1, 0);
+            ldy = trimr(lmat, p + 1, 0);
+            sbt = trimr(dc, p + 1, 0);
+            trnd = trimr(dt, p + 1, 0);
+            sinp = trimr(sink, p + 1, 0);
+            cosp = trimr(cosk, p + 1, 0);
+            
+            if p == 0;
+                z = y1;
+            elseif p > 0;
+                z = y1~ldy[., 1:p];
+            endif;
+            
+            {b, e1, sig2, se, ssr} = myols(dep, z);
+            taup[p+1] = b[1]/se[1];
+            aicp[p+1] = ln(e1'e1/rows(z)) + 2 * (k + 2)/rows(z);
+            sicp[p+1] = ln(e1'e1/rows(z)) + (cols(z)+2) * ln(rows(z))/rows(z);
+            tstatp[p+1] = b[cols(z)]/se[cols(z)];
+            ssrp[p+1] = ssr;
+            p = p + 1;
+        endo;
+        p = _get_lag(ic, pmax, aicp, sicp, tstatp);
+        ssrk[k] = ssrp[p];
+        tauk[k] = taup[p];
+        k = k + 1;
+    endo;
+    
+    f = minindc(ssrk);
+    GLS = tauk[f];
+    
+    // Critical Values (see,  Rodrigues & Taylor,  2012,  Table 2)
+    crit = zeros(5, 3);
+    
+    if model == 1;
+        if T <= 150;
+            crit = {-3.911 -3.294 -2.328, 
+                -3.298 -2.601 -2.187, 
+                -3.131 -2.359 -2.005, 
+                -2.934 -2.256 -1.918, 
+                -2.888 -2.200 -1.880};
+        endif;
+        
+        if 151 < T and T <= 350;
+            crit = {-3.780 -3.176 -2.828, 
+                -3.278 -2.473 -2.099, 
+                -2.989 -2.226 -1.896, 
+                -2.884 -2.179 -1.830, 
+                -2.840 -2.120 -1.787};
+        endif;
+        
+        if 350 < T;
+            crit = {-3.637 -3.017 -2.661, 
+                -3.074 -2.377 -1.990, 
+                -2.916 -2.175 -1.808, 
+                -2.773 -2.079 -1.732, 
+                -2.745 -2.022 -1.695};
+        endif;
+    endif;
+    
+    if model == 2;
+        if T <= 150;
+            crit = {-4.771 -4.175 -3.879, 
+                -4.278 -3.647 -3.316, 
+                -4.044 -3.367 -3.037, 
+                -3.920 -3.232 -2.902, 
+                -3.797 -3.149 -2.831};
+        endif;
+        
+        if 151 < T and T <= 350;
+            crit = {-4.593 -4.041 -3.749, 
+                -4.191 -3.569 -3.228, 
+                -3.993 -3.300 -2.950, 
+                -3.852 -3.174 -2.852, 
+                -3.749 -3.075 -2.761};
+        endif;
+        
+        if 350 < T;
+            crit = {-4.462 -3.917 -3.651, 
+                -4.073 -3.438 -3.108, 
+                -3.822 -3.220 -2.868, 
+                -3.701 -3.092 -2.758, 
+                -3.603 -3.012 -2.690};
+        endif;
+    endif;
+    
+    retp(GLS, f, p - 1, crit[f, .]);
+endp;
+

@@ -1,0 +1,169 @@
+
+/*
+**> PD_ILTlevel
+**  Reference:
+**  Im, K., Lee, J., Tieslau, M. (2005),
+**  "Panel LM Unit-root Tests with Level Shifts",
+**  Oxford Bulletin of Economics and Statistics 67, 393–419.
+**
+**  Format:  {Nlm, Ntb, Np, PDlm, pval} = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
+**
+**  Input:   Y	     -  TxN matrix, data,
+**           model   - 	1= level break model
+**
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**			 trim    - 	Trimming rate
+**                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
+**      	 nbreak  - 	number of breaks are allowed
+**                      1= one break  test
+**                      2= two breaks test
+**
+**  Output:  Nlm     - minimum test statistic for each cross-section
+**			 Ntb     - location of break(s) for each cross-section
+**			 Np      - number of lags selected by choosen information criterion for each cross-section
+**			 PDlm    - Panel LM statistic with N(0,1)
+**           pval    - p-value of PDlm
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
+    local n, t, Nlm, Ntb, Np, i;
+    local LM, tb1, tb2, p, lambda, cv;
+    local meanp, varp, PDlm;
+    
+    n  = cols(y);
+    t  = rows(y);
+    Nlm = zeros(N, 1);
+    Np = zeros(N, 1);
+    
+    if nbreak == 1;
+        Ntb = zeros(N, 1);
+        
+        for i(1, N, 1);
+            {LM, tb1, p, lambda, cv} = LM_1break(y[., i], model, pmax, ic, trimm);
+            // i~LM~tb1~p;
+            Nlm[i] = LM;
+            Ntb[i] = tb1;
+            Np[i] = p;
+        endfor;
+        
+    endif;
+    
+    if nbreak == 2;
+        Ntb = zeros(N, 2);
+        
+        for i(1, N, 1);
+            {LM, tb1, tb2, p, cv} = LM_2breaks(y[., i], model, pmax, ic, trimm);
+            //i~LM~tb1~p;
+            Nlm[i] = LM;
+            Ntb[i, 1] = tb1;
+            Ntb[i, 2] = tb2;
+            Np[i] = p;
+        endfor;
+        
+    endif;
+    
+    {meanp, varp} = _get_ILTmoments(T, N, Nlm, Np);
+    PDlm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
+    
+    retp(Nlm, Ntb, Np, PDlm, 1 - cdfnc(PDlm));
+endp;
+
+proc(2) = _get_ILTmoments(T, N, Nlm, Np);
+    local crit, row_n, panel_k, meanp, varp, mm, optk, ct1, ct2, ct;
+    
+    // Reading critical values
+    crit = loadd(__FILE_DIR $+ "ILTlevel_crit.dat");
+    
+    // Row location 
+    if T < 10;
+        row_n = 1;
+    endif;
+    
+    if T > 10 and T < 25;
+        row_n = T - 10 + 1;
+    endif;
+    
+    if T > 24 and T < 28;
+        row_n = 16;
+    endif;
+    
+    if T > 27 and T < 33;
+        row_n = 17;
+    endif;
+    
+    if T > 32 and T < 38;
+        row_n = 18;
+    endif;
+    
+    if T > 37 and T < 43;
+        row_n = 19;
+    endif;
+    
+    if T > 42 and T < 48;
+        row_n = 20;
+    endif;
+    
+    if T > 47 and T < 53;
+        row_n = 21;
+    endif;
+    
+    if T > 54 and T < 65;
+        row_n = 22;
+    endif;
+    
+    if T > 64 and T < 75;
+        row_n = 23;
+    endif;
+    
+    if T > 74 and T < 85;
+        row_n = 24;
+    endif;
+    
+    if T > 84 and T < 95;
+        row_n = 25;
+    endif;
+    
+    if T > 94 and T < 150;
+        row_n = 26;
+    endif;
+    
+    if T > 149;
+        row_n = 27;
+    endif;
+    
+    panel_k = Np;
+    meanp = 0;
+    varp = 0;
+    
+    for mmm(1, N, 1);
+        // column location 
+        if panel_k[mmm] > 8;
+            optk = 8;
+        else;
+            optk = panel_k[mmm];
+        endif;
+        
+        ct1 = crit[row_n,2+2*optk];
+        ct2 = crit[row_n,3+2*optk];
+        ct = ct1~ct2;
+        
+        meanp = meanp + crit[row_n,2+2*optk];
+        varp = varp + crit[row_n,3+2*optk];
+    endfor;
+    
+    meanp = meanp/n;
+    varp = varp/n;
+    
+    retp(meanp, varp);
+endp;

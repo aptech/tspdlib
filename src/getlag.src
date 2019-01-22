@@ -1,0 +1,57 @@
+
+/*
+**> getlag
+**
+**  Format:  {p} = _get_lag(ic, pmax, aicp, sicp, tstatp);
+**
+**  Input:   ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**			 aicp    - 	(pmax+1,1) Akaike Information Criterion values
+**			 sicp    - 	(pmax+1,1) Schwarz Information Criterion values
+****	     tstatp  - 	(pmax+1,1) t-statistics of lagged dep.var.
+**
+**  Output:  p       - number of lags selected by choosen information criterion
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/*03 January 2019*/
+
+proc(1)=_get_lag(ic, pmax, aicp, sicp, tstatp);
+    local values, p, j, isw;
+    if  ic == 1;
+        values = aicp;
+        p = minindc(values);
+    endif; 
+    
+    // Optimal Lag
+    if  ic == 2;
+        values = sicp;
+        p = minindc(values);
+    endif;  
+    
+    // Optimal Lag
+    if  ic == 3;
+        values = tstatp;
+        j = pmax + 1;
+        isw = 0;
+        
+        do while isw ne 1;
+            if (abs(values[j]) > 1.645) or (j == 1);
+                
+                // Optimal Lag
+                p = j;  
+                isw = 1;
+            endif;
+            j = j - 1;
+        endo;
+    endif;
+    retp(p);
+endp;

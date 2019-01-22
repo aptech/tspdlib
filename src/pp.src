@@ -1,0 +1,104 @@
+
+/*
+**> pp
+**  Reference:
+**  Phillips, P.C.B., Perron, P. (1988).
+**  Testing for a unit root in time series regressions.
+**  Biometrica 75, 335–346.
+**
+**  Format:  {Zt,Za} = PP(y,model,varm);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	0 = none
+**                      1 = model with constant
+**                      2 = model with constant and trend
+**           varm    -  Long-run consistent variance estimation method
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Qudratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
+**                      6 = Kurozumi with Bartlett
+**                      7 = Kurozumi with QS
+**                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**                      See:
+**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
+**
+**  Output:  Zt & Za - Test statistics
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+proc(2) = PP(y, model, varm);
+    local t, dy, ly, dc, dt, dep, y1, sbt, trnd, x;
+    local tau, g0, lrv, l, bw, w, Zt, lambda, mbaryy, Za;
+    local b, e, e1, s2, se, ssr, vare;
+    
+    t = rows(y);
+    dy = diff(y, 1);
+    ly = lagn(y, 1);
+    
+    // Deterministic term=constant
+    dc = ones(t, 1);
+    
+    // Deterministic term=trend
+    dt = seqa(1, 1 , t);
+    
+    dep = trimr(dy, 1, 0);
+    y1 = trimr(ly, 1, 0);
+    sbt = trimr(dc, 1, 0);
+    trnd = trimr(dt, 1, 0);
+    
+    if model == 0;
+        x = y1;
+    endif;
+    
+    if model == 1;
+        x = y1~sbt;
+    endif;
+    
+    if model == 2;
+        x = y1~sbt~trnd;
+    endif;
+    
+    { b, e, s2, se, ssr} = myols(dep, x);
+    
+    tau = b[1]/se[1];
+    t = rows(e);
+    
+    // Residual variance as in Eviews
+    g0 = (t - cols(x)) * s2 * 1/t;       
+    e1 = e;
+    
+    if varm == 1;
+        lrv = ssr/t;
+    elseif varm == 2;
+        lrv = bartlett(e1);
+    elseif varm == 3;
+        lrv = qs(e1);
+    elseif varm == 4;
+        lrv = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 5;
+        lrv = spc_qs(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 6;
+        lrv = kurozumi_bartlett(e1);
+    elseif varm == 7;
+        lrv = kurozumi_bartlett(e1);
+    endif;
+    
+    // Eviews
+    Zt = tau * sqrt(g0/lrv) - t * (lrv - g0) * se[1]/(2 * sqrt(lrv) * sqrt(s2)); 
+    lambda = 1/2 * (lrv - g0);
+    mbaryy = (t * se[1]/sqrt(s2))^2;
+    
+    // Stata 
+    Za = t * b[1] - lambda * mbaryy; 
+    
+    retp(Zt, Za);
+endp;

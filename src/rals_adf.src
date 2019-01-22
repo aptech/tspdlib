@@ -1,0 +1,153 @@
+
+/*
+**> rals_adf
+**  Reference:
+**  Im, K. S., Lee, J., & Tieslau, M. A. (2014).
+**  More powerful unit root tests with non-normal errors.
+**  In Festschrift in Honor of Peter Schmidt (pp. 315-342).Springer New York.
+**
+**  Format:  {tauRALS,p2,cv} = RALSADF(y,model,pmax,ic);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = Constant
+**                      2 = Constant and trend
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**
+**  Output:  tauRALS - tau statistic based on RALS procedure
+**			 p2      - the estimated rho square (see, page 322)
+**			 cv      - 1%, 5%, 10% critical values for the estimated p2
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(3) = RALSADF(y, model, pmax, ic);
+    local tauADF, lag_var, t, dy, ly, dc, dt, dep, y1, ldy, sbt, trnd, lmat, x;
+    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cv;
+    
+    T = rows(y);
+    { tauADF, lag_var } = ADF(y, model, pmax, ic);
+    dy = diff(y, 1);
+    ly = lagn(y, 1);
+    
+    // Deterministic term=constant
+    dc = ones(t, 1);      
+    
+    // Deterministic term=trend
+    dt = seqa(1, 1, t);    
+    
+    if lag_var == 0;
+        dep = trimr(dy, 1, 0);
+        y1  = trimr(ly, 1, 0);
+        sbt = trimr(dc, 1, 0);
+        trnd = trimr(dt, 1, 0);
+    endif;
+    
+    if lag_var ne 0;
+        lmat=zeros(rows(dy), lag_var);
+        j=1;
+        do while j<= lag_var;
+            lmat[., j] = lagn(dy, j);
+            j = j + 1;
+        endo;
+        
+        dep = trimr(dy, lag_var, 0);
+        y1 = trimr(ly, lag_var, 0);
+        ldy =trimr(lmat, lag_var, 0);
+        sbt =trimr(dc, lag_var, 0);
+        trnd=trimr(dt, lag_var, 0);
+    endif;
+    
+    if lag_var == 0;
+        if model == 1;
+            x = y1~sbt;
+        endif;
+        
+        if model == 2;
+            x = y1~sbt~trnd;
+        endif;
+        
+    elseif lag_var > 0;
+        if model == 1;
+            x = y1~sbt~ldy[., 1:lag_var];
+        endif;
+        
+        if model == 2;
+            x = y1~sbt~trnd~ldy[., 1:lag_var];
+        endif;
+    endif;
+    
+    { b, e, sig2, se, ssr } = myols(dep, x);
+    e2 = e^2;
+    e3 = e^3;
+    m2 = T^-1 * sumc(e2);
+    m3 = T^-1 * sumc(e3);
+    w = (e2 - m2)~(e3 - m3 - 3 * m2 * e);
+    x = x~w;
+    
+    { b, e, sig2A, se, ssr } = myols(dep, x);
+    tauRALS = b[1]/se[1];
+    p2 = sig2A/sig2;
+    
+    cv = crit_RALSadf(p2, model);
+    
+    retp(tauRALS, p2, cv);
+endp;
+
+
+
+proc(1) = crit_RALSadf(r2, model);
+    local cra, crt, ca, cv, r210, r2a, r2b, wa;
+    
+    // See Hansen (1995) CADF critical values
+    if model == 1;
+        let crt[10, 3] =
+            -2.7844267       -2.1158290       -1.7525193
+            -2.9138762       -2.2790427       -1.9172046
+            -3.0628184       -2.3994711       -2.0573070
+            -3.1376157       -2.5070473       -2.1680520
+            -3.1914660       -2.5841611       -2.2520173
+            -3.2437157       -2.6399560       -2.3163270
+            -3.2951006       -2.7180169       -2.4085640
+            -3.3627161       -2.7536756       -2.4577709
+            -3.3896556       -2.8074982       -2.5037759
+            -3.4336          -2.8621          -2.5671;
+    elseif model == 2;
+        let crt[10, 3] =
+            -2.9657928       -2.3081543       -1.9519926
+            -3.1929596       -2.5482619       -2.1991651
+            -3.3727717       -2.7283918       -2.3806008
+            -3.4904849       -2.8669056       -2.5315918
+            -3.6003166       -2.9853079       -2.6672416
+            -3.6819803       -3.0954760       -2.7815263
+            -3.7551759       -3.1783550       -2.8728146
+            -3.8348596       -3.2674954       -2.9735550
+            -3.8800989       -3.3316415       -3.0364171
+            -3.9638          -3.4126          -3.1279;
+    endif;
+    
+    if r2 < .1;
+        cv = crt[1, .];
+    else;
+        r210 = r2 * 10;
+        if r210 >= 10;
+            cv = crt[10, .];
+        else;
+            r2a = floor(r210);
+            r2b = ceil(r210);
+            wa  = r2b - r210;
+            cv = wa * crt[r2a, .] + (1-wa) * crt[r2b, .];
+        endif;
+    endif;
+    
+    retp(cv);
+endp;
+

@@ -1,0 +1,246 @@
+
+/*
+**> rals_adf
+**  Reference:
+**  Im, K. S., Lee, J., & Tieslau, M. A. (2014).
+**  More powerful unit root tests with non-normal errors.
+**  In Festschrift in Honor of Peter Schmidt (pp. 315-342).Springer New York.
+**
+**  Format:  {QURadf} = QRADF(y,model,pmax,ic,quantile,_print);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = Constant (Default in Koenker & Xiao (2004)
+**                      2 = Constant and trend
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**           tau     -  quantile (0.1,...,1)
+**           _print  -  print option "true" for printing results
+**
+**  Output:  rho(quantil) - the estimated rho parameter for a given quantile
+**			 rho (OLS)    - the estimated rho parameter for usual OLS estimation
+**           delta2       - see equation (10) at page 778
+**           tn(quantile) - quantile unit root statistic (t-ratio for a given quantile)
+**			 cv           - 1%, 5%, 10% critical values for the estimated delta2
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/* 18 August 2018 */
+
+
+/*Procedures*/
+proc(1) = QRADF(y, model, pmax, ic, tau, _print);
+    local n, y1, dy, dyl, x, ADFt, p, cv;
+    local qr_beta, u_plus, u_minus, rho_tau, beta_ols, rho_ols, res, ind, phi;
+    local w, cov, delta2, crv, h, x1, rq1, rq2, z, mz, q1, q2, fz, xx, px, QURadf;
+    
+    n = rows(y);
+    y1 = lagn(y, 1);
+    dy = diff(y, 1);
+    x = y1;
+    
+    { ADFt, p } = ADF(y, model, pmax, ic);
+    
+    if p > 0;
+        dyl = zeros(rows(y), p);
+        
+        for j(1, p, 1);
+            dyl[., j] = lagn(dy, j);
+        endfor;
+        
+        y = trimr(y, p + 1 ,0);
+        y1 = trimr(y1, p + 1, 0);
+        dy = trimr(dy, p + 1, 0);
+        dyl = trimr(dyl, p + 1, 0);
+        x = y1~dyl;
+    endif;
+    
+    // Declar qFitOut structure
+    struct qFitOut qOut1;
+    qOut1 = quantileFit(Y, X, tau);
+    
+    qr_beta = qOut1.beta;
+    
+    rho_tau = qr_beta[2];
+    beta_ols = y/(ones(rows(x), 1)~x);
+    rho_ols = beta_ols[2];
+    
+    res = y - (ones(rows(x),1)~x) * qr_beta;
+    ind = res .< 0;
+    /*
+    ind=zeros(rows(res),1);
+    for i(1,rows(res),1);
+    if res[i]<0; ind[i]=1; else; ind[i]=0;endif;
+    endfor;
+    */
+    
+    phi = tau - ind;
+    w = dy;
+    cov = sumc((w - meanc(w)) .* (phi - meanc(phi)))/(rows(w) - 1);
+    delta2 = (cov/(stdc(w) * sqrt(tau * (1-tau))))^2;
+    crv = crit_QRadf(delta2, model);
+    n = rows(y);
+    if tau <= 0.5;
+        h = tau/3.5;
+    else;
+        h = (1 - tau)/3.5;
+    endif;
+    
+    h = bandwidth(tau, n, "true", 0.05);
+    if tau <= 0.5 and h > tau;
+        h = bandwidth(tau, n, "false", 0.05);
+        if h > tau;
+            h = tau/1.5;
+        endif;
+    endif;
+    if tau > 0.5 and h > 1-tau;
+        h = bandwidth(tau, n, "false", 0.05);
+        if h > (1 - tau);
+            h = (1-tau)/1.5;
+        endif;
+    endif;
+    
+    x1 = y1;
+    if p > 0;
+        x1 = y1~dyl;
+    endif;
+    
+    // Declare qFitOut structure
+    struct qFitOut qOut2;
+    qOut2 = quantileFit(Y, X1, tau+h);
+    
+    // Extract beta
+    rq1 = qOut2.beta;
+    
+    // Declare qFitOut structure
+    struct qFitOut qOut3;
+    qOut3 = quantileFit(Y, X1, tau-h);
+    
+    // Extract beta
+    rq2 = qOut3.beta; 
+    
+    z = ones(rows(x1), 1)~x1;
+    mz = meanc(z);
+    q1 = mz' * rq1;
+    q2 = mz' * rq2;
+    fz = 2 * h/(q1 - q2);
+    if fz < 0;
+        fz = 0.01;
+    endif;
+    
+    xx = ones(rows(x), 1);
+    if p > 0;
+        xx =ones(rows(x), 1)~dyl;
+    endif;
+    
+    PX = eye(rows(xx)) - xx * inv(xx'xx) * xx';
+    
+    QURadf = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau -1);
+    
+    cv = crit_QRadf(delta2, model);
+    
+    if _print == "true";
+        "                 ADF-Statistics";
+        "quantil        ";;
+        tau;
+        "rho(quantil)   ";;
+        rho_tau;
+        "rho (OLS)      ";;
+        rho_ols;
+        "delta^2        ";;
+        delta2;
+        "ADF(quantile)  ";;
+        QURadf;
+        "CV (1%,5%,10%) ";;
+        cv;
+    endif;
+    
+    retp(QURadf);
+endp;
+
+
+proc(1) = bandwidth(tau, n, hs, alpha);
+    local x0, f0, h;
+    
+    x0 = cdfNi(tau);
+    f0 = pdfn(x0);
+    
+    if hs == "true";
+        h = n^(-1/3) * cdfNi(1 - alpha/2)^(2/3) * ((1.5 * f0^2)/(2 * x0^2+1))^(1/3);
+    else;
+        h = n^-0.2 * ((4.5 * f0^4)/(2 * x0^2 + 1)^2)^0.2;
+    endif;
+    
+    retp(h);
+endp;
+
+
+proc(1) = crit_QRadf(r2,model);
+    local cra, crt, ca, ct, r210, r2a, r2b, wa;
+    
+    // See Hansen (1995) CADF critical values
+    if model == 0;
+        let crt[10, 3] =
+            -2.4611512       -1.7832090       -1.4189957
+            -2.4943410       -1.8184897       -1.4589747
+            -2.5152783       -1.8516957       -1.5071775
+            -2.5509773       -1.8957720       -1.5323511
+            -2.5520784       -1.8949965       -1.5418830
+            -2.5490848       -1.8981677       -1.5625462
+            -2.5547456       -1.9343180       -1.5889045
+            -2.5761273       -1.9387996       -1.6020210
+            -2.5511921       -1.9328373       -1.6128210
+            -2.5658          -1.9393          -1.6156;
+        
+    elseif model == 1;
+        
+        let crt[10, 3] =
+            -2.7844267       -2.1158290       -1.7525193
+            -2.9138762       -2.2790427       -1.9172046
+            -3.0628184       -2.3994711       -2.0573070
+            -3.1376157       -2.5070473       -2.1680520
+            -3.1914660       -2.5841611       -2.2520173
+            -3.2437157       -2.6399560       -2.3163270
+            -3.2951006       -2.7180169       -2.4085640
+            -3.3627161       -2.7536756       -2.4577709
+            -3.3896556       -2.8074982       -2.5037759
+            -3.4336          -2.8621          -2.5671;
+        
+    elseif model == 2;
+        
+        let crt[10, 3] =
+            -2.9657928       -2.3081543       -1.9519926
+            -3.1929596       -2.5482619       -2.1991651
+            -3.3727717       -2.7283918       -2.3806008
+            -3.4904849       -2.8669056       -2.5315918
+            -3.6003166       -2.9853079       -2.6672416
+            -3.6819803       -3.0954760       -2.7815263
+            -3.7551759       -3.1783550       -2.8728146
+            -3.8348596       -3.2674954       -2.9735550
+            -3.8800989       -3.3316415       -3.0364171
+            -3.9638          -3.4126          -3.1279;
+    endif;
+    
+    if r2 < .1;
+        ct = crt[1, .];
+    else;
+        r210 = r2 * 10;
+        if r210 >= 10;
+            ct = crt[10, .];
+        else;
+            r2a = floor(r210);
+            r2b = ceil(r210);
+            wa = r2b - r210;
+            ct = wa * crt[r2a, .] + (1 - wa) * crt[r2b, .];
+        endif;
+    endif;
+    
+    retp(ct);
+endp;

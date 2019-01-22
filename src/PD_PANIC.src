@@ -1,0 +1,421 @@
+
+
+/*
+**> PD_PANIC
+**  References:
+**  Bai, J. and Ng, S. (2004)
+**  "A PANIC attack on unit roots and cointegration".
+**  Econometrica, 72, 1127–78.
+**
+**  Westerlund, J., & Larsson, R. (2009).
+**  "A note on the pooling of individual PANIC unit root tests".
+**  Econometric Theory, 25(6), 1851-1868.
+**
+**  Bai, J., & Ng, S. (2010).
+**  "Panel unit root tests with cross-section dependence: a further investigation".
+**  Econometric Theory, 26(4), 1088-1114.
+**
+**  Reese, S., & Westerlund, J. (2016).
+**  "PANICCA: Panic on Cross‐Section Averages".
+**  Journal of Applied Econometrics, 31(6), 961-981.
+**
+**  Bai, J., & Ng, S. (2002).
+**  "Determining the number of factors in approximate factor models".
+**  Econometrica, 70(1), 191-221.
+**
+**  Procs:   BNG_PANIC    : Bai and Ng (2004)
+**           BNG_PANICnew : Bai and Ng (2010)
+**           JWL_PANICadj : Westerlund and Larsson (2009).
+**           JWR_PANICCA  : Reese and Westerlund (2016)
+**
+**  Format:  {ADFe,pval,lags,Pe,nf} = BNG_PANIC(y,model,ic);
+**           {Pa_pc,Pb_pc,PMSB_pc}  = BNG_PANICnew(y,model,ic);
+**           {Ze,Ze_ba}             = JWL_PANICadj(y,model,ic);
+**           {Pa_ca,Pb_ca,PMSB_ca}  = JWR_PANICCA(y,model);
+**
+**  Input:   Y	     -  TxN matrix, data,
+**           model   - 	0= Constant
+**                      1= Constant and trend
+**           pmax    -  Maximum number of lags for ADF regressions; 0=no lags
+**           kmax    -  Maximum number of factors
+**           ic      -  Information Criterion for optimal number of factors
+**                      1= PCp criterion
+**                      2= ICp criterion
+**                      (See Bai and Ng, 2002)
+**
+**  Output:  ADFe    -  ADF statistic with common factor for each cross-section
+**           pval    -  p-value of ADFe
+**			 p       -  number of lags selected by chosen information criterion
+**           nf      -  number of factors by chosen information criterion
+**			 Pe      -  Pe   statistic based on principal components with N(0,1)
+**           Pa_pc   -  Pa   statistic based on principal components with N(0,1)
+**           Pb_pc   -  Pb   statistic based on principal components with N(0,1)
+**           PMSB_pc -  PMSB statistic based on principal components with N(0,1)
+**			 Ze      -  Ze   statistic based on principal components with N(0,1)
+**			 Ze_ba   -  Bias-adj.Ze statistic based on principal components with N(0,1)
+**           Pa_ca   -  Pa   statistic based on cross-section averages with N(0,1)
+**           Pb_ca   -  Pb   statistic based on cross-section averages with N(0,1)
+**           PMSB_ca -  PMSB statistic based on cross-section averages with N(0,1)
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/* 31 July 2018*/
+
+
+#include panel.dat  /* for p-vals */
+
+/*Pe test on ADF p-values in Bai & Ng (2004)*/
+proc(5) = BNG_PANIC(y, model, ic);
+    local dx, x, e, t, n, nf, Fhat, lambda, ehat, ADFe, lags, pval, par, qval, j, Pe;
+    
+    
+    dx = diff(y, 1);
+    x = dx[2:rows(y), .];
+    
+    if model == 0;
+        x = x;
+    endif;
+    
+    if model == 1;
+        x = x - meanc(x)';
+    endif;
+    
+    nf = Fnumber(x, kmax, ic);
+    
+    // nf is selected with ICp2
+    { Fhat, lambda, ehat } = pca(x, nf[2]); 
+    
+    e = cumsumc(ehat);
+    T = rows(e);
+    N = cols(e);
+    
+    ADFe = zeros(N, 1);
+    lags = zeros(N, 1);
+    pval = zeros(N, 1);
+    
+    for i(1, N, 1);
+        { ADFe[i], lags[i] } = ADF(e[., i], 0, pmax, 3);
+        par = 1 ./ (1|t|t^2);
+        qval = coe_adfnc * par;
+        
+        if ADFe[i] < qval[1];
+            pval[i] = 0.0001;
+        elseif ADFe[i] > qval[399];
+            pval[i] = 0.9999;
+        else;
+            j = minindc(abs(qval - ADFe[i]));
+            pval[i] = df_prob[j];
+        endif;
+    endfor;
+    
+    Pe = ((-2 * sumc(ln(pval)) - 2 * n))/sqrt(4 * n);
+    retp(ADFe, pval, lags, Pe, nf);
+endp;
+
+// Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010)
+
+proc(3) = BNG_PANICnew(y, model, ic);
+    local dx, nf, fhat, Floads, ehat, e, e1, rho, v, t, n, boti, topi, rhoi, sigi, bw, j, u, k;
+    local x, w, alpha, omega2, sigma2, lambda2, lambda, phi4, rho1, s, temp, Pa, Pb, PMSB;
+    
+    dx = diff(y, 1);
+    x  =dx[2:rows(y), .];
+    
+    if model == 0;
+        x = x;
+    endif;
+    
+    if model == 1;
+        x = x - meanc(x)';
+    endif;
+    
+    nf = Fnumber(x, kmax, ic);
+    
+    // nf is selected with ICp2
+    { Fhat, Floads, ehat } = pca(x, nf[2]); 
+    
+    e = cumsumc(ehat);
+    { Pa, Pb, PMSB } = PaPbPMSB(e, model);
+    
+    retp(Pa, Pb, PMSB);
+endp;
+
+// Ze and Ze+ tests in Westerlund & Larsson (2009)
+
+proc(2) = JWL_PANICadj(y, model, ic);
+    local nf, Fhat, lambda, ehat, E, ADFe, lagp, eb, varB, Ze, aN, Ze_ba;
+    local lags, dx, x, de, de0, del, rho, djwj, wj;
+    
+    dx = diff(y, 1);
+    x = dx[2:T, .];
+    
+    if model == 0;
+        x = x;
+    endif;
+    
+    if model == 1;
+        x = x - meanc(x)';
+    endif;
+    
+    nf = Fnumber(x, kmax, ic);
+    
+    // nf is selected with ICp2
+    {Fhat, lambda, ehat} = pca(x, nf[2]);
+    e = cumsumc(ehat);
+    ADFe = zeros(N, 1);
+    lags = zeros(N, 1);
+    
+    for i(1, N, 1);
+        { ADFe[i], lags[i] } = ADF(e[., i], 0, pmax, 3);
+    endfor;
+    
+    an = zeros(n, 1);
+    
+    for i(1, N, 1);
+        an[i, 1] = lambda[i, .] * inv(lambda'lambda) * lambda[i, .]';
+    endfor;
+    
+    de = diff(e, 1);
+    de0 = vec(de[2:rows(de), .]);
+    del = vec(de[1:rows(de)-1, .]);
+    rho = inv(del'del) * (del'de0);
+    
+    djwj = -1.669 * ones(1, 1);
+    for j(1, 100, 1);
+        wj = 1.04605 - 5.54336 * (j/t) + 19.4018 * (j/t)^2-
+            52.384 * (j/t)^3 + 131.95 * (j/t)^4 - 317.697 * (j/t)^5;
+        djwj = djwj + (rho^j) * wj;
+    endfor;
+    /*
+    "i~lhat~AN~ty";;seqa(1,1,N)~lambda~an~ADFe;
+    "GM";;   gm;
+    "arhat";; arhat;
+    */
+    EB = -0.431;
+    varB = 0.929;
+    Ze = sqrt(N) * (meanc(ADFe) -EB)/sqrt(varB);
+    Ze_ba = Ze - djwj * sumc(aN)/(sqrt(varB) * sqrt(N));
+    
+    retp(Ze, Ze_ba);
+endp;
+
+
+// Pooled Pa, Pb, and PMSB tests in Westerlund & Reese (2015)
+proc(3) = JWR_PANICCA(y, model);
+    local dx, x, D, M, D1, Fp, Ci, vi, e, e1, rho, v, t, n, boti, topi, rhoi, sigi, bw, j, u, k;
+    local z, w, alpha, omega2, sigma2, lambda2, lambda, phi4, rho1, s, temp, Pa, Pb, PMSB;
+    
+    T = rows(y);
+    
+    // CA estimator of F and loadings
+    if model == 0;
+        M = eye(T - 1);
+    endif;
+    
+    if model == 1;
+        D = ones(T - 1, 1);
+        M = eye(T - 1) - D * inv(D'D) * D';
+    endif;
+    
+    dx = diff(y, 1);
+    x = dx[2:T, .];
+    z = x;
+    
+    Fp = M * meanc(z');
+    Ci = inv(Fp'Fp) * Fp' * z;
+    vi = z - Fp * Ci;
+    // end of CA estimator
+    
+    e = cumsumc(vi);
+    {Pa, Pb, PMSB} = PaPbPMSB(e, model);
+    retp(Pa, Pb, PMSB);
+endp;
+
+proc(3) = PaPbPMSB(e, model);
+    local e1, rho, t, n, rho1, s, Pa, Pb, temp, PMSB;
+    local sigma2, omega2, phi4, lambda2, lambda;
+    
+    // Bai0 0and Ng (2010, pp.1092)
+    {sigma2, omega2, lambda2} = _get_lrv(e, 0);
+    omega2 = meanc(omega2);
+    sigma2 = meanc(sigma2);
+    phi4 = meanc(omega2 .* omega2);
+    lambda = meanc(lambda2);
+    
+    e1 = lagn(e, 1);
+    e  = e[2:rows(e), .];
+    e1 = e1[2:rows(e1), .];
+    rho = tr(e1'e)/tr(e1'e1);
+    T = rows(e);
+    N = cols(e);
+    
+    // Intercept
+    if model == 0;  
+        rho1 = (tr(e1'e) - N * T * lambda)/tr(e1'e1);
+        s = sqrt(N) * T;
+        Pa = s * (rho1-1)/sqrt(2 * PHI4/(OMEGA2^2));
+        Pb = s * (rho1-1) * sqrt(tr(e1'e1)/s^2) * (OMEGA2/PHI4);
+        temp = (N*T^2)^-1 * (e'e);
+        PMSB = sqrt(N) * (tr(temp) - 1/2 *OMEGA2) /sqrt(1/3 *PHI4);
+    endif;
+    
+    // Intercept and trend
+    if model == 1; 
+        rho1 = rho + 3/T * SIGMA2/OMEGA2;
+        s = sqrt(N) * T;
+        Pa = s * (rho1 - 1)/sqrt(36/5 * PHI4 * SIGMA2^2/(OMEGA2^4));
+        Pb = s * (rho1 - 1) * sqrt(tr(e1'e1)/(s^2) * (5/6 * OMEGA2^3/(PHI4 * SIGMA2^2)));
+        temp = (N*T^2)^-1 * (e'e);
+        PMSB = sqrt(N) * (tr(temp) -1/6 * OMEGA2)/sqrt(1/45 * PHI4);
+    endif;
+    
+    retp(Pa, Pb, PMSB);
+endp;
+
+// Principal Component Analysis (Bai and Ng (2002), pp.198)
+proc(3) = pca(x, nf);
+    local t, n, eigval, eigvec, Fhat, lambda, ehat;
+    
+    T = rows(X);
+    N = cols(X);
+    
+    if T < N;
+        { eigval, eigvec } = eighv(x * x');
+        Fhat = sqrt(T) * eigvec[., T-nf+1:T];
+        lambda = inv(Fhat'Fhat) * Fhat' * X; //lambda=Fhat'X/T
+        ehat = X - Fhat * lambda;
+    endif;
+    
+    if T > N;
+        { eigval, eigvec } = eighv(x' * x);
+        lambda = sqrt(N) * eigvec[., N-nf+1:N];
+        Fhat = X * lambda/N;
+        ehat = X - Fhat * lambda';
+    endif;
+    
+    retp(Fhat, lambda, ehat);
+endp;
+
+
+// Estimate Number of Factors (Bai and Ng (2002), pp.199-201)
+proc(1) = Fnumber(X, kmax, ic);
+    local t, n, Fhat, lambda, e, sigma2, V, ICp, ICp1, ICp2;
+    
+    T = rows(X);
+    N = cols(X);
+    
+    { Fhat, lambda, e } = pca(X, kmax);
+    sigma2 = (N * T)^-1 * sumc(sumc(e.^2));
+    
+    V = zeros(kmax, 1);
+    ICp = zeros(kmax, 3);
+    
+    for k(1, kmax, 1);
+        {Fhat, lambda, e} = pca(X, k);
+        V[k] = sumc(sumc(e.^2))/(N * T);
+        
+        // PCp criterion 
+        if ic == 1; 
+            ICp[k, 1] = V[k] + k * sigma2 * (n + t)/(n * t) * ln((n * t)/(n + t));
+            ICp[k, 2] = V[k] + k * sigma2 * (n + t)/(n * t) * ln(minc(n|t));
+            ICp[k, 3] = V[k] + k * sigma2 * (ln(minc(n|t))/minc(n|t));
+        endif;
+        
+        // ICp criterion
+        if ic == 2; 
+            ICp[k, 1] = ln(V[k]) + k * (n + t)/(n * t) * ln((n * t)/(n + t));
+            ICp[k, 2] = ln(V[k]) + k * (n + t)/(n * t) * ln(minc(n|t));
+            ICp[k, 3] = ln(V[k]) + k * (ln(minc(n|t))/minc(n|t));
+        endif;
+        
+        // AIC criterion
+        if ic == 3;  
+            ICp[k, 1] = V[k] + k * sigma2 * (2/t);
+            ICp[k, 2] = V[k] + k * sigma2 * (2/n);
+            ICp[k, 3] = V[k] + k * sigma2 * (2 * (n+ t -k)/(n * t));
+        endif;
+        
+        // BIC  criterion
+        if ic == 4;  
+            ICp[k, 1] = V[k] + k * sigma2 * (ln(t)/t);
+            ICp[k, 2] = V[k] + k * sigma2 * (ln(n)/n);
+            ICp[k, 3] = V[k] + k * sigma2 * ((n + t - k) * ln(n * t)/(n * t));
+        endif;
+    endfor;
+    
+    ICp1 = minindc(ICp[., 1]);
+    ICp2 = minindc(ICp[., 2]);
+    retp(ICp1|ICp2);
+endp;
+
+
+// Estimates long-run variance with Bartlett in Bain & Ng (2010)
+proc(3) = _get_lrv(e, bw);
+    local e1, rho, v, t, n, boti, topi, rhoi, sigi, j, u;
+    local k, w, alpha, omega2, sigma2, temp, lambda2;
+    
+    e1 = lagn(e, 1);
+    e = e[2:rows(e), .];
+    e1 = e1[2:rows(e1), .];
+    
+    // rho from trace of matrix
+    rho = tr(e1'e)/tr(e1'e1);
+    v = e - e1 * rho;
+    T = rows(v);
+    N = cols(v);
+    
+    boti = zeros(N, 1);
+    topi = zeros(N, 1);
+    rhoi = zeros(N, 1);
+    sigi = zeros(N, 1);
+    
+    // automatic bandwidth selection
+    if bw == 0;  
+        
+        for i(1, N, 1);
+            rhoi[i] = v[1:T-1, i]/v[2:T, i];
+            u = v[2:T, i] - rhoi[i] * v[1:T-1, i];
+            sigi[i] = (u'u)/(T - 1);
+            topi[i] = 4 * (rhoi[i]^2) * sigi[i]^2/(((1 - rhoi[i])^6) * (1 + rhoi[i])^2);
+            boti[i] = sigi[i]^2/((1 - rhoi[i])^4);
+        endfor;
+        
+        alpha = sumc(topi)/sumc(boti);
+        k = ceil(1.1447 * (alpha * T)^(1/3));
+    elseif bw != 0;
+        k = bw;
+    endif;
+    
+    w = zeros(k, 1);
+    for j(1, k, 1);
+        w[j] = 1 - j/(k + 1);
+    endfor;
+    
+    omega2 = zeros(N, 1);
+    sigma2 = zeros(N, 1);
+    lambda2 = zeros(N, 1);
+    
+    for i(1, N, 1);
+        sigma2[i] = v[., i]' * v[., i]/T;
+        omega2[i] = sigma2[i];
+        lambda2[i] = 0;
+        
+        for j(1, k, 1);
+            temp = v[1:T-j-1,i ]' * v[j+1:T-1, i]/T;
+            omega2[i] = omega2[i] + 2 * w[j] * temp;
+            lambda2[i] = lambda2[i] + w[j] * temp;
+        endfor;
+        
+    endfor;
+    retp(sigma2, omega2, lambda2);
+endp;
+
+// computes trace of a matrix */
+proc (1) = tr(x);
+    retp(sumc(diag(x)));
+endp;

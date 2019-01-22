@@ -1,0 +1,290 @@
+
+
+/*
+**> gls
+**  Reference:
+**  Perron, P. and  Rodriguez, G. (2003).
+**  "GLS detrending, efficient unit root tests and structural change",
+**  Journal of Econometrics 115, 1–27.
+**
+**  Format:  {GLStau,p}         = DFGLS(y,model,pmax,ic);
+**           {Pt,lrv}           = ERSpt(y,model,varm);
+**           {Mza,Mzt,MSB,MPT}  = MGLS(y,model,varm);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = model with constant
+**                      2 = model with constant and trend
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**
+**           varm    -  Long-run consistent variance estimation method
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Qudratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
+**                      6 = Kurozumi with Bartlett
+**                      7 = Kurozumi with QS
+**                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**                      See:
+**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
+**
+**  Output:  GLStau  - DF-GLS statistic
+**			 p       - number of lags for DF-GLS statistic
+**			 PT      - Pt statistic
+**           Mza     - MZalpha statistic
+**           Mzt     - MZt statistic
+**           MSB     - MSB statistic
+**           MPT     - MPT statistic
+**           lrv     - Long-run variance
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/*17 July 2016*/
+
+proc(2) = DFGLS(y, model, pmax, ic);
+    local t, taup, aicp, sicp, tstatp, c, z;
+    local a, ya, za, bhat, ygls, dy, ly, dc, dt, n, k, LL;
+    local p,lmat,j,dep,y1,ldy,sbt,trnd,x,tau;
+    local b,e1,sig2,se,ssr;
+    
+    t = rows(y);
+    taup = zeros(pmax + 1, 1);
+    aicp = zeros(pmax + 1, 1);
+    sicp = zeros(pmax + 1, 1);
+    tstatp = zeros(pmax + 1, 1);
+    
+    if model == 1;
+        c = -7.00;
+        z = ones(t, 1);
+    endif;
+    
+    if model == 2;
+        c = -13.50;
+        z = ones(t, 1)~seqa(1, 1, t);
+    endif;
+    
+    a = 1 + c/t;
+    ya = zeros(t, 1);
+    za = zeros(t, cols(z));
+    ya[1:1, 1] = y[1:1, 1];
+    za[1:1, .] = z[1:1, .];
+    ya[2:t, 1] = y[2:t, 1]-a*y[1:t-1, 1];
+    za[2:t, .] = z[2:t, .] - a * z[1:t-1, .];
+    
+    // Constructing GLS detrended series
+    bhat = inv(za'za) * za'ya;
+    
+    // GLS trending data
+    ygls = y - z * bhat;      
+    
+    t = rows(ygls);
+    dy = diff(ygls, 1);
+    ly = lagn(ygls, 1);
+    
+    // Deterministic term=constant
+    dc = ones(t, 1);     
+    
+    // Deterministic term=trend
+    dt=seqa(1, 1, t);     
+    
+    p = 0;
+    do while p <= pmax;
+        lmat = zeros(rows(dy), p + 1);
+        j = 1;
+        
+        do while j <= p;
+            lmat[., j] = lagn(dy, j);
+            j = j + 1;
+        endo;
+        
+        dep = trimr(dy, p + 1, 0);
+        y1 = trimr(ly, p + 1, 0);
+        ldy = trimr(lmat, p + 1, 0);
+        sbt = trimr(dc, p + 1, 0);
+        trnd = trimr(dt, p + 1, 0);
+        
+        if p == 0;
+            x = y1;
+        elseif p > 0;
+            x = y1~ldy[., 1:p];
+        endif;
+        
+        {b, e1, sig2, se, ssr} = myols(dep, x);
+        taup[p+1] = b[1]/se[1];
+        
+        n = rows(x);
+        k = cols(x);
+        
+        // Log-likelihood
+        LL = -n/2 * (1 + ln(2 * pi) + ln(e1'e1/n));           
+        aicp[p+1] = (2 * k - 2 * LL)/n;
+        sicp[p+1] = (k * ln(n) - 2 * LL)/n;
+        tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
+        p = p + 1;
+    endo;
+    
+    p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
+    tau = taup[p];
+    
+    retp(tau, p - 1);
+endp;
+
+proc(2) = ERSpt(y, model, varm);
+    local t, dy, ly, dc, dt, dep, y1, sbt, trnd, x, tau, g0, lrv, l, bw, w;
+    local c, a, ya, za, ba, u, SSRa, SSR1, PT;
+    local b, e1, s2, se, ssr, z;
+    
+    t = rows(y);
+    dy = diff(y, 1);
+    ly = lagn(y, 1);
+    
+    // Deterministic term=constant
+    dc = ones(t, 1);  
+
+    // Deterministic term=trend
+    dt = seqa(1, 1, t);     
+    
+    if model == 1;
+        z = ones(t, 1);
+    endif;
+    
+    if model == 2;
+        z = ones(t, 1)~seqa(1, 1, t);
+    endif;
+    
+    dep = trimr(dy, 1, 0);
+    y1 = trimr(ly, 1, 0);
+    x = trimr(z, 1, 0);
+    
+    if model == 1;
+        x = y1~x;
+    endif;
+    
+    if model == 2;
+        x = y1~x;
+    endif;
+    
+    {b, e1, s2, se, ssr} = myols(dep, x);
+    tau = b[1]/se[1];
+    t = rows(e1);
+    
+    // Residual variance as in Eviews
+    g0 = (t - cols(x)) * s2 * 1/t;        
+    
+    // Long-run variance with Barlett
+    if varm == 1;
+        lrv = ssr/t;
+    elseif varm == 2;
+        lrv = bartlett(e1);
+    elseif varm == 3;
+        lrv = qs(e1);
+    elseif varm == 4;
+        lrv = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 5;
+        lrv = spc_qs(e1, round(4 * (T/100)^(2/9)));
+    elseif varm == 6;
+        lrv = kurozumi_bartlett(e1);
+    elseif varm == 7;
+        lrv = kurozumi_qs(e1);
+    endif;
+    
+    t = rows(y);
+    
+    if model == 1;
+        c = -7.00;
+        z = ones(t, 1);
+    endif;
+    
+    if model == 2;
+        c = -13.50;
+        z = ones(t, 1)~seqa(1, 1, t);
+    endif;
+    
+    // Estimation on transformed data
+    a = 1 + c/t;
+    ya = zeros(t, 1);
+    za = zeros(t, cols(z));
+    ya[1:1, 1] = y[1:1, 1];
+    za[1:1, .] = z[1:1, .];
+    ya[2:t,1] = y[2:t, 1] - a * y[1:t-1, 1];
+    za[2:t,.] = z[2:t, .] - a * z[1:t-1, .];
+    ba = ya/za;
+    u = ya - za * ba;
+    SSRa = u'u;
+    
+    // Estimation on untransformed data
+    a = 1;
+    ya = zeros(t, 1);
+    za = zeros(t, cols(z));
+    ya[1:1, 1] = y[1:1, 1];
+    za[1:1, .] = z[1:1, .];
+    ya[2:t, 1] = y[2:t, 1] - a * y[1:t-1, 1];
+    za[2:t, .] = z[2:t, .] - a * z[1:t-1, .];
+    ba = ya/za;
+    u = ya - za * ba;
+    SSR1 = u'u;
+    
+    // Point optimal test
+    PT = (SSRa - (1 + c/t) * SSR1)/lrv;
+    retp(PT, lrv);
+endp;
+
+proc(4) = MGLS(y, model, varm);
+    local t, c, a, ya, za, pt, fo, bhat, z;
+    local ygls, yd, tt, k, mza, msb, mzt, mpt;
+    
+    t = rows(y);
+    
+    if model == 1;
+        c = -7.00;
+        z = ones(t, 1);
+    endif;
+    
+    if model == 2;
+        c = -13.50;
+        z = ones(t, 1)~seqa(1, 1, t);
+    endif;
+    
+    a = 1 + c/t;
+    ya = zeros(t, 1);
+    za = zeros(t, cols(z));
+    ya[1:1, 1] = y[1:1, 1];
+    za[1:1, .] = z[1:1, .];
+    ya[2:t, 1] = y[2:t, 1] - a * y[1:t-1, 1];
+    za[2:t, .] = z[2:t, .] - a * z[1:t-1, .];
+    
+    {PT, fo} = ERSpt(y, model, varm);
+    
+    // constructing GLS detrended series
+    bhat = inv(za'za) * za'ya;
+    
+    // GLS trending data
+    ygls = y - z * bhat;                        
+    yd = lagn(ygls, 1);
+    yd = trimr(yd, 1, 0);
+    tt = rows(yd);
+    K = sumc(yd^2)/tt^2;
+    MZa = (tt^-1 * ygls[t]^2 - fo)/(2 * k);
+    MSB = (k/fo)^(1/2);
+    MZt = MZa * MSB;
+    if model == 1;
+        MPT = (c^2 * k - c * t^-1 * ygls[t]^2)/fo;
+    endif;
+    
+    if model == 2;
+        MPT = (c^2 * k + (1 - c) * t^-1 * ygls[t]^2)/fo;
+    endif;
+    
+    retp(Mza, Mzt, MSB, MPT);
+endp;
