@@ -1,5 +1,5 @@
 # GAUSS Time Series and Panel data tests
-Econometric package for Time Series and Panel Data Methods in unit root, co-integration & causality tests.
+Econometric package for Time Series and Panel Data Methods covering unit root, co-integration & causality tests.
 
 The `tspdlib` library is written for GAUSS by Saban Nazlioglu (snazlioglu@pau.edu.tr), Department of International Trade & Finance, Pamukkale University-Türkiye.
 
