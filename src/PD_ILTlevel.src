@@ -19,6 +19,7 @@
 **			 trim    - 	Trimming rate
 **                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
 **      	 nbreak  - 	number of breaks are allowed
+**                      0= no break test
 **                      1= one break  test
 **                      2= two breaks test
 **
@@ -45,6 +46,18 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     t  = rows(y);
     Nlm = zeros(N, 1);
     Np = zeros(N, 1);
+
+    if nbreak == 0;
+        Ntb = zeros(N, 1);
+        
+        for i(1, N, 1);
+            {LM, p} = LMtest(y[., i], pmax, ic);
+            // i~LM~tb1~p;
+            Nlm[i] = LM;
+            Np[i]  = p;
+        endfor;
+        
+    endif;
     
     if nbreak == 1;
         Ntb = zeros(N, 1);
@@ -83,7 +96,7 @@ proc(2) = _get_ILTmoments(T, N, Nlm, Np);
     local crit, row_n, panel_k, meanp, varp, mm, optk, ct1, ct2, ct;
     
     // Reading critical values
-    crit = loadd(__FILE_DIR $+ "ILTlevel_crit.dat");
+    load crit[27, 19] = ILTlevel_crit.dat;
     
     // Row location 
     if T < 10;

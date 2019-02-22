@@ -17,7 +17,7 @@ y = loadd(__FILE_DIR $+ "PDe.dat");
 ** Set maximum number of lags for ds
 ** 0 = no lags
 */
-pmax = 4;                
+pmax = 5;                
 
 /*
 ** Information Criterion: 
@@ -25,11 +25,22 @@ pmax = 4;
 ** 2=Schwarz; 
 ** 3=t-stat sign.
 */
-ic   = 1;  
+ic   = 3;  
 
 // Trimming rate
 trimm = 0.10;  
 
+// Run with no-break
+nbreak=0;
+
+// Call PD LM without break
+{ Nlm, Ntb, Np, PDlm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
+
+// Print results
+seqa(1, 1, cols(y))~Nlm~Np;
+    PDlm;
+    pval;
+    
 // Run with one break
 nbreak=1;
 
