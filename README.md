@@ -1,14 +1,14 @@
 # GAUSS Time Series and Panel data tests
 Econometric package for Time Series and Panel Data Methods covering unit root, co-integration & causality tests. Extensive coverage of testing in the presence of [structural breaks](https://www.aptech.com/structural-breaks/).
 
-The `tspdlib` library is written for GAUSS by Saban Nazlioglu (snazlioglu@pau.edu.tr), Department of International Trade & Finance, Pamukkale University-Türkiye.
+The `tspdlib` library is written for GAUSS by [Saban Nazlioglu](mailto:snazlioglu@pau.edu.tr), Department of International Trade & Finance, Pamukkale University-Türkiye.
 
 ## Getting Started
 ### Prerequisites
 The program files require a working copy of **GAUSS 19+**. Many tests can be run on earlier versions with some small revisions and users should contact erica@aptech.com for a modified library for earlier **GAUSS** versions.
 
 ### Installing
-The GAUSS Time Series and Panel data tests can be easily installed using the **GAUSS Application Installer**, as shown below:
+The GAUSS Time Series and Panel data tests can be easily installed using the [**GAUSS Application Installer**](https://www.aptech.com/support/installation/using-the-applications-installer-wizard/), as shown below:
 
 1. Download the zipped folder `tspdlib.zip`.
 2. Select **Tools > Install Application** from the main **GAUSS** menu.  
@@ -35,7 +35,7 @@ You can access these source codes through the library tool by expanding the tspd
 The author makes no performance guarantees. The `tspdlib` is available for public non-commercial use only.
 
 ## Author
-For any bugs, please send e-mail to Saban Nazlioglu at snazlioglu@pau.edu.tr or Erica Clower at erica@aptech.com.
+For any bugs, please send e-mail to [Saban Nazlioglu](mailto:snazlioglu@pau.edu.tr) or [Erica Clower](mailto:erica@aptech.com).
 
 ## Supported
 ### Time Series Unit Root Tests
@@ -66,3 +66,19 @@ For any bugs, please send e-mail to Saban Nazlioglu at snazlioglu@pau.edu.tr or 
 |pd_iltlevel|[Im, K., Lee, J., Tieslau, M. (2005)](https://pdfs.semanticscholar.org/794e/035e2af830b66f5d229cd444cbc8b34c3d83.pdf). Panel LM Unit-root Tests with Level Shifts, Oxford Bulletin of Economics and Statistics 67, 393–419.|
 |pd_lttrend|[Lee, J., & Tieslau, M. (2017)](https://www.sciencedirect.com/science/article/pii/S0264999317316358). Panel LM unit root tests with level and trend shifts. Economic Modelling.|
 |pd_nkarul|[Nazlioglu, S., & Karul, C. (2017)](https://econpapers.repec.org/article/eeeecmode/v_3a61_3ay_3a2017_3ai_3ac_3ap_3a181-192.htm). A panel stationarity test with gradual structural shifts: Re-investigate the international commodity price shocks. Economic Modelling, 61, 181-192.|
+
+[Aptech Systems, Inc](https://www.aptech.com/)  
+[![alt text][1.1]][1]
+[![alt text][2.1]][2]
+[![alt text][3.1]][3]
+
+<!-- links to social media icons -->
+[1.1]: https://www.aptech.com/wp-content/uploads/2019/02/fb.png (Visit Aptech Facebook)
+[2.1]: https://www.aptech.com/wp-content/uploads/2019/02/gh.png (Aptech Github)
+[3.1]: https://www.aptech.com/wp-content/uploads/2019/02/li.png (Find us on LinkedIn)
+
+<!-- links to your social media accounts -->
+[1]: https://www.facebook.com/GAUSSAptech/
+[2]: https://github.com/aptech
+[3]: https://linkedin.com/in/ericaclower
+<!-- Please don't remove this: Grab your social icons from https://github.com/carlsednaoui/gitsocial -->
