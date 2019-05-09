@@ -25,6 +25,12 @@ The GAUSS Time Series and Panel data tests can be easily installed using the **G
 ### Examples
 After installing the library the example files **examples > PDuroot.e** and **examples > TSuroot.e** will be found in your **GAUSS** home directory in the directory **pkgs > tspdlib >examples**. The example uses **GAUSS** datasets included in the **pkgs > tspdlib >examples** directory.
 
+### Documentation
+We have not yet developed detailed documentation about the library. However, you can find more information about the functions by looking at the function headers in the src codes.
+
+![accessing GAUSS source files](images/tspdlib_src_file.png)
+
+You can access these source codes through the library tool by expanding the tspdlib.lcg menu and clicking on the file name. The file will open in the program editor and you will be able to view the headers for each specific function.
 ## License
 The author makes no performance guarantees. The `tspdlib` is available for public non-commercial use only.
 
