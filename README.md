@@ -10,7 +10,7 @@ The program files require a working copy of **GAUSS 19+**. Many tests can be run
 ### Installing
 The GAUSS Time Series and Panel data tests can be easily installed using the [**GAUSS Application Installer**](https://www.aptech.com/support/installation/using-the-applications-installer-wizard/), as shown below:
 
-1. Download the zipped folder `tspdlib.zip`.
+1. Download the zipped folder `tspdlib.zip` from the [tspdlib release page](https://github.com/aptech/tspdlib/releases).
 2. Select **Tools > Install Application** from the main **GAUSS** menu.  
 ![install wizard](images/install_application.png)  
 3. Follow the installer prompts, making sure to navigate to the downloaded `tspdlib.zip`.
