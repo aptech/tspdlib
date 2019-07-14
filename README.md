@@ -20,7 +20,7 @@ The GAUSS Time Series and Panel data tests can be easily installed using the [**
   *  Enter `library tspdlib` in the program input/output window.
   *  Put the line `library tspdlib;` at the beginning of your program files.
 
-  Note: I have provided the individual files found in `tspdlib.zip` for examination and review. However, installation should always be done using the `tspdlib.zip` folder and the **GAUSS Application Installer**.
+>  Note: I have provided the individual files found in [`tspdlib.zip`](https://github.com/aptech/tspdlib/releases) for examination and review. However, installation should always be done using the [`tspdlib.zip` folder from the release page](https://github.com/aptech/tspdlib/releases) and the [**GAUSS Application Installer**](https://www.aptech.com/support/installation/using-the-applications-installer-wizard/).
 
 ### Examples
 After installing the library the example files **examples > PDuroot.e** and **examples > TSuroot.e** will be found in your **GAUSS** home directory in the directory **pkgs > tspdlib >examples**. The example uses **GAUSS** datasets included in the **pkgs > tspdlib >examples** directory.
@@ -31,6 +31,7 @@ We have not yet developed detailed documentation about the library. However, you
 ![accessing GAUSS source files](images/tspdlib_src_file.png)
 
 You can access these source codes through the library tool by expanding the tspdlib.lcg menu and clicking on the file name. The file will open in the program editor and you will be able to view the headers for each specific function.
+
 ## License
 The author makes no performance guarantees. The `tspdlib` is available for public non-commercial use only.
 
