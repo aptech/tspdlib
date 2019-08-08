@@ -56,7 +56,7 @@ format /m1 /rd 8,4;
 "  MPT          ";;MPT;
 
 if model==1; "--------Model A: Break in level        -----"; endif;
-if model==2; "--------Model A: Break in level & trend-----"; endif;
+if model==2; "--------Model C: Break in level & trend-----"; endif;
     
 "One break ADF test (Zivot & Andrews, 1992)";
     {ADF_min,tb1,p,cv}=ADF_1break(y,model,pmax,ic,trimm);
