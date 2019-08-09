@@ -6,7 +6,7 @@ library tspdlib;
 y = loadd(__FILE_DIR $+ "TSe.dat");
 
 // Trimming rate
-trimm= 0.10;             
+//trimm= 0.10;             
 
 format /m1 /rd 8,4;
 // Iterate through LR variance options
@@ -50,22 +50,20 @@ for i(1, 7, 1);
         "--------Model C: Break in level & trend-----";
     endif;
     
-    "One break KPSS test (Kurozumi, 2002)";
-    { KPSS, tb1, lambda, cv } = KPSS_1break(y, model, varm, trimm);
-    "       KPSS test       ";;
-    KPSS;
-    "       Break date      ";;
-    tb1;
-    "       Fraction        ";;
-    lambda;
-    "       CV (10%, 5%, 1%)";;
-    cv;
-    "";
+    "Two breaks KPSS test (CiS & Sanso, 2007)";
+    { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model, varm);
+
+    "       KPSS test       ";;KPSS;
+    "       Break dates     ";;tb1~tb2;
+    "       Fraction        ";;tb1/rows(y)~tb2/rows(y);
+    "       CV (5%)         ";;cv; 
+    ""; 
     
     /*
     ** 1=Model A: break in level
     ** 2=Model C: break in level and trend
     */
+    
     model = 2;
     
     if model == 1;
@@ -75,16 +73,13 @@ for i(1, 7, 1);
         "--------Model C: Break in level & trend-----";
     endif;
     
-    "One break KPSS test (Kurozumi, 2002)";
-    { KPSS, tb1, lambda, cv } = KPSS_1break(y, model, varm, trimm);
-    "       KPSS test       ";;
-    KPSS;
-    "       Break date      ";;
-    tb1;
-    "       Fraction        ";;
-    lambda;
-    "       CV (10%, 5%, 1%)";;
-    cv;
-    "";
+    "Two breaks KPSS test (CiS & Sanso, 2007)";
+    { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model, varm);
+
+    "       KPSS test       ";;KPSS;
+    "       Break dates     ";;tb1~tb2;
+    "       Fraction        ";;tb1/rows(y)~tb2/rows(y);
+    "       CV (5%)         ";;cv; 
+    ""; 
 endfor;
 

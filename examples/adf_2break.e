@@ -9,10 +9,7 @@ y = loadd(__FILE_DIR $+ "TSe.dat");
 ** Maximum number of lags for ds; 
 ** 0=no lags
 */
-pmax =12;                 
-
-// Maximum number of Fourier
-fmax = 3;        
+pmax = 12;                 
 
 /*
 ** Information Criterion: 
@@ -20,7 +17,7 @@ fmax = 3;
 ** 2=Schwarz; 
 ** 3=t-stat sign.
 */
-ic   = 3;                 
+ic = 3;                 
 
 // Trimming rate
 trimm = 0.10;             

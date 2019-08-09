@@ -5,7 +5,6 @@ library tspdlib;
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
 
-
 /*
 ** Maximum number of lags for ds; 
 ** 0=no lags

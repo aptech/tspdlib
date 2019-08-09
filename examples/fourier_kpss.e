@@ -5,13 +5,29 @@ library tspdlib;
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
 
-// Trimming rate
-trimm= 0.10;             
+/*
+** Maximum number of lags for ds;
+** 0=no lags
+*/
+pmax = 12;
+
+/*
+** Information Criterion:
+** 1=Akaike;
+** 2=Schwarz;
+** 3=t-stat sign.
+*/
+ic = 3;
+
+// Maximum number of Fourier
+fmax = 3;
 
 format /m1 /rd 8,4;
-// Iterate through LR variance options
 
+// Loop through long-run variance options
 for i(1, 7, 1);
+    
+    // Set long run variance method
     varm = i;
     
     print "LR Variance estimation method";
@@ -38,8 +54,9 @@ for i(1, 7, 1);
     endif;
     
     /*
-    ** 1=Model A: break in level
-    ** 2=Model C: break in level and trend
+    ** 0 = No deterministic component
+    ** 1 = With constant
+    ** 2 = With constant and trend
     */
     model = 1;
     
@@ -50,21 +67,21 @@ for i(1, 7, 1);
         "--------Model C: Break in level & trend-----";
     endif;
     
-    "One break KPSS test (Kurozumi, 2002)";
-    { KPSS, tb1, lambda, cv } = KPSS_1break(y, model, varm, trimm);
-    "       KPSS test       ";;
+    "Fourier KPSS test (Becker, Enders & Lee, 2006)";
+    k = Fourier(y, model, fmax);
+    { KPSS, cv } = Fourier_KPSS(y, model, k, varm);
+    "       KPSS-stat       ";;
     KPSS;
-    "       Break date      ";;
-    tb1;
-    "       Fraction        ";;
-    lambda;
-    "       CV (10%, 5%, 1%)";;
+    "       Fourier         ";;
+    k;
+    "       CV (1%, 5%, 10%)";;
     cv;
     "";
     
     /*
-    ** 1=Model A: break in level
-    ** 2=Model C: break in level and trend
+    ** 0 = No deterministic component
+    ** 1 = With constant
+    ** 2 = With constant and trend
     */
     model = 2;
     
@@ -75,16 +92,16 @@ for i(1, 7, 1);
         "--------Model C: Break in level & trend-----";
     endif;
     
-    "One break KPSS test (Kurozumi, 2002)";
-    { KPSS, tb1, lambda, cv } = KPSS_1break(y, model, varm, trimm);
-    "       KPSS test       ";;
+    "Fourier KPSS test (Becker, Enders & Lee, 2006)";
+    k = Fourier(y, model, fmax);
+    { KPSS, cv } = Fourier_KPSS(y, model, k, varm);
+    "       KPSS-stat       ";;
     KPSS;
-    "       Break date      ";;
-    tb1;
-    "       Fraction        ";;
-    lambda;
-    "       CV (10%, 5%, 1%)";;
+    "       Fourier         ";;
+    k;
+    "       CV (1%, 5%, 10%)";;
     cv;
     "";
+    
 endfor;
 

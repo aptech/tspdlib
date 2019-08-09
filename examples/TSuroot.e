@@ -161,7 +161,7 @@ if model==2; "--------Model C: Break in level & trend-----"; endif;
 "Quantile-ADF";
 tau   = 0.1;
 _print= "true";
-{stat} = QRADF(y,model,pmax,ic,tau,_print); 
+{stat} = QRADF(y, model, pmax, ic, tau, _print); 
 
 
     
