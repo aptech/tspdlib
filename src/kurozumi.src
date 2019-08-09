@@ -41,7 +41,7 @@
 
 /*13 May 2016*/
 
-proc(4) = KPSS_1break(y, model, varm);
+proc(4) = KPSS_1break(y, model, varm, trimm);
     local t, ssr_min, tb1_min, KPSS_min;
     local t1, t2, tb1, tb2, dc, dt, du1, dt1, z;
     local b, e1, ssr, St, lrv, vare, l, bw, w, KPSS, crit, TBi;
