@@ -28,8 +28,8 @@
 **           JWL_PANICadj : Westerlund and Larsson (2009).
 **           JWR_PANICCA  : Reese and Westerlund (2016)
 **
-**  Format:  {ADFe,pval,lags,Pe,nf} = BNG_PANIC(y,model,ic);
-**           {Pa_pc,Pb_pc,PMSB_pc}  = BNG_PANICnew(y,model,ic);
+**  Format:  {ADFe,pval,lags,Pe,nf} = BNG_PANIC(y,kmax, model,ic);
+**           {Pa_pc,Pb_pc,PMSB_pc}  = BNG_PANICnew(y,kmax, model,ic);
 **           {Ze,Ze_ba}             = JWL_PANICadj(y,model,ic);
 **           {Pa_ca,Pb_ca,PMSB_ca}  = JWR_PANICCA(y,model);
 **
@@ -70,7 +70,7 @@
 #include panel.dat  /* for p-vals */
 
 /*Pe test on ADF p-values in Bai & Ng (2004)*/
-proc(5) = BNG_PANIC(y, model, ic);
+proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
     local dx, x, e, t, n, nf, Fhat, lambda, ehat, ADFe, lags, pval, par, qval, j, Pe;
     
     
@@ -119,7 +119,7 @@ endp;
 
 // Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010)
 
-proc(3) = BNG_PANICnew(y, model, ic);
+proc(3) = BNG_PANICnew(y, kmax, model, ic);
     local dx, nf, fhat, Floads, ehat, e, e1, rho, v, t, n, boti, topi, rhoi, sigi, bw, j, u, k;
     local x, w, alpha, omega2, sigma2, lambda2, lambda, phi4, rho1, s, temp, Pa, Pb, PMSB;
     
@@ -147,7 +147,7 @@ endp;
 
 // Ze and Ze+ tests in Westerlund & Larsson (2009)
 
-proc(2) = JWL_PANICadj(y, model, ic);
+proc(2) = JWL_PANICadj(y, pmax, kmax, model, ic);
     local nf, Fhat, lambda, ehat, E, ADFe, lagp, eb, varB, Ze, aN, Ze_ba;
     local lags, dx, x, de, de0, del, rho, djwj, wj;
     
