@@ -1,0 +1,26 @@
+Change log:
+1. BNG_PANICnew model inputs changed to 1 for intercept, 2 for intercept and trend.
+2. Change outputs from adf procedure to include tstat, p-value, and critical value.
+3. Add critical values to output from dfgls procedure.
+4. Add critical values to output from erspt procedure.
+5. Add bandwidth length to required inputs from erspt procedure.
+6. Add bandwidth length to required inputs for Fourier_kpss procedure.
+7. JWL_panic model inputs changed to 1 for intercept, 2 for intercept and trend.
+8. Add bandwidth length for spectral window to required inputs for kpss_1break and kpss_2break procedures. 
+9. Add bandwidth length for spectral window to required inputs for mgls procedure. 
+10. Add critical values to output from mgls procedure.
+11. Add bandwidth length for spectral window to required inputs for pp procedure. 
+12. Add critical values to output from pp procedure.
+13. Add the following functions:
+    - coint_cissano
+    - coint_egranger
+    - coint_ghansen
+    - coint_hatemiJ
+    - coint_shin
+    - coint_tsongetal
+    - PDcaus_Fisher
+    - PDcaus_SURwald
+    - PDcaus_Zhnc
+    - PD_cips
+    - GCtest
+    
