@@ -17,10 +17,10 @@ T = rows(data);
 ** 2=Schwarz; 
 ** 3=t-stat sign.
 */
-ic   = 2; 
+ic = 2; 
 
 //Maximum number of lags 
-pmax =12;  
+pmax = 12;  
 
 // Trimming rate
 trimm= 0.10;             

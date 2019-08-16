@@ -12,7 +12,7 @@ x = data[.,2:cols(data)];
 T = rows(data);
 
 //Maximum number of lags 
-pmax =12;  
+pmax = 12;  
 
 // Trimming rate
 trimm = 0.10;             

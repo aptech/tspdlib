@@ -26,10 +26,8 @@ ic = 3;
 // Trimming rate
 trimm = 0.10;
 
-
-
 // n=Number of single frequency
-k  = 1;
+k = 1;
 
 // Iterate through LR variance options
 for i(1, 7, 1);

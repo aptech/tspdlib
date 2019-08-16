@@ -32,7 +32,7 @@ model = 0;
     "";
     
 "-----------Constant-------------------------------------";
-model=1;
+model = 1;
   
     { Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model, bwl, varm);
 
@@ -43,7 +43,7 @@ model=1;
     "";
     
 "-----------Constant and Trend---------------------------";
-model=2;
+model = 2;
   
     { Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model, bwl, varm);
 

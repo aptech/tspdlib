@@ -45,7 +45,7 @@ model = 1;
     
 
 "-----------Constant and Trend---------------------------";
-model=  2;
+model = 2;
    { CIols, CIdols, cv} = coint_shin(y, x, model, bwl, varm, q);
 
     "    Test         Statistic  CV(1%, 5%, 10%)";

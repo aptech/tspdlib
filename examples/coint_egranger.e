@@ -15,10 +15,10 @@ x = data[.,2:cols(data)];
 ** 2=Schwarz; 
 ** 3=t-stat sign.
 */
-ic   = 2; 
+ic = 2; 
 
 //Maximum number of lags 
-pmax =12;  
+pmax = 12;  
 
 format/m1/rd 8,3;
 
