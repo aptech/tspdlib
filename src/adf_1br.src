@@ -1,6 +1,6 @@
 
 /*
-**> zandrews
+**> adf_1br
 **  Reference:
 **  Zivot,E. and Andrews, W.K. (1992),
 **  "Further Evidence on the Great Crasch, the Oil-Price Shokc, and the Unit-Root Hypothesis"
@@ -17,8 +17,7 @@
 **                      2=Schwarz
 **                      3=t-stat significance
 **			 trim    - 	Trimming rate
-**                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
-**           _print  -  print option "true" for printing results
+**                      10% in ZA (1992) and LS (2003).
 **
 **  Output:  tstat   - minimum test statistic
 **			 tb      - location of break

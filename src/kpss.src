@@ -1,0 +1,81 @@
+
+
+/*
+**> kpss
+**  Kwiatkowski, D., Phillips, P. C., Schmidt, P., & Shin, Y. (1992). 
+**  Testing the null hypothesis of stationarity against the alternative of a unit root: 
+**  How sure are we that economic time series have a unit root?. 
+**  Journal of econometrics, 54(1-3), 159-178.
+**
+**  Format:  {kpss, cv} = LMkpss(y, model, l, varm);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = model with constant
+**                      2 = model with constant and trend
+**           l       -  Bandwidth for spectral window
+**           varm    -  Long-run consistent variance estimation method
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Qudratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
+**                      6 = Kurozumi with Bartlett
+**                      7 = Kurozumi with QS
+**                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**                      See:
+**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
+**
+**  Output:  kpss    -  KPSS stat for stationarity
+**           cv      -  1, 5, and 10 percent critical values
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+proc(2) = LMkpss(y, model, l, varm);
+   local t, z, s, lrv, KPSS;
+   local b, e1, sig2, se, ssr;
+   local bw, w, cv;
+   
+   t = rows(y);
+    
+   if model == 1; z = ones(t,1);              endif;
+   if model == 2; z = ones(t,1)~seqa(1,1,t);  endif;
+        
+   {b,e1,sig2,se,ssr} = myols(y,z);
+       
+   S = cumsumc(e1);                /*partial sum of residuals*/
+    
+   if varm == 1;
+        lrv = ssr/t;
+   elseif varm == 2;
+        lrv = bartlett(e1,l);
+   elseif varm == 3;
+        lrv = qs(e1,l);
+   elseif varm == 4;
+        lrv = spc_bartlett(e1,l);
+   elseif varm == 5;
+        lrv = spc_qs(e1,l);
+   elseif varm == 6;
+        lrv = kurozumi_bartlett(e1);
+   elseif varm == 7;
+        lrv = kurozumi_qs(e1);
+    endif;
+    
+   kpss = sumc(s.*s)/(t^2*lrv);
+   
+    if model == 1;
+       cv     = 0.739 ~ 0.463 ~ 0.347 ;
+    elseif model == 2;
+       cv     = 0.216 ~ 0.146 ~ 0.119 ;
+    endif;
+    
+retp(kpss, cv);
+endp;
+
+

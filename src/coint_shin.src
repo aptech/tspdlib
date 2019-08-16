@@ -1,0 +1,138 @@
+
+/*
+**  coint_shin
+**  Reference:
+**  Shin, Y. (1994). 
+**  "A Residual-Based Test of the Null of Cointegration against 
+**  the Alternative of No Cointegration". 
+**  Econometric Theory, 10(1), 91-115.
+**
+**
+**  Format:  {CIols,CIdols,cv}  = coint_shin(y, x, model, varm, q);
+**
+**           
+**  Input:   Y	     -  Nx1 matrix, dependent variable
+**           X       -  NxK matrix, independent variables
+**           k       -  Columns of x (upper bound is 4)      
+**           model   - 	0 = none
+**                      1 = constant
+**                      2 = constant & trend
+**         varm    -    Long-run consistent variance estimation method for PP-baed test
+**                      1 = iid; 
+**                      2 = Bartlett 
+**                      3 = Qudratic Spectral (QS); 
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005) 
+**                      5 = SPC with QS; 
+**                      6 = Kurozumi with Bartlett
+**                      7 = Kurozumi with QS
+**                      Updated from Carrion-i-Silvestre & Sanso (2006) GAUSS codes.
+**                      See:
+**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006). 
+**                      A guide to the computation of stationarity tests. 
+**                      Empirical Economics, 31(2), 433.           
+**              q   -   Number of leads and lags for DOLS estimation
+**                      Required for:
+**                      Shin (1994)                      
+**                      Carrion-i-Silvestre & Sanso (2006). 
+**                      Tsong et al. (2016)
+**
+**
+**  Output: CIols   -   CI  test based on OLS estimation
+**          CIdols  -   CI* test based on DOLS estimation
+**	    cv      -   1%, 5%, 10% critical values for the chosen model 
+**
+**  Author: Saban Nazlioglu
+        -- The author makes no performance guarantees.
+        -- for public non-commercial use only.
+        -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+*/
+
+
+/*Procedures*/
+
+proc(3)=coint_shin(y,x,model,varm,q);
+   local n, z, b1, e1, ssr1, St1, lrv1, C1;
+   local dx, dx_leads, dx_lags, xdols, ydols, zdols;
+   local b2, e2, ssr2, St2, lrv2, C2, k, cv;
+    
+     n = rows(y);
+     if model==0; z=x;                         endif;
+     if model==1; z=ones(n,1)~x;               endif;
+     if model==2; z=ones(n,1)~seqa(1,1,n)~x;   endif;
+    
+    
+     // OLS estimation
+     b1  = y/z;     
+     e1  = y - z * b1;  
+     ssr1= e1'e1;  
+     St1 = cumsumc(e1);     
+        
+     // DOLS estimation
+     dx = diff(x,1);
+            {dx_leads,dx_lags}=_get_LeadsLags(dx,q);
+     xdols = z~dx_leads~dx~dx_lags;
+     ydols = trimr(y,q+1,q);
+     zdols = trimr(xdols,q+1,q);
+        
+     b2  = ydols/zdols;     
+     e2  = ydols - zdols * b2;  
+     ssr2= e2'e2;  
+     St2 = cumsumc(e2);
+        
+     if varm == 1;
+        lrv1 = ssr1/rows(e1,bwl);
+        lrv2 = ssr2/rows(e2,bwl);
+     elseif varm == 2;
+        lrv1 = bartlett(e1,bwl);
+        lrv2 = bartlett(e2,bwl);
+     elseif varm == 3;
+        lrv1 = qs(e1,bwl);
+        lrv2 = qs(e2,bwl);
+     elseif varm == 4;
+        lrv1 = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
+        lrv2 = spc_bartlett(e2, round(4 * (T/100)^(2/9)));
+     elseif varm == 5;
+        lrv1 = spc_qs(e1, round(4 * (T/100)^(2/9)));
+        lrv2 = spc_qs(e2, round(4 * (T/100)^(2/9)));
+     elseif varm == 6;
+        lrv1 = kurozumi_bartlett(e1);
+        lrv2 = kurozumi_bartlett(e2);            
+     elseif varm == 7;
+        lrv1 = kurozumi_qs(e1);
+        lrv2 = kurozumi_qs(e2);            
+     endif;
+     
+     // Co-integration test based on OLS
+     C1 = T^(-2) * (St1'St1)/lrv1;  
+
+     // Co-integration test based on DOLS
+     C2 = T^(-2) * (St2'St2)/lrv2;  
+
+     // Critical values	
+     k=cols(x);
+     if model==0;      //1%    5%     10%
+        if k==1; cv = 2.126|1.199|0.841; endif;
+        if k==2; cv = 1.623|0.895|0.624; endif;
+        if k==3; cv = 1.305|0.682|0.475; endif; 
+        if k==4; cv = 1.003|0.537|0.374; endif; 
+        if k==5; cv = 0.781|0.433|0.307; endif;
+     endif;
+     
+     if model==1;     
+        if k==1; cv = 0.533|0.314|0.231; endif;
+        if k==2; cv = 0.380|0.221|0.163; endif;
+        if k==3; cv = 0.271|0.159|0.121; endif;
+        if k==4; cv = 0.208|0.121|0.094; endif;
+        if k==5; cv = 0.158|0.097|0.075; endif;
+     endif;
+
+     if model==2;     
+        if k==1; cv = 0.184|0.121|0.097; endif;
+        if k==2; cv = 0.150|0.101|0.081; endif;
+        if k==3; cv = 0.126|0.085|0.069; endif;
+        if k==4; cv = 0.109|0.073|0.056; endif;
+        if k==5; cv = 0.087|0.061|0.050; endif;
+     endif;
+     
+retp(C1, C2, cv);
+endp;

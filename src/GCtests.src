@@ -1,0 +1,463 @@
+/*
+**> GCtests
+**  References:
+**  Granger, C.W.J., 1969. 
+**  Investigating causal relations by econometric models and cross-spectral methods.
+**  Econometrica 37, 424–438.
+
+**  Toda, H.Y.,Yamamoto, T., 1995. 
+**  Statistical inference in vector autoregression with possibly integrated processes. 
+**  Journal of Econometrics 66,225–250.
+
+**  Enders, W., Jones, P., 2015. 
+**  Grain prices, oil prices, and multiple smooth breaks in a VAR. 
+**  Studuies on Nonlinear Dynamics and Econometrics. 
+**  http://dx.doi.org/10.1515/snde-2014- 0101.
+
+**  Nazlioglu, S. Gormus, A., Soytas, U. (2016) 
+**  “Oil prices and real estate investment trusts (REITs): gradual-shift causality 
+**  and volatility transmission Analysis”. 
+**  Energy Economics 60(1): 168-175.
+
+**  Gormus, A., Nazlioglu, S., Soytas, U. (2018) 
+**  “High-Yield Bond and Energy Markets”. 
+**  Energy Economics 69: 101-110.
+
+**  Nazlioglu, S., Soytas, U., Gormus, A. (2019) 
+**  “Oil Prices and Monetary Policy in Emerging Markets: Structural Shifts in Causal Linkages”. 
+**  Emerging Markets Finance and Trade. 55-105–117.
+**
+**
+**  Format:  W = GCtests(data,vnames,pmax,ic,test,Nboot);
+**
+**
+**  Input:   data	 -  Txk matrix 
+**                      k is number of endogenous variables in VAR model
+**           vnames  -  Variable names
+**                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable
+**           pmax    -  Maximum number of lags
+**           ic      -  Information Criterion for optimal lag selection
+**                      1 = Akaike 
+**                      2 = Schwarz
+**           test    -  Test option for Granger causality
+**                      0 = Granger Causality 
+**                          (Granger, 1969)    
+**                      1 = Toda & Yamamoto
+**                          (Toda & Yamamoto, 195) 
+**                      2 = Single Fourier-frequency Granger Causality
+**                          (Enders & Jones, 2016)
+**                      3 = Singel Fourier-frequency Toda & Yamamoto        
+**                          (Nazlioglu et al.)
+**                      4 = Cumulative Fourier-frequency Granger Causality      
+**                          (Enders & Jones, 2019)
+**                      5 = Cumulative Fourier-frequency Toda & Yamamoto
+**                          (Nazlioglu etal., 2019) 
+**          Nboot    -  Number of bootstrap replications
+**                      
+**           Defaul settings
+**           kmax    -  Maximum number of Fourier frequency
+**                      Default kmax = 3.
+**           dmax    -  Maximum integration degree of variables
+**                      default dmax = 0 for Granger causality tests
+**                      default dmax = 1 for Toda & Yamamoto causality tests
+
+**
+**  Output:  GC_out = Wald stat ~ Asymptotic p-value ~ Bootstrap p-value ~ Lags ~ Frequency
+**
+**  Note to users:
+**  VAR model is estimated in first differences for Granger causality tests 0, 2, and 4.
+**  VAR model is estimated in levels for Toda & Yamamoto causality    tests 1, 3, and 5.
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+    
+proc(1)= GC_tests(data,vnames, pmax, ic, test, Nboot);
+    local i, j, depvar, indvar, cause, control, y, obs;
+    local dmax, kmax, k, p, VARy, ylag, VARx;
+    local W, Wboot, pval_boot, GC_out;
+    
+
+    for i(1,cols(data),1);
+        
+        depvar = data[.,i];
+        indvar = delcols(data,i);
+        
+        for j(1,cols(indvar),1);
+            cause  = indvar[.,j];
+            control= delcols(indvar,j); 
+            y  = depvar~cause~control;
+        
+            if test==0; dmax=0; kmax=0; endif;
+            if test==1; dmax=1; kmax=0; endif;
+            if test==2; dmax=0; kmax=3; endif;
+            if test==3; dmax=1; kmax=3; endif;
+            if test==4; dmax=0; kmax=3; endif;    
+            if test==5; dmax=1; kmax=3; endif;   
+  
+            obs = rows(y);
+            {k,p}       = _get_kp(y, pmax, kmax, ic, test);
+            {VARy,ylag} = _get_lagp(y, p+dmax);
+            {VARx}      = _get_VARdata(VARy, ylag, test, k, p, dmax); 
+            {W}         = _get_Wald(VARy, VARx, p, dmax);            
+            
+            {Wboot} = _get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);   
+
+             pval_boot= 1-(sumc(W.>Wboot)/Nboot);
+                
+             GC_out = W~(cdfchic(W,p))~pval_boot~p~k;
+                
+            if i==1;         vnames[j+1];;"=>";; vnames[i]; "         ";;  GC_out; endif; 
+            if i>1 and i==j; vnames[j+1];;"=>";; vnames[i]; "         ";;  GC_out; endif;   
+            if i>1 and j<i;  vnames[j]  ;;"=>";; vnames[i]; "         ";;  GC_out; endif;
+            if i>1 and j>i;  vnames[j+1];;"=>";; vnames[i]; "         ";;  GC_out; endif;                
+        endfor;
+    endfor; 
+    
+retp(GC_out);
+endp;
+
+//Wald test for causality
+
+proc (1) =_get_Wald(VARy, VARx, p, dmax);        
+    local y, z, t, b, u, su, zr, br, ur, sr;
+    local rssr, rssur, df, f, w, lr;
+
+    y = VARy;
+    z = VARx;
+    t = rows(y) + p + dmax;
+    b =(y/z);
+    u = y-z*b;
+    Su = u'u;
+    
+    //Restricted model
+    if dmax == 0; 
+        zr  = z[.,1:p]~z[.,2*p+1:cols(z)];
+    endif;
+    
+    if dmax >= 1; 
+       zr = z[.,1:(p+dmax)]~z[.,2*(p+dmax):cols(z)];
+    endif;
+    
+    br = (y/zr);
+    ur = y-zr*br;
+    //ur=ur[.,1]~u[.,2:cols(u)];  
+    Sr = ur'ur;
+            
+    //Test statistics
+    rssr = sr[1,1];
+    rssur= su[1,1];
+    df   = T-cols(z)-p-dmax;
+    F    = ((rssr-rssur)/p)/(rssur/df);
+    W    = F*p; //W=df*(rssr-rssur)/rssur;
+    LR   = df*(ln(rssr)-ln(rssur));//(T-p)*ln(det(Sr)/det(Su));    
+retp(W);
+endp;
+
+
+// bootstrap distribution of Wald stats
+
+proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
+    local y, z, t, b, u, zr, br, ur, zhat;
+    local nk, tp, Wboot, ystar, simerr, adje;
+    local s, ti, rnd, index, varindx, rejectWb, Wbpval;
+    local ztar;
+    
+    y = VARy;
+    z = VARx;
+    t = rows(y) + p + dmax;
+    b =(y/z);
+    u = y-z*b;
+    //zhat  = z.*b[.,1]';
+    
+    // Residuals under the null hypothesis 
+    if dmax == 0; 
+        zr  = z[.,1:p]~z[.,2*p+1:cols(z)];
+    endif;
+    
+    if dmax >= 1; 
+       zr = z[.,1:(p+dmax)]~z[.,2*(p+dmax):cols(z)];
+    endif;
+    
+    br = (y/zr);
+    ur = y-zr*br;
+    zhat  = zr.*br[.,1]';  
+
+    nk  = cols(VARy);
+    
+  //  if dmax==0; Tp=t-p; endif;
+  //  if dmax>=1; Tp=t-(p+dmax); endif;
+
+    Tp=t-(p+dmax);
+    
+    Wboot = zeros(Nboot,1);        
+    ystar = zeros(tp,nk);       
+    simerr= zeros(tp,nk);
+
+    adje  = u-meanc(u)';    
+
+    for s(1,Nboot,1);
+    // Generate bootstrap residuals 
+    ti=1;
+    do while ti<=Tp;
+        rnd  = rndu(1,nk);
+        index= 1 + trunc(Tp*rnd);
+        
+        simerr[ti,1] = adje[index[1,1],1];
+        varindx = 1;
+        do until varindx > nk;
+            simerr[ti,varindx] = adje[index[1,varindx],varindx];
+        varindx = varindx +1;
+        endo;
+    ti=ti+1;
+    endo;
+       
+    // Generate mean adjusted residuals 
+    varindx = 1;
+    do until varindx>nk;
+        simerr[.,varindx]=simerr[.,varindx]-(meanc(simerr[.,varindx]));
+    varindx = varindx + 1;
+    endo;
+    
+    // Generate bootsrap sample 
+    varindx=1;
+    do while varindx<=nk;
+       ti=1;
+       do while ti<=Tp;
+          ystar[ti,varindx]=sumr(zhat[ti,.]+simerr[ti,varindx]);
+       ti=ti+1;
+       endo; 
+    varindx=varindx+1;
+    endo;
+    
+    {Wboot[s]} = _get_Wald(ystar, VARx, p, dmax);
+    
+    endfor;
+    
+    // Bootstrap Wald stats
+    Wboot = sortc(Wboot,1);
+
+retp(Wboot);
+endp;
+
+
+// Generate data for VAR estimation
+
+proc(1)=_get_VARdata(y,ylag,test,k,p,dmax);
+    local t, d, cf, VARdata;
+
+    t = rows(y) + p + dmax;
+    
+    if test==0;  
+       d = ones(t-p-dmax,1);
+    elseif test==1;
+       d = ones(t-p-dmax,1);
+    elseif test==2;
+       cf = sin(2*pi*k*seqa(1,1,t)/T)~cos(2*pi*k*seqa(1,1,t)/T);
+       d  = ones(t-p-dmax,1)~cf[(p+dmax+1):t,.];
+    elseif test==3; 
+       cf = sin(2*pi*k*seqa(1,1,t)/T)~cos(2*pi*k*seqa(1,1,t)/T);
+       d  = ones(t-p-dmax,1)~cf[(p+dmax+1):t,.];
+    elseif test==4;  
+       if k==1; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T); endif;
+       if k==2; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T)~ 
+                   sin(2*pi*2*seqa(1,1,t)/T)~cos(2*pi*2*seqa(1,1,t)/T); endif;
+       if k==3; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T)~ 
+                   sin(2*pi*2*seqa(1,1,t)/T)~cos(2*pi*2*seqa(1,1,t)/T)~
+                   sin(2*pi*3*seqa(1,1,t)/T)~cos(2*pi*3*seqa(1,1,t)/T); endif;
+       cF = zeros(1,6) | cF;  
+       d  = ones(t-p-dmax,1)~cf[(p+dmax+1):t,.];                                 
+    elseif test==5;
+       if k==1; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T); endif;
+       if k==2; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T)~ 
+                   sin(2*pi*2*seqa(1,1,t)/T)~cos(2*pi*2*seqa(1,1,t)/T); endif;
+       if k==3; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T)~ 
+                   sin(2*pi*2*seqa(1,1,t)/T)~cos(2*pi*2*seqa(1,1,t)/T)~
+                   sin(2*pi*3*seqa(1,1,t)/T)~cos(2*pi*3*seqa(1,1,t)/T); endif;
+       cF = zeros(1,6) | cF;  
+       d  = ones(t-p-dmax,1)~cf[(p+dmax+1):t,.];      
+    endif;
+    
+    VARdata = ylag~d;
+    
+retp(VARdata);
+endp;    
+
+//optimal frequency and lag selection
+
+proc(2) = _get_kp(y,pmax,kmax,ic,test);
+local aic,sbc,aickp,sbckp,k,p,dep,xlag,t,d,z,cf;
+
+if test==0 or test==1;  
+        aickp=zeros(pmax,1);
+        sbckp=zeros(pmax,1);
+else;   aickp=zeros(pmax,kmax);
+        sbckp=zeros(pmax,kmax);
+endif;
+
+if test==0;
+    p=1;
+    do while p<=pmax;
+        {dep,xlag}=_get_lagp(y,p);
+     //   dep =trimr(diff(dep,1),1,0);
+     //   xlag=trimr(diff(xlag,1),1,0);
+        t=rows(dep);
+        d=ones(t,1);
+        z=xlag~d;
+            {aic,sbc}=_get_icvalue(dep,z,p);   
+        aickp[p,1]=aic;
+        sbckp[p,1]=sbc;      
+    p=p+1;
+    endo;   
+endif;
+
+if test==1;
+    p=1;
+    do while p<=pmax;
+        {dep,xlag}=_get_lagp(y,p);
+        t=rows(dep);
+        d=ones(t,1);
+        z=xlag~d;
+            {aic,sbc}=_get_icvalue(dep,z,p);  
+        aickp[p,1]=aic;
+        sbckp[p,1]=sbc;      
+    p=p+1;
+    endo;   
+endif;
+
+if test==2;
+  for k(1,kmax,1);
+    p=1;
+    do while p<=pmax;
+        {dep,xlag}=_get_lagp(y,p);
+    //    dep =trimr(diff(dep,1),1,0);
+    //    xlag=trimr(diff(xlag,1),1,0);
+        t=rows(dep);
+        d=ones(t,1)~sin(2*pi*k*seqa(1,1,t)/T)~cos(2*pi*k*seqa(1,1,t)/T);
+        z=xlag~d;
+            {aic,sbc}=_get_icvalue(dep,z,p);  
+        aickp[p,k]=aic;
+        sbckp[p,k]=sbc;      
+    p=p+1;
+    endo;
+  endfor;   
+endif;
+
+if test==3;
+  for k(1,kmax,1);
+    p=1;
+    do while p<=pmax;
+        {dep,xlag}=_get_lagp(y,p);
+        t=rows(dep);
+        d=ones(t,1)~sin(2*pi*k*seqa(1,1,t)/T)~cos(2*pi*k*seqa(1,1,t)/T);
+        z=xlag~d;
+            {aic,sbc}=_get_icvalue(dep,z,p);  
+        aickp[p,k]=aic;
+        sbckp[p,k]=sbc;      
+    p=p+1;
+    endo;   
+  endfor;
+endif;
+
+if test==4;
+  for k(1,kmax,1);          
+    p=1;
+    do while p<=pmax;
+        {dep,xlag}=_get_lagp(y,p);
+     //   dep=trimr(diff(dep,1),1,0);
+     //   xlag=trimr(diff(xlag,1),1,0);
+        t=rows(dep);
+        if k==1; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T); endif;
+        if k==2; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T)~ 
+                    sin(2*pi*2*seqa(1,1,t)/T)~cos(2*pi*2*seqa(1,1,t)/T); endif;
+        if k==3; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T)~ 
+                    sin(2*pi*2*seqa(1,1,t)/T)~cos(2*pi*2*seqa(1,1,t)/T)~
+                    sin(2*pi*3*seqa(1,1,t)/T)~cos(2*pi*3*seqa(1,1,t)/T); endif;  
+        d=ones(t,1)~cf;
+        z=xlag~d;
+            {aic,sbc}=_get_icvalue(dep,z,p);  
+        aickp[p,k]=aic;
+        sbckp[p,k]=sbc;      
+    p=p+1;
+    endo;
+  endfor;   
+endif;
+
+if test==5;
+  for k(1,kmax,1);          
+    p=1;
+    do while p<=pmax;
+        {dep,xlag}=_get_lagp(y,p);
+        t=rows(dep);
+        if k==1; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T); endif;
+        if k==2; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T)~ 
+                    sin(2*pi*2*seqa(1,1,t)/T)~cos(2*pi*2*seqa(1,1,t)/T); endif;
+        if k==3; cf=sin(2*pi*1*seqa(1,1,t)/T)~cos(2*pi*1*seqa(1,1,t)/T)~ 
+                    sin(2*pi*2*seqa(1,1,t)/T)~cos(2*pi*2*seqa(1,1,t)/T)~
+                    sin(2*pi*3*seqa(1,1,t)/T)~cos(2*pi*3*seqa(1,1,t)/T); endif;  
+        d=ones(t,1)~cf;
+        z=xlag~d;
+            {aic,sbc}=_get_icvalue(dep,z,p);  
+        aickp[p,k]=aic;
+        sbckp[p,k]=sbc;      
+    p=p+1;
+    endo;
+  endfor;   
+endif;
+
+if test==0 or test==1;  
+    if ic==1; k=0; p=minindc(aickp); endif;
+    if ic==2; k=0; p=minindc(sbckp); endif;
+else;    
+    if ic==1; k= minindc(minc(aickp)); p= minindc(aickp[.,k]); endif;
+    if ic==2; k= minindc(minc(sbckp)); p= minindc(sbckp[.,k]); endif;
+endif;
+
+retp(k,p);        
+endp;
+
+//information criterion estimation
+
+proc(2) = _get_icvalue(dep,z,p);
+local t,b,e,varcov,nk,aic,sbc;
+    t=rows(dep);    
+    b=(dep/z);
+    e=dep-z*b;
+    varcov=e'e/t;
+    nk=cols(dep);
+    aic=ln(det(VARCOV))+ (2/T)*(nk*nk*p+nk)      + nk*(1+ln(2*pi));
+    sbc=ln(det(VARCOV))+ (1/T)*(nk*nk*p+nk)*ln(T)+ nk*(1+ln(2*pi));
+retp(aic,sbc);
+endp;
+
+//generating y and ylags adjusted for lags
+
+proc(2) = _get_lagp(y, pmax);
+local nk, p, ylag, i, j, ya, yl;
+    
+    nk=cols(y);
+    
+    p=1;
+    do while p<=pmax;
+    ylag =zeros(rows(y),nk*p);
+        i=1;
+        do while i<=nk;    
+            j=1;
+            do while j<=p;     
+                ylag[.,j+p*(i-1)]=lagn(y[.,i],j);    
+            j=j+1;
+            endo;
+        i=i+1;
+        endo;
+    ya = trimr(y,p,0);
+    yl = trimr(ylag,p,0);        
+    p=p+1;
+    endo;
+    
+retp(ya, yl);
+endp;   
+

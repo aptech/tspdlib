@@ -1,0 +1,191 @@
+
+
+/*
+**> cips
+** Pesaran, M.H. (2007).
+** A simple unit root test in the presence of cross-section dependence, 
+** Journal of Applied Econometrics, 22 (2), 265-312.
+**
+** Westerlund, J., & Hosseinkouchack, M. (2016). 
+** Modified CADF and CIPS Panel Unit Root Statistics with 
+** Standard Chi‐squared and Normal Limiting Distributions. 
+** Oxford Bulletin of Economics and Statistics, 78(3), 347-364.
+**
+**  Format:  {Ncadf,Nmcadf,Nlags,pcadf,pmcadf} = CIPS(y,model,pmax,ic);
+**
+**  Input:   Y	     -  TxN matrix, data
+**           model   - 	0 = none
+**                      1 = model with constant
+**                      2 = model with constant and trend
+**           pmax    -  Maximum number of lags; 0=no lags
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**
+**  Output:  Ncadf   - CADF statistics for each cross-section
+**           Nmcadf  - Modified CADF statistics for each cross-section
+**			 Nlags   - number of lags selected by choosen information criterion for each cross-section
+**			 pcadf   - Panel CIPS statistic
+**		     pmcadf  - Panel Modified CIPS statistic with N(0,1)
+**
+**
+**  Author:  Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(6)=cips(y, model, pmax, ic);
+    local n, Ncadf, Nlm, Nd, Nlags, f, p, pcadf, pmcadf, q;
+
+    n     = cols(y);
+    Ncadf = zeros(N,1);
+    Nlm   = zeros(N,1);
+    Nd    = zeros(N,1);
+    Nlags = zeros(N,1);
+    
+    f = meanc(y');
+
+    for i(1,N,1);
+        {Nlags[i]} = _get_cadf_lag(y[.,i], f, model, pmax, ic);
+        {Ncadf[i], Nlm[i], Nd[i]} = cadf(y[.,i], f, model, Nlags[i]);
+    endfor;
+
+    pcadf = meanc(Ncadf);
+        if model==1; q=2; endif;
+        if model==2; q=3; endif;
+    pmcadf= sqrt(n)*(meanc(Nd)-q)/sqrt(2*q);
+            
+retp(Ncadf, Nlm, Nd, Nlags, pcadf, pmcadf);
+endp;   
+    
+proc(3)=cadf(y, f, model, p);
+    local t, dy, ly, df, lf, dyl, dfl, dyp, dfp, y1, f1;
+    local d, w, g, dg, Mw, Mg, s2, tau, lm, dp;
+
+    dy = diff(y, 1);
+    ly = lagn(y, 1);
+    df = diff(f, 1);        
+    lf = lagn(f, 1);
+
+    if p > 0;    
+        dyl = zeros(rows(dy), p);
+        dfl = zeros(rows(df), p); 
+        for j(1,p,1);
+            dyl[., j] = lagn(dy, j);
+            dfl[., j] = lagn(df, j);
+        endfor;  
+    dyp = trimr(dyl,p+1, 0);
+    dfp = trimr(dfl,p+1, 0);    
+    endif;
+    
+    dy  = trimr(dy, p+1, 0);  
+    y1  = trimr(ly, p+1, 0);
+    df  = trimr(df, p+1, 0);
+    f1  = trimr(lf, p+1, 0);
+    
+    t = rows(dy);
+    
+    if model==1; d = ones(t,1); endif;
+    if model==2; d = ones(t,1)~seqa(1,1,t); endif;    
+    
+    if p==0; w  = d~f1~df; 
+
+    else;    w  = d~f1~df~dfp~dyp;
+    endif;
+    
+    g  = w~y1;
+    Mg = eye(T)-g*inv(g'g)*g';    
+    s2 = dy'*Mg*dy/(rows(dy)-cols(g));
+    Mw = eye(t)-w*inv(w'w)*w';
+    tau= y1'*Mw*dy/sqrt(s2*y1'*Mw*y1);   
+    lm = t*(1-dy'Mg*dy*inv(dy'Mw*dy));
+    dp = lm-tau^2;
+    
+retp(tau, lm, dp);
+endp; 
+
+proc(1)=_get_cadf_lag(y, f, model, pmax, ic);
+    local t, p, j, taup, aicp, sicp, tstatp;
+    local dy, ly, dyl, dep, y1, dyp, dc, dt;
+    local df, lf, dfl, f1, dfp, df0;
+    local sbt, trnd, x, lagt, tau, LL, n, k;
+    local b, e1, sig2, se, ssr;
+    
+    t = rows(y);
+    taup = zeros(pmax + 1, 1);
+    aicp = zeros(pmax + 1, 1);
+    sicp = zeros(pmax + 1, 1);
+    tstatp = zeros(pmax + 1, 1);
+    
+    dy = diff(y, 1);
+    ly = lagn(y, 1);
+    df = diff(f, 1);        
+    lf = lagn(f, 1);
+    dc = ones(t, 1);        /* Deterministic term=constant */
+    dt = seqa(1, 1, t);     /* Deterministic term=trend */
+    
+    p = 0;
+    do while p <= pmax;
+        dyl = zeros(rows(dy), p + 1);
+        dfl = zeros(rows(df), p + 1);
+        j = 1;
+        do while j <= p;
+            dyl[., j] = lagn(dy, j);
+            dfl[., j] = lagn(df, j);
+            j = j + 1;
+        endo;
+        dep = trimr(dy, p + 1, 0);
+        y1  = trimr(ly, p + 1, 0);
+        dyp = trimr(dyl,p + 1, 0);
+        f1  = trimr(lf, p + 1, 0);
+        df0 = trimr(df, p + 1, 0);
+        dfp = trimr(dfl,p + 1, 0);
+        sbt = trimr(dc, p + 1, 0);
+        trnd= trimr(dt, p + 1, 0);
+       
+        if p == 0;
+            if model == 0;
+                x = y1~f1~df0;
+            endif;
+            if model == 1;
+                x = y1~f1~df0~sbt;
+            endif;
+            if model == 2;
+                x = y1~f1~df0~sbt~trnd;
+            endif;
+        elseif p > 0;
+            if model == 0;
+                x = y1~f1~dyp[., 1:p]~df0~dfp[., 1:p];
+            endif;
+            if model == 1;
+                x = y1~f1~sbt~dyp[., 1:p]~df0~dfp[., 1:p];
+            endif;
+            if model == 2;
+                x = y1~f1~sbt~trnd~dyp[., 1:p]~df0~dfp[., 1:p];
+            endif;
+        endif;
+        
+        {b, e1, sig2, se, ssr} = myols(dep, x);
+        taup[p+1] = b[1]/se[1];
+        n = rows(x);
+        k = cols(x);
+
+        // Log-likelihood
+        LL = -n/2 * (1 + ln(2*pi) + ln(e1'e1/n));     
+        
+        aicp[p+1] = (2 * k-2 * LL)/n;
+        sicp[p+1] = (k * ln(n) - 2 * LL)/n;
+        tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
+        p = p + 1;
+    endo;
+    
+    p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
+    tau = taup[p];
+
+    retp(p - 1);
+endp;
+

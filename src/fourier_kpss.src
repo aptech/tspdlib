@@ -1,12 +1,12 @@
 
 /*
-**> belFkpss
+**> fourier_kpss
 **  Reference:
 **  Becker,R., Enders, W., and Lee, J. (2006),
 **  "A Stationary Test in the Presence of an Unknown Number of Smooth Breaks"
 **  Journal of Time Series Analysis,27,3(2006),381-409
 **
-**  Format:  {KPSSk,cv[k,.]} = Fourier_KPSS(y,model,kmax,varm);
+**  Format:  {KPSSk, k, cv[k,.]} = Fourier_KPSS(y,model,kmax,l,varm);
 **
 **
 **  Input:   Y	     -  Nx1 matrix, data,
@@ -14,7 +14,7 @@
 **                      2 = Constant and trend
 **           kmax    -  Maximumum number of single Fourier frequency
 **                      (upper bound is 5)
-**           k       -  Number of Fourier frequency
+**           l       -  Bandwidth for spectral window
 **           varm    -  Long-run consistent variance estimation method
 **                      1 = iid;
 **                      2 = Bartlett
@@ -41,13 +41,13 @@
 
 /*15 December 2014*/
 
-proc(2) = Fourier_KPSS(y, model, kmax, varm);
+proc(3) = Fourier_KPSS(y, model, kmax, l, varm);
     local t, sink, cosk, z, s, lrv, kpss;
     local b, e1, sig2, se, ssr, k;
-    local vare, l, bw, w, crit;
+    local vare, crit, cv1, cv5, cv10;
     
     t = rows(y);
-    k = Fourier(y, model, kmax);
+    k = _get_fourier(y, model, kmax);
     sink = sin(2 * pi * k * seqa(1, 1, t)/t);
     cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
     
@@ -66,17 +66,17 @@ proc(2) = Fourier_KPSS(y, model, kmax, varm);
     if varm == 1;
         lrv = ssr/t;
     elseif varm == 2;
-        lrv = bartlett(e1);
+        lrv = bartlett(e1,l);
     elseif varm == 3;
-        lrv = qs(e1);
+        lrv = qs(e1,l);
     elseif varm == 4;
-        lrv = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
+        lrv = spc_bartlett(e1, l);
     elseif varm == 5;
-        lrv = spc_qs(e1, round(4 * (T/100)^(2/9)));
+        lrv = spc_qs(e1, l);
     elseif varm == 6;
         lrv = kurozumi_bartlett(e1);
     elseif varm == 7;
-        lrv = kurozumi_bartlett(e1);
+        lrv = kurozumi_qs(e1);
     endif;
     
     KPSS = sumc(s .* s)/(t^2 * lrv);
@@ -85,7 +85,7 @@ proc(2) = Fourier_KPSS(y, model, kmax, varm);
     crit = zeros(5, 3);
     if model == 1;
         if T <= 250;
-            crit = { 0.2699 0.1720 0.1318,
+        crit = {0.2699 0.1720 0.1318,
                 0.6671 0.4152 0.3150,
                 0.7182 0.4480 0.3393,
                 0.7222 0.4592 0.3476,
@@ -93,7 +93,7 @@ proc(2) = Fourier_KPSS(y, model, kmax, varm);
         endif;
         
         if 251 < T and T <= 500;
-            crit = {0.2709 0.1696 0.1294,
+        crit = {0.2709 0.1696 0.1294,
                 0.6615 0.4075 0.3053,
                 0.7046 0.4424 0.3309,
                 0.7152 0.4491 0.3369,
@@ -101,7 +101,7 @@ proc(2) = Fourier_KPSS(y, model, kmax, varm);
         endif;
         
         if 500 < T;
-            crit = {0.2706 0.1704 0.1295,
+        crit = {0.2706 0.1704 0.1295,
                 0.6526 0.4047 0.3050,
                 0.7086 0.4388 0.3304,
                 0.7163 0.4470 0.3355,
@@ -111,7 +111,7 @@ proc(2) = Fourier_KPSS(y, model, kmax, varm);
     
     if model == 2;
         if T <= 250;
-            crit = { 0.0716 0.0546 0.0471,
+        crit = {0.0716 0.0546 0.0471,
                 0.2022 0.1321 0.1034,
                 0.2103 0.1423 0.1141,
                 0.2170 0.1478 0.1189,
@@ -119,7 +119,7 @@ proc(2) = Fourier_KPSS(y, model, kmax, varm);
         endif;
         
         if 251 < T and T <= 500;
-            crit = {0.0720 0.0539 0.0463,
+        crit = {0.0720 0.0539 0.0463,
                 0.1968 0.1278 0.0995,
                 0.2091 0.1404 0.1123,
                 0.2111 0.1441 0.1155,
@@ -127,7 +127,7 @@ proc(2) = Fourier_KPSS(y, model, kmax, varm);
         endif;
         
         if 500 < T;
-            crit = {0.0718 0.0538 0.0461,
+        crit = {0.0718 0.0538 0.0461,
                 0.1959 0.1275 0.0994,
                 0.2081 0.1398 0.1117,
                 0.2139 0.1436 0.1149,
@@ -135,11 +135,15 @@ proc(2) = Fourier_KPSS(y, model, kmax, varm);
         endif;
     endif;
     
-    retp(KPSS, crit[k, .]);
+    cv1  = crit[k,1]; 
+    cv5  = crit[k,2];
+    cv10 = crit[k,3];
+    
+    retp(KPSS, k, cv10~cv5~cv1);
 endp;
 
 /*Selection of optimum k via min SSR*/
-proc(1) = Fourier(y, model, kmax);
+proc(1) = _get_fourier(y, model, kmax);
     local temp, k, t, sink, cosk, z, betaols, e, ssr;
     
     temp = zeros(kmax, 1);

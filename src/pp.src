@@ -5,13 +5,18 @@
 **  Phillips, P.C.B., Perron, P. (1988).
 **  Testing for a unit root in time series regressions.
 **  Biometrica 75, 335–346.
+** 
+**  Perron, P., & Ng, S. (1996). 
+**  Useful modifications to some unit root tests with dependent errors and their local asymptotic properties. 
+**  The Review of Economic Studies, 63(3), 435-463.
 **
-**  Format:  {Zt,Za} = PP(y,model,varm);
+**  Format:  {Zt, Za, cvZt, cvZa} = PP(y,model,l,varm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	0 = none
 **                      1 = model with constant
 **                      2 = model with constant and trend
+**           l       -  Bandwidth for spectral window
 **           varm    -  Long-run consistent variance estimation method
 **                      1 = iid;
 **                      2 = Bartlett
@@ -26,7 +31,9 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**  Output:  Zt & Za - Test statistics
+**  Output:  Zt & Za  -  PP tests
+**           cvZt     -  1, 5, and 10 percent critical values for PP Zt-stat
+**           cvZa     -  1, 5, and 10 percent critical values for PP Za-stat
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
@@ -35,10 +42,11 @@
 **
 */
 
-proc(2) = PP(y, model, varm);
+proc(4) = PP(y, model, l, varm);
     local t, dy, ly, dc, dt, dep, y1, sbt, trnd, x;
-    local tau, g0, lrv, l, bw, w, Zt, lambda, mbaryy, Za;
-    local b, e, e1, s2, se, ssr, vare;
+    local tau, g0, lrv, Zt, lambda, mbaryy, Za;
+    local b, e, e1, s2, se, ssr, vare, cvZt, cvZa;
+  //  local k, yols, MZt, MZa, MSB;
     
     t = rows(y);
     dy = diff(y, 1);
@@ -68,28 +76,27 @@ proc(2) = PP(y, model, varm);
     endif;
     
     { b, e, s2, se, ssr} = myols(dep, x);
-    
     tau = b[1]/se[1];
-    t = rows(e);
-    
+       
     // Residual variance as in Eviews
+    t = rows(e);
     g0 = (t - cols(x)) * s2 * 1/t;       
     e1 = e;
     
     if varm == 1;
         lrv = ssr/t;
     elseif varm == 2;
-        lrv = bartlett(e1);
+        lrv = bartlett(e1,l);
     elseif varm == 3;
-        lrv = qs(e1);
+        lrv = qs(e1,l);
     elseif varm == 4;
-        lrv = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
+        lrv = spc_bartlett(e1,l);
     elseif varm == 5;
-        lrv = spc_qs(e1, round(4 * (T/100)^(2/9)));
+        lrv = spc_qs(e1,l);
     elseif varm == 6;
         lrv = kurozumi_bartlett(e1);
     elseif varm == 7;
-        lrv = kurozumi_bartlett(e1);
+        lrv = kurozumi_qs(e1);
     endif;
     
     // Eviews
@@ -100,5 +107,110 @@ proc(2) = PP(y, model, varm);
     // Stata 
     Za = t * b[1] - lambda * mbaryy; 
     
-    retp(Zt, Za);
+    cvZt = _get_cv_Zt(model, T);
+    cvZa = _get_cv_Za(model, T); 
+    
+    @
+    // Modified test in Perron & Ng (1996)
+    yols = dep - x * b; 
+    K   = sumc(yols^2)/t^2; 
+    MZa = (t^-1 * yols[t]^2 - lrv)/(2 * k);
+    MSB = (k/lrv)^(1/2);
+    MZt = MZa * MSB;
+    retp(Zt, Za, MZt, MZa, MSB);
+    @    
+   
+  retp(Zt, Za, cvZt, cvZa);
+endp;
+
+
+// Critical Values (see Fuller, 1976, Table 5.3)
+proc(1) = _get_cv_Zt(model, T);
+    local crit, cv;
+    
+    if model == 0;
+        crit = {-2.66 -1.95 -1.60,      @ T = 25  @
+                -2.62 -1.95 -1.61,      @ T = 50  @
+                -2.60 -1.95 -1.61,      @ T = 100 @
+                -2.58 -1.95 -1.62,      @ T = 250 @        
+                -2.58 -1.95 -1.62,      @ T = 500 @   
+                -2.58 -1.95 -1.62,      @ T = 750 @   
+                -2.58 -1.95 -1.62};     @ T = inf @   
+    endif;
+
+    if model == 1;
+        crit = {-3.75 -2.99 -2.64,      @ T = 25  @
+                -3.59 -2.93 -2.60,      @ T = 50  @
+                -3.50 -2.90 -2.59,      @ T = 100 @
+                -3.46 -2.88 -2.58,      @ T = 250 @        
+                -3.44 -2.87 -2.57,      @ T = 500 @   
+                -3.43 -2.87 -2.57,      @ T = 750 @   
+                -3.42 -2.86 -2.57};     @ T = inf @   
+    endif;
+
+    if model == 2;
+        crit = {-4.38 -3.60 -3.24,      @ T = 25  @
+                -4.15 -3.50 -3.18,      @ T = 50  @
+                -4.04 -3.45 -3.15,      @ T = 100 @
+                -3.98 -3.42 -3.13,      @ T = 250 @        
+                -3.97 -3.42 -3.13,      @ T = 500 @   
+                -3.96 -3.41 -3.13,      @ T = 750 @   
+                -3.96 -3.41 -3.13};     @ T = inf @   
+    endif;
+    
+    if            T <= 25;     cv = crit[1,.]; endif;
+    if 25 < T and T <= 50;     cv = crit[2,.]; endif;
+    if 50 < T and T <= 100;    cv = crit[3,.]; endif;    
+    if 100< T and T <= 250;    cv = crit[4,.]; endif;    
+    if 250< T and T <= 500;    cv = crit[5,.]; endif;   
+    if 500< T and T <= 750;    cv = crit[6,.]; endif;   
+    if 750 < T            ;    cv = crit[7,.]; endif;   
+
+retp(cv);
+endp;
+
+
+// Critical Values (see Fuller, 1976, Table 5.2)
+proc(1) = _get_cv_Za(model, T);
+    local crit, cv;
+    
+    if model == 0;
+        crit = {-11.87 -7.32 -5.32,      @ T = 25  @
+                -12.82 -7.69 -5.52,      @ T = 50  @
+                -13.30 -7.88 -5.61,      @ T = 100 @
+                -13.59 -7.99 -5.67,      @ T = 250 @        
+                -13.69 -8.03 -5.69,      @ T = 500 @   
+                -13.72 -8.04 -5.70,      @ T = 750 @   
+                -13.78 -8.07 -5.71};     @ T = inf @   
+    endif;
+
+    if model == 1;
+        crit = {-17.22 -12.47 -10.23,      @ T = 25  @
+                -18.94 -13.29 -10.75,      @ T = 50  @
+                -19.81 -13.70 -11.00,      @ T = 100 @
+                -20.32 -13.95 -11.16,      @ T = 250 @        
+                -20.50 -14.03 -11.21,      @ T = 500 @   
+                -20.55 -14.06 -11.23,      @ T = 750 @   
+                -20.67 -14.11 -11.26};     @ T = inf @   
+    endif;
+
+    if model == 2;
+        crit = {-22.51 -17.89 -15.55,      @ T = 25  @
+                -22.65 -19.70 -16.84,      @ T = 50  @
+                -27.33 -20.64 -17.50,      @ T = 100 @
+                -28.42 -21.25 -17.93,      @ T = 250 @        
+                -28.84 -21.47 -18.08,      @ T = 500 @   
+                -29.00 -21.56 -18.13,      @ T = 750 @   
+                -29.47 -21.78 -18.28};     @ T = inf @   
+    endif;
+    
+    if            T <= 25;     cv = crit[1,.]; endif;
+    if 25 < T and T <= 50;     cv = crit[2,.]; endif;
+    if 50 < T and T <= 100;    cv = crit[3,.]; endif;    
+    if 100< T and T <= 250;    cv = crit[4,.]; endif;    
+    if 250< T and T <= 500;    cv = crit[5,.]; endif;   
+    if 500< T and T <= 750;    cv = crit[6,.]; endif;   
+    if 750 < T            ;    cv = crit[7,.]; endif;   
+
+retp(cv);
 endp;

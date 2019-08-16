@@ -1,7 +1,6 @@
 
-
 /*
-**> lstrazicich1
+**> lm_1br
 **  Reference:
 **  Lee,J and Strazicich, Mark C. (2013),
 **  "Minimum LM Unit Root Test with One Structural Break"
@@ -156,7 +155,7 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
             -5.15 -4.45 -4.18,
             -5.05 -4.50 -4.18,
             -5.11 -4.51 -4.17};
-        lambda =  floor(10 * (tb1_min/rows(y)));
+        lambda =  round(10 * (tb1_min/rows(y)));
         
         if lambda > 5;
             lambda = 10 - lambda;

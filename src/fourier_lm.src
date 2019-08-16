@@ -1,6 +1,6 @@
 
 /*
-**> eleeFlm
+**> fourier_lm
 **  Reference:
 **  Enders, W., and Lee, J. (2012),
 **  "A Unit Root Test Using a Fourier Series to Approximate Smooth Breaks"
@@ -43,11 +43,11 @@ proc(4) = Fourier_LM(y, pmax, kmax, ic);
     sicp = zeros(pmax + 1, 1);
     tstatp = zeros(pmax + 1, 1);
     ssrp = zeros(pmax + 1, 1);
-    ssrk = zeros(kmax, 1);
-    tauk = zeros(kmax, 1);
+    ssrk = zeros(fmax, 1);
+    tauk = zeros(fmax, 1);
     
     k = 1;
-    do while k <= kmax;
+    do while k <= fmax;
         dc = ones(t, 1);
         dt = seqa(1, 1, t);
         sink = sin(2 * pi * k * seqa(1, 1, t)/t);

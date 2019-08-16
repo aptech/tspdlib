@@ -3,7 +3,7 @@
 **  Reference:
 **  Lee, J., Tieslau, M. (2017),
 **  "Panel LM Unit-root Tests with Level and Trend Shifts",
-**  Economic Modelling ??, ???–???.
+**  Economic Modelling 80, 1–10.
 **
 **  Format:  {Nlm, Ntb, Np, PDlm, pval} = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
 **
@@ -178,18 +178,7 @@ proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
             p = p + 1;
         endo;
         
-        if ic == 1;
-            laglm = minindc(aicp);
-        elseif ic == 2;
-            laglm = minindc(sicp);
-        elseif ic == 3;
-            lagt = maxindc(tstatp);
-            if (abs(tstatp[ lagt ]) >= 1.645);
-                laglm = lagt;
-            elseif (abs(tstatp[ lagt ]) < 1.645);
-                laglm = 1;
-            endif;
-        endif;
+        laglm = _get_lag(ic, pmax, aicp, sicp, tstatp);
         
         stat = taup[ laglm ];
         if stat < LM_min;
@@ -321,18 +310,7 @@ proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
                 p = p + 1;
             endo;
             
-            if ic == 1;
-                laglm = minindc(aicp);
-            elseif ic == 2;
-                laglm = minindc(sicp);
-            elseif ic == 3;
-                lagt=maxindc(tstatp);
-                if (abs(tstatp[ lagt ]) >= 1.645);
-                    laglm = lagt;
-                elseif (abs(tstatp[ lagt ]) < 1.645);
-                    laglm = 1;
-                endif;
-            endif;
+            laglm = _get_lag(ic, pmax, aicp, sicp, tstatp);
             
             stat = taup[laglm];
             
@@ -364,8 +342,8 @@ endp;
 proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
     local panel_k, meanp, varp, row_n, mmm, optk, ct1, ct2, ct, crit, crit_tr;
     
-    crit = loadd(__FILE_DIR $+ "ILTlevel_crit.dat");
-    crit_tr = loadd(__FILE_DIR $+ "LTtrend_crit.dat");
+    load crit[27, 19]   = ILTlevel_crit.dat;
+    load crit_tr[14, 19] = LTtrend_crit.dat;
     
     panel_k = Np;
     meanp = 0;

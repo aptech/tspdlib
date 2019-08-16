@@ -1,0 +1,269 @@
+/*
+**> PDcaus_Zhnc
+**  References:
+**  Dumitrescu, E., Hurlin, C. (2012). 
+**  Testing for Granger non-causality in heterogeneous panels, 
+**  Economic Modelling 29 (2012) 1450–1460.
+**
+**  When you use this code, please cite:
+**  Kar, M., Nazlioglu, S., Agir, H. (2011) 
+**  "Financial Development and Economic Growth Nexus in the MENA Countries: Bootstrap Panel Granger Causality Analysis". 
+**  Economic Modelling 28(1-2): 685-693.
+**
+**  Menyah, K., Nazlioglu, S., Wolde-Rufael, Y. (2014) 
+**  "Financial Development, Trade Openness and Economic Growth in African Countries: New Insights from a Panel Causality Approach". 
+**  Economic Modelling 37: 386-394.
+**
+**  Format:  {Znt, Zn} = Panel_Zhnc(data, vnames, pmax, ic, Nboot);
+**
+**
+**  Input:   data	 -  (TxN,k) matrix 
+**                      k is number of endogenous variables in VAR model
+**           vnames  -  Variable names
+**                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable
+**           pmax    -  Maximum number of lags
+**           ic      -  Information Criterion for optimal lag selection
+**                      1 = Akaike 
+**                      2 = Schwarz
+**           Nboot   -  Number of boostrap replications
+**
+**  Output:  Znt     -  Panel Zhnc statistic with asymptotic distribution
+**           Zn      -  Panel Zhnc statistic with semi-asymptotic distribution
+**                      Prints individual results and bootstrap critical values 
+**
+
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot);
+    local m, j, i, depvar, indvar, cause, control, y_tn, y_i;
+    local obs, k, p, dmax, VARy, ylag, VARx, W, Ti, Ki;
+    local Nwald, Npval, Nlag, Ne_Znt, Nv_Znt, Ne_Zn, Nv_Zn;
+    local e0, z0, NeH0, NzH0, Wbar, Z_nt, Z_n, temp1, temp2;
+    local Znt_b, Zn_b, Z_nt_cv10, Z_nt_cv5, Z_nt_cv1;
+    local Z_n_cv10, Z_n_cv5, Z_n_cv1;
+    
+  m =1; 
+  do while m <= cols(data);  
+
+        depvar = data[.,m];
+        indvar = delcols(data,m);
+        
+        j = 1;
+        do while j <= cols(indvar);
+            
+            // Printing direction of causality
+            
+            if m==1;         vnames[j+1];;" does not cause ";; vnames[m]; endif;
+            if m>1 and m==j; vnames[j+1];;" does not cause ";; vnames[m]; endif;   
+            if m>1 and j<m;  vnames[j]  ;;" does not cause ";; vnames[m]; endif;
+            if m>1 and j>m;  vnames[j+1];;" does not cause ";; vnames[m]; endif; 
+                
+            cause  = indvar[.,j];
+            control= delcols(indvar,j); 
+            y_tn   = depvar~cause~control;
+            
+            Nwald  = zeros(N,1);
+            Npval  = zeros(N,1);
+            Nlag   = zeros(N,1);
+            Ne_Znt = zeros(N,1);
+            Nv_Znt = zeros(N,1);          
+            Ne_Zn  = zeros(N,1);
+            Nv_Zn  = zeros(N,1);
+                
+            NeH0  = zeros(t,n);
+            NzH0  = zeros(t,n);   
+                
+            for i(1,N,1); 
+                y_i  = y_tn[(i-1)*t+1:i*t,.]; 
+                
+                obs  = rows(y_i);
+                dmax = 0;
+                {k,p}       = _get_kp(y_i,pmax,0,ic,1);
+                {VARy,ylag} = _get_lagp(y_i,p+dmax);
+                {VARx}      = _get_VARdata(VARy,ylag,0,k,p,dmax);    
+                {W}         = _get_Wald(VARy,VARx,p,dmax);
+                
+                Nwald[i] = W;
+                Npval[i] = cdfchic(W,p);
+                Nlag[i]  = p;
+                
+                Ki = p;
+                Ti = obs - Ki;
+                Ne_Znt[i] = Ki; 
+                Nv_Znt[i] = 2*Ki;
+                
+                temp1     = (Ti-2*Ki-1)/(Ti-2*Ki-3);
+                Ne_Zn[i]  = Ki * temp1;
+                
+                temp2     = (Ti-Ki-3)/(Ti-2*Ki-5);
+                Nv_Zn[i]  = 2*Ki*temp1^2*temp2;
+                
+                {e0,z0}  = _get_resid_null_Zhnc(VARy,VARx,p,dmax);
+                NeH0[.,i] = zeros(p+dmax,1)|e0[.,m];
+                NzH0[.,i] = zeros(p+dmax,1)|z0[.,m];
+                
+            endfor;
+                        
+            Wbar = meanc(Nwald);
+            Z_nt = sqrt(N) * (Wbar-meanc(Ne_Znt))/ sqrt(meanc(Nv_Znt));
+            Z_n  = sqrt(N) * (Wbar-meanc(Ne_Zn)) / sqrt(meanc(Nv_Zn));
+            
+            // Boostrap distribution
+            {Znt_b, Zn_b}= _get_Zhnc_bootstrap(y_tn, NzH0, NeH0, pmax, Nboot); 
+                Z_nt_cv10 = Znt_b[Ceil(Nboot*.90)];
+                Z_nt_cv5  = Znt_b[Ceil(Nboot*.95)];
+                Z_nt_cv1  = Znt_b[Ceil(Nboot*.99)];
+
+                Z_n_cv10 = Zn_b[Ceil(Nboot*.90)];
+                Z_n_cv5  = Zn_b[Ceil(Nboot*.95)];
+                Z_n_cv1  = Zn_b[Ceil(Nboot*.99)];
+            
+            "     i       Lag     Wald     p-val";
+            "-----------------------------------";;
+                 seqa(1,1,N)~Nlag~Nwald~Npval;
+            "-----------------------------------";
+            "Panel W_bar  ";; Wbar; 
+            "*** Asymptotic Distribution ***";
+            "Panel Z_NT   ";; Z_nt;
+            "p-value(Z_NT)";; 2*(1-cdfn(abs(Z_nt)));
+            "Bootstrap cv (10%) ";; Z_nt_cv10;
+            "Bootstrap cv (5%)  ";; Z_nt_cv5;            
+            "Bootstrap cv (1%)  ";; Z_nt_cv1; 
+            
+            "*** Semi-asymptotic Distribution ***";     
+            "Panel Z_N    ";; Z_n;
+            "p-value(Z_N) ";; 2*(1-cdfn(abs(Z_n)));
+            "Bootstrap cv (10%) ";; Z_n_cv10;
+            "Bootstrap cv (5%)  ";; Z_n_cv5;            
+            "Bootstrap cv (1%)  ";; Z_n_cv1; 
+ //           "Asymptotic p-value ";; cdfchic(Fisher,2*N);           
+
+            "";
+            
+   j = j + 1; endo;
+   m = m + 1; endo;
+  
+retp(Z_nt, Z_n);
+endp;
+
+
+proc(2) = _get_Zhnc_bootstrap(y_tn, NzH0, NeH0, pmax, Nboot);
+    local Nwald, Npval, Nlag, Ne_Znt, Nv_Znt, Ne_Zn, Nv_Zn;
+    local s, y_i, obs, test, dmax, k, p, VARy, ylag, VARx;
+    local W, Ti, Ki, Wbar, Z_nt, Z_n, temp1, temp2;
+    local ustar, ystar_i, Z_nt_boot, Z_n_boot;
+
+
+    Z_nt_boot = zeros(Nboot,1);  
+    Z_n_boot = zeros(Nboot,1);
+    
+    s = 1;
+    do while s <= Nboot;
+                
+            Nwald  = zeros(N,1);
+            Npval  = zeros(N,1);
+            Nlag   = zeros(N,1);
+            Ne_Znt = zeros(N,1);
+            Nv_Znt = zeros(N,1);          
+            Ne_Zn  = zeros(N,1);
+            Nv_Zn  = zeros(N,1);
+                
+            for i(1,N,1); 
+                y_i  = y_tn[(i-1)*t+1:i*t,.]; 
+                obs  = rows(y_i);
+                test = 0;
+                dmax = 0;
+                {k,p}       = _get_kp(y_i,pmax,dmax,ic,test);
+                {VARy,ylag} = _get_lagp(y_i,p+dmax);
+                {VARx}      = _get_VARdata(VARy,ylag,1,k,p,dmax);
+                    
+                {ustar} = _get_ustar_Zhnc(NeH0);
+                ystar_i = NzH0[.,i] + ustar;
+                ystar_i = trimr(ystar_i,p+dmax,0);
+            
+                {W}  = _get_Wald(ystar_i,VARx,p,dmax);  
+                
+                Nwald[i] = W;
+                Npval[i] = cdfchic(W,p);
+                Nlag[i]  = p;
+                
+                Ki = p;
+                Ti = obs - Ki;
+                Ne_Znt[i] = Ki; 
+                Nv_Znt[i] = 2*Ki;
+                
+                temp1     = (Ti-2*Ki-1)/(Ti-2*Ki-3);
+                Ne_Zn[i]  = Ki * temp1;
+                
+                temp2     = (Ti-Ki-3)/(Ti-2*Ki-5);
+                Nv_Zn[i]  = 2*Ki*temp1^2*temp2;
+                
+            endfor;
+                        
+            Wbar = meanc(Nwald);
+            Z_nt = sqrt(N) * (Wbar-meanc(Ne_Znt))/ sqrt(meanc(Nv_Znt));
+            Z_n  = sqrt(N) * (Wbar-meanc(Ne_Zn)) / sqrt(meanc(Nv_Zn));
+      
+            Z_nt_boot[s] = Z_nt;
+            Z_n_boot[s]  = Z_n;
+                
+    s = s + 1;
+    endo;    
+            
+    Z_nt_boot  = sortc(Z_nt_boot,1);
+    Z_n_boot   = sortc(Z_n_boot,1);
+     
+retp(Z_nt_boot, Z_n_boot);
+endp; 
+
+
+proc (1) = _get_ustar_Zhnc(NeH0);
+    local T, N, Ta, replace, eb, order, ustar; 
+    
+    T  = rows(NeH0);
+    N  = cols(NeH0); 
+    Ta = T + 50;
+    replace = 1;
+    eb    = sampleData(NeH0, Ta, replace);
+    order = trunc(Ta*rndu(Ta,1)+1);
+    ustar = eb[order,.];
+    ustar = ustar[51:Ta,.];
+
+retp(ustar);
+endp;
+
+proc (2) = _get_resid_null_Zhnc(VARy,VARx,p,dmax);
+    local y, z, t, b, u, zr, br, uhat, zhat;
+    
+    // Parameter estimation without Ho restriction
+    y = VARy;
+    z = VARx;
+    t = rows(y) + p + dmax;
+    b =(y/z);
+    u = y-z*b;
+    //zhat = z.*b[.,1]';  
+    
+    // Residuals under the null hypothesis 
+    if dmax == 0; 
+        zr  = z[.,1:p]~z[.,2*p+1:cols(z)];
+    endif;
+    
+    if dmax >= 1; 
+       zr = z[.,1:(p+dmax)]~z[.,2*(p+dmax)+1:cols(z)];
+    endif;
+    
+    br   = (y/zr);
+    uhat   = y-zr*br;
+    
+    // z_hat under the null hypothesis    y = z*b + u 
+    zhat = zr.*br[.,1]';  
+
+retp(uhat,zhat);
+endp;
+  

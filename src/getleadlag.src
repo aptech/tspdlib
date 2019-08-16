@@ -1,0 +1,35 @@
+
+/*
+**> getleadlag
+**
+**  Format:  {dx_leads,dx_lags} = _get_LeadsLags(dx,q);
+**
+**  Input:   dx  -  Difference of X matrix
+**           q   -  Number of leads and lags for DOLS estimation
+**
+**  Output:  dx_leads  - Matrix of dx with leads
+**	         dx_leads  - Matrix of dx with lags
+**
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(2)=_get_LeadsLags(dx,q);
+    local dx_leads, dx_lags, c, j;
+    
+    dx_leads= {};
+    dx_lags = {};
+    for c(1,cols(dx),1);
+        for j(1,q,1);
+            dx_leads = dx_leads~ lagn(dx[.,c],-j);
+            dx_lags  = dx_lags ~ lagn(dx[.,c], j);
+        endfor;
+    endfor;
+    
+retp(dx_leads,dx_lags);
+endp;

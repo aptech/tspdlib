@@ -25,33 +25,48 @@
 /*03 January 2019*/
 
 proc(1)=_get_lag(ic, pmax, aicp, sicp, tstatp);
-    local values, p, j, isw;
+    local p, j;
+    
     if  ic == 1;
-        values = aicp;
-        p = minindc(values);
+        p = minindc(aicp);
     endif; 
     
     // Optimal Lag
     if  ic == 2;
-        values = sicp;
-        p = minindc(values);
+        p = minindc(sicp);
     endif;  
-    
+  
     // Optimal Lag
+    @
     if  ic == 3;
         values = tstatp;
         j = pmax + 1;
         isw = 0;
-        
         do while isw ne 1;
-            if (abs(values[j]) > 1.645) or (j == 1);
-                
+            if (abs(values[j]) > 1.645) or (j == 1);     
                 // Optimal Lag
                 p = j;  
                 isw = 1;
             endif;
-            j = j - 1;
+        j = j - 1;
         endo;
-    endif;
-    retp(p);
+    endif;    
+    @
+    
+    // Optimal Lag
+    if  ic == 3;
+        j = pmax + 1; 
+        do while j >= 1;
+             if abs(tstatp[j])>1.645;
+                break;
+              endif;
+        j = j - 1;
+        endo;
+        p = j;
+        if p == 0; p = p + 1;
+        else; p = p;
+        endif;    
+    endif; 
+    
+retp(p);
 endp;

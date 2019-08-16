@@ -39,7 +39,7 @@
 
 proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     local n, t, Nlm, Ntb, Np, i;
-    local LM, tb1, tb2, p, lambda, cv;
+    local LMtau, tb1, tb2, p, lambda, cv;
     local meanp, varp, PDlm;
     
     n  = cols(y);
@@ -51,9 +51,9 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
         Ntb = zeros(N, 1);
         
         for i(1, N, 1);
-            {LM, p} = LMtest(y[., i], pmax, ic);
+            {LMtau, p, cv} = LM(y[., i], pmax, ic);
             // i~LM~tb1~p;
-            Nlm[i] = LM;
+            Nlm[i] = LMtau;
             Np[i]  = p;
         endfor;
         
@@ -63,9 +63,9 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
         Ntb = zeros(N, 1);
         
         for i(1, N, 1);
-            {LM, tb1, p, lambda, cv} = LM_1break(y[., i], model, pmax, ic, trimm);
+            {LMtau, tb1, p, lambda, cv} = LM_1break(y[., i], model, pmax, ic, trimm);
             // i~LM~tb1~p;
-            Nlm[i] = LM;
+            Nlm[i] = LMtau;
             Ntb[i] = tb1;
             Np[i] = p;
         endfor;
@@ -76,9 +76,9 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
         Ntb = zeros(N, 2);
         
         for i(1, N, 1);
-            {LM, tb1, tb2, p, cv} = LM_2breaks(y[., i], model, pmax, ic, trimm);
+            {LMtau, tb1, tb2, p, cv} = LM_2breaks(y[., i], model, pmax, ic, trimm);
             //i~LM~tb1~p;
-            Nlm[i] = LM;
+            Nlm[i] = LMtau;
             Ntb[i, 1] = tb1;
             Ntb[i, 2] = tb2;
             Np[i] = p;

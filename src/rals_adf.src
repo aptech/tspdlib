@@ -31,10 +31,10 @@
 
 proc(3) = RALSADF(y, model, pmax, ic);
     local tauADF, lag_var, t, dy, ly, dc, dt, dep, y1, ldy, sbt, trnd, lmat, x;
-    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cv;
+    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cvADF, cv;
     
     T = rows(y);
-    { tauADF, lag_var } = ADF(y, model, pmax, ic);
+    { tauADF, lag_var, cvADF} = ADF(y, model, pmax, ic);
     dy = diff(y, 1);
     ly = lagn(y, 1);
     

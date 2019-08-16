@@ -1,12 +1,13 @@
 
 /*
-**> rals_adf
+**> qr_adf
 **  Reference:
-**  Im, K. S., Lee, J., & Tieslau, M. A. (2014).
-**  More powerful unit root tests with non-normal errors.
-**  In Festschrift in Honor of Peter Schmidt (pp. 315-342).Springer New York.
+**  Koenker, R., Xiao, Z., 2004. 
+**  Unit root quantile autoregression inference. 
+**  Journal of the American Statistical Association 99, 775–787.
 **
-**  Format:  {QURadf} = QRADF(y,model,pmax,ic,quantile,_print);
+**
+**  Format:  {QURadf} = QRADF(y, model , pmax, ic, tau, _print);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1 = Constant (Default in Koenker & Xiao (2004)
@@ -38,7 +39,7 @@
 /*Procedures*/
 proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     local n, y1, dy, dyl, x, ADFt, p, cv;
-    local qr_beta, u_plus, u_minus, rho_tau, beta_ols, rho_ols, res, ind, phi;
+    local qr_beta, u_plus, u_minus, rho_tau, beta_ols, rho_ols, res, ind, phi, cvADF;
     local w, cov, delta2, crv, h, x1, rq1, rq2, z, mz, q1, q2, fz, xx, px, QURadf;
     
     n = rows(y);
@@ -46,7 +47,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     dy = diff(y, 1);
     x = y1;
     
-    { ADFt, p } = ADF(y, model, pmax, ic);
+    { ADFt, p, cvADF} = ADF(y, 1, pmax, ic);
     
     if p > 0;
         dyl = zeros(rows(y), p);
@@ -150,7 +151,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
         "                 ADF-Statistics";
         "quantil        ";;
         tau;
-        "rho(quantil)   ";;
+        "rho(quantile)   ";;
         rho_tau;
         "rho (OLS)      ";;
         rho_ols;
@@ -166,7 +167,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
 endp;
 
 
-proc(1) = bandwidth(tau, n, hs, alpha);
+proc(1) = bandwidth(p, n, hs, alpha);
     local x0, f0, h;
     
     x0 = cdfNi(tau);

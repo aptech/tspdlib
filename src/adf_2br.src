@@ -1,6 +1,6 @@
 
 /*
-**> npopp
+**> adf_2br
 **  Reference:
 **  Narayan, P. K. and Popp, S. (NP) (2010),
 **  "A new unit root test with two structural breaks in level and slope at unknown time",
@@ -70,7 +70,7 @@ proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
             // Deterministic term=constant
             dc = ones(t, 1);               
             
-            // Deterministic term=tren
+            // Deterministic term=trend
             dt = seqa(1, 1, t);             
             
             if model == 1;

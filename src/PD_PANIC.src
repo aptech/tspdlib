@@ -12,7 +12,8 @@
 **  Econometric Theory, 25(6), 1851-1868.
 **
 **  Bai, J., & Ng, S. (2010).
-**  "Panel unit root tests with cross-section dependence: a further investigation".
+**  "Panel unit root tests with cross-section dependence: 
+**  a further investigation".
 **  Econometric Theory, 26(4), 1088-1114.
 **
 **  Reese, S., & Westerlund, J. (2016).
@@ -28,14 +29,14 @@
 **           JWL_PANICadj : Westerlund and Larsson (2009).
 **           JWR_PANICCA  : Reese and Westerlund (2016)
 **
-**  Format:  {ADFe,pval,lags,Pe,nf} = BNG_PANIC(y,kmax, model,ic);
-**           {Pa_pc,Pb_pc,PMSB_pc}  = BNG_PANICnew(y,kmax, model,ic);
+**  Format:  {ADFe,pval,lags,Pe,nf} = BNG_PANIC(y,model,ic);
+**           {Pa_pc,Pb_pc,PMSB_pc}  = BNG_PANICnew(y,model,ic);
 **           {Ze,Ze_ba}             = JWL_PANICadj(y,model,ic);
 **           {Pa_ca,Pb_ca,PMSB_ca}  = JWR_PANICCA(y,model);
 **
 **  Input:   Y	     -  TxN matrix, data,
-**           model   - 	0= Constant
-**                      1= Constant and trend
+**           model   - 	1= Constant
+**                      2= Constant and trend
 **           pmax    -  Maximum number of lags for ADF regressions; 0=no lags
 **           kmax    -  Maximum number of factors
 **           ic      -  Information Criterion for optimal number of factors
@@ -70,18 +71,19 @@
 #include panel.dat  /* for p-vals */
 
 /*Pe test on ADF p-values in Bai & Ng (2004)*/
-proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
-    local dx, x, e, t, n, nf, Fhat, lambda, ehat, ADFe, lags, pval, par, qval, j, Pe;
+proc(5) = BNG_PANIC(y, model, ic);
+    local dx, x, e, t, n, nf, Fhat, lambda, ehat;
+    local ADFe, lags, cv0, pval, par, qval, j, Pe;
     
     
     dx = diff(y, 1);
     x = dx[2:rows(y), .];
     
-    if model == 0;
+    if model == 1;
         x = x;
     endif;
     
-    if model == 1;
+    if model == 2;
         x = x - meanc(x)';
     endif;
     
@@ -99,7 +101,7 @@ proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
     pval = zeros(N, 1);
     
     for i(1, N, 1);
-        { ADFe[i], lags[i] } = ADF(e[., i], 0, pmax, 3);
+        { ADFe[i], lags[i], cv0} = ADF(e[., i], 0, pmax, 3);
         par = 1 ./ (1|t|t^2);
         qval = coe_adfnc * par;
         
@@ -119,18 +121,18 @@ endp;
 
 // Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010)
 
-proc(3) = BNG_PANICnew(y, kmax, model, ic);
+proc(3) = BNG_PANICnew(y, model, ic);
     local dx, nf, fhat, Floads, ehat, e, e1, rho, v, t, n, boti, topi, rhoi, sigi, bw, j, u, k;
     local x, w, alpha, omega2, sigma2, lambda2, lambda, phi4, rho1, s, temp, Pa, Pb, PMSB;
     
     dx = diff(y, 1);
-    x  =dx[2:rows(y), .];
+    x  = dx[2:rows(y), .];
     
-    if model == 0;
+    if model == 1;
         x = x;
     endif;
     
-    if model == 1;
+    if model == 2;
         x = x - meanc(x)';
     endif;
     
@@ -147,18 +149,18 @@ endp;
 
 // Ze and Ze+ tests in Westerlund & Larsson (2009)
 
-proc(2) = JWL_PANICadj(y, pmax, kmax, model, ic);
+proc(2) = JWL_PANICadj(y, model, ic);
     local nf, Fhat, lambda, ehat, E, ADFe, lagp, eb, varB, Ze, aN, Ze_ba;
-    local lags, dx, x, de, de0, del, rho, djwj, wj;
+    local lags, dx, x, de, de0, del, rho, djwj, wj, cv0;
     
     dx = diff(y, 1);
-    x = dx[2:T, .];
+    x  = dx[2:T, .];
     
-    if model == 0;
+    if model == 1;
         x = x;
     endif;
     
-    if model == 1;
+    if model == 2;
         x = x - meanc(x)';
     endif;
     
@@ -166,12 +168,12 @@ proc(2) = JWL_PANICadj(y, pmax, kmax, model, ic);
     
     // nf is selected with ICp2
     {Fhat, lambda, ehat} = pca(x, nf[2]);
-    e = cumsumc(ehat);
+    e  = cumsumc(ehat);
     ADFe = zeros(N, 1);
     lags = zeros(N, 1);
     
     for i(1, N, 1);
-        { ADFe[i], lags[i] } = ADF(e[., i], 0, pmax, 3);
+        { ADFe[i], lags[i], cv0} = ADF(e[., i], 0, pmax, 3);
     endfor;
     
     an = zeros(n, 1);
@@ -205,28 +207,26 @@ proc(2) = JWL_PANICadj(y, pmax, kmax, model, ic);
 endp;
 
 
-// Pooled Pa, Pb, and PMSB tests in Westerlund & Reese (2015)
+// Pooled Pa, Pb, and PMSB tests in Westerlund & Reese (2016)
 proc(3) = JWR_PANICCA(y, model);
-    local dx, x, D, M, D1, Fp, Ci, vi, e, e1, rho, v, t, n, boti, topi, rhoi, sigi, bw, j, u, k;
-    local z, w, alpha, omega2, sigma2, lambda2, lambda, phi4, rho1, s, temp, Pa, Pb, PMSB;
+    local T, dx, x, z, Fp, Ci, vi, e;
+    local Pa, Pb, PMSB;
     
     T = rows(y);
-    
-    // CA estimator of F and loadings
-    if model == 0;
-        M = eye(T - 1);
-    endif;
+        
+    dx = diff(y, 1);
+    x  = dx[2:T, .];
     
     if model == 1;
-        D = ones(T - 1, 1);
-        M = eye(T - 1) - D * inv(D'D) * D';
+        z = x;
     endif;
     
-    dx = diff(y, 1);
-    x = dx[2:T, .];
-    z = x;
+    if model == 2;
+        z = x - meanc(x)';
+    endif;
     
-    Fp = M * meanc(z');
+    // Cross-section averages
+    Fp = meanc(z');           
     Ci = inv(Fp'Fp) * Fp' * z;
     vi = z - Fp * Ci;
     // end of CA estimator
@@ -240,11 +240,11 @@ proc(3) = PaPbPMSB(e, model);
     local e1, rho, t, n, rho1, s, Pa, Pb, temp, PMSB;
     local sigma2, omega2, phi4, lambda2, lambda;
     
-    // Bai0 0and Ng (2010, pp.1092)
+    // Bai and Ng (2010, pp.1092)
     {sigma2, omega2, lambda2} = _get_lrv(e, 0);
     omega2 = meanc(omega2);
     sigma2 = meanc(sigma2);
-    phi4 = meanc(omega2 .* omega2);
+    phi4   = meanc(omega2 .* omega2);
     lambda = meanc(lambda2);
     
     e1 = lagn(e, 1);
@@ -255,7 +255,7 @@ proc(3) = PaPbPMSB(e, model);
     N = cols(e);
     
     // Intercept
-    if model == 0;  
+    if model == 1;  
         rho1 = (tr(e1'e) - N * T * lambda)/tr(e1'e1);
         s = sqrt(N) * T;
         Pa = s * (rho1-1)/sqrt(2 * PHI4/(OMEGA2^2));
@@ -265,7 +265,7 @@ proc(3) = PaPbPMSB(e, model);
     endif;
     
     // Intercept and trend
-    if model == 1; 
+    if model == 2; 
         rho1 = rho + 3/T * SIGMA2/OMEGA2;
         s = sqrt(N) * T;
         Pa = s * (rho1 - 1)/sqrt(36/5 * PHI4 * SIGMA2^2/(OMEGA2^4));
@@ -289,9 +289,9 @@ proc(3) = pca(x, nf);
         Fhat = sqrt(T) * eigvec[., T-nf+1:T];
         lambda = inv(Fhat'Fhat) * Fhat' * X; //lambda=Fhat'X/T
         ehat = X - Fhat * lambda;
-    endif;
     
-    if T > N;
+    else; 
+        
         { eigval, eigvec } = eighv(x' * x);
         lambda = sqrt(N) * eigvec[., N-nf+1:N];
         Fhat = X * lambda/N;

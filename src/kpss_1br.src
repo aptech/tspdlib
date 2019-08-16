@@ -1,17 +1,18 @@
 
 /*
-**> kurozumi
+**> kpss_1br
 **  Reference:
 **  Kurozumi, E. (2002)
 **  “Testing for stationarity with a break”,
 **  Journal of Econometrics 108, 105-127.
 **
-**  Format:  {stat,tb,lambda,crit[tb,.]} = KPSS_1break(y,model,varm);
+**  Format:  {stat,tb,lambda,crit[tb,.]} = KPSS_1break(y,model,l,varm);
 **           {PS,cv}              = STps(y,model,varm,tb);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1 = Case 0 (Level shift);
 **                      2 = Case 3 (Level and trend shift)
+**           l       -  Bandwidth for spectral window
 **           varm    -  Long-run consistent variance estimation method
 **                      1 = iid;
 **                      2 = Bartlett
@@ -41,10 +42,10 @@
 
 /*13 May 2016*/
 
-proc(4) = KPSS_1break(y, model, varm, trimm);
+proc(4) = KPSS_1break(y, model, l, varm, trimm);
     local t, ssr_min, tb1_min, KPSS_min;
     local t1, t2, tb1, tb2, dc, dt, du1, dt1, z;
-    local b, e1, ssr, St, lrv, vare, l, bw, w, KPSS, crit, TBi;
+    local b, e1, ssr, St, lrv, vare, KPSS, crit, TBi;
     
     T = rows(y);
     ssr_min = 1e6;
@@ -88,13 +89,13 @@ proc(4) = KPSS_1break(y, model, varm, trimm);
         if varm == 1;
             lrv = ssr/t;
         elseif varm == 2;
-            lrv = bartlett(e1);
+            lrv = bartlett(e1,l);
         elseif varm == 3;
-            lrv = qs(e1);
+            lrv = qs(e1,l);
         elseif varm == 4;
-            lrv = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
+            lrv = spc_bartlett(e1, l);
         elseif varm == 5;
-            lrv = spc_qs(e1, round(4 * (T/100)^(2/9)));
+            lrv = spc_qs(e1, l);
         elseif varm == 6;
             lrv = kurozumi_bartlett(e1);
         elseif varm == 7;
@@ -121,21 +122,21 @@ proc(4) = KPSS_1break(y, model, varm, trimm);
     crit = zeros(5, 3);
     if model == 1;
         crit = {0.28299 0.37538 0.60388,
-            0.22915 0.30212 0.48265,
-            0.18678 0.24247 0.38052,
-            0.16007 0.20106 0.30162,
-            0.15176 0.18688 0.26842};
+                0.22915 0.30212 0.48265,
+                0.18678 0.24247 0.38052,
+                0.16007 0.20106 0.30162,
+                0.15176 0.18688 0.26842};
     endif;
     
     if model == 2;
         crit = {0.09724 0.12046 0.17704,
-            0.09724 0.12046 0.14208,
-            0.06485 0.07889 0.11308,
-            0.05570 0.06615 0.09122,
-            0.05267 0.06163 0.08216};
+                0.09724 0.12046 0.14208,
+                0.06485 0.07889 0.11308,
+                0.05570 0.06615 0.09122,
+                0.05267 0.06163 0.08216};
     endif;
     
-    TBi = floor(10 * (tb1_min/rows(y)));
+    TBi = round(10 * (tb1_min/rows(y)));
     if TBi > 5;
         TBi = 10 - TBi;
     endif;
@@ -145,10 +146,10 @@ endp;
 
 proc(2) = STps(y, model, varm, tb);
     local t, tt, dc, dt, du1, dt1, ystar, z;
-    local b, e1, ssr, St, lrv, vare, l, bw, w, ps, cv, tb1;
+    local b, e1, ssr, St, lrv, vare, l, bw, w, ps, cv;
     
     t = rows(y);
-    tb1 = tb;
+    tb = tb1;
     ystar = zeros(t, 1);
     tt = 1;
     do while tt <= T;

@@ -1,6 +1,6 @@
 
 /*
-**> lrvar :Long-run consistent variance estimation methods
+**> getlrvar : Obtains consistent estimate of long-run variance
 **  References:
 **  Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
 **  A guide to the computation of stationarity tests.
@@ -30,43 +30,37 @@
 
 /*13 May 2016*/
 
-proc(1) = bartlett(e);
-    local t, vare, l, bw, w, lrv;
-    
+proc(1) = bartlett(e,l);
+    local t, lrv, bw, w;
+
     T = rows(e);
-    varE = e'e/T;
     
-    // bandwidth
-    l = round(4 * (T/100)^(2/9));   
-    
+    lrv = e'e/T;
     bw = 1;
-    
-    do while bw <= trunc(l);
-        w = (1 - bw/(l + 1));
-        lrv = varE + 2 * e[1:T-bw]' * e[1+bw:T] * w/T;
-        bw = bw + 1;
+    do while bw <=l;
+        w   = 1- bw/(l+1);
+        lrv = lrv + 2 * e[1:T-bw]' * e[1+bw:T] * w/T;
+    bw = bw + 1;
     endo;
     
     retp(lrv);
 endp;
 
-proc(1) = qs(e);
-    local t, vare, l, bw, w, lrv;
+proc(1) = qs(e,l);
     
-    T = rows(e);
-    varE = e'e/T;
+    local t, vare, bw, w, x1, x2, lrv;
     
-    // bandwidth
-    l = round(4 * (T/100)^(2/9));   
-    
+    T   = rows(e);
+    lrv = e'e/T;  
     bw = 1;
-    
-    do while bw <= trunc(l);
-        w = 25/(12 * pi^2 * (bw/l)^2) * (sin(6 * pi * bw/(l * 5))/(6 * pi * bw/(l * 5)) - cos(6 * pi * bw/(l * 5)));
-        lrv = varE + 2 * e[1:T-bw]' * e[1+bw:T] * w/T;
+    do while bw <= l;
+        x1 = bw/l;
+        x2 = 6*pi*x1/5;
+        w  = (25/(12*(pi*x1)^2)).*(sin(x2)./x2 - cos(x2));
+        lrv= lrv + 2 * e[1:T-bw]' * e[1+bw:T] * w/T;
         bw = bw + 1;
-    endo;
-    
+    endo;    
+ 
     retp(lrv);
 endp;
 
@@ -105,6 +99,7 @@ proc(1) = spc_bartlett(e, lags);
         res_temp = temp[., 1] - temp[., 2:cols(temp)] * rho_temp;  
         
         BIC = ln(res_temp'res_temp/(t-lags)) + (i * ln(t - lags)/(t - lags));
+        
         if BIC < min_BIC;
             min_BIC = BIC;
             k = i;
@@ -135,15 +130,12 @@ proc(1) = spc_bartlett(e, lags);
     lrv = res'res/t;
     
     i = 1;
-    
-    // long-run variance 
     do until i > l; 
         
         // Bartlett kernel
         w = (1 - i/(l + 1)); 
-        
         lrv = lrv + 2 * res[1:rows(res)-i]'res[1+i:rows(res)] * w/t;
-        i = i + 1;
+    i = i + 1;
     endo;
     
     // Recoloring

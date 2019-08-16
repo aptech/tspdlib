@@ -1,0 +1,166 @@
+
+/*
+**  coint_hatemiJ
+**  Reference:
+**  Hatemi-J (2008). 
+**  "Tests for cointegration with two unknown regime shifts 
+**   with an application to ﬁnancial market integration" 
+**  Empirical Economics, 35, 497-505.
+**
+**
+**  Format:  {ADF_min,TB1adf,TB2adf,Zt_min,TB1zt,TB2zt,Za_min,TB1za,TB2za,cvADFZt,cvZa} 
+**                              = coint_hatemiJ(y,x,model,ic,pmax,varm,trimm);
+
+**           
+**  Input:   Y	     -  Nx1 matrix, dependent variable
+**           X       -  NxK matrix, independent variables
+**           k       -  Columns of x (upper bound is 4)      
+**           model   - 	3 = C/S (regime shift)
+**           pmax    -  Maximum number of lags for Dy in ADF test; 0=no lags
+**           ic      -  Information Criterion for ADF-based test: 
+**                      1=Akaike 
+**                      2=Schwarz 
+**                      3=t-stat significance
+**           varm    -  Long-run consistent variance estimation method for PP-based test
+**                      1 = iid; 
+**                      2 = Bartlett 
+**                      3 = Qudratic Spectral (QS); 
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005) 
+**                      5 = SPC with QS; 
+**                      6 = Kurozumi with Bartlett
+**                      7 = Kurozumi with QS
+**                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**                      See:
+**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006). 
+**                      A guide to the computation of stationarity tests. 
+**                      Empirical Economics, 31(2), 433.           
+**           trimm   -  Trimming rate Default [0.15,0.85] as in GH (1996)
+**
+**
+**  Output: ADF_min -   ADF test
+**          Za_min  -   Zalpha test
+**          Zt_min  -   Zt test
+**          TB      -   break location
+**	    cv      -   1%, 5%, 10% critical values for the chosen model 
+**
+**
+**  Author: Saban Nazlioglu
+        -- The author makes no performance guarantees.
+        -- for public non-commercial use only.
+        -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+*/
+
+
+/*Procedures*/
+
+proc(11)=coint_hatemiJ(y,x,model,ic,pmax,varm,trimm);
+    local n,TB1adf,TB1za,TB1zt,TB2adf,TB2za,TB2zt,ADF_min,Za_min,Zt_min;
+    local T1,T2,T3,DF,Za,Zt,lagadf,tb1,tb2,du1,du2,x1,stat1,stat2,stat3;
+    local b,e1,sig2,se,ssr,cvADFZt,cvZa,k;
+    local cv0, cv1, cv2;
+    
+    n     = rows(y);      /*# of observation*/
+    TB1adf= 0;
+    TB1zt = 0; 
+    TB1za = 0;
+    TB2adf= 0;
+    TB2zt = 0; 
+    TB2za = 0;
+    ADF_min= 1000;
+    Zt_min = 1000;
+    Za_min = 1000;
+
+    //beginning point for loop
+    T1=round(trimm*n);       
+    
+    //final point for loop on first break
+    T2=round((1-2*trimm)*n);
+
+    //final point for loop on second break   
+    T3=round((1-trimm)*n);   
+    
+    DF = zeros(T2-T1+1,T3-T1*2+1);
+    lagadf = zeros(T2-T1+1,T3-T1*2+1);
+    Zt= zeros(T2-T1+1,T3-T1*2+1);
+    Za= zeros(T2-T1+1,T3-T1*2+1);
+
+    tb1=T1;             
+    do while tb1<=T2;
+        tb2=tb1+T1;
+            do while tb2<=T3;
+                
+        du1 =zeros(tb1,1)|ones(n-tb1,1);
+        du2 =zeros(tb2,1)|ones(n-tb2,1);
+                
+     if    model==3; x1=ones(n,1)~du1~du2~x~du1.*x~du2.*x; 
+     else; "Error: Only Model 3 is avaliable";
+     endif;
+                                        {b,e1,sig2,se,ssr}    = myols(y,x1); 
+        {DF[tb1-T1+1,tb2-T1*2+1],lagadf[tb1-T1+1,tb2-T1*2+1], cv0}  = adf(e1,0,pmax,ic);
+        {Zt[tb1-T1+1,tb2-T1*2+1],Za[tb1-T1+1,tb2-T1*2+1], cv1, cv2} = pp(e1,0,bwl,varm);
+   
+         stat1=minc(minc(DF));
+         if stat1<ADF_min; 
+             
+             //first break date
+             TB1adf=tb1; 
+             
+             //second break date
+             TB2adf=tb2;
+             
+             //ADF statistic
+             ADF_min=stat1;   
+         endif;
+
+         stat2=minc(minc(Zt));
+         if stat2<Zt_min; 
+             
+             //first break date
+             TB1zt=tb1; 
+             
+             //second break date
+             TB2zt=tb2; 
+             
+             //Zt statistic
+             Zt_min=stat2;   
+         endif;
+
+         stat3=minc(minc(Za));
+         if stat3<Za_min; 
+             
+             // first break date
+             TB1za=tb1; 
+             
+             //second break date
+             TB2za=tb2; 
+             
+             //Zalpha statistic
+             Za_min=stat3;   
+         endif;       
+    
+    tb2=tb2+1; 
+         endo;
+    tb1=tb1+1; 
+         endo;
+    
+    TB2adf= rows(x)*(minindc(minc(DF))+T1-1)/n;
+    TB2zt = rows(x)*(minindc(minc(Zt))+T1-1)/n;
+    TB2za = rows(x)*(minindc(minc(Za))+T1-1)/n;
+   
+    k = cols(x);
+    {cvADFZt,cvZa} = cv_coint_hatemiJ(k);
+         
+retp(ADF_min,TB1adf,TB2adf,Zt_min,TB1zt,TB2zt,Za_min,TB1za,TB2za,cvADFZt,cvZa);
+endp;    
+
+
+
+proc(2)=cv_coint_hatemiJ(k);
+    local cvADFzt,cvZa;        
+    if k==1; cvADFZt=-6.503|-6.015|-5.653; cvZa= -90.704|-76.003|-52.232;    endif;    
+    if k==2; cvADFZt=-6.928|-6.458|-6.224; cvZa= -99.458|-83.644|-76.806;    endif;   
+    if k==3; cvADFZt=-7.833|-7.352|-7.118; cvZa= -118.577|-104.860|-97.749;  endif; 
+    if k==4; cvADFZt=-8.353|-7.903|-7.705; cvZa= -140.135|-123.870|-116.169; endif;
+        
+retp(cvADFZt,cvZa);
+endp;

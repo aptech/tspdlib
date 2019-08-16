@@ -1,7 +1,7 @@
 
 
 /*
-**> rtaylorFgls
+**> fourier_gls
 **  Reference:
 ** Rodrigues, P. M. M and Taylor, A. M. T (2012),
 ** "The Flexible Fourier Form and Local Generalised Least Squares
@@ -208,7 +208,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
     
     if model == 1;
         if T <= 150;
-            crit = {-3.911 -3.294 -2.328, 
+        crit = {-3.911 -3.294 -2.328, 
                 -3.298 -2.601 -2.187, 
                 -3.131 -2.359 -2.005, 
                 -2.934 -2.256 -1.918, 
@@ -216,7 +216,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
         endif;
         
         if 151 < T and T <= 350;
-            crit = {-3.780 -3.176 -2.828, 
+        crit = {-3.780 -3.176 -2.828, 
                 -3.278 -2.473 -2.099, 
                 -2.989 -2.226 -1.896, 
                 -2.884 -2.179 -1.830, 
@@ -224,7 +224,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
         endif;
         
         if 350 < T;
-            crit = {-3.637 -3.017 -2.661, 
+        crit = {-3.637 -3.017 -2.661, 
                 -3.074 -2.377 -1.990, 
                 -2.916 -2.175 -1.808, 
                 -2.773 -2.079 -1.732, 
@@ -234,7 +234,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
     
     if model == 2;
         if T <= 150;
-            crit = {-4.771 -4.175 -3.879, 
+        crit = {-4.771 -4.175 -3.879, 
                 -4.278 -3.647 -3.316, 
                 -4.044 -3.367 -3.037, 
                 -3.920 -3.232 -2.902, 
@@ -242,7 +242,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
         endif;
         
         if 151 < T and T <= 350;
-            crit = {-4.593 -4.041 -3.749, 
+        crit = {-4.593 -4.041 -3.749, 
                 -4.191 -3.569 -3.228, 
                 -3.993 -3.300 -2.950, 
                 -3.852 -3.174 -2.852, 
@@ -250,7 +250,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
         endif;
         
         if 350 < T;
-            crit = {-4.462 -3.917 -3.651, 
+        crit = {-4.462 -3.917 -3.651, 
                 -4.073 -3.438 -3.108, 
                 -3.822 -3.220 -2.868, 
                 -3.701 -3.092 -2.758, 

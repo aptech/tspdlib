@@ -1,0 +1,207 @@
+
+/*
+**> PDcaus_Fisher
+**  References:
+**  Emirmahmutoglu, F., Kose, N. (2011) 
+**  Testing for Granger causality in heterogeneous mixed panels, 
+**  Economic Modelling 28 (2011) 870–876.
+**
+**  When you use this code, please cite:
+**  Kar, M., Nazlioglu, S., Agir, H. (2011) 
+**  "Financial Development and Economic Growth Nexus in the MENA Countries: Bootstrap Panel Granger Causality Analysis". 
+**  Economic Modelling 28(1-2): 685-693.
+**
+**  Menyah, K., Nazlioglu, S., Wolde-Rufael, Y. (2014) 
+**  "Financial Development, Trade Openness and Economic Growth in African Countries: New Insights from a Panel Causality Approach". 
+**  Economic Modelling 37: 386-394.
+**
+**  Format:  Fisher = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot);
+**
+**
+**  Input:   data	 -  (TxN,k) matrix 
+**                      k is number of endogenous variables in VAR model
+**           vnames  -  Variable names
+**                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable
+**           pmax    -  Maximum number of lags
+**           dmax    -  Maximum integration degree of variables
+**           ic      -  Information Criterion for optimal lag selection
+**                      1 = Akaike 
+**                      2 = Schwarz
+**           Nboot   -  Number of boostrap replications
+**
+**  Output:  Fisher  -  Panel Fisher statistics
+**                      Prints individual results and bootstrap critical values 
+**
+
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot);
+  local m, j, i, depvar, indvar, cause, control, y_tn, y_i;
+  local obs, k, p, VARy, ylag, VARx, W, Nwald, Npval, Nlag;
+  local e0, z0, NeH0, NzH0, Fisher, test_out;
+  local Fisher_b, boot_cv10, boot_cv5, boot_cv1;
+
+    
+  m =1; 
+  do while m <= cols(data);  
+
+        depvar = data[.,m];
+        indvar = delcols(data,m);
+        
+        j = 1;
+        do while j <= cols(indvar);
+            
+            // Printing direction of causality
+            
+            if m==1;         vnames[j+1];;" does not cause ";; vnames[m]; endif;
+            if m>1 and m==j; vnames[j+1];;" does not cause ";; vnames[m]; endif;   
+            if m>1 and j<m;  vnames[j]  ;;" does not cause ";; vnames[m]; endif;
+            if m>1 and j>m;  vnames[j+1];;" does not cause ";; vnames[m]; endif; 
+                
+            cause  = indvar[.,j];
+            control= delcols(indvar,j); 
+            y_tn   = depvar~cause~control;
+            
+            Nwald = zeros(N,1);
+            Npval = zeros(N,1);
+            Nlag  = zeros(N,1);
+            NeH0   = zeros(t,n);
+            NzH0   = zeros(t,n);   
+                
+            for i(1,N,1); 
+                y_i  = y_tn[(i-1)*t+1:i*t,.]; 
+                
+                obs  = rows(y_i);
+                
+                {k,p}       = _get_kp(y_i,pmax,0,ic,1);
+                {VARy,ylag} = _get_lagp(y_i,p+dmax);
+                {VARx}      = _get_VARdata(VARy,ylag,1,k,p,dmax);    
+                {W}         = _get_Wald(VARy,VARx,p,dmax);
+                
+                Nwald[i] = W;
+                Npval[i] = cdfchic(W,p);
+                Nlag[i]  = p;
+                
+                {e0,z0}  = _get_resid_null_Fisher(VARy,VARx,p,dmax);
+                NeH0[.,i] = zeros(p+dmax,1)|e0[.,m];
+                NzH0[.,i] = zeros(p+dmax,1)|z0[.,m];
+                
+            endfor;
+                        
+            Fisher   = -2*sumc(ln(Npval));
+            
+            // Boostrap distribution
+            Fisher_b = _get_Fisher_bootstrap(y_tn, NzH0, NeH0, pmax, dmax, Nboot);        
+            boot_cv10 = Fisher_b[Ceil(Nboot*.90)];
+            boot_cv5  = Fisher_b[Ceil(Nboot*.95)];
+            boot_cv1  = Fisher_b[Ceil(Nboot*.99)];
+
+            "     i       Lag     Wald     p-val";
+            "-----------------------------------";;
+                 seqa(1,1,N)~Nlag~Nwald~Npval;
+            "-----------------------------------";
+            "Panel Fisher       ";;Fisher;
+            "Asymptotic p-value ";;cdfchic(Fisher,2*N);           
+            "Bootstrap cv (10%) ";; boot_cv10;
+            "Bootstrap cv (5%)  ";; boot_cv5;            
+            "Bootstrap cv (1%)  ";; boot_cv1; 
+            "";
+            
+   j = j + 1; endo;
+   m = m + 1; endo;
+  
+retp(Fisher);
+endp;
+
+proc(1) = _get_Fisher_bootstrap(y_tn, NzH0, NeH0, pmax, dmax, Nboot);
+    local s,  i, y_i, obs, test, k, p, VARy, ylag, VARx;
+    local Fisher_boot, Nwald, Npval, ustar, ystar_i, W;
+
+
+    Fisher_boot = zeros(Nboot,1);        
+    s = 1;
+    do while s <= Nboot;
+                
+        Nwald = zeros(N,1);
+        Npval = zeros(N,1);            
+                        
+        for i(1,N,1);
+
+            y_i  = y_tn[(i-1)*t+1:i*t,.]; 
+            obs  = rows(y_i);
+            test = 1;
+            {k,p}       = _get_kp(y_i,pmax,0,ic,test);
+            {VARy,ylag} = _get_lagp(y_i,p+dmax);
+            {VARx}      = _get_VARdata(VARy,ylag,1,k,p,dmax);
+                    
+            {ustar} = _get_ustar_Fisher(NeH0);
+            ystar_i = NzH0[.,i] + ustar;
+            ystar_i = trimr(ystar_i,p+dmax,0);
+            
+            {W}  = _get_Wald(ystar_i,VARx,p,dmax);    
+    
+            Nwald[i] = W;
+            Npval[i] = cdfchic(W,p);
+                
+        endfor;
+      
+    Fisher_boot[s] = -2*sumc(ln(Npval));
+                
+    s = s + 1;
+    endo;    
+            
+     Fisher_boot  = sortc(Fisher_boot,1);
+     
+retp(Fisher_boot);
+endp; 
+
+proc (1) = _get_ustar_Fisher(NeH0);
+    local T, N, Ta, replace, eb, order, ustar; 
+    
+    T  = rows(NeH0);
+    N  = cols(NeH0); 
+    Ta = T + 50;
+    replace = 1;
+    eb    = sampleData(NeH0, Ta, replace);
+    order = trunc(Ta*rndu(Ta,1)+1);
+    ustar = eb[order,.];
+    ustar = ustar[51:Ta,.];
+
+retp(ustar);
+endp;
+
+proc (2) = _get_resid_null_Fisher(VARy,VARx,p,dmax);
+    local y, z, t, b, u, zr, br, uhat, zhat;
+    
+    // Parameter estimation without Ho restriction
+    y = VARy;
+    z = VARx;
+    t = rows(y) + p + dmax;
+    b =(y/z);
+    u = y-z*b;
+    //zhat = z.*b[.,1]';  
+    
+    // Residuals under the null hypothesis 
+    if dmax == 0; 
+        zr  = z[.,1:p]~z[.,2*p+1:cols(z)];
+    endif;
+    
+    if dmax >= 1; 
+       zr = z[.,1:(p+dmax)]~z[.,2*(p+dmax)+1:cols(z)];
+    endif;
+    
+    br   = (y/zr);
+    uhat   = y-zr*br;
+    
+    // z_hat under the null hypothesis    y = z*b + u 
+    zhat = zr.*br[.,1]';  
+
+retp(uhat,zhat);
+endp;
+  
