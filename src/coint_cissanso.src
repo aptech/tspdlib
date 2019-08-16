@@ -54,7 +54,7 @@
 
 
 proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
-    local t1, t2, tb1, dc, dt, du1, dt1, z;
+    local T, t1, t2, tb1, dc, dt, du1, dt1, z;
     local ssr1_min, tb1_min, SC1_min;   
     local ssr2_min, tb2_min, SC2_min; 
     local b1, e1, ssr1, St1, lrv1, SC1;
