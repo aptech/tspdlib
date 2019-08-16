@@ -53,7 +53,7 @@
 /*Procedures*/
 
 
-proc(6) = coint_cissanso(y, x, model, varm, trimm, q);
+proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
     local t1, t2, tb1, dc, dt, du1, dt1, z;
     local ssr1_min, tb1_min, SC1_min;   
     local ssr2_min, tb2_min, SC2_min; 

@@ -18,11 +18,12 @@ kmax = 4;
 // Information Criterion for optimal number of factors
 ic = 2;
 
+
 /*
-** Model with constant
+** Model with constant and trend
 */
-model = 0;
-print "Model with constant";
+model = 1;
+print "Model with intercept";
 
 { Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, kmax, model, ic);
 
@@ -40,8 +41,8 @@ cdfn(PMSB_pc);
 /*
 ** Model with constant and trend
 */
-model = 1;
-print "Model with constant and trend";
+model = 2;
+print "Model with intercept and trend";
 
 { Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, kmax, model, ic);
 

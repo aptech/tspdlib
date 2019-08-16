@@ -49,7 +49,7 @@
 
 /*Procedures*/
 
-proc(7) = coint_tsongetal(y, x, model, kmax, varm, q);
+proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     local t, dc, dt, sink, cosk, z;
     local ssr1_min, k1_min, SC1_min;   
     local ssr2_min, k2_min, SC2_min; 

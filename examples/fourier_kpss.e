@@ -4,12 +4,11 @@ library tspdlib;
 
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
+T = rows(y);
 
-/*
-** Maximum number of lags for ds;
-** 0=no lags
-*/
-pmax = 12;
+// bandwidth lag
+bwl = round(4 * (T/100)^(2/9));
+bwl = 1;
 
 /*
 ** Information Criterion:
@@ -67,15 +66,11 @@ for i(1, 7, 1);
         "--------Model C: Break in level & trend-----";
     endif;
     
-    "Fourier KPSS test (Becker, Enders & Lee, 2006)";
-    k = Fourier(y, model, fmax);
-    { KPSS, cv } = Fourier_KPSS(y, model, k, varm);
-    "       KPSS-stat       ";;
-    KPSS;
-    "       Fourier         ";;
-    k;
-    "       CV (1%, 5%, 10%)";;
-    cv;
+    "Fourier KPSS test (Becker, Enders & Lee, 2006)";     
+    { KPSS, k, cv } = Fourier_KPSS(y, model, fmax, bwl, varm);
+    "       KPSS-stat       ";;KPSS;
+    "       Fourier         ";;k;
+    "       CV (10%, 5%, 1%)";;cv;
     "";
     
     /*
@@ -92,15 +87,11 @@ for i(1, 7, 1);
         "--------Model C: Break in level & trend-----";
     endif;
     
-    "Fourier KPSS test (Becker, Enders & Lee, 2006)";
-    k = Fourier(y, model, fmax);
-    { KPSS, cv } = Fourier_KPSS(y, model, k, varm);
-    "       KPSS-stat       ";;
-    KPSS;
-    "       Fourier         ";;
-    k;
-    "       CV (1%, 5%, 10%)";;
-    cv;
+    "Fourier KPSS test (Becker, Enders & Lee, 2006)";     
+    { KPSS, k, cv } = Fourier_KPSS(y, model, fmax, bwl, varm);
+    "       KPSS-stat       ";;KPSS;
+    "       Fourier         ";;k;
+    "       CV (10%, 5%, 1%)";;cv;
     "";
     
 endfor;

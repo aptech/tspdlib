@@ -50,7 +50,7 @@
 
 /*Procedures*/
 
-proc(3)=coint_shin(y,x,model,varm,q);
+proc(3)=coint_shin(y,x,model,bwl,varm,q);
    local n, z, b1, e1, ssr1, St1, lrv1, C1;
    local dx, dx_leads, dx_lags, xdols, ydols, zdols;
    local b2, e2, ssr2, St2, lrv2, C2, k, cv;

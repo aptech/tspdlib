@@ -26,17 +26,21 @@ format /m1 /rd 8,4;
 */
 model = 1;                  
 
-{ GLStau, GLSp } = DFGLS(y, model, pmax, ic);
+{ GLStau, GLSp, cvGLS } = DFGLS(y, model, pmax, ic);
 
 "ERS tests      ";
-"  DF-GLS & lag ";;GLStau~GLSp;
+"Test      Stat.   cv(1%)   cv(5%)   cv(10%)   Lag  ";
+"--------------------------------------------------";
+"DFGLS " ;; GLStau ;; cvGLS ;; GLSP ;
 
 /*
 ** With constant and trend
 */
 model = 2;
 
-{ GLStau, GLSp } = DFGLS(y, model, pmax, ic);
+{ GLStau, GLSp, cvGLS } = DFGLS(y, model, pmax, ic);
 
 "ERS tests      ";
-"  DF-GLS & lag ";;GLStau~GLSp;
+"Test      Stat.   cv(1%)   cv(5%)   cv(10%)   Lag  ";
+"--------------------------------------------------";
+"DFGLS " ;; GLStau ;; cvGLS ;; GLSP ;

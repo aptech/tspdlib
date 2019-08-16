@@ -4,6 +4,11 @@ library tspdlib;
 
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
+T = rows(y);
+
+// bandwidth lag
+bwl = round(4 * (T/100)^(2/9));
+bwl = 1;   
 
 format /m1 /rd 8,4;
 
@@ -46,17 +51,14 @@ for i(1, 7, 1);
         "------------With constant and trend---------";
     endif;
     
-    { Mza, Mzt, MSB, MPT } = MGLS(y, model, varm);
+    {MZa, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT} = MGLS(y, model, bwl, varm);
     
-    "MGLS tests     ";
-    "  MZa          ";;
-    MZa;
-    "  MZt          ";;
-    MZt;
-    "  MSB          ";;
-    MSB;
-    "  MPT          ";;
-    MPT;
+    "Test      Stat.   cv(1%)   cv(5%)   cv(10%)   Lag  ";
+    "--------------------------------------------------";
+    "MZa   " ;; MZa    ;; cvMZA;
+    "MZt   " ;; MZt    ;; cvMZt;
+    "MSB   " ;; MSB    ;; cvMSB;
+    "MPT   " ;; MPT    ;; cvMPT;
     
     /*
     ** With constant and trend
@@ -71,15 +73,13 @@ for i(1, 7, 1);
         "------------With constant and trend---------";
     endif;
     
-    { Mza, Mzt, MSB, MPT } = MGLS(y, model, varm);
+    {MZa, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT} = MGLS(y, model, bwl, varm);
     
-    "MGLS tests     ";
-    "  MZa          ";;
-    MZa;
-    "  MZt          ";;
-    MZt;
-    "  MSB          ";;
-    MSB;
-    "  MPT          ";;
-    MPT;
+    "Test      Stat.   cv(1%)   cv(5%)   cv(10%)   Lag  ";
+    "--------------------------------------------------";
+    "MZa   " ;; MZa    ;; cvMZA;
+    "MZt   " ;; MZt    ;; cvMZt;
+    "MSB   " ;; MSB    ;; cvMSB;
+    "MPT   " ;; MPT    ;; cvMPT;
+    
 endfor;

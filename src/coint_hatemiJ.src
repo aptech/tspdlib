@@ -53,7 +53,7 @@
 
 /*Procedures*/
 
-proc(11)=coint_hatemiJ(y,x,model,ic,pmax,varm,trimm);
+proc(11)=coint_hatemiJ(y,x,model,bwl,ic,pmax,varm,trimm);
     local n,TB1adf,TB1za,TB1zt,TB2adf,TB2za,TB2zt,ADF_min,Za_min,Zt_min;
     local T1,T2,T3,DF,Za,Zt,lagadf,tb1,tb2,du1,du2,x1,stat1,stat2,stat3;
     local b,e1,sig2,se,ssr,cvADFZt,cvZa,k;

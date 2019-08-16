@@ -4,9 +4,14 @@ library tspdlib;
 
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
+T = rows(y);
+
+// bandwidth lag
+bwl = round(4 * (T/100)^(2/9));
+bwl = 1;
 
 // Trimming rate
-trimm= 0.10;             
+trimm= 0.10;
 
 format /m1 /rd 8,4;
 // Iterate through LR variance options
@@ -51,7 +56,7 @@ for i(1, 7, 1);
     endif;
     
     "One break KPSS test (Kurozumi, 2002)";
-    { KPSS, tb1, lambda, cv } = KPSS_1break(y, model, varm, trimm);
+    { KPSS, tb1, lambda, cv } = KPSS_1break(y, model, bwl, varm, trimm);
     "       KPSS test       ";;
     KPSS;
     "       Break date      ";;
@@ -76,7 +81,7 @@ for i(1, 7, 1);
     endif;
     
     "One break KPSS test (Kurozumi, 2002)";
-    { KPSS, tb1, lambda, cv } = KPSS_1break(y, model, varm, trimm);
+    { KPSS, tb1, lambda, cv } = KPSS_1break(y, model, bwl, varm, trimm);
     "       KPSS test       ";;
     KPSS;
     "       Break date      ";;

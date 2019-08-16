@@ -57,7 +57,7 @@
 
 /*Procedures*/
 
-proc(8)=coint_ghansen(y,x,model,ic,pmax,varm,trimm);
+proc(8)=coint_ghansen(y,x,model,bwl,ic,pmax,varm,trimm);
     local n,TBadf,TBZa,TBZt,ADF_min,Za_min,Zt_min;
     local T1,T2,DF,Za,Zt,lagadf,tb1,du1,x1,stat1,stat2,stat3,optl;
     local b,e1,sig2,se,ssr,cvADFZt,cvZa,k;

@@ -4,6 +4,11 @@ library tspdlib;
 
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
+T = rows(y);
+
+// bandwidth lag
+bwl = round(4 * (T/100)^(2/9));
+bwl = 1;   
 
 format /m1 /rd 8,4;
 
@@ -46,7 +51,7 @@ for i(1, 7, 1);
         "------------With constant and trend---------";
     endif;
     
-    { Zt, Za } = PP(y, model, varm);
+    { Zt, Za, cvZt, cvZa } = PP(y, model, bwl, varm);
     
     "PP tests       ";
     "  Zt           ";;
@@ -67,13 +72,12 @@ for i(1, 7, 1);
         "------------With constant and trend---------";
     endif;
     
-    { Zt, Za } = PP(y, model, varm);
+    { Zt, Za, cvZt, cvZa } = PP(y, model, bwl, varm);
     
-    "PP tests       ";
-    "  Zt           ";;
-    Zt;
-    "  Za           ";;
-    Za;
+    "Test      Stat.   cv(1%)   cv(5%)   cv(10%)   Lag  ";
+    "--------------------------------------------------";
+    "Zt    " ;; Zt     ;; cvZt; 
+    "Za    " ;; Za     ;; cvZa;
     
     /*
     ** With constant and trend
@@ -88,11 +92,10 @@ for i(1, 7, 1);
         "------------With constant and trend---------";
     endif;
     
-    { Zt, Za } = PP(y, model, varm);
+    { Zt, Za, cvZt, cvZa } = PP(y, model, bwl, varm);
     
-    "PP tests       ";
-    "  Zt           ";;
-    Zt;
-    "  Za           ";;
-    Za;
+    "Test      Stat.   cv(1%)   cv(5%)   cv(10%)   Lag  ";
+    "--------------------------------------------------";
+    "Zt    " ;; Zt     ;; cvZt; 
+    "Za    " ;; Za     ;; cvZa;
 endfor;

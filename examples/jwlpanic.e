@@ -27,7 +27,7 @@ ic = 2;
 /*
 ** Model with constant
 */
-model = 0;
+model = 1;
 print "Model with constant";
 
 { Pa_ca, Pb_ca, PMSB_ca } = JWR_PANICCA(y, model);
@@ -42,10 +42,11 @@ cdfn(Pb_ca);
 "PMSB   ";;
 PMSB_ca;;
 cdfn(PMSB_ca);
+
 /*
 ** Model with constant and trend
 */
-model = 1;
+model = 2;
 print "Model with constant and trend";
 
 { Pa_ca, Pb_ca, PMSB_ca } = JWR_PANICCA(y, model);

@@ -4,9 +4,11 @@ library tspdlib;
 
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
+T = rows(y);
 
-// Trimming rate
-//trimm= 0.10;             
+// bandwidth lag
+bwl = round(4 * (T/100)^(2/9));
+bwl = 1;        
 
 format /m1 /rd 8,4;
 // Iterate through LR variance options
@@ -50,13 +52,13 @@ for i(1, 7, 1);
         "--------Model C: Break in level & trend-----";
     endif;
     
-    "Two breaks KPSS test (CiS & Sanso, 2007)";
-    { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model, varm);
+   "Two breaks KPSS test (CiS & Sanso, 2007)";
+    { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model, bwl, varm);
 
     "       KPSS test       ";;KPSS;
     "       Break dates     ";;tb1~tb2;
     "       Fraction        ";;tb1/rows(y)~tb2/rows(y);
-    "       CV (5%)         ";;cv; 
+    "       CV (10%, 5%, 1%)";;cv;
     ""; 
     
     /*
@@ -74,12 +76,12 @@ for i(1, 7, 1);
     endif;
     
     "Two breaks KPSS test (CiS & Sanso, 2007)";
-    { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model, varm);
+    { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model, bwl, varm);
 
     "       KPSS test       ";;KPSS;
     "       Break dates     ";;tb1~tb2;
     "       Fraction        ";;tb1/rows(y)~tb2/rows(y);
-    "       CV (5%)         ";;cv; 
-    ""; 
+    "       CV (10%, 5%, 1%)";;cv;
+    "";
 endfor;
 

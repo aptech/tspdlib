@@ -10,9 +10,6 @@ T    = 112;
 // Load date file
 y = loadd(__FILE_DIR $+ "PDe.dat");
 
-// Run panel LM test with level shifts 
-"Panel LM test with level shifts";
-
 /*
 ** Set maximum number of lags for ds
 ** 0 = no lags
@@ -25,7 +22,7 @@ pmax = 5;
 ** 2=Schwarz; 
 ** 3=t-stat sign.
 */
-ic   = 3;  
+ic   = 1;  
 
 // Trimming rate
 trimm = 0.10;  
@@ -34,13 +31,18 @@ trimm = 0.10;
 nbreak=0;
 
 // Call PD LM without break
+"Panel LM test without shifts";  
 { Nlm, Ntb, Np, PDlm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
 
 // Print results
 seqa(1, 1, cols(y))~Nlm~Np;
     PDlm;
     pval;
-    
+
+
+// Run panel LM test with level shifts 
+"Panel LM test with level shifts";  
+
 // Run with one break
 nbreak=1;
 
@@ -78,7 +80,7 @@ nbreak=2;
     PDlm;
     pval;
 
-// Panel stationarity test with level shifts   
+// Panel stationarity test with level shifts
 "Panel stationarity test with level shifts";   
 model= 1;
 k    = 1;
@@ -91,15 +93,14 @@ varm = 2;
 
 // Panic tests
 "PANIC tests";   
-
-model= 0;        /* 0=constant, 1= linear trend */   
+model= 1;        /* 1=constant, 2= linear trend */   
 pmax = 4;        /* max lags for ADF regression*/
 kmax = 4;        /* max no of factors for PCA*/
 ic   = 2;        /* 1=PCp, 2 =ICp*/
 
-    {ADFe,pval,lags,Pe,nf}=BNG_PANIC(y,model,ic);
-    {Pa_pc,Pb_pc,PMSB_pc} =BNG_PANICnew(y,model,ic);
-    {Ze,Ze_ba}            =JWL_PANICadj(y,model,ic);
+    {ADFe,pval,lags,Pe,nf}=BNG_PANIC(y, pmax, kmax, model, ic);
+    {Pa_pc,Pb_pc,PMSB_pc} =BNG_PANICnew(y, kmax, model, ic);
+    {Ze,Ze_ba}            =JWL_PANICadj(y, kmax, pmax, model, ic);
     {Pa_ca,Pb_ca,PMSB_ca} =JWR_PANICCA(y,model);
 
     "PANIC     Stat.   p-value"; 
@@ -122,3 +123,29 @@ ic   = 2;        /* 1=PCp, 2 =ICp*/
     "";
     "       CS        ADF        p-val        Lags "
     seqa(1,1,N)~ADFe~pval~lags;
+
+
+// CADF and Modidied CADF tests
+model= 1;        /* 1=constant, 2= linear trend */   
+pmax = 4;        /* max lags for ADF regression*/
+ic   = 3;        /* Information Criterion:
+                    1=Akaike
+                    2=Schwarz
+                    3=t-stat significance */
+
+{Ncadf, Nlm, Nmcadf, Nlags, pcadf, pmcadf} = cips(y, model, pmax, ic);
+
+    "Test            Stat.   p-value"; 
+    "CIPS         ";;pcadf;;  "    NA  ";
+    "Modified CIPS";;pmcadf;;cdfn(pmcadf);    
+    "";
+    "    id      CADF     LM       M-CADF   pval    Lags ";
+            if model == 1; q=2;  endif;
+            if model == 2; q=3;  endif;    
+    seqa(1,1,N)~Ncadf~Nlm~Nmcadf~cdfchic(abs(Nmcadf),q)~Nlags;
+  
+"M-CADF critical values";
+"cv (0.01)";; cdfchii(0.99,q);
+"cv (0.05)";; cdfchii(0.95,q);
+"cv (0.10)";; cdfchii(0.90,q); 
+                

@@ -28,9 +28,9 @@ format /m1 /rd 8,4;
 */
 model = 0;                  
 
-{ ADFtau, ADFp } = ADF(y, model, pmax, ic);
+{ ADFtau, ADFp, cvADF }  = ADF(y, model, pmax, ic);
 
-"ADF &  lag no deterministic component     ";;ADFtau~ADFp;
+"ADF &  lag no deterministic component     ";; ADFtau ;; cvADF ;; ADFp ; 
 
 /*
 ** 0 = No deterministic component
@@ -39,9 +39,9 @@ model = 0;
 */
 model = 1;                  
 
-{ ADFtau, ADFp } = ADF(y, model, pmax, ic);
+{ ADFtau, ADFp, cvADF } = ADF(y, model, pmax, ic);
 
-"ADF &  lag with constant                  ";;ADFtau~ADFp;
+"ADF &  lag with constant                  ";; ADFtau ;; cvADF ;; ADFp ; 
 
 /*
 ** 0 = No deterministic component
@@ -50,6 +50,6 @@ model = 1;
 */
 model = 2;
 
-{ ADFtau, ADFp } = ADF(y, model, pmax, ic);
+{ ADFtau, ADFp, cvADF } = ADF(y, model, pmax, ic);
 
-"ADF &  lag with constant and trend        ";;ADFtau~ADFp;
+"ADF &  lag with constant and trend        ";; ADFtau ;; cvADF ;; ADFp ; 

@@ -6,7 +6,7 @@
 **  “Testing for stationarity with a break”,
 **  Journal of Econometrics 108, 105-127.
 **
-**  Format:  {stat,tb,lambda,crit[tb,.]} = KPSS_1break(y,model,l,varm);
+**  Format:  {stat,tb,lambda,crit[tb,.]} = KPSS_1break(y,model,l,varm, trimm);
 **           {PS,cv}              = STps(y,model,varm,tb);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
