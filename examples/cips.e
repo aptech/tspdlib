@@ -36,11 +36,13 @@ cdfn(pmcadf);
 "";
 "    id      CADF     LM       M-CADF   pval    Lags ";
 if model == 1;
-    q=2;
+    q = 2;
 endif;
+
 if model == 2;
-    q=3;
+    q = 3;
 endif;
+
 seqa(1, 1, N)~Ncadf~Nlm~Nmcadf~cdfchic(abs(Nmcadf), q)~Nlags;
 
 "M-CADF critical values";
