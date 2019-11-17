@@ -93,10 +93,11 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
 endp;
 
 proc(2) = _get_ILTmoments(T, N, Nlm, Np);
-    local crit, row_n, panel_k, meanp, varp, mm, optk, ct1, ct2, ct;
+    local fname, crit, row_n, panel_k, meanp, varp, mm, optk, ct1, ct2, ct;
     
     // Reading critical values
-    load crit[27, 19] = ILTlevel_crit.dat;
+    fname = __FILE_DIR $+ "/ILTlevel_crit.dat";
+    load crit[27, 19] = ^fname;
     
     // Row location 
     if T < 10;

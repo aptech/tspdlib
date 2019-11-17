@@ -340,10 +340,10 @@ proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
 endp;
 
 proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
-    local panel_k, meanp, varp, row_n, mmm, optk, ct1, ct2, ct, crit, crit_tr;
+    local fname1, fname2, panel_k, meanp, varp, row_n, mmm, optk, ct1, ct2, ct, crit, crit_tr;
     
-    load crit[27, 19]   = ILTlevel_crit.dat;
-    load crit_tr[14, 19] = LTtrend_crit.dat;
+    fname1 = __FILE_DIR $+ "ILTlevel_crit.dat";
+    fname2 = __FILE_DIR $+ "LTtrend_crit.dat";
     
     panel_k = Np;
     meanp = 0;
