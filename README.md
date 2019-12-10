@@ -8,6 +8,10 @@ The `tspdlib` library is written for GAUSS by [Saban Nazlioglu](mailto:snazliogl
 The program files require a working copy of **GAUSS 19+**. Many tests can be run on earlier versions with some small revisions and users should contact erica@aptech.com for a modified library for earlier **GAUSS** versions.
 
 ### Installing
+**GAUSS 20+**
+The GAUSS Carrion library can be installed and updated directly in GAUSS using the [GAUSS package manager](https://www.aptech.com/blog/gauss-package-manager-basics/).
+
+**GAUSS 18+**
 The GAUSS Time Series and Panel data tests can be easily installed using the [**GAUSS Application Installer**](https://www.aptech.com/support/installation/using-the-applications-installer-wizard/), as shown below:
 
 1. Download the zipped folder `tspdlib_1.0.zip` from the [tspdlib release page](https://github.com/aptech/tspdlib/releases).
