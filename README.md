@@ -9,7 +9,7 @@ The program files require a working copy of **GAUSS 19+**. Many tests can be run
 
 ### Installing
 **GAUSS 20+**
-The GAUSS Carrion library can be installed and updated directly in GAUSS using the [GAUSS package manager](https://www.aptech.com/blog/gauss-package-manager-basics/).
+The GAUSS Time Series and Panel data tests library can be installed and updated directly in GAUSS using the [GAUSS package manager](https://www.aptech.com/blog/gauss-package-manager-basics/).
 
 **GAUSS 18+**
 The GAUSS Time Series and Panel data tests can be easily installed using the [**GAUSS Application Installer**](https://www.aptech.com/support/installation/using-the-applications-installer-wizard/), as shown below:
