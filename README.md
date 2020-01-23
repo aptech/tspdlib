@@ -92,6 +92,19 @@ For any bugs, please send e-mail to [Saban Nazlioglu](mailto:snazlioglu@pau.edu.
 |PDcaus_Zhnc|[Dumitrescu, E., Hurlin, C. (2012).](https://econpapers.repec.org/article/eeeecmode/v_3a29_3ay_3a2012_3ai_3a4_3ap_3a1450-1460.htm) Testing for Granger non-causality in heterogeneous panels, Economic Modelling 29 (2012) 1450–1460.|
 |PDcaus_SURwald|[Kónya, L. (2006).](https://econpapers.repec.org/article/eeeecmode/v_3a23_3ay_3a2006_3ai_3a6_3ap_3a978-992.htm) Exports and growth: Granger causality analysis on OECD countries with a panel data approach, Economic Modelling, 23 (6), pp. 978-992.|
 
+### Cointegration
+|src file| Reference|
+|:------:|:---------|
+|coint_egranger.src|[Engle, R. F., and Granger, C. W. J. (1987).](https://pdfs.semanticscholar.org/0eb4/1ce10d763ce2cbe1006fae83d911b89d23a4.pdf)  Co-Integration and error correction: Representation, estimation and testing.  Econometrica,55, 251-276.|
+|coint_cissano.src|[ Carrion-i-Silvestre, J.L., Sanso, A. (2006).](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1468-0084.2006.00180.x) Tests the null of cointegration with structural breaks. Oxford Bulletin Economics and Statistics, 68(5), 623-646.|
+|coint_ghansen.src|[Gregory, A.W., Hansen, B. (1996a).](http://qed.econ.queensu.ca/working_papers/papers/qed_wp_862.pdf) Residual-based tests for cointegration in models with regime shifts. Journal of Econometrics, 70, 99-126.|
+|coint_ghansen.src|[Gregory, A.W., Hansen, B. (1996b).](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.365.7530&rep=rep1&type=pdf) Tests for cointegration in models with regime and trend shifts. Oxford Bulletin Economics and Statistics, 58(3), 555-560.|
+|coint_hatemij.src|[Hatemi-J (2008).](https://s3.amazonaws.com/academia.edu.documents/40264549/Tests_for_cointegration_with_two_unknown_regime_shifts.pdf?response-content-disposition=inline%3B%20filename%3DTests_for_cointegration_with_two_unknown.pdf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIWOWYYGZ2Y53UL3A%2F20200123%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20200123T180837Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=d1f87edcee62230632fdd9b9f31e0c4cb707ddd0aaa156b62f49d705f8d5c847) Tests for cointegration with two unknown regime shifts with an application to financial market integration. Empirical Economics, 35, 497-505.|
+|coint_pouliaris.src|[Phillips, P. C. B. , and Ouliaris, S. (1990)](http://finpko.faculty.ku.edu/myssi/FIN938/Phillips%20%26%20Ouliaris_Asymp%20Props%20of%20Resid%20Based%20Tests%20for%20Coint_Econometrica_1990.pdf) Asymptotic properties of residual-based tests for cointegration. Econometrica, 58 (1), pp. 165-193.|
+|coint_shin.src|[Shin, Y. (1994).](https://pdfs.semanticscholar.org/1d89/f03a10a9c17a5c986a7ba5aaab52a68b6881.pdf) A residual-based test of the null of cointegration against the alternative of no cointegration. Econometric Theory, 10(1), 91-115.|
+|coint_tsongetal.src|[Tsong, C.C., Lee, C.F., Tsai, L.J., & Hu, T.C. (2016).](https://link.springer.com/article/10.1007/s00181-015-1028-6) The Fourier approximation and testing for the null of cointegration. Empirical Economics, 51(3), 1085-1113.|
+
+
 [Aptech Systems, Inc](https://www.aptech.com/)  
 [![alt text][1.1]][1]
 [![alt text][2.1]][2]
