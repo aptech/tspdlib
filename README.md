@@ -92,7 +92,7 @@ For any bugs, please send e-mail to [Saban Nazlioglu](mailto:snazlioglu@pau.edu.
 |PDcaus_Zhnc|[Dumitrescu, E., Hurlin, C. (2012).](https://econpapers.repec.org/article/eeeecmode/v_3a29_3ay_3a2012_3ai_3a4_3ap_3a1450-1460.htm) Testing for Granger non-causality in heterogeneous panels, Economic Modelling 29 (2012) 1450–1460.|
 |PDcaus_SURwald|[Kónya, L. (2006).](https://econpapers.repec.org/article/eeeecmode/v_3a23_3ay_3a2006_3ai_3a6_3ap_3a978-992.htm) Exports and growth: Granger causality analysis on OECD countries with a panel data approach, Economic Modelling, 23 (6), pp. 978-992.|
 
-### Cointegration
+### Cointegration Tests
 |src file| Reference|
 |:------:|:---------|
 |coint_egranger.src|[Engle, R. F., and Granger, C. W. J. (1987).](https://pdfs.semanticscholar.org/0eb4/1ce10d763ce2cbe1006fae83d911b89d23a4.pdf)  Co-Integration and error correction: Representation, estimation and testing.  Econometrica,55, 251-276.|
