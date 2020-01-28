@@ -9,22 +9,5 @@
 	100	-3.66	0.35	-3.71	0.33	-3.72	0.30	-3.76	0.29	-3.76	0.28	-3.79	0.29	-3.78	0.29	-3.80	0.32	-3.77	0.36
 	200	-3.63	0.33	-3.65	0.32	-3.66	0.31	-3.68	0.30	-3.68	0.29	-3.71	0.28	-3.71	0.27	-3.72	0.27	-3.72	0.26
 
-Panel_LM_Trend_Breaks_crit.dat
-(Not Cross-section Augmented version)
-
-10 by 19 
-(T) (mean and variance) for each of p = 0, 1, .., 8 for standardized panel (transformed) tests with trend shifts
-
-R1: 25, 50, 100, 200
-R2: 50, 100, 200
-R3: 50, 100, 200
-
-Critical values of the Panel LM (Transformed) tests with Trend Breaks.
-3 sets of critical values for each of R1, R2, R3 (# of breaks) 
-
-Application codes: 
-
-   Old: Panel_tw_F.g (Sep 2007)
-   New: Panel_CA_LM_Trend_Breaks.g
    
 
