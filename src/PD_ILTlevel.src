@@ -96,8 +96,10 @@ proc(2) = _get_ILTmoments(T, N, Nlm, Np);
     local fname, crit, row_n, panel_k, meanp, varp, mm, optk, ct1, ct2, ct;
     
     // Reading critical values
-    fname = __FILE_DIR $+ "/ILTlevel_crit.dat";
-    load crit[27, 19] = ^fname;
+    fname = __FILE_DIR $+ "/ILTlevel_crit.tsv";
+    
+//    load crit[27, 19] = ^fname;
+    
     
     // Row location 
     if T < 10;
@@ -160,6 +162,8 @@ proc(2) = _get_ILTmoments(T, N, Nlm, Np);
     meanp = 0;
     varp = 0;
     
+    crit = csvReadM(fname, row_n|row_n, 1, "\t");
+    
     for mmm(1, N, 1);
         // column location 
         if panel_k[mmm] > 8;
@@ -168,12 +172,12 @@ proc(2) = _get_ILTmoments(T, N, Nlm, Np);
             optk = panel_k[mmm];
         endif;
         
-        ct1 = crit[row_n,2+2*optk];
-        ct2 = crit[row_n,3+2*optk];
+        ct1 = crit[.,2+2*optk];
+        ct2 = crit[.,3+2*optk];
         ct = ct1~ct2;
         
-        meanp = meanp + crit[row_n,2+2*optk];
-        varp = varp + crit[row_n,3+2*optk];
+        meanp = meanp + crit[.,2+2*optk];
+        varp = varp + crit[.,3+2*optk];
     endfor;
     
     meanp = meanp/n;

@@ -68,7 +68,7 @@
 /* 31 July 2018*/
 
 
-#include panel.dat  /* for p-vals */
+#include panel.txt  /* for p-vals */
 
 /*Pe test on ADF p-values in Bai & Ng (2004)*/
 proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
@@ -152,6 +152,10 @@ endp;
 proc(2) = JWL_PANICadj(y, kmax, pmax, model, ic);
     local nf, Fhat, lambda, ehat, E, ADFe, lagp, eb, varB, Ze, aN, Ze_ba;
     local lags, dx, x, de, de0, del, rho, djwj, wj, cv0;
+    local T, N;
+    
+    T = rows(y);
+    N = cols(y);
     
     dx = diff(y, 1);
     x  = dx[2:T, .];

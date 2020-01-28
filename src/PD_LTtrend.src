@@ -342,8 +342,8 @@ endp;
 proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
     local fname1, fname2, panel_k, meanp, varp, row_n, mmm, optk, ct1, ct2, ct, crit, crit_tr;
     
-    fname1 = __FILE_DIR $+ "ILTlevel_crit.dat";
-    fname2 = __FILE_DIR $+ "LTtrend_crit.dat";
+    fname1 = __FILE_DIR $+ "ILTlevel_crit.tsv";  
+    fname2 = __FILE_DIR $+ "LTtrend_crit.tsv";
     
     panel_k = Np;
     meanp = 0;
@@ -408,6 +408,8 @@ proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
         endif;
         
         mmm = 1;
+        crit = csvReadM(fname1, row_n|row_n, 1, "\t");
+        
         do while mmm <= n;
             // Column location 
             if panel_k[ mmm ] > 8;
@@ -416,12 +418,12 @@ proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
                 optk = panel_k[ mmm ];
             endif;
             
-            ct1 = crit[ row_n, 2+2*optk ];
-            ct2 = crit[ row_n, 3+2*optk ];
+            ct1 = crit[ ., 2+2*optk ];
+            ct2 = crit[ ., 3+2*optk ];
             ct = ct1~ct2;
             
-            meanp = meanp + crit[ row_n, 2+2*optk ];
-            varp = varp + crit[ row_n, 3+2*optk ];
+            meanp = meanp + crit[ ., 2+2*optk ];
+            varp = varp + crit[ ., 3+2*optk ];
             mmm = mmm + 1;
         endo;
     endif;
@@ -444,6 +446,7 @@ proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
         endif;
         
         mmm=1;
+        crit_tr = csvReadM(fname2, row_n|row_n, 1, "\t");
         do while mmm <= n;
             
             // column location 
@@ -453,8 +456,8 @@ proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
                 optk = panel_k[mmm];
             endif;
             
-            ct1 = crit_tr[row_n, 2+2*optk];
-            ct2 = crit_tr[row_n, 3+2*optk];
+            ct1 = crit_tr[., 2+2*optk];
+            ct2 = crit_tr[., 3+2*optk];
             ct = ct1~ct2 ;
             
             meanp = meanp + ct1;
@@ -478,6 +481,7 @@ proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
         endif;
         
         mmm = 1;
+        crit_tr = csvReadM(fname2, row_n|row_n, 1, "\t");
         do while mmm <= n;
             // Column location 
             if panel_k[mmm] > 8;
@@ -486,8 +490,8 @@ proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
                 optk = panel_k[mmm];
             endif;
             
-            ct1 = crit_tr[row_n, 2+2*optk];
-            ct2 = crit_tr[row_n, 3+2*optk];
+            ct1 = crit_tr[., 2+2*optk];
+            ct2 = crit_tr[., 3+2*optk];
             ct = ct1~ct2;
             
             meanp = meanp + ct1;
