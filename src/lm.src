@@ -74,7 +74,7 @@ proc(3) = LM(y, pmax, ic);
         trnd = trimr(dt, p + 1, 0);
         
         if p == 0;
-            x = sbt~y1;
+            x = y1~sbt;
         elseif p > 0;
             x = y1~sbt~ldy[., 1:p];
         endif;
