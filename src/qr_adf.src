@@ -63,7 +63,14 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
         x = y1~dyl;
     endif;
     
-    // Declar qFitOut structure
+    if p == 0;
+        dy = trimr(dy, p + 1, 0);
+        y = trimr(y, p + 1 ,0);
+        x = trimr(x, p + 1, 0);
+        y1 = trimr(y1, p + 1, 0);
+    endif;
+    
+    // Declare qFitOut structure
     struct qFitOut qOut1;
     qOut1 = quantileFit(Y, X, tau);
     
