@@ -103,6 +103,7 @@ For any bugs, please send e-mail to [Saban Nazlioglu](mailto:snazlioglu@pau.edu.
 |coint_pouliaris.src|[Phillips, P. C. B. , and Ouliaris, S. (1990)](http://finpko.faculty.ku.edu/myssi/FIN938/Phillips%20%26%20Ouliaris_Asymp%20Props%20of%20Resid%20Based%20Tests%20for%20Coint_Econometrica_1990.pdf) Asymptotic properties of residual-based tests for cointegration. Econometrica, 58 (1), pp. 165-193.|
 |coint_shin.src|[Shin, Y. (1994).](https://pdfs.semanticscholar.org/1d89/f03a10a9c17a5c986a7ba5aaab52a68b6881.pdf) A residual-based test of the null of cointegration against the alternative of no cointegration. Econometric Theory, 10(1), 91-115.|
 |coint_tsongetal.src|[Tsong, C.C., Lee, C.F., Tsai, L.J., & Hu, T.C. (2016).](https://link.springer.com/article/10.1007/s00181-015-1028-6) The Fourier approximation and testing for the null of cointegration. Empirical Economics, 51(3), 1085-1113.|
+|coint_maki.src|[Maki, D. (2012).](https://www.sciencedirect.com/science/article/abs/pii/S0264999312001162) Tests for cointegration allowing for an unknow number of breaks. Economic Modelling, 29(5), 2011-2015.|
 
 
 [Aptech Systems, Inc](https://www.aptech.com/)  
