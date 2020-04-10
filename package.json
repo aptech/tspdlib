@@ -49,7 +49,8 @@
         "pp.src",
         "qr_adf.src",
         "rals_adf.src",
-        "rals_lm.src"
+        "rals_lm.src",
+        "coint_maki.src"
     ],
     "version": "1.0.4"
 }
