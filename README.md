@@ -66,23 +66,23 @@ For any bugs, please send e-mail to [Saban Nazlioglu](mailto:snazlioglu@pau.edu.
 |qradf|[Koenker, R. & Xiao, Z. (2004)](https://www.jstor.org/stable/27590447?seq=1#page_scan_tab_contents). Unit root quantile autoregression inference, Journal of the American Statistical Association, 99(467), 775-787.| Quantile ADF unit root test.|
 
 ### Panel Data Unit Root Tests
-|src file| Reference|
-|:------:|:---------|
-|pd_cips|[Pesaran, M.H. (2007).](https://onlinelibrary.wiley.com/doi/full/10.1002/jae.951) A simple unit root test in the presence of cross-section dependence. Journal of Applied Econometrics, 22 (2), 265-312.|
-|pd_cips|[Westerlund, J., & Hosseinkouchack, M. (2016).](https://onlinelibrary.wiley.com/doi/abs/10.1111/obes.12127)  Modified CADF and CIPS Panel Unit Root Statistics with Standard Chi‐squared and Normal Limiting Distributions. Oxford Bulletin of Economics and Statistics, 78(3), 347-364.|
-|pd_panic|[Bai, J. & Ng, S. (2004)](http://www.columbia.edu/~jb3064/papers/2004_A_panic_attack_on_unit_roots_and_cointegration.pdf). A PANIC attack on unit roots and cointegration. Econometrica, 72, 1127–78.|
-|pd_panic|[Westerlund, J., & Larsson, R. (2009)](https://www.cambridge.org/core/journals/econometric-theory/article/note-on-the-pooling-of-individual-panic-unit-root-tests/7328B7103F2916320D17AFF28F1A2ACC#). A note on the pooling of individual PANIC unit root tests. Econometric Theory, 25(6), 1851-1868.|
-|pd_panic|[Bai, J., & Ng, S. (2010)](http://www.columbia.edu/~jb3064/papers/2010_Panel_unit_root_tests_with_cross_section_dependence-a_further_investigation.pdf). Panel unit root tests with cross-section dependence: a further investigation. Econometric Theory, 26(4), 1088-1114.|
-|pd_panic|[Reese, S., & Westerlund, J. (2016)](https://project.nek.lu.se/publications/workpap/papers/wp15_3.pdf). PANICCA: PANIC on Cross‐Section Averages. Journal of Applied Econometrics, 31(6), 961-981.|
-|pd_panic|[Bai, J., & Ng, S. (2002)](http://www.econ.nyu.edu/user/baij/econometrica02.pdf). Determining the number of factors in approximate factor models. Econometrica, 70(1), 191-221.|
-|pd_iltlevel|[Im, K., Lee, J., Tieslau, M. (2005)](https://pdfs.semanticscholar.org/794e/035e2af830b66f5d229cd444cbc8b34c3d83.pdf). Panel LM Unit-root Tests with Level Shifts, Oxford Bulletin of Economics and Statistics 67, 393–419.|
-|pd_lttrend|[Lee, J., & Tieslau, M. (2017)](https://www.sciencedirect.com/science/article/pii/S0264999317316358). Panel LM unit root tests with level and trend shifts. Economic Modelling.|
-|pd_nkarul|[Nazlioglu, S., & Karul, C. (2017)](https://econpapers.repec.org/article/eeeecmode/v_3a61_3ay_3a2017_3ai_3ac_3ap_3a181-192.htm). A panel stationarity test with gradual structural shifts: Re-investigate the international commodity price shocks. Economic Modelling, 61, 181-192.|
+|src file| Reference|Description|
+|:------:|:---------|:----------|
+|pd_cips|[Pesaran, M.H. (2007).](https://onlinelibrary.wiley.com/doi/full/10.1002/jae.951) A simple unit root test in the presence of cross-section dependence. Journal of Applied Econometrics, 22 (2), 265-312.|Pesaran panel data unit root test with cross-section dependence.|
+|pd_cips|[Westerlund, J., & Hosseinkouchack, M. (2016).](https://onlinelibrary.wiley.com/doi/abs/10.1111/obes.12127) CADF and CIPS Panel Unit Root Statistics with Standard Chi‐squared and Normal Limiting Distributions. Oxford Bulletin of Economics and Statistics, 78(3), 347-364.| Modified Pesaran CIP and CADF with standard limiting distributions.|
+|pd_panic|[Bai, J. & Ng, S. (2004)](http://www.columbia.edu/~jb3064/papers/2004_A_panic_attack_on_unit_roots_and_cointegration.pdf). A PANIC attack on unit roots and cointegration. Econometrica, 72, 1127–78.|Panel analysis of idiosyncratic and common components (PANIC) to test whether non-stationarity in a series is pervasive, variable-specific or both.|
+|pd_panic|[Westerlund, J., & Larsson, R. (2009)](https://www.cambridge.org/core/journals/econometric-theory/article/note-on-the-pooling-of-individual-panic-unit-root-tests/7328B7103F2916320D17AFF28F1A2ACC#). A note on the pooling of individual PANIC unit root tests. Econometric Theory, 25(6), 1851-1868.|Panel analysis of idiosyncratic and common components (PANIC) to test whether non-stationarity in a series is pervasive, variable-specific or both.|
+|pd_panic|[Bai, J., & Ng, S. (2010)](http://www.columbia.edu/~jb3064/papers/2010_Panel_unit_root_tests_with_cross_section_dependence-a_further_investigation.pdf). Panel unit root tests with cross-section dependence: a further investigation. Econometric Theory, 26(4), 1088-1114.|Panel analysis of idiosyncratic and common components (PANIC) to test whether non-stationarity in a series is pervasive, variable-specific or both.|
+|pd_panic|[Reese, S., & Westerlund, J. (2016)](https://project.nek.lu.se/publications/workpap/papers/wp15_3.pdf). PANICCA: PANIC on Cross‐Section Averages. Journal of Applied Econometrics, 31(6), 961-981.|Panel analysis of idiosyncratic and common components (PANIC) to test whether non-stationarity in a series is pervasive, variable-specific or both.|
+|pd_panic|[Bai, J., & Ng, S. (2002)](http://www.econ.nyu.edu/user/baij/econometrica02.pdf). Determining the number of factors in approximate factor models. Econometrica, 70(1), 191-221.|Panel analysis of idiosyncratic and common components (PANIC) to test whether non-stationarity in a series is pervasive, variable-specific or both.|
+|pd_iltlevel|[Im, K., Lee, J., Tieslau, M. (2005)](https://pdfs.semanticscholar.org/794e/035e2af830b66f5d229cd444cbc8b34c3d83.pdf). Panel LM Unit-root Tests with Level Shifts, Oxford Bulletin of Economics and Statistics 67, 393–419.|Panel data LM unit root test with structural breaks in the level.|
+|pd_lttrend|[Lee, J., & Tieslau, M. (2017)](https://www.sciencedirect.com/science/article/pii/S0264999317316358). Panel LM unit root tests with level and trend shifts. Economic Modelling.|Panel data LM unit root test with structural breaks in the level and trend.|
+|pd_nkarul|[Nazlioglu, S., & Karul, C. (2017)](https://econpapers.repec.org/article/eeeecmode/v_3a61_3ay_3a2017_3ai_3ac_3ap_3a181-192.htm). A panel stationarity test with gradual structural shifts: Re-investigate the international commodity price shocks. Economic Modelling, 61, 181-192.|Panel stationarity test with gradual structural breaks.|
 
 ### Time Series and Panel Data Causality Tests
-|src file| Reference|
-|:------:|:---------|
-|GC_tests|[Granger, C.W.J. (1969).](https://www.jstor.org/stable/1912791) Investigating causal relations by econometric models and cross-spectral methods. Econometrica 37, 424–438.|
+|src file| Reference|Description|
+|:------:|:---------|:-----------|
+|GC_tests|[Granger, C.W.J. (1969).](https://www.jstor.org/stable/1912791) Investigating causal relations by econometric models and cross-spectral methods. Econometrica 37, 424–438.|Granger causality tests.|
 |GC_tests|[Toda, H.Y. & Yamamoto, T. (1995).](https://econpapers.repec.org/article/eeeeconom/v_3a66_3ay_3a1995_3ai_3a1-2_3ap_3a225-250.htm) Statistical inference in vector autoregression with possibly integrated processes. Journal of Econometrics 66,225–250.|
 |GC_tests|[Enders, W., & P. Jones. (2016).](https://ideas.repec.org/a/bpj/sndecm/v20y2016i4p399-419n3.html) Grain prices, oil prices, and multiple smooth breaks in a var. Studies in Nonlinear Dynamics & Econometrics 20 (4):399-419.|
 |GC_tests|[Nazlioglu, S., Gormus, A. & Soytas, U. (2016).](https://ideas.repec.org/a/eee/eneeco/v60y2016icp168-175.html) Oil prices and real estate investment trusts (REITs): gradual-shift causality and volatility transmission analysis”. Energy Economics 60(1): 168-175.|
