@@ -1,8 +1,9 @@
 /*
 ** This example program tests for cointegration with alternatives hypothesis up to m structural breaks
 */
-new;cls; 
-library maki-msb;
+new;
+cls; 
+library tspdlib;
 
 // Set fname to name of dataset
 fname = "nelsonplosser.dta";
