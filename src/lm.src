@@ -2,8 +2,8 @@
 /*
 **> lm
 **  Reference:
-** Schmidt, P., & Phillips, P. C. (1992). 
-** LM tests for a unit root in the presence of deterministic trends. 
+** Schmidt, P., & Phillips, P. C. (1992).
+** LM tests for a unit root in the presence of deterministic trends.
 ** Oxford Bulletin of Economics and Statistics, 54(3), 257-287.
 **
 **  Format:  {tstat, p, cv} = LM(y, pmax, ic);
@@ -52,15 +52,15 @@ proc(3) = LM(y, pmax, ic);
     ly = lagn(ylm, 1);
     
     // Deterministic term=constant
-    dc = ones(t, 1);       
+    dc = ones(t, 1);
     
     // Deterministic term=trend
-    dt = seqa(1, 1, t);     
+    dt = seqa(1, 1, t);
     
     p = 0;
     do while p <= pmax;
         lmat = zeros(rows(ds), p + 1);
-       
+        
         j = 1;
         do while j <= p;
             lmat[., j] = lagn(ds, j);
@@ -86,7 +86,7 @@ proc(3) = LM(y, pmax, ic);
         k = cols(x);
         
         // Log-likelihood
-        LL = -n/2 * (1 + ln(2 * pi) + ln(e1'e1/n));           
+        LL = -n/2 * (1 + ln(2 * pi) + ln(e1'e1/n));
         aicp[p+1] = (2 * k - 2 * LL)/n;
         sicp[p+1] = (k * ln(n) - 2 * LL)/n;
         tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
@@ -106,21 +106,35 @@ proc(1) = _get_cv_lm(T);
     local crit, cv;
     
     crit = {-3.90 -3.18 -2.85,      @ T = 25  @
-            -3.73 -3.11 -2.80,      @ T = 50  @
-            -3.63 -3.06 -2.77,      @ T = 100 @
-            -3.61 -3.04 -2.76,      @ T = 200 @        
-            -3.59 -3.04 -2.76,      @ T = 500 @   
-            -3.58 -3.02 -2.75,      @ T = 1000 @   
-            -3.66 -3.02 -2.7};      @ T = inf @   
+        -3.73 -3.11 -2.80,      @ T = 50  @
+        -3.63 -3.06 -2.77,      @ T = 100 @
+        -3.61 -3.04 -2.76,      @ T = 200 @
+        -3.59 -3.04 -2.76,      @ T = 500 @
+        -3.58 -3.02 -2.75,      @ T = 1000 @
+        -3.66 -3.02 -2.7};      @ T = inf @
     
-    if            T <= 25;     cv = crit[1,.]; endif;
-    if 25 < T and T <= 50;     cv = crit[2,.]; endif;
-    if 50 < T and T <= 100;    cv = crit[3,.]; endif;    
-    if 100< T and T <= 200;    cv = crit[4,.]; endif;    
-    if 200< T and T <= 500;    cv = crit[5,.]; endif;   
-    if 500< T and T <= 1000;   cv = crit[6,.]; endif;   
-    if 1000< T            ;   cv = crit[7,.]; endif;   
-
-retp(cv);
+    if            T <= 25;
+        cv = crit[1,.];
+    endif;
+    if 25 < T and T <= 50;
+        cv = crit[2,.];
+    endif;
+    if 50 < T and T <= 100;
+        cv = crit[3,.];
+    endif;
+    if 100< T and T <= 200;
+        cv = crit[4,.];
+    endif;
+    if 200< T and T <= 500;
+        cv = crit[5,.];
+    endif;
+    if 500< T and T <= 1000;
+        cv = crit[6,.];
+    endif;
+    if 1000< T            ;
+        cv = crit[7,.];
+    endif;
+    
+    retp(cv);
 endp;
 

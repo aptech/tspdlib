@@ -5,9 +5,9 @@
 **  Reference:
 **  Dickey, D.A., Fuller, W.A. (1979).
 **  Distribution of the estimators for autoregressive time series with a unit root.
-**  Journal of the American Statistical Society75, 427–431.
+**  Journal of the American Statistical Society75, 427-431.
 **
-**  Format:  {tstat, p, cv} = ADF(y,model,pmax,ic);
+**  Format:  { tstat, p, cv } = ADF(y, model, pmax, ic);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	0 = none
@@ -31,7 +31,7 @@
 */
 
 
-proc(3)=ADF(y, model, pmax, ic);
+proc(3) = ADF(y, model, pmax, ic);
     local t, p, j, taup, aicp, sicp, tstatp, check;
     local dy, ly, dc, dt, lmat, dep, y1, ldy;
     local sbt, trnd, x, lagt, tau, LL, n, k;

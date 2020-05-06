@@ -3,34 +3,34 @@
 **  coint_egranger
 **  Reference:
 **  Engle, R. F., and Granger, C. W. J. (1987).
-**  "Co-Integration and Error Correction: Representation, Estimation and Testing" 
+**  "Co-Integration and Error Correction: Representation, Estimation and Testing"
 **  Econometrica,55, 251-276.
 **
 **
 **
-**  Format:  {tau,cvADF}        = coint_egranger(y, x, model, pmax, ic);
+**  Format:  { tau, cvADF }        = coint_egranger(y, x, model, pmax, ic);
 **
-**           
+**
 **  Input:   Y	     -  Nx1 matrix, dependent variable
 **           X       -  NxK matrix, independent variables
-**           k       -  Columns of x (upper bound is 5)      
+**           k       -  Columns of x (upper bound is 5)
 **           model   - 	0 = none
 **                      1 = constant
 **                      2 = constant & trend
 **           pmax    -  Maximum number of lags for Dy in ADF test; 0=no lags
-**           ic      -  Information Criterion for ADF-based test: 
-**                      1=Akaike 
-**                      2=Schwarz 
+**           ic      -  Information Criterion for ADF-based test:
+**                      1=Akaike
+**                      2=Schwarz
 **
 **
 **  Output: tau     -   Engle & Granger (1987) ADF test
-**	    cv      -   1%, 5%, 10% critical values for the chosen model 
+**	    cv      -   1%, 5%, 10% critical values for the chosen model
 **
 **
 **  Author: Saban Nazlioglu
-        -- The author makes no performance guarantees.
-        -- for public non-commercial use only.
-        -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 */
 
 
@@ -38,38 +38,74 @@
 
 proc(2)=coint_egranger(y,x,model,pmax,ic);
     local n,x1,b,e1,sig2,se,ssr,tau,lageg,k, cv, cvADF;
-     
-     n=rows(y);   
-     if model==0; x1=x;                         endif;
-     if model==1; x1=ones(n,1)~x;               endif;
-     if model==2; x1=ones(n,1)~seqa(1,1,n)~x;   endif;
-         {b,e1,sig2,se,ssr}=myols(y,x1);
-     {tau, lageg, cv} = adf(e1,0,pmax,ic);
-     
-     k=cols(x);
-     if model==0;     
-        if k==1; cvADF = -3.3865|-2.7619|-2.4505; endif;
-        if k==2; cvADF = -3.3893|-3.2667|-2.9873; endif;
-        if k==3; cvADF = -4.3038|-3.7371|-3.4406; endif; 
-        if k==4; cvADF = -4.6720|-4.1261|-3.8068; endif; 
-        if k==5; cvADF = -4.4987|-4.3999|-4.1416; endif; 
-     endif;
-     
-     if model==1;     
-        if k==1; cvADF = -3.9618|-3.3654|-3.0657; endif;
-        if k==2; cvADF = -4.3078|-3.7675|-3.4494; endif;
-        if k==3; cvADF = -4.7325|-4.1121|-3.8329; endif; 
-        if k==4; cvADF = -5.0728|-4.4542|-4.1565; endif; 
-        if k==5; cvADF = -5.2812|-4.7101|-4.4309; endif; 
-     endif;
-
-     if model==2;     
-        if k==1; cvADF = -4.3628|-3.8000|-3.5184; endif;
-        if k==2; cvADF = -4.6451|-4.1567|-3.8429; endif;
-        if k==3; cvADF = -5.0433|-4.4895|-4.1950; endif; 
-        if k==4; cvADF = -5.3576|-4.7423|-4.4625; endif; 
-        if k==5; cvADF = -5.5849|-5.0282|-4.7311; endif; 
-     endif;
-     
-retp(tau,cvADF);
-endp;          
+    
+    n=rows(y);
+    if model==0;
+        x1=x;
+    endif;
+    if model==1;
+        x1=ones(n, 1)~x;
+    endif;
+    if model==2;
+        x1=ones(n, 1)~seqa(1, 1, n)~x;
+    endif;
+    { b, e1, sig2, se, ssr } = myols(y, x1);
+    { tau, lageg, cv } = adf(e1, 0, pmax, ic);
+    
+    k=cols(x);
+    if model==0;
+        if k==1;
+            cvADF = -3.3865|-2.7619|-2.4505;
+        endif;
+        if k==2;
+            cvADF = -3.3893|-3.2667|-2.9873;
+        endif;
+        if k==3;
+            cvADF = -4.3038|-3.7371|-3.4406;
+        endif;
+        if k==4;
+            cvADF = -4.6720|-4.1261|-3.8068;
+        endif;
+        if k==5;
+            cvADF = -4.4987|-4.3999|-4.1416;
+        endif;
+    endif;
+    
+    if model==1;
+        if k==1;
+            cvADF = -3.9618|-3.3654|-3.0657;
+        endif;
+        if k==2;
+            cvADF = -4.3078|-3.7675|-3.4494;
+        endif;
+        if k==3;
+            cvADF = -4.7325|-4.1121|-3.8329;
+        endif;
+        if k==4;
+            cvADF = -5.0728|-4.4542|-4.1565;
+        endif;
+        if k==5;
+            cvADF = -5.2812|-4.7101|-4.4309;
+        endif;
+    endif;
+    
+    if model==2;
+        if k==1;
+            cvADF = -4.3628|-3.8000|-3.5184;
+        endif;
+        if k==2;
+            cvADF = -4.6451|-4.1567|-3.8429;
+        endif;
+        if k==3;
+            cvADF = -5.0433|-4.4895|-4.1950;
+        endif;
+        if k==4;
+            cvADF = -5.3576|-4.7423|-4.4625;
+        endif;
+        if k==5;
+            cvADF = -5.5849|-5.0282|-4.7311;
+        endif;
+    endif;
+    
+    retp(tau, cvADF);
+endp;

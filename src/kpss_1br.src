@@ -3,7 +3,7 @@
 **> kpss_1br
 **  Reference:
 **  Kurozumi, E. (2002)
-**  “Testing for stationarity with a break”,
+**  Testing for stationarity with a break,
 **  Journal of Econometrics 108, 105-127.
 **
 **  Format:  {stat,tb,lambda,crit[tb,.]} = KPSS_1break(y,model,l,varm, trimm);
@@ -23,7 +23,7 @@
 **                      7 = Kurozumi with QS
 **                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
 **                      See:
-**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
+**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
@@ -56,13 +56,13 @@ proc(4) = KPSS_1break(y, model, l, varm, trimm);
     T2 = round((1 - trimm) * rows(y));
     
     // First break
-    tb1 = t1;              
+    tb1 = t1;
     do until tb1 > t2;
         // Deterministic term=constant
-        dc = ones(t, 1);   
-
+        dc = ones(t, 1);
+        
         // Deterministic term=trend
-        dt = seqa(1, 1, t);             
+        dt = seqa(1, 1, t);
         if model == 1;
             du1 = zeros(tb1, 1)|ones(t - tb1, 1);
             z = dc~dt~du1;
@@ -75,16 +75,16 @@ proc(4) = KPSS_1break(y, model, l, varm, trimm);
         endif;
         
         // OLS estimation
-        b = y/z;     
-
+        b = y/z;
+        
         // Residuals
-        e1 = y - z * b;  
-
+        e1 = y - z * b;
+        
         // Sum of sqaured residuals
-        ssr = e1'e1;  
-
+        ssr = e1'e1;
+        
         // Partial sum of residuals
-        St = cumsumc(e1);     
+        St = cumsumc(e1);
         
         if varm == 1;
             lrv = ssr/t;
@@ -103,18 +103,18 @@ proc(4) = KPSS_1break(y, model, l, varm, trimm);
         endif;
         
         // KPSS statistic
-        KPSS = T^(-2) * (St'St)/lrv;  
+        KPSS = T^(-2) * (St'St)/lrv;
         
         // Global minimization
         if ssr < ssr_min;
             // Select minimum SSR
-            ssr_min = ssr;    
+            ssr_min = ssr;
             
             // First break date
-            tb1_min = tb1;   
+            tb1_min = tb1;
             
             // KPSS statistic with break
-            KPSS_min = KPSS;   
+            KPSS_min = KPSS;
         endif;
         tb1 = tb1 + 1;
     endo;
@@ -122,18 +122,18 @@ proc(4) = KPSS_1break(y, model, l, varm, trimm);
     crit = zeros(5, 3);
     if model == 1;
         crit = {0.28299 0.37538 0.60388,
-                0.22915 0.30212 0.48265,
-                0.18678 0.24247 0.38052,
-                0.16007 0.20106 0.30162,
-                0.15176 0.18688 0.26842};
+            0.22915 0.30212 0.48265,
+            0.18678 0.24247 0.38052,
+            0.16007 0.20106 0.30162,
+            0.15176 0.18688 0.26842};
     endif;
     
     if model == 2;
         crit = {0.09724 0.12046 0.17704,
-                0.09724 0.12046 0.14208,
-                0.06485 0.07889 0.11308,
-                0.05570 0.06615 0.09122,
-                0.05267 0.06163 0.08216};
+            0.09724 0.12046 0.14208,
+            0.06485 0.07889 0.11308,
+            0.05570 0.06615 0.09122,
+            0.05267 0.06163 0.08216};
     endif;
     
     TBi = round(10 * (tb1_min/rows(y)));
@@ -164,10 +164,10 @@ proc(2) = STps(y, model, varm, tb);
     endo;
     
     // Deterministic term=constant
-    dc = ones(t, 1);   
-
+    dc = ones(t, 1);
+    
     // Deterministic term=trend
-    dt = seqa(1, 1, t);             
+    dt = seqa(1, 1, t);
     
     if model == 1;
         du1 = zeros(tb1, 1)|ones(t - tb1, 1);
@@ -181,16 +181,16 @@ proc(2) = STps(y, model, varm, tb);
     endif;
     
     // OLS estimation
-    b = ystar/z;      
-
+    b = ystar/z;
+    
     // Residuals
-    e1 = ystar - z * b;    
-
+    e1 = ystar - z * b;
+    
     // Sum of sqaured residuals
-    ssr = e1'e1;     
-
+    ssr = e1'e1;
+    
     // Partial sum of residuals
-    St = cumsumc(e1);     
+    St = cumsumc(e1);
     
     if varm == 1;
         lrv = ssr/t;
@@ -209,7 +209,7 @@ proc(2) = STps(y, model, varm, tb);
     endif;
     
     // STps statistic
-    ps = T^(-2) * (St'St)/lrv;  
+    ps = T^(-2) * (St'St)/lrv;
     
     if model == 1;
         cv = 0.60704|0.74752|1.07366;

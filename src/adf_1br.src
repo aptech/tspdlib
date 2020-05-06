@@ -3,7 +3,7 @@
 **> adf_1br
 **  Reference:
 **  Zivot,E. and Andrews, W.K. (1992),
-**  "Further Evidence on the Great Crasch, the Oil-Price Shokc, and the Unit-Root Hypothesis"
+**  "Further Evidence on the Great Crasch, the Oil-Price Shock, and the Unit-Root Hypothesis"
 **  Journal of Business & Economic Statistics 10(3), 251-270.
 **
 **  Format:  {tstat,tb,p,cv} = ADF_1break(y,model,pmax,ic,trimm);

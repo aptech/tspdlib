@@ -2,13 +2,13 @@
 /*
 **> gls
 **  Reference:
-**  Elliott, G., Rothenberg, T.J., Stock, J.H. (1996). 
-**  Efficient tests for an autoregressive unit root. 
-**  Econometrica 64,813–836.
+**  Elliott, G., Rothenberg, T.J., Stock, J.H. (1996).
+**  Efficient tests for an autoregressive unit root.
+**  Econometrica 64,813-836.
 **
-**  Ng, S., Perron, P. (2001). 
-**  Lag length selection and the construction of unit root tests with good size and power. 
-**  Econometrica 69,1519–1554.
+**  Ng, S., Perron, P. (2001).
+**  Lag length selection and the construction of unit root tests with good size and power.
+**  Econometrica 69,1519-1554.
 **
 **
 **  Format:  {GLStau, p, cvGLS}   = DFGLS(y,model,pmax,ic);
@@ -34,7 +34,7 @@
 **                      7 = Kurozumi with QS
 **                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
 **                      See:
-**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
+**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
@@ -91,17 +91,17 @@ proc(3) = DFGLS(y, model, pmax, ic);
     bhat = inv(za'za) * za'ya;
     
     // GLS trending data
-    ygls = y - z * bhat;      
+    ygls = y - z * bhat;
     
     t = rows(ygls);
     dy = diff(ygls, 1);
     ly = lagn(ygls, 1);
     
     // Deterministic term=constant
-    dc = ones(t, 1);     
+    dc = ones(t, 1);
     
     // Deterministic term=trend
-    dt=seqa(1, 1, t);     
+    dt=seqa(1, 1, t);
     
     p = 0;
     do while p <= pmax;
@@ -132,7 +132,7 @@ proc(3) = DFGLS(y, model, pmax, ic);
         k = cols(x);
         
         // Log-likelihood
-        LL = -n/2 * (1 + ln(2 * pi) + ln(e1'e1/n));           
+        LL = -n/2 * (1 + ln(2 * pi) + ln(e1'e1/n));
         aicp[p+1] = (2 * k - 2 * LL)/n;
         sicp[p+1] = (k * ln(n) - 2 * LL)/n;
         tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
@@ -150,30 +150,38 @@ endp;
 
 proc(1) = _get_cv_dfgls(model, T);
     local crit, cv;
-
-// Critical Values (see Fuller, 1976, Table 5.3)    
+    
+    // Critical Values (see Fuller, 1976, Table 5.3)
     if model == 1;
         crit = {-2.62 -1.95 -1.61,      @ T = 50  @
-                -2.60 -1.95 -1.61,      @ T = 100 @
-                -2.58 -1.95 -1.62,      @ T = 200 @        
-                -2.58 -1.95 -1.62};     @ T = inf @   
+            -2.60 -1.95 -1.61,      @ T = 100 @
+            -2.58 -1.95 -1.62,      @ T = 200 @
+            -2.58 -1.95 -1.62};     @ T = inf @
     endif;
-
-// Critical Values (see Elliot et al., 1996, Table I)   
+    
+    // Critical Values (see Elliot et al., 1996, Table I)
     if model == 2;
         crit = {-3.77 -3.19 -2.89,      @ T = 50  @
-                -3.58 -3.03 -2.74,      @ T = 100 @
-                -3.46 -2.93 -2.64,      @ T = 200 @        
-                -3.48 -2.89 -2.57};     @ T = inf @   
+            -3.58 -3.03 -2.74,      @ T = 100 @
+            -3.46 -2.93 -2.64,      @ T = 200 @
+            -3.48 -2.89 -2.57};     @ T = inf @
     endif;
-
     
-    if             T <= 50;     cv = crit[1,.]; endif;
-    if 50  < T and T <= 100;    cv = crit[2,.]; endif;    
-    if 100 < T and T <= 200;    cv = crit[3,.]; endif;    
-    if 200 < T             ;    cv = crit[4,.]; endif;   
-
-retp(cv);
+    
+    if             T <= 50;
+        cv = crit[1,.];
+    endif;
+    if 50  < T and T <= 100;
+        cv = crit[2,.];
+    endif;
+    if 100 < T and T <= 200;
+        cv = crit[3,.];
+    endif;
+    if 200 < T             ;
+        cv = crit[4,.];
+    endif;
+    
+    retp(cv);
 endp;
 
 
@@ -187,10 +195,10 @@ proc(3) = ERSpt(y, model, l, varm);
     ly = lagn(y, 1);
     
     // Deterministic term=constant
-    dc = ones(t, 1);  
-
+    dc = ones(t, 1);
+    
     // Deterministic term=trend
-    dt = seqa(1, 1, t);     
+    dt = seqa(1, 1, t);
     
     if model == 1;
         z = ones(t, 1);
@@ -217,7 +225,7 @@ proc(3) = ERSpt(y, model, l, varm);
     t = rows(e1);
     
     // Residual variance as in Eviews
-    g0 = (t - cols(x)) * s2 * 1/t;        
+    g0 = (t - cols(x)) * s2 * 1/t;
     
     // Long-run variance with Barlett
     if varm == 1;
@@ -281,30 +289,38 @@ endp;
 
 proc(1) = _get_cv_erspt(model, T);
     local crit, cv;
-
-// Critical Values (see Fuller, 1976, Table 5.3)    
+    
+    // Critical Values (see Fuller, 1976, Table 5.3)
     if model == 1;
         crit = {1.87 2.97 3.91,      @ T = 50  @
-                1.95 3.11 4.17,      @ T = 100 @
-                1.91 3.17 4.33,      @ T = 200 @        
-                1.99 3.26 4.48};     @ T = inf @   
+            1.95 3.11 4.17,      @ T = 100 @
+            1.91 3.17 4.33,      @ T = 200 @
+            1.99 3.26 4.48};     @ T = inf @
     endif;
-
-// Critical Values (see Elliot et al., 1996, Table I)   
+    
+    // Critical Values (see Elliot et al., 1996, Table I)
     if model == 2;
         crit = {4.22 5.72 6.77,      @ T = 50  @
-                4.26 5.64 6.79,      @ T = 100 @
-                4.05 5.66 6.86,      @ T = 200 @        
-                3.96 5.62 6.89};     @ T = inf @   
+            4.26 5.64 6.79,      @ T = 100 @
+            4.05 5.66 6.86,      @ T = 200 @
+            3.96 5.62 6.89};     @ T = inf @
     endif;
-
     
-    if             T <= 50;     cv = crit[1,.]; endif;
-    if 50  < T and T <= 100;    cv = crit[2,.]; endif;    
-    if 100 < T and T <= 200;    cv = crit[3,.]; endif;    
-    if 200 < T             ;    cv = crit[4,.]; endif;   
-
-retp(cv);
+    
+    if             T <= 50;
+        cv = crit[1,.];
+    endif;
+    if 50  < T and T <= 100;
+        cv = crit[2,.];
+    endif;
+    if 100 < T and T <= 200;
+        cv = crit[3,.];
+    endif;
+    if 200 < T             ;
+        cv = crit[4,.];
+    endif;
+    
+    retp(cv);
 endp;
 
 proc(8) = MGLS(y, model, l, varm);
@@ -338,7 +354,7 @@ proc(8) = MGLS(y, model, l, varm);
     bhat = inv(za'za) * za'ya;
     
     // GLS trending data
-    ygls = y - z * bhat;                        
+    ygls = y - z * bhat;
     yd = lagn(ygls, 1);
     yd = trimr(yd, 1, 0);
     tt = rows(yd);
@@ -354,7 +370,7 @@ proc(8) = MGLS(y, model, l, varm);
     if model == 2;
         MPT = (c^2 * k + (1 - c) * t^-1 * ygls[t]^2)/fo;
     endif;
-
+    
     // Critical Values (see Ng & Perron, 2001, Table I)
     if  model == 1;
         cvMZa = -13.8  ~ -8.1   ~ -5.7;
@@ -362,7 +378,7 @@ proc(8) = MGLS(y, model, l, varm);
         cvMSB =  0.174 ~  0.233 ~ 0.275;
         cvMPT =  1.78  ~  3.17  ~ 4.45;
     endif;
-
+    
     if  model == 2;
         cvMZa = -23.8  ~ -17.3   ~ -14.2;
         cvMZt =  -3.42 ~  -2.91  ~  -2.62;

@@ -4,9 +4,9 @@
 **  Reference:
 **  Narayan, P. K. and Popp, S. (NP) (2010),
 **  "A new unit root test with two structural breaks in level and slope at unknown time",
-**  Journal of Applied Statistics 37, 1425–1438.
+**  Journal of Applied Statistics 37, 1425-1438.
 **
-**  Format:  {tstat,tb1,tb2,p,cv} = ADF_1break(y,model,pmax,ic,trimm);
+**  Forat:  { tstat, tb1, tb2, p, cv } = ADF_1break(y, model, pmax, ic, trimm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1=Model A: break in level

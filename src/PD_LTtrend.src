@@ -3,7 +3,7 @@
 **  Reference:
 **  Lee, J., Tieslau, M. (2017),
 **  "Panel LM Unit-root Tests with Level and Trend Shifts",
-**  Economic Modelling 80, 1–10.
+**  Economic Modelling 80, 1-10.
 **
 **  Format:  {Nlm, Ntb, Np, PDlm, pval} = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
 **
@@ -89,7 +89,7 @@ proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
     local b, e1, sig2, se, ssr;
     
     // Locals for transformation
-    local nobs, pos, s2, st;   
+    local nobs, pos, s2, st;
     
     t = rows(y);
     tb1_min = 0;
@@ -106,10 +106,10 @@ proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
     do while tb1 <= T2;
         
         // Deterministic term = constant
-        dc = ones(t, 1);                
+        dc = ones(t, 1);
         
         // Deterministic term=trend
-        dt = seqa(1, 1, t);              
+        dt = seqa(1, 1, t);
         
         if model == 1;
             du1 = zeros(tb1, 1)|ones(t - tb1, 1);
@@ -183,11 +183,11 @@ proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
         stat = taup[ laglm ];
         if stat < LM_min;
             
-            // First break date 
-            tb1_min = tb1;    
+            // First break date
+            tb1_min = tb1;
             
             // LM statistic with break
-            LM_min = stat;  
+            LM_min = stat;
         endif;
         
         tb1 = tb1 + 1;
@@ -206,7 +206,7 @@ proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
     local b, e1, sig2, se, ssr;
     
     // Locals for transformation
-    local nobs, pos1, pos2, s2, st;   
+    local nobs, pos1, pos2, s2, st;
     
     t = rows(y);
     tb1_min = 0;
@@ -219,14 +219,14 @@ proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
     // Bounds as in LS
     if T1 < (pmax + 2);
         T1 = pmax + 3;
-    endif;  
+    endif;
     
     // Bounds as in LS
     tb1 = T1;
     do while tb1 <= T2;
         if model == 1;
             tb2 = tb1 + 2;
-        endif;    
+        endif;
         
         if model == 2;
             tb2 = tb1 + 3;
@@ -235,10 +235,10 @@ proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
         do while tb2 <= T2;
             
             // Deterministic term=constant
-            dc = ones(t, 1);           
+            dc = ones(t, 1);
             
             // Deterministic term=trend
-            dt = seqa(1, 1, t);              
+            dt = seqa(1, 1, t);
             
             if model == 1;
                 du1 = zeros(tb1, 1)|ones(t - tb1, 1);
@@ -317,13 +317,13 @@ proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
             if  stat < LM_min;
                 
                 // First break date
-                tb1_min = tb1;    
+                tb1_min = tb1;
                 
                 // Second break date
-                tb2_min = tb2;   
+                tb2_min = tb2;
                 
                 // LM statistic with breaks
-                LM_min = stat;   
+                LM_min = stat;
             endif;
             
             tb2 = tb2 + 1;
@@ -342,14 +342,14 @@ endp;
 proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
     local fname1, fname2, panel_k, meanp, varp, row_n, mmm, optk, ct1, ct2, ct, crit, crit_tr;
     
-    fname1 = __FILE_DIR $+ "ILTlevel_crit.tsv";  
+    fname1 = __FILE_DIR $+ "ILTlevel_crit.tsv";
     fname2 = __FILE_DIR $+ "LTtrend_crit.tsv";
     
     panel_k = Np;
     meanp = 0;
     varp = 0;
     
-    // Row location 
+    // Row location
     if R == 0;
         if T < 10;
             row_n = 1;
@@ -411,7 +411,7 @@ proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
         crit = csvReadM(fname1, row_n|row_n, 1, "\t");
         
         do while mmm <= n;
-            // Column location 
+            // Column location
             if panel_k[ mmm ] > 8;
                 optk = 8;
             else;
@@ -449,7 +449,7 @@ proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
         crit_tr = csvReadM(fname2, row_n|row_n, 1, "\t");
         do while mmm <= n;
             
-            // column location 
+            // column location
             if panel_k[mmm] > 8;
                 optk = 8;
             else;
@@ -483,7 +483,7 @@ proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
         mmm = 1;
         crit_tr = csvReadM(fname2, row_n|row_n, 1, "\t");
         do while mmm <= n;
-            // Column location 
+            // Column location
             if panel_k[mmm] > 8;
                 optk = 8;
             else;

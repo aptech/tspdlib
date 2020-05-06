@@ -39,10 +39,10 @@ proc(3) = RALSADF(y, model, pmax, ic);
     ly = lagn(y, 1);
     
     // Deterministic term=constant
-    dc = ones(t, 1);      
+    dc = ones(t, 1);
     
     // Deterministic term=trend
-    dt = seqa(1, 1, t);    
+    dt = seqa(1, 1, t);
     
     if lag_var == 0;
         dep = trimr(dy, 1, 0);

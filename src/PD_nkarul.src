@@ -24,7 +24,7 @@
 **                      7 = Kurozumi with QS
 **                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
 **                      See:
-**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006).
+**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
@@ -107,7 +107,7 @@ proc(3) = PDfzk(y, model, k, varm);
         mu = 0.0642;
         var = 0.00179;
     endif;
-     
+    
     FZk = sqrt(n) * (FPk - mu)/sqrt(var);
     
     retp(Nkpss, FZk, 1 - cdfn(FZk));
@@ -134,7 +134,7 @@ proc(1) = _get_FKPSS_Ft(y, model, k, varm, ft);
     { b, e1, sig2, se, ssr } = myols(y, z);
     
     // Partial sum of residuals
-    S = cumsumc(e1);              
+    S = cumsumc(e1);
     
     if varm == 1;
         lrv = ssr/t;

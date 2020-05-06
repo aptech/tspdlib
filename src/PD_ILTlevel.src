@@ -4,7 +4,7 @@
 **  Reference:
 **  Im, K., Lee, J., Tieslau, M. (2005),
 **  "Panel LM Unit-root Tests with Level Shifts",
-**  Oxford Bulletin of Economics and Statistics 67, 393–419.
+**  Oxford Bulletin of Economics and Statistics 67, 393-419.
 **
 **  Format:  {Nlm, Ntb, Np, PDlm, pval} = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
 **
@@ -46,7 +46,7 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     t  = rows(y);
     Nlm = zeros(N, 1);
     Np = zeros(N, 1);
-
+    
     if nbreak == 0;
         Ntb = zeros(N, 1);
         
@@ -98,10 +98,10 @@ proc(2) = _get_ILTmoments(T, N, Nlm, Np);
     // Reading critical values
     fname = __FILE_DIR $+ "/ILTlevel_crit.tsv";
     
-//    load crit[27, 19] = ^fname;
+    //    load crit[27, 19] = ^fname;
     
     
-    // Row location 
+    // Row location
     if T < 10;
         row_n = 1;
     endif;
@@ -165,7 +165,7 @@ proc(2) = _get_ILTmoments(T, N, Nlm, Np);
     crit = csvReadM(fname, row_n|row_n, 1, "\t");
     
     for mmm(1, N, 1);
-        // column location 
+        // column location
         if panel_k[mmm] > 8;
             optk = 8;
         else;

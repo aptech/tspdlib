@@ -9,35 +9,35 @@
 **
 **  Format:  {Zt,Za,cvZt,cvZa}  = coint_pouliaris(y, x, model, varm);
 **
-**           
+**
 **  Input:   Y	     -  Nx1 matrix, dependent variable
 **           X       -  NxK matrix, independent variables
-**           k       -  Columns of x (upper bound is 5)      
+**           k       -  Columns of x (upper bound is 5)
 **           model   - 	0 = none
 **                      1 = constant
 **                      2 = constant & trend
 **         varm    -    Long-run consistent variance estimation method for PP-baed test
-**                      1 = iid; 
-**                      2 = Bartlett 
-**                      3 = Qudratic Spectral (QS); 
-**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005) 
-**                      5 = SPC with QS; 
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Qudratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
 **                      6 = Kurozumi with Bartlett
 **                      7 = Kurozumi with QS
 **                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
 **                      See:
-**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006). 
-**                      A guide to the computation of stationarity tests. 
-**                      Empirical Economics, 31(2), 433.           
+**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
 **
 **  Output: Zt, Za  -   Phillips & Ouliaris (1989) tests
-**	    cv      -   1%, 5%, 10% critical values for the chosen model 
+**	    cv      -   1%, 5%, 10% critical values for the chosen model
 **
 **
 **  Author: Saban Nazlioglu
-        -- The author makes no performance guarantees.
-        -- for public non-commercial use only.
-        -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 */
 
 
@@ -46,61 +46,127 @@
 proc(4)=coint_pouliaris(y,x,model,bwl,varm);
     local n,x1,b,e1,sig2,se,ssr,Zt,Za,cvZt,cvZa,k, cv1, cv2;
     
-     n=rows(y);
-     if model==0; x1=x;                         endif;
-     if model==1; x1=ones(n,1)~x;               endif;
-     if model==2; x1=ones(n,1)~seqa(1,1,n)~x;   endif;
-         {b,e1,sig2,se,ssr}=myols(y,x1);  //e1=y-(y/x1)*x1;      
-     {Zt, Za, cv1, cv2} =pp(e1,0,bwl,varm);
-
-     k=cols(x);
-     if model==0;     
-        if k==1; cvZt = -3.3865|-2.7619|-2.4505; endif;
-        if k==2; cvZt = -3.3893|-3.2667|-2.9873; endif;
-        if k==3; cvZt = -4.3038|-3.7371|-3.4406; endif; 
-        if k==4; cvZt = -4.6720|-4.1261|-3.8068; endif; 
-        if k==5; cvZt = -4.4987|-4.3999|-4.1416; endif; 
-     endif;
-     
-     if model==1;     
-        if k==1; cvZt = -3.9618|-3.3654|-3.0657; endif;
-        if k==2; cvZt = -4.3078|-3.7675|-3.4494; endif;
-        if k==3; cvZt = -4.7325|-4.1121|-3.8329; endif; 
-        if k==4; cvZt = -5.0728|-4.4542|-4.1565; endif; 
-        if k==5; cvZt = -5.2812|-4.7101|-4.4309; endif; 
-     endif;
-
-     if model==2;     
-        if k==1; cvZt = -4.3628|-3.8000|-3.5184; endif;
-        if k==2; cvZt = -4.6451|-4.1567|-3.8429; endif;
-        if k==3; cvZt = -5.0433|-4.4895|-4.1950; endif; 
-        if k==4; cvZt = -5.3576|-4.7423|-4.4625; endif; 
-        if k==5; cvZt = -5.5849|-5.0282|-4.7311; endif; 
-     endif;
-
-     if model==0;     
-        if k==1; cvZa = -22.8291|-15.6377|-12.5438; endif;
-        if k==2; cvZa = -29.2688|-21.4833|-18.1785; endif;
-        if k==3; cvZa = -36.1619|-27.8526|-23.9225; endif; 
-        if k==4; cvZa = -42.8724|-33.4784|-28.8540; endif; 
-        if k==5; cvZa = -48.5240|-38.0934|-33.7984; endif; 
-     endif;
-     
-     if model==1;     
-        if k==1; cvZa = -28.3218|-20.4935|-17.0390; endif;
-        if k==2; cvZa = -34.1686|-26.0943|-22.1948; endif;
-        if k==3; cvZa = -41.1348|-32.0615|-27.5846; endif; 
-        if k==4; cvZa = -47.5118|-37.1508|-32.7382; endif; 
-        if k==5; cvZa = -52.1723|-41.9388|-37.0074; endif; 
-     endif;
-
-     if model==2;     
-        if k==1; cvZa = -35.4185|-27.0866|-23.1915; endif;
-        if k==2; cvZa = -40.3427|-32.2231|-27.7803; endif;
-        if k==3; cvZa = -47.3590|-37.7304|-33.1637; endif; 
-        if k==4; cvZa = -53.6142|-42.4593|-37.7368; endif; 
-        if k==5; cvZa = -58.1615|-47.3830|-42.3231; endif; 
-     endif;
-     
-retp(Zt,Za,cvZt,cvZa);
+    n=rows(y);
+    if model==0;
+        x1=x;
+    endif;
+    if model==1;
+        x1=ones(n,1)~x;
+    endif;
+    if model==2;
+        x1=ones(n,1)~seqa(1,1,n)~x;
+    endif;
+    {b,e1,sig2,se,ssr}=myols(y,x1);  //e1=y-(y/x1)*x1;
+    {Zt, Za, cv1, cv2} =pp(e1,0,bwl,varm);
+    
+    k=cols(x);
+    if model==0;
+        if k==1;
+            cvZt = -3.3865|-2.7619|-2.4505;
+        endif;
+        if k==2;
+            cvZt = -3.3893|-3.2667|-2.9873;
+        endif;
+        if k==3;
+            cvZt = -4.3038|-3.7371|-3.4406;
+        endif;
+        if k==4;
+            cvZt = -4.6720|-4.1261|-3.8068;
+        endif;
+        if k==5;
+            cvZt = -4.4987|-4.3999|-4.1416;
+        endif;
+    endif;
+    
+    if model==1;
+        if k==1;
+            cvZt = -3.9618|-3.3654|-3.0657;
+        endif;
+        if k==2;
+            cvZt = -4.3078|-3.7675|-3.4494;
+        endif;
+        if k==3;
+            cvZt = -4.7325|-4.1121|-3.8329;
+        endif;
+        if k==4;
+            cvZt = -5.0728|-4.4542|-4.1565;
+        endif;
+        if k==5;
+            cvZt = -5.2812|-4.7101|-4.4309;
+        endif;
+    endif;
+    
+    if model==2;
+        if k==1;
+            cvZt = -4.3628|-3.8000|-3.5184;
+        endif;
+        if k==2;
+            cvZt = -4.6451|-4.1567|-3.8429;
+        endif;
+        if k==3;
+            cvZt = -5.0433|-4.4895|-4.1950;
+        endif;
+        if k==4;
+            cvZt = -5.3576|-4.7423|-4.4625;
+        endif;
+        if k==5;
+            cvZt = -5.5849|-5.0282|-4.7311;
+        endif;
+    endif;
+    
+    if model==0;
+        if k==1;
+            cvZa = -22.8291|-15.6377|-12.5438;
+        endif;
+        if k==2;
+            cvZa = -29.2688|-21.4833|-18.1785;
+        endif;
+        if k==3;
+            cvZa = -36.1619|-27.8526|-23.9225;
+        endif;
+        if k==4;
+            cvZa = -42.8724|-33.4784|-28.8540;
+        endif;
+        if k==5;
+            cvZa = -48.5240|-38.0934|-33.7984;
+        endif;
+    endif;
+    
+    if model==1;
+        if k==1;
+            cvZa = -28.3218|-20.4935|-17.0390;
+        endif;
+        if k==2;
+            cvZa = -34.1686|-26.0943|-22.1948;
+        endif;
+        if k==3;
+            cvZa = -41.1348|-32.0615|-27.5846;
+        endif;
+        if k==4;
+            cvZa = -47.5118|-37.1508|-32.7382;
+        endif;
+        if k==5;
+            cvZa = -52.1723|-41.9388|-37.0074;
+        endif;
+    endif;
+    
+    if model==2;
+        if k==1;
+            cvZa = -35.4185|-27.0866|-23.1915;
+        endif;
+        if k==2;
+            cvZa = -40.3427|-32.2231|-27.7803;
+        endif;
+        if k==3;
+            cvZa = -47.3590|-37.7304|-33.1637;
+        endif;
+        if k==4;
+            cvZa = -53.6142|-42.4593|-37.7368;
+        endif;
+        if k==5;
+            cvZa = -58.1615|-47.3830|-42.3231;
+        endif;
+    endif;
+    
+    retp(Zt,Za,cvZt,cvZa);
 endp;

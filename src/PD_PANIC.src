@@ -12,12 +12,12 @@
 **  Econometric Theory, 25(6), 1851-1868.
 **
 **  Bai, J., & Ng, S. (2010).
-**  "Panel unit root tests with cross-section dependence: 
+**  "Panel unit root tests with cross-section dependence:
 **  a further investigation".
 **  Econometric Theory, 26(4), 1088-1114.
 **
 **  Reese, S., & Westerlund, J. (2016).
-**  "PANICCA: Panic on Cross‐Section Averages".
+**  "PANICCA: Panic on Cross-Section Averages".
 **  Journal of Applied Econometrics, 31(6), 961-981.
 **
 **  Bai, J., & Ng, S. (2002).
@@ -90,7 +90,7 @@ proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
     nf = Fnumber(x, kmax, ic);
     
     // nf is selected with ICp2
-    { Fhat, lambda, ehat } = pca(x, nf[2]); 
+    { Fhat, lambda, ehat } = pca(x, nf[2]);
     
     e = cumsumc(ehat);
     T = rows(e);
@@ -139,7 +139,7 @@ proc(3) = BNG_PANICnew(y, kmax, model, ic);
     nf = Fnumber(x, kmax, ic);
     
     // nf is selected with ICp2
-    { Fhat, Floads, ehat } = pca(x, nf[2]); 
+    { Fhat, Floads, ehat } = pca(x, nf[2]);
     
     e = cumsumc(ehat);
     { Pa, Pb, PMSB } = PaPbPMSB(e, model);
@@ -217,7 +217,7 @@ proc(3) = JWR_PANICCA(y, model);
     local Pa, Pb, PMSB;
     
     T = rows(y);
-        
+    
     dx = diff(y, 1);
     x  = dx[2:T, .];
     
@@ -230,7 +230,7 @@ proc(3) = JWR_PANICCA(y, model);
     endif;
     
     // Cross-section averages
-    Fp = meanc(z');           
+    Fp = meanc(z');
     Ci = inv(Fp'Fp) * Fp' * z;
     vi = z - Fp * Ci;
     // end of CA estimator
@@ -259,7 +259,7 @@ proc(3) = PaPbPMSB(e, model);
     N = cols(e);
     
     // Intercept
-    if model == 1;  
+    if model == 1;
         rho1 = (tr(e1'e) - N * T * lambda)/tr(e1'e1);
         s = sqrt(N) * T;
         Pa = s * (rho1-1)/sqrt(2 * PHI4/(OMEGA2^2));
@@ -269,7 +269,7 @@ proc(3) = PaPbPMSB(e, model);
     endif;
     
     // Intercept and trend
-    if model == 2; 
+    if model == 2;
         rho1 = rho + 3/T * SIGMA2/OMEGA2;
         s = sqrt(N) * T;
         Pa = s * (rho1 - 1)/sqrt(36/5 * PHI4 * SIGMA2^2/(OMEGA2^4));
@@ -293,8 +293,8 @@ proc(3) = pca(x, nf);
         Fhat = sqrt(T) * eigvec[., T-nf+1:T];
         lambda = inv(Fhat'Fhat) * Fhat' * X; //lambda=Fhat'X/T
         ehat = X - Fhat * lambda;
-    
-    else; 
+        
+    else;
         
         { eigval, eigvec } = eighv(x' * x);
         lambda = sqrt(N) * eigvec[., N-nf+1:N];
@@ -323,29 +323,29 @@ proc(1) = Fnumber(X, kmax, ic);
         {Fhat, lambda, e} = pca(X, k);
         V[k] = sumc(sumc(e.^2))/(N * T);
         
-        // PCp criterion 
-        if ic == 1; 
+        // PCp criterion
+        if ic == 1;
             ICp[k, 1] = V[k] + k * sigma2 * (n + t)/(n * t) * ln((n * t)/(n + t));
             ICp[k, 2] = V[k] + k * sigma2 * (n + t)/(n * t) * ln(minc(n|t));
             ICp[k, 3] = V[k] + k * sigma2 * (ln(minc(n|t))/minc(n|t));
         endif;
         
         // ICp criterion
-        if ic == 2; 
+        if ic == 2;
             ICp[k, 1] = ln(V[k]) + k * (n + t)/(n * t) * ln((n * t)/(n + t));
             ICp[k, 2] = ln(V[k]) + k * (n + t)/(n * t) * ln(minc(n|t));
             ICp[k, 3] = ln(V[k]) + k * (ln(minc(n|t))/minc(n|t));
         endif;
         
         // AIC criterion
-        if ic == 3;  
+        if ic == 3;
             ICp[k, 1] = V[k] + k * sigma2 * (2/t);
             ICp[k, 2] = V[k] + k * sigma2 * (2/n);
             ICp[k, 3] = V[k] + k * sigma2 * (2 * (n+ t -k)/(n * t));
         endif;
         
         // BIC  criterion
-        if ic == 4;  
+        if ic == 4;
             ICp[k, 1] = V[k] + k * sigma2 * (ln(t)/t);
             ICp[k, 2] = V[k] + k * sigma2 * (ln(n)/n);
             ICp[k, 3] = V[k] + k * sigma2 * ((n + t - k) * ln(n * t)/(n * t));
@@ -379,7 +379,7 @@ proc(3) = _get_lrv(e, bw);
     sigi = zeros(N, 1);
     
     // automatic bandwidth selection
-    if bw == 0;  
+    if bw == 0;
         
         for i(1, N, 1);
             rhoi[i] = v[1:T-1, i]/v[2:T, i];

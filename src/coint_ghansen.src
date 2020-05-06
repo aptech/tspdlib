@@ -2,56 +2,56 @@
 /*
 **  coint_ghansen
 **  Reference:
-**  Gregory, A.W., Hansen, B. (1996a). 
-**  "Residual-based tests for cointegration in models with regime shifts" 
+**  Gregory, A.W., Hansen, B. (1996a).
+**  "Residual-based tests for cointegration in models with regime shifts"
 **  Journal of Econometrics, 70, 99-126.
 **
-**  Gregory, A.W., Hansen, B. (1996b). 
-**  "Tests for Cointegration in Models with Regime and Trend Shifts" 
+**  Gregory, A.W., Hansen, B. (1996b).
+**  "Tests for Cointegration in Models with Regime and Trend Shifts"
 **  Oxford Bulletin Economics and Statistics, 58(3), 555-560.
 **
 **
-**  Format:  {ADF_min,TBadf,Zt_min,TBzt,Za_min,TBza,cvADFZt,cvZa} 
-**                              = coint_ghansen(y,x,model,ic,pmax,varm,trimm);
+**  Format:  { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa }
+**                              = coint_ghansen(y, x, model, ic, pmax, varm, trimm);
 **
-**           
+**
 **  Input:   Y	     -  Nx1 matrix, dependent variable
 **           X       -  NxK matrix, independent variables
-**           k       -  Columns of x (upper bound is 4)      
+**           k       -  Columns of x (upper bound is 4)
 **           model   - 	1 = C   (level shift)
 **                      2 = C/T (level shift with trend)
-**                      3 = C/S (regime shift) 
+**                      3 = C/S (regime shift)
 **                      4 = regime and trend shift
 **           pmax    -  Maximum number of lags for for Dy in ADF test; 0=no lags
-**           ic      -  Information Criterion for ADF-based test: 
-**                      1=Akaike 
-**                      2=Schwarz 
+**           ic      -  Information Criterion for ADF-based test:
+**                      1=Akaike
+**                      2=Schwarz
 **                      3=t-stat significance
 **           varm   -   Long-run consistent variance estimation method for PP-based tests
-**                      1 = iid; 
-**                      2 = Bartlett 
-**                      3 = Qudratic Spectral (QS); 
-**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005) 
-**                      5 = SPC with QS; 
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Qudratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
 **                      6 = Kurozumi with Bartlett
 **                      7 = Kurozumi with QS
 **                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
 **                      See:
-**                      Carrion-i-Silvestre, J. L., & Sansó, A. (2006). 
-**                      A guide to the computation of stationarity tests. 
+**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
+**                      A guide to the computation of stationarity tests.
 **
 **
 **  Output: ADF_min -   ADF test
 **          Za_min  -   Zalpha test
 **          Zt_min  -   Zt test
 **          TB      -   break location
-**	    cv      -   1%, 5%, 10% critical values for the chosen model 
+**	    cv      -   1%, 5%, 10% critical values for the chosen model
 **
 **
 **  Author: Saban Nazlioglu
-        -- The author makes no performance guarantees.
-        -- for public non-commercial use only.
-        -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 */
 
 
@@ -66,7 +66,7 @@ proc(8)=coint_ghansen(y,x,model,bwl,ic,pmax,varm,trimm);
     n    =rows(y);      /*# of observation*/
     TBadf=0;
     TBZa=0;
-    TBZt=0; 
+    TBZt=0;
     ADF_min=1000;
     Za_min=1000;
     Zt_min=1000;
@@ -78,85 +78,141 @@ proc(8)=coint_ghansen(y,x,model,bwl,ic,pmax,varm,trimm);
     Za=zeros(T2-T1+1,1);
     Zt=zeros(T2-T1+1,1);
     
-    tb1=T1;             
+    tb1=T1;
     do while tb1<=T2;
         du1 = zeros(tb1,1)|ones(n-tb1,1);
-     if model==1; x1=ones(n,1)~du1~x;                                    endif;  
-     if model==2; x1=ones(n,1)~du1~seqa(1,1,n)~x;                        endif;
-     if model==3; x1=ones(n,1)~du1~x~du1.*x;                             endif;
-     if model==4; x1=ones(n,1)~du1~x~du1.*x~seqa(1,1,n)~du1.*seqa(1,1,n);endif;
-
-                   {b,e1,sig2,se,ssr}= myols(y,x1);         
+        if model==1;
+            x1=ones(n,1)~du1~x;
+        endif;
+        if model==2;
+            x1=ones(n,1)~du1~seqa(1,1,n)~x;
+        endif;
+        if model==3;
+            x1=ones(n,1)~du1~x~du1.*x;
+        endif;
+        if model==4;
+            x1=ones(n,1)~du1~x~du1.*x~seqa(1,1,n)~du1.*seqa(1,1,n);
+        endif;
+        
+        {b,e1,sig2,se,ssr}= myols(y,x1);
         {DF[tb1-T1+1],lagadf[tb1-T1+1], cv0}  = adf(e1,0,pmax,ic);
         {Zt[tb1-T1+1],Za[tb1-T1+1], cv1, cv2} = pp(e1,0,bwl,varm);
-   
-         stat1=minc(DF);
-         optl=lagadf[minindc(DF)];
-         if stat1<ADF_min;
-             //break date
-             TBadf=tb1; 
-             
-             //ADF statistic
-             ADF_min=stat1;   
-         endif;
-
-         stat2=minc(Zt);
-         if stat2<Zt_min;
-             //break date
+        
+        stat1=minc(DF);
+        optl=lagadf[minindc(DF)];
+        if stat1<ADF_min;
+            //break date
+            TBadf=tb1;
+            
+            //ADF statistic
+            ADF_min=stat1;
+        endif;
+        
+        stat2=minc(Zt);
+        if stat2<Zt_min;
+            //break date
             TBZt  =tb1;
-             
+            
             //Zt statistic
-            Zt_min=stat2;   
-         endif;
-
-         stat3=minc(Za);
-         if stat3<Za_min;
+            Zt_min=stat2;
+        endif;
+        
+        stat3=minc(Za);
+        if stat3<Za_min;
             //break date
             TBZa  =tb1;
             
             //Za statistic
-            Za_min=stat3;    
-         endif;       
-    tb1=tb1+1;
+            Za_min=stat3;
+        endif;
+        tb1=tb1+1;
     endo;
     
     k = cols(x);
-    {cvADFZt,cvZa} = cv_coint_ghansen(k,model);  
+    { cvADFZt, cvZa } = cv_coint_ghansen(k, model);
     
-retp(ADF_min,TBadf,Zt_min,TBzt,Za_min,TBza,cvADFZt,cvZa);
+    retp(ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa);
 endp;
 
 
 
-proc(2)=cv_coint_ghansen(k,model);
-    local cvADFzt,cvZa;        
-    if k==1;           
-        if model==1; cvADFZt=-5.13|-4.61|-4.34; cvZa= -50.07|-40.48|-36.19; endif;   
-        if model==2; cvADFZt=-5.45|-4.99|-4.72; cvZa= -57.28|-47.96|-43.22; endif;
-        if model==3; cvADFZt=-5.47|-4.95|-4.68; cvZa= -57.17|-47.04|-41.85; endif;               
-        if model==4; cvADFZt=-6.02|-5.50|-5.24; cvZa= -69.37|-58.58|-53.31; endif;                    
+proc(2) = cv_coint_ghansen(k, model);
+    local cvADFzt, cvZa;
+    if k==1;
+        if model==1;
+            cvADFZt=-5.13|-4.61|-4.34;
+            cvZa= -50.07|-40.48|-36.19;
+        endif;
+        if model==2;
+            cvADFZt=-5.45|-4.99|-4.72;
+            cvZa= -57.28|-47.96|-43.22;
+        endif;
+        if model==3;
+            cvADFZt=-5.47|-4.95|-4.68;
+            cvZa= -57.17|-47.04|-41.85;
+        endif;
+        if model==4;
+            cvADFZt=-6.02|-5.50|-5.24;
+            cvZa= -69.37|-58.58|-53.31;
+        endif;
     endif;
     
     if k==2;
-        if model==1; cvADFZt=-5.44|-4.92|-4.69; cvZa= -57.01|-46.98|-42.49; endif;   
-        if model==2; cvADFZt=-5.80|-5.29|-5.03; cvZa= -64.77|-53.92|-48.94; endif;
-        if model==3; cvADFZt=-5.97|-5.50|-5.23; cvZa= -68.21|-58.33|-52.85; endif;
-        if model==4; cvADFZt=-6.45|-5.96|-5.72; cvZa= -79.65|-68.43|-63.10; endif;               
+        if model==1;
+            cvADFZt=-5.44|-4.92|-4.69;
+            cvZa= -57.01|-46.98|-42.49;
+        endif;
+        if model==2;
+            cvADFZt=-5.80|-5.29|-5.03;
+            cvZa= -64.77|-53.92|-48.94;
+        endif;
+        if model==3;
+            cvADFZt=-5.97|-5.50|-5.23;
+            cvZa= -68.21|-58.33|-52.85;
+        endif;
+        if model==4;
+            cvADFZt=-6.45|-5.96|-5.72;
+            cvZa= -79.65|-68.43|-63.10;
+        endif;
     endif;
-
-    if k==3;
-        if model==1; cvADFZt=-5.77|-5.28|-5.02; cvZa= -63.64|-53.58|-48.65; endif;   
-        if model==2; cvADFZt=-6.05|-5.57|-5.33; cvZa= -70.27|-59.76|-54.94; endif;
-        if model==3; cvADFZt=-6.51|-6.00|-5.75; cvZa= -80.15|-68.94|-63.42; endif;
-        if model==4; cvADFZt=-6.89|-6.32|-6.16; cvZa= -90.84|-78.87|-72.75; endif;                 
-    endif;
-
-    if k==4;
-        if model==1; cvADFZt=-6.05|-5.56|-5.31; cvZa= -70.18|-59.40|-54.38; endif;   
-        if model==2; cvADFZt=-6.36|-5.83|-5.59; cvZa= -76.95|-65.44|-60.12; endif;
-        if model==3; cvADFZt=-6.92|-6.41|-6.17; cvZa= -90.35|-78.52|-72.56; endif; 
-        if model==4; cvADFZt=-7.31|-6.84|-6.58; cvZa=-100.69|-88.47|-82.30; endif;                
-    endif;    
     
-retp(cvADFZt,cvZa);
-endp;  
+    if k==3;
+        if model==1;
+            cvADFZt=-5.77|-5.28|-5.02;
+            cvZa= -63.64|-53.58|-48.65;
+        endif;
+        if model==2;
+            cvADFZt=-6.05|-5.57|-5.33;
+            cvZa= -70.27|-59.76|-54.94;
+        endif;
+        if model==3;
+            cvADFZt=-6.51|-6.00|-5.75;
+            cvZa= -80.15|-68.94|-63.42;
+        endif;
+        if model==4;
+            cvADFZt=-6.89|-6.32|-6.16;
+            cvZa= -90.84|-78.87|-72.75;
+        endif;
+    endif;
+    
+    if k==4;
+        if model==1;
+            cvADFZt=-6.05|-5.56|-5.31;
+            cvZa= -70.18|-59.40|-54.38;
+        endif;
+        if model==2;
+            cvADFZt=-6.36|-5.83|-5.59;
+            cvZa= -76.95|-65.44|-60.12;
+        endif;
+        if model==3;
+            cvADFZt=-6.92|-6.41|-6.17;
+            cvZa= -90.35|-78.52|-72.56;
+        endif;
+        if model==4;
+            cvADFZt=-7.31|-6.84|-6.58;
+            cvZa=-100.69|-88.47|-82.30;
+        endif;
+    endif;
+    
+    retp(cvADFZt, cvZa);
+endp;

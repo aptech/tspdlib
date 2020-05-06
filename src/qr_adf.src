@@ -2,9 +2,9 @@
 /*
 **> qr_adf
 **  Reference:
-**  Koenker, R., Xiao, Z., 2004. 
-**  Unit root quantile autoregression inference. 
-**  Journal of the American Statistical Association 99, 775–787.
+**  Koenker, R., Xiao, Z., 2004.
+**  Unit root quantile autoregression inference.
+**  Journal of the American Statistical Association 99, 775-787.
 **
 **
 **  Format:  {QURadf} = QRADF(y, model , pmax, ic, tau, _print);
@@ -132,7 +132,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     qOut3 = quantileFit(Y, X1, tau-h);
     
     // Extract beta
-    rq2 = qOut3.beta; 
+    rq2 = qOut3.beta;
     
     z = ones(rows(x1), 1)~x1;
     mz = meanc(z);

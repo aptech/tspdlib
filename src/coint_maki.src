@@ -2,27 +2,27 @@
 ** These are the procedures to test for cointegration with alternatives hypothesis up to m structural breaks
 ** Received from Daki Maki by email October 6th, 2019
 ** Modified by Jason Jones, Aptech Systems October 2019
-**     - Added check and error message for max number of 
+**     - Added check and error message for max number of
 **       breaks; 'm' > 5, since the code does not support this.
 **     - Code added to GAUSS package.
 **     - Minor formatting changes.
 */
 
 /*
-** m - Maximum number of breaks. Integer between 1 and 5 
+** m - Maximum number of breaks. Integer between 1 and 5
 **
 **
 ** model - Integer. Options include:
 **                       0: level shift
 **                       1: level shift with trend
-**                       2: regime shifts 
+**                       2: regime shifts
 **                       3: Trend and Regime shifts
 **
 ** tp - Trimming parameter. Percentage of observations to trim.
 **      Valid options are between 0 and 1.
 **
 ** lagoption  Integer. Options include 0 or 1
-**                       0: lag=0 
+**                       0: lag=0
 **                       1: t-sig criterion
 */
 proc (1) = coint_maki(datap, m, model, tp, lagoption);
@@ -35,1217 +35,1273 @@ proc (1) = coint_maki(datap, m, model, tp, lagoption);
     print /lz "Maximum number of breaks:" m;
     
     {d0,d1}=pf(datap,m,model,tp,lagoption);
- 
-print "==========================================================";
-   print /lz "Cointegration tests with multiple breaks:";
-   if model==0;
-   print /lz "Level shifts" ;
-   elseif model==1;
-   print /lz "Level shifts with trend" ;
-   elseif model==2;
-   print /lz "Regime shifts";
-   elseif model==3;
-   print /lz "Trend and Regime shifts";
-   endif;
-   print /lz "Test statistic:"  d0;
-   print /lz "Break points:" d1;
-   print "=======================================================";
-  retp(d0);
+    
+    print "==========================================================";
+    print /lz "Cointegration tests with multiple breaks:";
+    if model==0;
+        print /lz "Level shifts" ;
+    elseif model==1;
+        print /lz "Level shifts with trend" ;
+    elseif model==2;
+        print /lz "Regime shifts";
+    elseif model==3;
+        print /lz "Trend and Regime shifts";
+    endif;
+    print /lz "Test statistic:"  d0;
+    print /lz "Break points:" d1;
+    print "=======================================================";
+    retp(d0);
 endp;
 
 
 
-proc (2) = pf(datap,m,model,tp,lagoption);
-   local n,h1,h2,y,i,j,x,tb,tau,vectau,vectau2,mintau1,mintau2,bp1,iid,d0,d1;
-   local c,a,rz,statistic,p,bp2,b1,bp3,mintau,mintau3,mintau4,bp4,bp,bp123;
-   local b,u,du1,du2,const,e,k,q,r,dy,d2,lag,number,rown,bp1234,mintau5,bp5;
-   
-   
-   n=rows(datap);  
-   tb=round(tp*n);
-
-   if m==1;
-
-    {mintau1,bp1}=mbreak1(datap,n,model,tb,lagoption);
-      d0=mintau1;  
-      d1=bp1;    
-
-   elseif m==2;
+proc (2) = pf(datap, m, model, tp, lagoption);
+    local n,h1,h2,y,i,j,x,tb,tau,vectau,vectau2,mintau1,mintau2,bp1,iid,d0,d1;
+    local c,a,rz,statistic,p,bp2,b1,bp3,mintau,mintau3,mintau4,bp4,bp,bp123;
+    local b,u,du1,du2,const,e,k,q,r,dy,d2,lag,number,rown,bp1234,mintau5,bp5;
     
-     {mintau1,bp1}=mbreak1(datap,n,model,tb,lagoption);
-
-     {mintau2,bp2}=mbreak2(datap,n,model,tb,bp1,lagoption);
- 
-      mintau=mintau1|mintau2;
-      d0=minc(mintau);
-      d1=sortc(bp1|bp2,1);
-
+    
+    n=rows(datap);
+    tb=round(tp*n);
+    
+    if m==1;
+        
+        { mintau1, bp1 } = mbreak1(datap, n, model, tb, lagoption);
+        d0=mintau1;
+        d1=bp1;
+        
+    elseif m==2;
+        
+        {mintau1,bp1} = mbreak1(datap, n, model, tb, lagoption);
+        
+        { mintau2, bp2 } = mbreak2(datap, n, model, tb, bp1, lagoption);
+        
+        mintau=mintau1|mintau2;
+        d0=minc(mintau);
+        d1=sortc(bp1|bp2,1);
+        
     elseif m==3;
-       {mintau1,bp1}=mbreak1(datap,n,model,tb,lagoption);
-
-       {mintau2,bp2}=mbreak2(datap,n,model,tb,bp1,lagoption);
-
-      bp=sortc(bp1|bp2,1);
-
-       {mintau3,bp3}=mbreak3(datap,n,model,tb,bp,lagoption);
-
-      mintau=mintau1|mintau2|mintau3;
-      d0=minc(mintau);
-      d1=sortc(bp1|bp2|bp3,1);   
-
+        { mintau1, bp1 } = mbreak1(datap, n, model, tb, lagoption);
+        
+        { mintau2, bp2 } = mbreak2(datap, n, model, tb, bp1, lagoption);
+        
+        bp = sortc(bp1|bp2,1);
+        
+        { mintau3, bp3 } = mbreak3(datap, n, model, tb, bp, lagoption);
+        
+        mintau = mintau1|mintau2|mintau3;
+        d0 = minc(mintau);
+        d1 = sortc(bp1|bp2|bp3,1);
+        
     elseif m==4;
-
-       {mintau1,bp1}=mbreak1(datap,n,model,tb,lagoption);
-
-       {mintau2,bp2}=mbreak2(datap,n,model,tb,bp1,lagoption);
-
-       bp=sortc(bp1|bp2,1);
-
-       {mintau3,bp3}=mbreak3(datap,n,model,tb,bp,lagoption);
-
-       bp123=sortc(bp1|bp2|bp3,1);
-
-       {mintau4,bp4}=mbreak4(datap,n,model,tb,bp123,lagoption);
+        
+        { mintau1, bp1 } = mbreak1(datap, n, model, tb, lagoption);
+        
+        {mintau2,bp2}=mbreak2(datap,n,model,tb,bp1,lagoption);
+        
+        bp=sortc(bp1|bp2,1);
+        
+        {mintau3,bp3}=mbreak3(datap,n,model,tb,bp,lagoption);
+        
+        bp123=sortc(bp1|bp2|bp3,1);
+        
+        {mintau4,bp4}=mbreak4(datap,n,model,tb,bp123,lagoption);
+        
+        mintau=mintau1|mintau2|mintau3|mintau4;
+        d0=minc(mintau);
+        d1=sortc(bp1|bp2|bp3|bp4,1);
+        
+    elseif m==5;
+        
+        {mintau1,bp1}=mbreak1(datap,n,model,tb,lagoption);
+        
+        {mintau2,bp2}=mbreak2(datap,n,model,tb,bp1,lagoption);
+        
+        bp=sortc(bp1|bp2,1);
+        
+        {mintau3,bp3}=mbreak3(datap,n,model,tb,bp,lagoption);
+        
+        bp123=sortc(bp1|bp2|bp3,1);
+        
+        {mintau4,bp4}=mbreak4(datap,n,model,tb,bp123,lagoption);
+        
+        bp1234=sortc(bp1|bp2|bp3|bp4,1);
+        
+        {mintau5,bp5}=mbreak5(datap,n,model,tb,bp1234,lagoption);
+        
+        mintau=mintau1|mintau2|mintau3|mintau4|mintau5;
+        d0=minc(mintau);
+        d1=sortc(bp1|bp2|bp3|bp4|bp5,1);
+        
+    else;
+        errorlogat "invalid input: 'mbctest' currently supports up to 5 breaks. '"$+ntos(m)$+"' breaks requested.";
+        end;
+    endif;
     
-      mintau=mintau1|mintau2|mintau3|mintau4;
-      d0=minc(mintau);
-      d1=sortc(bp1|bp2|bp3|bp4,1);
-
-   elseif m==5;
-
-       {mintau1,bp1}=mbreak1(datap,n,model,tb,lagoption);
-
-       {mintau2,bp2}=mbreak2(datap,n,model,tb,bp1,lagoption);
-
-       bp=sortc(bp1|bp2,1);
-
-       {mintau3,bp3}=mbreak3(datap,n,model,tb,bp,lagoption);
-
-       bp123=sortc(bp1|bp2|bp3,1);
-
-       {mintau4,bp4}=mbreak4(datap,n,model,tb,bp123,lagoption);
     
-       bp1234=sortc(bp1|bp2|bp3|bp4,1);
-       
-       {mintau5,bp5}=mbreak5(datap,n,model,tb,bp1234,lagoption);
-  
-      mintau=mintau1|mintau2|mintau3|mintau4|mintau5;
-      d0=minc(mintau);
-      d1=sortc(bp1|bp2|bp3|bp4|bp5,1);
-       
-   else;
-       errorlogat "invalid input: 'mbctest' currently supports up to 5 breaks. '"$+ntos(m)$+"' breaks requested.";
-       end;
-   endif;
-
- 
-  retp(d0,d1);
+    retp(d0,d1);
 endp;
 
 proc (2) = dftau(dy,x);
-   local b,e,n1,k,s2hat,varb,se,tau,s2;
-   local smatrix,nwvarb,nwse,tnw; 
-
-   n1=rows(x); k=cols(x);
-   b=inv(x'x)*x'dy;
-   e=dy-x*b;
-   s2=e'e;
-   s2hat=e'e/(n1-k);
-   varb=s2hat*inv(x'x);
-   se=sqrt(diag(varb));
-   tau=b[1]./se[1];
-
-   retp(tau,s2);
-endp; 
+    local b,e,n1,k,s2hat,varb,se,tau,s2;
+    local smatrix,nwvarb,nwse,tnw;
+    
+    n1=rows(x);
+    k=cols(x);
+    b=inv(x'x)*x'dy;
+    e=dy-x*b;
+    s2=e'e;
+    s2hat=e'e/(n1-k);
+    varb=s2hat*inv(x'x);
+    se=sqrt(diag(varb));
+    tau=b[1]./se[1];
+    
+    retp(tau,s2);
+endp;
 
 proc (2) = mbreak1(datap,n,model,tb,lagoption);
-local h1,i,j,x,tau,vectau,mintau1,vecbp,bp1,y,dx,k;
-local b,u,du1,du2,const,e,q,r,dy,d1,lag,s2,rv,du,tr,dtr; 
-
+    local h1,i,j,x,tau,vectau,mintau1,vecbp,bp1,y,dx,k;
+    local b,u,du1,du2,const,e,q,r,dy,d1,lag,s2,rv,du,tr,dtr;
+    
     y=datap[.,1];
     k=cols(datap);
-    i=tb+1; vectau=zeros(n,1); vecbp=zeros(n,1);
-
-  do while i<=n-tb;
-
-         
-    if model==0;
-       u=ones(n,1);
-       du=(zeros(i,1)|ones(n-i,1));
-       const=u~du;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du=(zeros(i,1)|ones(n-i,1));
-       const=u~du;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du=(zeros(i,1)|ones(n-i,1));
-       const=u~du;
-       dx=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx/*datap[.,2:k].*du*/;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du~tr~dtr;
-       dx=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
+    i=tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
     
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-     {tau,s2}=dftau(dy[r-1:n-1],x);
-
-     vectau[i,.]=tau;
-     vecbp[i,.]=s2;
-
-     i=i+1;
-     endo;
-     vectau=vectau[1:rows(vectau),.];  
-     vecbp=vecbp[1:rows(vecbp),.];
-
-     mintau1=minc(vectau[tb+1:n-tb,.]); 
-     bp1=tb+minindc(vecbp[tb+1:n-tb,.]); 
-  
-retp(mintau1,bp1);
+    do while i<=n-tb;
+        
+        
+        if model==0;
+            u=ones(n,1);
+            du=(zeros(i,1)|ones(n-i,1));
+            const=u~du;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du=(zeros(i,1)|ones(n-i,1));
+            const=u~du;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du=(zeros(i,1)|ones(n-i,1));
+            const=u~du;
+            dx=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx/*datap[.,2:k].*du*/;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du~tr~dtr;
+            dx=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
+    endo;
+    vectau=vectau[1:rows(vectau),.];
+    vecbp=vecbp[1:rows(vecbp),.];
+    
+    mintau1=minc(vectau[tb+1:n-tb,.]);
+    bp1=tb+minindc(vecbp[tb+1:n-tb,.]);
+    
+    retp(mintau1,bp1);
 endp;
 
 
 /* Maximum break is 2*/
 
 proc (2) = mbreak2(datap,n,model,tb,bp1,lagoption);
-  local bp2,tau1,tau2,mintau2,bp21,bp22,minbp;
- 
+    local bp2,tau1,tau2,mintau2,bp21,bp22,minbp;
+    
     if bp1<=0.1*n;
-       {tau2,bp22}=mbreak22(datap,n,model,tb,bp1,lagoption);
-       mintau2=tau2; 
-       bp2=bp22;
+        {tau2,bp22}=mbreak22(datap,n,model,tb,bp1,lagoption);
+        mintau2=tau2;
+        bp2=bp22;
     elseif bp1>=0.9*n;
-       {tau1,bp21}=mbreak21(datap,n,model,tb,bp1,lagoption);
-       mintau2=tau1;
-       bp2=bp21;
+        {tau1,bp21}=mbreak21(datap,n,model,tb,bp1,lagoption);
+        mintau2=tau1;
+        bp2=bp21;
     else;
-       {tau1,bp21}=mbreak21(datap,n,model,tb,bp1,lagoption);
-       {tau2,bp22}=mbreak22(datap,n,model,tb,bp1,lagoption);
-       mintau2=minc(tau1|tau2);
-       minbp=bp21|bp22;
-       bp2=minbp[minindc(tau1|tau2),1];
-   
-   endif;
-
-retp(mintau2,bp2);
+        {tau1,bp21}=mbreak21(datap,n,model,tb,bp1,lagoption);
+        {tau2,bp22}=mbreak22(datap,n,model,tb,bp1,lagoption);
+        mintau2=minc(tau1|tau2);
+        minbp=bp21|bp22;
+        bp2=minbp[minindc(tau1|tau2),1];
+        
+    endif;
+    
+    retp(mintau2,bp2);
 endp;
 
 proc (2) = mbreak21(datap,n,model,tb,bp1,lagoption);
-  local i,vectau,u,du1,du2,const,b,e,lag,dy,q,r,x,d1,d2,tau,s2;
-  local tau1,vecbp,bp21,dx1,dx2,tr,dtr1,dtr2,k,y;
+    local i,vectau,u,du1,du2,const,b,e,lag,dy,q,r,x,d1,d2,tau,s2;
+    local tau1,vecbp,bp21,dx1,dx2,tr,dtr1,dtr2,k,y;
     
-    y=datap[.,1];k=cols(datap);
+    y=datap[.,1];
+    k=cols(datap);
     u=ones(n,1);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
-
-    i=tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
-    do while i<=bp1-tb;
-     
-      if model==0;
-       u=ones(n,1);
-       du2=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du2=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du2=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2;
-       dx2=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du2=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr2=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~tr~dtr1~dtr2;
-       dx2=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-
-     {tau,s2}=dftau(dy[r-1:n-1],x);
     
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+    i=tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
+    do while i<=bp1-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du2=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du2=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du2=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2;
+            dx2=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du2=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr2=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~tr~dtr1~dtr2;
+            dx2=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-    tau1=minc(vectau[tb+1:bp1-tb,.]); 
+    
+    tau1=minc(vectau[tb+1:bp1-tb,.]);
     bp21=tb+minindc(vecbp[tb+1:bp1-tb]);
-
-retp(tau1,bp21);
+    
+    retp(tau1,bp21);
 endp;
 
 proc (2) = mbreak22(datap,n,model,tb,bp1,lagoption);
-  local i,vectau,vecbp,u,du1,du2,const,b,e,lag,dy,q,r,x;
-  local d1,d2,tau,s2,tau2,bp22,dx1,dx2,tr,dtr1,dtr2,k,y;
+    local i,vectau,vecbp,u,du1,du2,const,b,e,lag,dy,q,r,x;
+    local d1,d2,tau,s2,tau2,bp22,dx1,dx2,tr,dtr1,dtr2,k,y;
     
-    y=datap[.,1];k=cols(datap);
+    y=datap[.,1];
+    k=cols(datap);
     u=ones(n,1);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
-
-    i=bp1+tb+1;   vectau=zeros(n,1); vecbp=zeros(n,1);
-    do while i<=n-tb;
- 
-     if model==0;
-       u=ones(n,1);
-       du2=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du2=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du2=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2;
-       dx2=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2;
-       /*print x;*/
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du2=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr2=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~tr~dtr1~dtr2;
-       dx2=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-
-    {tau,s2}=dftau(dy[r-1:n-1],x);
     
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+    i=bp1+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    do while i<=n-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du2=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du2=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du2=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2;
+            dx2=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2;
+            /*print x;*/
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du2=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr2=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~tr~dtr1~dtr2;
+            dx2=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-     tau2=minc(vectau[bp1+tb+1:n-tb,.]); 
-     bp22=bp1+tb+minindc(vecbp[bp1+tb+1:n-tb,.]);
-
-retp(tau2,bp22);
+    
+    tau2=minc(vectau[bp1+tb+1:n-tb,.]);
+    bp22=bp1+tb+minindc(vecbp[bp1+tb+1:n-tb,.]);
+    
+    retp(tau2,bp22);
 endp;
 
 
 /* Maximum break is 3*/
 
 proc (2) = mbreak3(datap,n,model,tb,bp,lagoption);
-local bp1,bp2,mintau3,tau1,tau2,tau3,bp31,bp32,bp33,bp3,minbp;
-   
-   bp1=bp[1,.]; bp2=bp[2,.];
-
-     if bp2-bp1>round(0.1*n) and bp2<=round(0.9*n);
-           if bp1<=0.1*n;
+    local bp1,bp2,mintau3,tau1,tau2,tau3,bp31,bp32,bp33,bp3,minbp;
+    
+    bp1=bp[1,.];
+    bp2=bp[2,.];
+    
+    if bp2-bp1>round(0.1*n) and bp2<=round(0.9*n);
+        if bp1<=0.1*n;
             {tau2,bp32}=mbreak32(datap,n,model,tb,bp1,bp2,lagoption);
             {tau3,bp33}=mbreak33(datap,n,model,tb,bp1,bp2,lagoption);
             mintau3=minc(tau2|tau3);
             minbp=bp32|bp33;
             bp3=minbp[minindc(tau2|tau3),.];
-           else;
+        else;
             {tau1,bp31}=mbreak31(datap,n,model,tb,bp1,bp2,lagoption);
             {tau2,bp32}=mbreak32(datap,n,model,tb,bp1,bp2,lagoption);
             {tau3,bp33}=mbreak33(datap,n,model,tb,bp1,bp2,lagoption);
             mintau3=minc(tau1|tau2|tau3);
             minbp=bp31|bp32|bp33;
             bp3=minbp[minindc(tau1|tau2|tau3),.];
-           endif;
-
-     elseif bp2-bp1>0.1*n and bp2>=0.9*n;
-
-           if bp1<=0.1*n;
+        endif;
+        
+    elseif bp2-bp1>0.1*n and bp2>=0.9*n;
+        
+        if bp1<=0.1*n;
             {tau2,bp32}=mbreak32(datap,n,model,tb,bp1,bp2,lagoption);
             mintau3=tau2;
             bp3=bp32;
-           else;
+        else;
             {tau1,bp31}=mbreak31(datap,n,model,tb,bp1,bp2,lagoption);
             {tau2,bp32}=mbreak32(datap,n,model,tb,bp1,bp2,lagoption);
             mintau3=minc(tau1|tau2);
             minbp=bp31|bp32;
             bp3=minbp[minindc(tau1|tau2),.];
-           endif;
-
-     elseif bp2-bp1<=0.1*n;
-           if bp1<=0.1*n;
-             {tau3,bp33}=mbreak33(datap,n,model,tb,bp1,bp2,lagoption);
-             mintau3=tau3;
-             bp3=bp33;
-           elseif bp2>=round(0.9*n);
-             {tau1,bp31}=mbreak31(datap,n,model,tb,bp1,bp2,lagoption);
-             mintau3=tau1;
-             bp3=bp31;
-           else;
+        endif;
+        
+    elseif bp2-bp1<=0.1*n;
+        if bp1<=0.1*n;
+            {tau3,bp33}=mbreak33(datap,n,model,tb,bp1,bp2,lagoption);
+            mintau3=tau3;
+            bp3=bp33;
+        elseif bp2>=round(0.9*n);
+            {tau1,bp31}=mbreak31(datap,n,model,tb,bp1,bp2,lagoption);
+            mintau3=tau1;
+            bp3=bp31;
+        else;
             {tau1,bp31}=mbreak31(datap,n,model,tb,bp1,bp2,lagoption);
             {tau3,bp33}=mbreak33(datap,n,model,tb,bp1,bp2,lagoption);
             mintau3=minc(tau1|tau3);
             minbp=bp31|bp33;
             bp3=minbp[minindc(tau1|tau3),.];
-           endif;
-
-     endif;
-
-retp(mintau3,bp3);
+        endif;
+        
+    endif;
+    
+    retp(mintau3,bp3);
 endp;
 
 proc (2) = mbreak31(datap,n,model,tb,bp1,bp2,lagoption);
-  local i,vectau,u,du1,du2,du3,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,tau,s2,tau1,vecbp,bp31;
-  local y,k,dx1,dx2,dx3,tr,dtr1,dtr2,dtr3;
- 
-    y=datap[.,1];k=cols(datap);
+    local i,vectau,u,du1,du2,du3,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,tau,s2,tau1,vecbp,bp31;
+    local y,k,dx1,dx2,dx3,tr,dtr1,dtr2,dtr3;
+    
+    y=datap[.,1];
+    k=cols(datap);
     u=ones(n,1);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
     du2=(zeros(bp2,1)|ones(n-bp2,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
     dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
-   
-    i=tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
-    do while i<=bp1-tb;
- 
-     if model==0;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3;
-       dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr3=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~tr~dtr1~dtr2~dtr3;
-       dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-    {tau,s2}=dftau(dy[r-1:n-1],x);
     
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+    i=tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
+    do while i<=bp1-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3;
+            dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr3=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~tr~dtr1~dtr2~dtr3;
+            dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-    tau1=minc(vectau[tb+1:bp1-tb,.]); 
+    
+    tau1=minc(vectau[tb+1:bp1-tb,.]);
     bp31=tb+minindc(vecbp[tb+1:bp1-tb,.]);
-
-retp(tau1,bp31);
+    
+    retp(tau1,bp31);
 endp;
 
 proc (2) = mbreak32(datap,n,model,tb,bp1,bp2,lagoption);
-  local i,vectau,u,du1,du2,du3,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,tau,s2,tau2,vecbp,bp32;
-  local y,k,dx1,dx2,dx3,tr,dtr1,dtr2,dtr3;
- 
-    y=datap[.,1];k=cols(datap); 
+    local i,vectau,u,du1,du2,du3,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,tau,s2,tau2,vecbp,bp32;
+    local y,k,dx1,dx2,dx3,tr,dtr1,dtr2,dtr3;
+    
+    y=datap[.,1];
+    k=cols(datap);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
     du2=(zeros(bp2,1)|ones(n-bp2,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
-    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));    
-
-    i=bp1+tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
-    do while i<=bp2-tb;
-   
-    if model==0;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3;
-       dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr3=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~tr~dtr1~dtr2~dtr3;
-       dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-     {tau,s2}=dftau(dy[r-1:n-1],x);
+    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
     
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+    i=bp1+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
+    do while i<=bp2-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3;
+            dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr3=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~tr~dtr1~dtr2~dtr3;
+            dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-    tau2=minc(vectau[bp1+tb+1:bp2-tb,.]); 
+    
+    tau2=minc(vectau[bp1+tb+1:bp2-tb,.]);
     bp32=bp1+tb+minindc(vecbp[bp1+tb+1:bp2-tb,.]);
-
-retp(tau2,bp32);
+    
+    retp(tau2,bp32);
 endp;
 
 proc (2) = mbreak33(datap,n,model,tb,bp1,bp2,lagoption);
-  local i,vectau,u,du1,du2,du3,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,tau,s2,tau3,vecbp,bp33;
-  local y,k,dx1,dx2,dx3,tr,dtr1,dtr2,dtr3;
- 
-    y=datap[.,1];k=cols(datap); 
+    local i,vectau,u,du1,du2,du3,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,tau,s2,tau3,vecbp,bp33;
+    local y,k,dx1,dx2,dx3,tr,dtr1,dtr2,dtr3;
+    
+    y=datap[.,1];
+    k=cols(datap);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
     du2=(zeros(bp2,1)|ones(n-bp2,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
-    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));      
-
-    i=bp2+tb+1; vectau=zeros(n,1); vecbp=zeros(n,1);
-
-    do while i<=n-tb;
-
-     if model==0;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3;
-       dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du3=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr3=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~tr~dtr1~dtr2~dtr3;
-       dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif; 
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-   {tau,s2}=dftau(dy[r-1:n-1],x);
+    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
     
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+    i=bp2+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
+    do while i<=n-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3;
+            dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du3=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr3=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~tr~dtr1~dtr2~dtr3;
+            dx3=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-     tau3=minc(vectau[bp2+tb+1:n-tb,.]); 
-     bp33=bp2+tb+minindc(vecbp[bp2+tb+1:n-tb,.]);
-
-retp(tau3,bp33);
+    
+    tau3=minc(vectau[bp2+tb+1:n-tb,.]);
+    bp33=bp2+tb+minindc(vecbp[bp2+tb+1:n-tb,.]);
+    
+    retp(tau3,bp33);
 endp;
 
 /* Maximum break is 4*/
 
 proc (2) = mbreak4(datap,n,model,tb,bp123,lagoption);
-local bp1,bp2,bp3,bp4,mintau4,tau1,tau2,tau3,tau4,bp41,bp42,bp43,bp44,minbp;
-   
-   bp1=bp123[1,.]; bp2=bp123[2,.]; bp3=bp123[3,.];
-
-     if bp2-bp1>round(0.1*n) and bp3-bp2>round(0.1*n);
-
-           if bp1<=round(0.1*n) and bp3<round(0.9*n);
+    local bp1,bp2,bp3,bp4,mintau4,tau1,tau2,tau3,tau4,bp41,bp42,bp43,bp44,minbp;
+    
+    bp1=bp123[1,.];
+    bp2=bp123[2,.];
+    bp3=bp123[3,.];
+    
+    if bp2-bp1>round(0.1*n) and bp3-bp2>round(0.1*n);
+        
+        if bp1<=round(0.1*n) and bp3<round(0.9*n);
             {tau2,bp42}=mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau4,bp44}=mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau2|tau3|tau4);
             minbp=bp42|bp43|bp44;
             bp4=minbp[minindc(tau2|tau3|tau4),.];
-
-           elseif bp1<=round(0.1*n) and bp3>=round(0.9*n);
+            
+        elseif bp1<=round(0.1*n) and bp3>=round(0.9*n);
             {tau2,bp42}=mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau2|tau3);
             minbp=bp42|bp43;
             bp4=minbp[minindc(tau2|tau3),.];
-
-           elseif bp1>round(0.1*n) and bp3>=round(0.9*n);
+            
+        elseif bp1>round(0.1*n) and bp3>=round(0.9*n);
             {tau1,bp41}=mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau2,bp42}=mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-            {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);           
+            {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau1|tau2|tau3);
             minbp=bp41|bp42|bp43;
             bp4=minbp[minindc(tau1|tau2|tau3),.];
-
-           elseif bp1>round(0.1*n) and bp3<round(0.9*n);
+            
+        elseif bp1>round(0.1*n) and bp3<round(0.9*n);
             {tau1,bp41}=mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau2,bp42}=mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-            {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);    
+            {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau4,bp44}=mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau1|tau2|tau3|tau4);
             minbp=bp41|bp42|bp43|bp44;
             bp4=minbp[minindc(tau1|tau2|tau3|tau4),.];
-
-          endif;
-
-     elseif bp2-bp1>round(0.1*n) and bp3-bp2<=round(0.1*n);
-
-           if bp1<=round(0.1*n) and bp3<round(0.9*n);
+            
+        endif;
+        
+    elseif bp2-bp1>round(0.1*n) and bp3-bp2<=round(0.1*n);
+        
+        if bp1<=round(0.1*n) and bp3<round(0.9*n);
             {tau2,bp42}=mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau4,bp44}=mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau2|tau4);
             minbp=bp42|bp44;
             bp4=minbp[minindc(tau2|tau4),.];
-
-           elseif bp1<=round(0.1*n) and bp3>=round(0.9*n);
+            
+        elseif bp1<=round(0.1*n) and bp3>=round(0.9*n);
             {tau2,bp42}=mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau2);
             minbp=bp42;
             bp4=minbp[minindc(tau2),.];
-
-           elseif bp1>round(0.1*n) and bp3<round(0.9*n);
+            
+        elseif bp1>round(0.1*n) and bp3<round(0.9*n);
             {tau1,bp41}=mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau2,bp42}=mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-            {tau4,bp44}=mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);           
+            {tau4,bp44}=mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau1|tau2|tau4);
             minbp=bp41|bp42|bp44;
             bp4=minbp[minindc(tau1|tau2|tau4),.];
-
-           elseif bp1>round(0.1*n) and bp3>=round(0.9*n);
+            
+        elseif bp1>round(0.1*n) and bp3>=round(0.9*n);
             {tau1,bp41}=mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau2,bp42}=mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau1|tau2);
             minbp=bp41|bp42;
             bp4=minbp[minindc(tau1|tau2),.];
-
-          endif;    
-
-      elseif bp2-bp1<=round(0.1*n) and bp3-bp2>round(0.1*n);
-
-           if bp1<=round(0.1*n) and bp3<round(0.9*n);
+            
+        endif;
+        
+    elseif bp2-bp1<=round(0.1*n) and bp3-bp2>round(0.1*n);
+        
+        if bp1<=round(0.1*n) and bp3<round(0.9*n);
             {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau4,bp44}=mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau3|tau4);
             minbp=bp43|bp44;
             bp4=minbp[minindc(tau3|tau4),.];
-
-           elseif bp1<=round(0.1*n) and bp3>=round(0.9*n);
+            
+        elseif bp1<=round(0.1*n) and bp3>=round(0.9*n);
             {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau3);
             minbp=bp43;
             bp4=minbp[minindc(tau3),.];
-
-           elseif bp1>round(0.1*n) and bp3<round(0.9*n);
+            
+        elseif bp1>round(0.1*n) and bp3<round(0.9*n);
             {tau1,bp41}=mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-            {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);    
+            {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau4,bp44}=mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau1|tau3|tau4);
             minbp=bp41|bp43|bp44;
             bp4=minbp[minindc(tau1|tau3|tau4),.];
-
-           elseif bp1>round(0.1*n) and bp3>=round(0.9*n);
+            
+        elseif bp1>round(0.1*n) and bp3>=round(0.9*n);
             {tau1,bp41}=mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-            {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);    
+            {tau3,bp43}=mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau1|tau3);
             minbp=bp41|bp43;
             bp4=minbp[minindc(tau1|tau3),.];
-
-          endif;      
-
-     elseif bp2-bp1<=round(0.1*n) and bp3-bp2<=round(0.1*n);
-
-           if bp1<=round(0.1*n) and bp3<round(0.9*n);
+            
+        endif;
+        
+    elseif bp2-bp1<=round(0.1*n) and bp3-bp2<=round(0.1*n);
+        
+        if bp1<=round(0.1*n) and bp3<round(0.9*n);
             {tau4,bp44}=mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau4);
             minbp=bp44;
             bp4=minbp[minindc(tau4),.];
-
-           elseif bp1>round(0.1*n) and bp3<round(0.9*n);
+            
+        elseif bp1>round(0.1*n) and bp3<round(0.9*n);
             {tau1,bp41}=mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             {tau4,bp44}=mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau1|tau4);
             minbp=bp41|bp44;
             bp4=minbp[minindc(tau1|tau4),.];
-
-           elseif bp1>round(0.1*n) and bp3>=round(0.9*n);
+            
+        elseif bp1>round(0.1*n) and bp3>=round(0.9*n);
             {tau1,bp41}=mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
             mintau4=minc(tau1);
             minbp=bp41;
             bp4=minbp[minindc(tau1),.];
-
-          endif;    
-
-     endif;
-
-retp(mintau4,bp4);
+            
+        endif;
+        
+    endif;
+    
+    retp(mintau4,bp4);
 endp;
 
 
 
 proc (2) = mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-  local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,d4,tau,s2,tau1,vecbp,bp41;
-  local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
- 
-    y=datap[.,1];k=cols(datap); 
+    local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,d4,tau,s2,tau1,vecbp,bp41;
+    local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
+    
+    y=datap[.,1];
+    k=cols(datap);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
     du2=(zeros(bp2,1)|ones(n-bp2,1));
     du3=(zeros(bp3,1)|ones(n-bp3,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
-    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
+    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
     dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
     dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
-
-    i=tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
-    do while i<=bp1-tb;
-
-     if model==0;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr4=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~du4~tr~dtr1~dtr2~dtr3~dtr4;
-       dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-  
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-     {tau,s2}=dftau(dy[r-1:n-1],x);
     
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+    i=tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
+    do while i<=bp1-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr4=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~du4~tr~dtr1~dtr2~dtr3~dtr4;
+            dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-    tau1=minc(vectau[tb+1:bp1-tb,.]); 
+    
+    tau1=minc(vectau[tb+1:bp1-tb,.]);
     bp41=tb+minindc(vecbp[tb+1:bp1-tb,.]);
-
-retp(tau1,bp41);
+    
+    retp(tau1,bp41);
 endp;
 
 proc (2) = mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-  local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,d4,tau,s2,tau2,vecbp,bp42;
-  local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
- 
-    y=datap[.,1];k=cols(datap); 
+    local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,d4,tau,s2,tau2,vecbp,bp42;
+    local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
+    
+    y=datap[.,1];
+    k=cols(datap);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
     du2=(zeros(bp2,1)|ones(n-bp2,1));
     du3=(zeros(bp3,1)|ones(n-bp3,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
-    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
+    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
     dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
-    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3)); 
-
-    i=bp1+tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
+    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
+    
+    i=bp1+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
     do while i<=bp2-tb;
-  
-      if model==0;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr4=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~du4~tr~dtr1~dtr2~dtr3~dtr4;
-       dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-    
-     {tau,s2}=dftau(dy[r-1:n-1],x);
-    
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+        
+        if model==0;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr4=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~du4~tr~dtr1~dtr2~dtr3~dtr4;
+            dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-    tau2=minc(vectau[bp1+tb+1:bp2-tb,.]); 
+    
+    tau2=minc(vectau[bp1+tb+1:bp2-tb,.]);
     bp42=bp1+tb+minindc(vecbp[bp1+tb+1:bp2-tb,.]);
-
-retp(tau2,bp42);
+    
+    retp(tau2,bp42);
 endp;
 
 proc (2) = mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-  local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,d4,tau,s2,tau3,vecbp,bp43;
-  local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
- 
-    y=datap[.,1];k=cols(datap); 
+    local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,d4,tau,s2,tau3,vecbp,bp43;
+    local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
+    
+    y=datap[.,1];
+    k=cols(datap);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
     du2=(zeros(bp2,1)|ones(n-bp2,1));
     du3=(zeros(bp3,1)|ones(n-bp3,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
-    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
+    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
     dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
-    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3)); 
+    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
     
-    i=bp2+tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
+    i=bp2+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
     do while i<=bp3-tb;
-
-     if model==0;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr4=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~du4~tr~dtr1~dtr2~dtr3~dtr4;
-       dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-    
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-     {tau,s2}=dftau(dy[r-1:n-1],x);
-    
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+        
+        if model==0;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr4=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~du4~tr~dtr1~dtr2~dtr3~dtr4;
+            dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-    tau3=minc(vectau[bp2+tb+1:bp3-tb,.]); 
+    
+    tau3=minc(vectau[bp2+tb+1:bp3-tb,.]);
     bp43=bp2+tb+minindc(vecbp[bp2+tb+1:bp3-tb,.]);
-
-retp(tau3,bp43);
+    
+    retp(tau3,bp43);
 endp;
 
 proc (2) = mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-  local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,d4,tau,s2,tau4,vecbp,bp44;
-  local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
- 
-    y=datap[.,1];k=cols(datap); 
+    local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,d4,tau,s2,tau4,vecbp,bp44;
+    local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
+    
+    y=datap[.,1];
+    k=cols(datap);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
     du2=(zeros(bp2,1)|ones(n-bp2,1));
     du3=(zeros(bp3,1)|ones(n-bp3,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
-    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
+    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
     dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
-    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3)); 
+    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
     
-    i=bp3+tb+1;   vectau=zeros(n,1); vecbp=zeros(n,1);
-
+    i=bp3+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
     do while i<=n-tb;
-
-      if model==0;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4;
-       dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du4=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr4=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~du4~tr~dtr1~dtr2~dtr3~dtr4;
-       dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-     {tau,s2}=dftau(dy[r-1:n-1],x);
-    
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+        
+        if model==0;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4;
+            dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du4=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr4=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~du4~tr~dtr1~dtr2~dtr3~dtr4;
+            dx4=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-     tau4=minc(vectau[bp3+tb+1:n-tb,.]); 
-     bp44=bp3+tb+minindc(vecbp[bp3+tb+1:n-tb,.]);
-
-retp(tau4,bp44);
+    
+    tau4=minc(vectau[bp3+tb+1:n-tb,.]);
+    bp44=bp3+tb+minindc(vecbp[bp3+tb+1:n-tb,.]);
+    
+    retp(tau4,bp44);
 endp;
 
 /* Maximum break is 5*/
 
 proc (2) = mbreak5(datap,n,model,tb,bp1234,lagoption);
-local bp1,bp2,bp3,bp4,bp5,mintau5,tau1,tau2,tau3,tau4,tau5;
-local bp51,bp52,bp53,bp54,bp55,minbp;
-   
-   bp1=bp1234[1,.]; bp2=bp1234[2,.]; bp3=bp1234[3,.]; bp4=bp1234[4,.];
-
-if bp2-bp1>0.1*n and bp3-bp2>0.1*n and bp4-bp3>0.1*n;
-
-      if bp1>0.1*n and bp4>=round(0.9*n);
+    local bp1,bp2,bp3,bp4,bp5,mintau5,tau1,tau2,tau3,tau4,tau5;
+    local bp51,bp52,bp53,bp54,bp55,minbp;
+    
+    bp1=bp1234[1,.];
+    bp2=bp1234[2,.];
+    bp3=bp1234[3,.];
+    bp4=bp1234[4,.];
+    
+    if bp2-bp1>0.1*n and bp3-bp2>0.1*n and bp4-bp3>0.1*n;
+        
+        if bp1>0.1*n and bp4>=round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
@@ -1253,8 +1309,8 @@ if bp2-bp1>0.1*n and bp3-bp2>0.1*n and bp4-bp3>0.1*n;
             mintau5=minc(tau1|tau2|tau3|tau4);
             minbp=bp51|bp52|bp53|bp54;
             bp5=minbp[minindc(tau1|tau2|tau3|tau4),.];
-
-      elseif bp1>0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1>0.1*n and bp4<round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
@@ -1263,16 +1319,16 @@ if bp2-bp1>0.1*n and bp3-bp2>0.1*n and bp4-bp3>0.1*n;
             mintau5=minc(tau1|tau2|tau3|tau4|tau5);
             minbp=bp51|bp52|bp53|bp54|bp55;
             bp5=minbp[minindc(tau1|tau2|tau3|tau4|tau5),.];
-
-      elseif bp1<=0.1*n and bp4>=round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4>=round(0.9*n);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau2|tau3|tau4);
             minbp=bp52|bp53|bp54;
             bp5=minbp[minindc(tau2|tau3|tau4),.];
-
-      elseif bp1<=0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4<round(0.9*n);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
@@ -1280,19 +1336,19 @@ if bp2-bp1>0.1*n and bp3-bp2>0.1*n and bp4-bp3>0.1*n;
             mintau5=minc(tau2|tau3|tau4|tau5);
             minbp=bp52|bp53|bp54|bp55;
             bp5=minbp[minindc(tau2|tau3|tau4|tau5),.];
-       endif;
-
-elseif bp2-bp1>0.1*n and bp3-bp2>0.1*n and bp4-bp3<=0.1*n;
-
-      if bp1>0.1*n and bp4>=round(0.9*n);
+        endif;
+        
+    elseif bp2-bp1>0.1*n and bp3-bp2>0.1*n and bp4-bp3<=0.1*n;
+        
+        if bp1>0.1*n and bp4>=round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau2|tau3);
             minbp=bp51|bp52|bp53;
             bp5=minbp[minindc(tau1|tau2|tau3),.];
-
-      elseif bp1>0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1>0.1*n and bp4<round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
@@ -1300,34 +1356,34 @@ elseif bp2-bp1>0.1*n and bp3-bp2>0.1*n and bp4-bp3<=0.1*n;
             mintau5=minc(tau1|tau2|tau3|tau5);
             minbp=bp51|bp52|bp53|bp55;
             bp5=minbp[minindc(tau1|tau2|tau3|tau5),.];
-
-      elseif bp1<=0.1*n and bp4>=round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4>=round(0.9*n);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau2|tau3);
             minbp=bp52|bp53;
             bp5=minbp[minindc(tau2|tau3),.];
-
-      elseif bp1<=0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4<round(0.9*n);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau2|tau3|tau5);
             minbp=bp52|bp53|bp55;
             bp5=minbp[minindc(tau2|tau3|tau5),.];
-       endif;
-
-elseif bp2-bp1>0.1*n and bp3-bp2<=0.1*n and bp4-bp3>0.1*n;
-
-       if bp1>0.1*n and bp4>=round(0.9*n);
+        endif;
+        
+    elseif bp2-bp1>0.1*n and bp3-bp2<=0.1*n and bp4-bp3>0.1*n;
+        
+        if bp1>0.1*n and bp4>=round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau2|tau4);
             minbp=bp51|bp52|bp54;
             bp5=minbp[minindc(tau1|tau2|tau4),.];
-
-      elseif bp1>0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1>0.1*n and bp4<round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
@@ -1335,65 +1391,65 @@ elseif bp2-bp1>0.1*n and bp3-bp2<=0.1*n and bp4-bp3>0.1*n;
             mintau5=minc(tau1|tau2|tau4|tau5);
             minbp=bp51|bp52|bp54|bp55;
             bp5=minbp[minindc(tau1|tau2|tau4|tau5),.];
-
-      elseif bp1<=0.1*n and bp4>=round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4>=round(0.9*n);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau2|tau4);
             minbp=bp52|bp54;
             bp5=minbp[minindc(tau2|tau4),.];
-
-      elseif bp1<=0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4<round(0.9*n);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau2|tau4|tau5);
             minbp=bp52|bp54|bp55;
             bp5=minbp[minindc(tau2|tau4|tau5),.];
-       endif;
-
-elseif bp2-bp1>0.1*n and bp3-bp2<=0.1*n and bp4-bp3<=0.1*n;
-
-       if bp1>0.1*n and bp4>=round(0.9*n);
+        endif;
+        
+    elseif bp2-bp1>0.1*n and bp3-bp2<=0.1*n and bp4-bp3<=0.1*n;
+        
+        if bp1>0.1*n and bp4>=round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau2);
             minbp=bp51|bp52;
             bp5=minbp[minindc(tau1|tau2),.];
-
-      elseif bp1>0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1>0.1*n and bp4<round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau2|tau5);
             minbp=bp51|bp52|bp55;
             bp5=minbp[minindc(tau1|tau2|tau5),.];
-
-      elseif bp1<=0.1*n and bp4>=round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4>=round(0.9*n);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau2);
             minbp=bp52;
             bp5=minbp[minindc(tau2),.];
-
-      elseif bp1<=0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4<round(0.9*n);
             {tau2,bp52}=mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau2|tau5);
             minbp=bp52|bp55;
             bp5=minbp[minindc(tau2|tau5),.];
-       endif;
-
-elseif bp2-bp1<=0.1*n and bp3-bp2>0.1*n and bp4-bp3>0.1*n;
-
-      if bp1>0.1*n and bp4>=round(0.9*n);
+        endif;
+        
+    elseif bp2-bp1<=0.1*n and bp3-bp2>0.1*n and bp4-bp3>0.1*n;
+        
+        if bp1>0.1*n and bp4>=round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau3|tau4);
             minbp=bp51|bp53|bp54;
             bp5=minbp[minindc(tau1|tau3|tau4),.];
-
-      elseif bp1>0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1>0.1*n and bp4<round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
@@ -1401,605 +1457,634 @@ elseif bp2-bp1<=0.1*n and bp3-bp2>0.1*n and bp4-bp3>0.1*n;
             mintau5=minc(tau1|tau3|tau4|tau5);
             minbp=bp51|bp53|bp54|bp55;
             bp5=minbp[minindc(tau1|tau3|tau4|tau5),.];
-
-      elseif bp1<=0.1*n and bp4>=round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4>=round(0.9*n);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau3|tau4);
             minbp=bp53|bp54;
             bp5=minbp[minindc(tau3|tau4),.];
-
-      elseif bp1<=0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4<round(0.9*n);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau3|tau4|tau5);
             minbp=bp53|bp54|bp55;
             bp5=minbp[minindc(tau3|tau4|tau5),.];
-       endif;
-
-elseif bp2-bp1<=0.1*n and bp3-bp2>0.1*n and bp4-bp3<=0.1*n;
-
-      if bp1>0.1*n and bp4>=round(0.9*n);
+        endif;
+        
+    elseif bp2-bp1<=0.1*n and bp3-bp2>0.1*n and bp4-bp3<=0.1*n;
+        
+        if bp1>0.1*n and bp4>=round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau3);
             minbp=bp51|bp53;
             bp5=minbp[minindc(tau1|tau3),.];
-
-      elseif bp1>0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1>0.1*n and bp4<round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau3|tau5);
             minbp=bp51|bp53|bp55;
             bp5=minbp[minindc(tau1|tau3|tau5),.];
-
-      elseif bp1<=0.1*n and bp4>=round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4>=round(0.9*n);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau3);
             minbp=bp53;
             bp5=minbp[minindc(tau3),.];
-
-      elseif bp1<=0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4<round(0.9*n);
             {tau3,bp53}=mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau3|tau5);
             minbp=bp53|bp55;
             bp5=minbp[minindc(tau3|tau5),.];
-       endif;
-
-elseif bp2-bp1<=0.1*n and bp3-bp2<=0.1*n and bp4-bp3>0.1*n;
-
-       if bp1>0.1*n and bp4>=round(0.9*n);
+        endif;
+        
+    elseif bp2-bp1<=0.1*n and bp3-bp2<=0.1*n and bp4-bp3>0.1*n;
+        
+        if bp1>0.1*n and bp4>=round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau4);
             minbp=bp51|bp54;
             bp5=minbp[minindc(tau1|tau4),.];
-
-      elseif bp1>0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1>0.1*n and bp4<round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau4|tau5);
             minbp=bp51|bp54|bp55;
             bp5=minbp[minindc(tau1|tau4|tau5),.];
-
-      elseif bp1<=0.1*n and bp4>=round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4>=round(0.9*n);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau4);
             minbp=bp54;
             bp5=minbp[minindc(tau4),.];
-
-      elseif bp1<=0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4<round(0.9*n);
             {tau4,bp54}=mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau4|tau5);
             minbp=bp54|bp55;
             bp5=minbp[minindc(tau4|tau5),.];
-       endif;
-
-elseif bp2-bp1<=0.1*n and bp3-bp2<=0.1*n and bp4-bp3<=0.1*n;
-
-       if bp1>0.1*n and bp4>=round(0.9*n);
+        endif;
+        
+    elseif bp2-bp1<=0.1*n and bp3-bp2<=0.1*n and bp4-bp3<=0.1*n;
+        
+        if bp1>0.1*n and bp4>=round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1);
             minbp=bp51;
             bp5=minbp[minindc(tau1),.];
-
-      elseif bp1>0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1>0.1*n and bp4<round(0.9*n);
             {tau1,bp51}=mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau1|tau5);
             minbp=bp51|bp55;
             bp5=minbp[minindc(tau1|tau5),.];
-
-      /*elseif bp1<=0.1*n and bp4>=round(0.9*n);
+            
+            /*elseif bp1<=0.1*n and bp4>=round(0.9*n);
             {tau2,bp52}=mbreak52(y,n,tb,bp1,bp2,bp3,bp4);
             mintau5=minc(tau2);
             minbp=bp52;
             bp5=minbp[minindc(tau2),.];*/
-
-      elseif bp1<=0.1*n and bp4<round(0.9*n);
+            
+        elseif bp1<=0.1*n and bp4<round(0.9*n);
             {tau5,bp55}=mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
             mintau5=minc(tau5);
             minbp=bp55;
             bp5=minbp[minindc(tau5),.];
-       endif;
-
-endif;
-
-retp(mintau5,bp5);
+        endif;
+        
+    endif;
+    
+    retp(mintau5,bp5);
 endp;
 
 proc (2) = mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-  local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,d4,d5,tau,s2,tau1,vecbp,bp51;
-  local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
- 
-    y=datap[.,1];k=cols(datap); 
+    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,d4,d5,tau,s2,tau1,vecbp,bp51;
+    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    
+    y=datap[.,1];
+    k=cols(datap);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
     du2=(zeros(bp2,1)|ones(n-bp2,1));
     du3=(zeros(bp3,1)|ones(n-bp3,1));
     du4=(zeros(bp4,1)|ones(n-bp4,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
-    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]); 
-    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
+    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]);
+    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
     dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
     dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
     dtr4=(zeros(bp4,1)|seqa(bp4+1,1,n-bp4));
-
-    i=tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
+    
+    i=tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
     do while i<=bp1-tb;
-
-    if model==0;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-    
-     {tau,s2}=dftau(dy[r-1:n-1],x);
-    
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+        
+        if model==0;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-    tau1=minc(vectau[tb+1:bp1-tb,.]); 
+    
+    tau1=minc(vectau[tb+1:bp1-tb,.]);
     bp51=tb+minindc(vecbp[tb+1:bp1-tb,.]);
-
-retp(tau1,bp51);
+    
+    retp(tau1,bp51);
 endp;
 
 proc (2) = mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-  local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,d4,d5,tau,s2,tau2,vecbp,bp52;
-  local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
- 
-    y=datap[.,1];k=cols(datap); 
+    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,d4,d5,tau,s2,tau2,vecbp,bp52;
+    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    
+    y=datap[.,1];
+    k=cols(datap);
     du1=(zeros(bp1,1)|ones(n-bp1,1));
     du2=(zeros(bp2,1)|ones(n-bp2,1));
     du3=(zeros(bp3,1)|ones(n-bp3,1));
     du4=(zeros(bp4,1)|ones(n-bp4,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
-    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]); 
-    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]); 
-    dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
-    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
-    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
-    dtr4=(zeros(bp4,1)|seqa(bp4+1,1,n-bp4)); 
-
-    i=bp1+tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
-    do while i<=bp2-tb;
-
-     if model==0;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-    
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
- 
-     {tau,s2}=dftau(dy[r-1:n-1],x);
-    
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
-    endo;
-
-    vectau=vectau[1:rows(vectau),.];
-    vecbp=vecbp[1:rows(vecbp),.];
-
-    tau2=minc(vectau[bp1+tb+1:bp2-tb,.]); 
-    bp52=bp1+tb+minindc(vecbp[bp1+tb+1:bp2-tb,.]);
-
-retp(tau2,bp52);
-endp;
-
-proc (2) = mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-  local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,d4,d5,tau,s2,tau3,vecbp,bp53;
-  local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
- 
-    y=datap[.,1];k=cols(datap); 
-    du1=(zeros(bp1,1)|ones(n-bp1,1));
-    du2=(zeros(bp2,1)|ones(n-bp2,1));
-    du3=(zeros(bp3,1)|ones(n-bp3,1));
-    du4=(zeros(bp4,1)|ones(n-bp4,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
-    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]); 
-    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]); 
-    dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
-    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
-    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
-    dtr4=(zeros(bp4,1)|seqa(bp4+1,1,n-bp4));  
- 
-    i=bp2+tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
-    do while i<=bp3-tb;
-
-     if model==0;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-    
-     {tau,s2}=dftau(dy[r-1:n-1],x);
-    
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
-    endo;
-
-    vectau=vectau[1:rows(vectau),.];
-    vecbp=vecbp[1:rows(vecbp),.];
-
-    tau3=minc(vectau[bp2+tb+1:bp3-tb,.]); 
-    bp53=bp2+tb+minindc(vecbp[bp2+tb+1:bp3-tb,.]);
-
-retp(tau3,bp53);
-endp;
-
-proc (2) = mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-  local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,d4,d5,tau,s2,tau4,vecbp,bp54;
-  local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
- 
-    y=datap[.,1];k=cols(datap); 
-    du1=(zeros(bp1,1)|ones(n-bp1,1));
-    du2=(zeros(bp2,1)|ones(n-bp2,1));
-    du3=(zeros(bp3,1)|ones(n-bp3,1));
-    du4=(zeros(bp4,1)|ones(n-bp4,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
-    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]); 
-    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]); 
-    dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
-    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
-    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
-    dtr4=(zeros(bp4,1)|seqa(bp4+1,1,n-bp4));   
-
-    i=bp3+tb+1;vectau=zeros(n,1);vecbp=zeros(n,1);
-
-    do while i<=bp4-tb;
-
-     if model==0;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-    
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif; 
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-    
-     {tau,s2}=dftau(dy[r-1:n-1],x);
-    
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
-    endo;
-
-    vectau=vectau[1:rows(vectau),.];
-    vecbp=vecbp[1:rows(vecbp),.];
-
-    tau4=minc(vectau[bp3+tb+1:bp4-tb,.]); 
-    bp54=bp3+tb+minindc(vecbp[bp3+tb+1:bp4-tb,.]);
-
-retp(tau4,bp54);
-endp;
-
-proc (2) = mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-  local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-  local d1,d2,d3,d4,d5,tau,s2,tau5,vecbp,bp55;
-  local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
- 
-    y=datap[.,1];k=cols(datap); 
-    du1=(zeros(bp1,1)|ones(n-bp1,1));
-    du2=(zeros(bp2,1)|ones(n-bp2,1));
-    du3=(zeros(bp3,1)|ones(n-bp3,1));
-    du4=(zeros(bp4,1)|ones(n-bp4,1));
-    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]); 
-    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]); 
-    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]); 
-    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]); 
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
+    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]);
+    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]);
     dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
     dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
     dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
     dtr4=(zeros(bp4,1)|seqa(bp4+1,1,n-bp4));
     
-    i=bp4+tb+1;   vectau=zeros(n,1); vecbp=zeros(n,1);
-
-    do while i<=n-tb;
-
-     if model==0;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==1;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       x=const~seqa(1,1,n)~datap[.,2:k];
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-     
-     elseif model==2;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       const=u~du1~du2~du3~du4~du5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     elseif model==3;
-       u=ones(n,1);
-       du5=(zeros(i,1)|ones(n-i,1));
-       tr=seqa(1,1,n);
-       dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
-       const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
-       dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
-       x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
-       b=inv(x'x)*x'y;
-       e=y-x*b;
-
-     endif;
-
-   if lagoption==0;
-      lag=0;
-   elseif lagoption==1;
-      lag=opttlag(e);
-   endif;
-
-     dy=e[2:n]-e[1:n-1];
-     q=1; r=2+lag; x=e[r-1:n-1];
-     do while q<=lag;
-       x=x~dy[r-1-q:n-1-q];
-       q=q+1;
-     endo;
-
-     {tau,s2}=dftau(dy[r-1:n-1],x);
+    i=bp1+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
     
-    vectau[i,.]=tau;
-    vecbp[i,.]=s2;
-
-    i=i+1;
+    do while i<=bp2-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
     endo;
-
+    
     vectau=vectau[1:rows(vectau),.];
     vecbp=vecbp[1:rows(vecbp),.];
-
-     tau5=minc(vectau[bp4+tb+1:n-tb,.]); 
-     bp55=bp4+tb+minindc(vecbp[bp4+tb+1:n-tb,.]);
-
-retp(tau5,bp55);
+    
+    tau2=minc(vectau[bp1+tb+1:bp2-tb,.]);
+    bp52=bp1+tb+minindc(vecbp[bp1+tb+1:bp2-tb,.]);
+    
+    retp(tau2,bp52);
 endp;
 
-proc (1) = opttlag(e); 
-   local maxlag,p,lag;
-   local b,u,du,const,ly,s2hat,varb,se,e2,n1,k;
-   local delta,dy,i,j,d,n,rhs,temp,taut,x,wald;   
-   local nwh,smatrix,nwi,nww,nwvarb,nwse,tnw,nlag;
+proc (2) = mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
+    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,d4,d5,tau,s2,tau3,vecbp,bp53;
+    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    
+    y=datap[.,1];
+    k=cols(datap);
+    du1=(zeros(bp1,1)|ones(n-bp1,1));
+    du2=(zeros(bp2,1)|ones(n-bp2,1));
+    du3=(zeros(bp3,1)|ones(n-bp3,1));
+    du4=(zeros(bp4,1)|ones(n-bp4,1));
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
+    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]);
+    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]);
+    dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
+    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
+    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
+    dtr4=(zeros(bp4,1)|seqa(bp4+1,1,n-bp4));
+    
+    i=bp2+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
+    do while i<=bp3-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
+    endo;
+    
+    vectau=vectau[1:rows(vectau),.];
+    vecbp=vecbp[1:rows(vecbp),.];
+    
+    tau3=minc(vectau[bp2+tb+1:bp3-tb,.]);
+    bp53=bp2+tb+minindc(vecbp[bp2+tb+1:bp3-tb,.]);
+    
+    retp(tau3,bp53);
+endp;
 
-   maxlag=12/*round(12*(rows(e)/100)^(1/4))*/; 
-   p=maxlag;   
-   do while p>=1;
-     
-     n=rows(e);
-     dy=e[2:n]-e[1:n-1];
-     i=1; j=2+p; x=e[j-1:n-1];
-     do while i<=p;
-       x=x~dy[j-1-i:n-1-i];
-       i=i+1;
-     endo;
-     
+proc (2) = mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
+    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,d4,d5,tau,s2,tau4,vecbp,bp54;
+    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    
+    y=datap[.,1];
+    k=cols(datap);
+    du1=(zeros(bp1,1)|ones(n-bp1,1));
+    du2=(zeros(bp2,1)|ones(n-bp2,1));
+    du3=(zeros(bp3,1)|ones(n-bp3,1));
+    du4=(zeros(bp4,1)|ones(n-bp4,1));
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
+    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]);
+    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]);
+    dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
+    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
+    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
+    dtr4=(zeros(bp4,1)|seqa(bp4+1,1,n-bp4));
+    
+    i=bp3+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
+    do while i<=bp4-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
+    endo;
+    
+    vectau=vectau[1:rows(vectau),.];
+    vecbp=vecbp[1:rows(vecbp),.];
+    
+    tau4=minc(vectau[bp3+tb+1:bp4-tb,.]);
+    bp54=bp3+tb+minindc(vecbp[bp3+tb+1:bp4-tb,.]);
+    
+    retp(tau4,bp54);
+endp;
 
-   n1=rows(x); k=cols(x); ly=dy[j-1:n-1];
-   b=inv(x'x)*x'ly;
-   e2=ly-x*b;
-   s2hat=e2'e2/(n1-k);
-   varb=s2hat*inv(x'x);
-   se=sqrt(diag(varb));
+proc (2) = mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
+    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
+    local d1,d2,d3,d4,d5,tau,s2,tau5,vecbp,bp55;
+    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    
+    y=datap[.,1];
+    k=cols(datap);
+    du1=(zeros(bp1,1)|ones(n-bp1,1));
+    du2=(zeros(bp2,1)|ones(n-bp2,1));
+    du3=(zeros(bp3,1)|ones(n-bp3,1));
+    du4=(zeros(bp4,1)|ones(n-bp4,1));
+    dx1=(zeros(bp1,k-1)|datap[bp1+1:n,2:k]);
+    dx2=(zeros(bp2,k-1)|datap[bp2+1:n,2:k]);
+    dx3=(zeros(bp3,k-1)|datap[bp3+1:n,2:k]);
+    dx4=(zeros(bp4,k-1)|datap[bp4+1:n,2:k]);
+    dtr1=(zeros(bp1,1)|seqa(bp1+1,1,n-bp1));
+    dtr2=(zeros(bp2,1)|seqa(bp2+1,1,n-bp2));
+    dtr3=(zeros(bp3,1)|seqa(bp3+1,1,n-bp3));
+    dtr4=(zeros(bp4,1)|seqa(bp4+1,1,n-bp4));
+    
+    i=bp4+tb+1;
+    vectau=zeros(n,1);
+    vecbp=zeros(n,1);
+    
+    do while i<=n-tb;
+        
+        if model==0;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==1;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            x=const~seqa(1,1,n)~datap[.,2:k];
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==2;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            const=u~du1~du2~du3~du4~du5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        elseif model==3;
+            u=ones(n,1);
+            du5=(zeros(i,1)|ones(n-i,1));
+            tr=seqa(1,1,n);
+            dtr5=(zeros(i,1)|seqa(i+1,1,n-i));
+            const=u~du1~du2~du3~du4~du5~tr~dtr1~dtr2~dtr3~dtr4~dtr5;
+            dx5=(zeros(i,k-1)|datap[i+1:n,2:k]);
+            x=const~datap[.,2:k]~dx1~dx2~dx3~dx4~dx5;
+            b=inv(x'x)*x'y;
+            e=y-x*b;
+            
+        endif;
+        
+        if lagoption==0;
+            lag=0;
+        elseif lagoption==1;
+            lag=opttlag(e);
+        endif;
+        
+        dy=e[2:n]-e[1:n-1];
+        q=1;
+        r=2+lag;
+        x=e[r-1:n-1];
+        do while q<=lag;
+            x=x~dy[r-1-q:n-1-q];
+            q=q+1;
+        endo;
+        
+        {tau,s2}=dftau(dy[r-1:n-1],x);
+        
+        vectau[i,.]=tau;
+        vecbp[i,.]=s2;
+        
+        i=i+1;
+    endo;
+    
+    vectau=vectau[1:rows(vectau),.];
+    vecbp=vecbp[1:rows(vecbp),.];
+    
+    tau5=minc(vectau[bp4+tb+1:n-tb,.]);
+    bp55=bp4+tb+minindc(vecbp[bp4+tb+1:n-tb,.]);
+    
+    retp(tau5,bp55);
+endp;
 
-   taut=b[p+1]/se[p+1];
-     if abs(taut)>1.654;
-       break;
-     endif;
-     p=p-1;
-   endo;
-     lag=p;
-   retp(lag);
+proc (1) = opttlag(e);
+    local maxlag,p,lag;
+    local b,u,du,const,ly,s2hat,varb,se,e2,n1,k;
+    local delta,dy,i,j,d,n,rhs,temp,taut,x,wald;
+    local nwh,smatrix,nwi,nww,nwvarb,nwse,tnw,nlag;
+    
+    maxlag=12/*round(12*(rows(e)/100)^(1/4))*/;
+    p=maxlag;
+    do while p>=1;
+        
+        n=rows(e);
+        dy=e[2:n]-e[1:n-1];
+        i=1;
+        j=2+p;
+        x=e[j-1:n-1];
+        do while i<=p;
+            x=x~dy[j-1-i:n-1-i];
+            i=i+1;
+        endo;
+        
+        
+        n1=rows(x);
+        k=cols(x);
+        ly=dy[j-1:n-1];
+        b=inv(x'x)*x'ly;
+        e2=ly-x*b;
+        s2hat=e2'e2/(n1-k);
+        varb=s2hat*inv(x'x);
+        se=sqrt(diag(varb));
+        
+        taut=b[p+1]/se[p+1];
+        if abs(taut)>1.654;
+            break;
+        endif;
+        p=p-1;
+    endo;
+    lag=p;
+    retp(lag);
 endp;

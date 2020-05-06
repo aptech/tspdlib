@@ -2,24 +2,24 @@
 /*
 **> PDcaus_SURwald
 **  References:
-**  Konya, L.(2006). 
-**  Exports and growth: Granger causality analysis on OECD Countries with a panel data approach. 
+**  Konya, L.(2006).
+**  Exports and growth: Granger causality analysis on OECD Countries with a panel data approach.
 **  Economic Modelling 23: 978-992.
 **
 **  When you use this code, please cite:
-**  Kar, M., Nazlioglu, S., Agir, H. (2011) 
-**  "Financial Development and Economic Growth Nexus in the MENA Countries: Bootstrap Panel Granger Causality Analysis". 
+**  Kar, M., Nazlioglu, S., Agir, H. (2011)
+**  "Financial Development and Economic Growth Nexus in the MENA Countries: Bootstrap Panel Granger Causality Analysis".
 **  Economic Modelling 28(1-2): 685-693.
 **
-**  Menyah, K., Nazlioglu, S., Wolde-Rufael, Y. (2014) 
-**  "Financial Development, Trade Openness and Economic Growth in African Countries: New Insights from a Panel Causality Approach". 
+**  Menyah, K., Nazlioglu, S., Wolde-Rufael, Y. (2014)
+**  "Financial Development, Trade Openness and Economic Growth in African Countries: New Insights from a Panel Causality Approach".
 **  Economic Modelling 37: 386-394.
 **
 **
 **  Format:  SURwald = Panel_SURwald(data, vnames, pmax, ic, Nboot);
 **
 **
-**  Input:   data	 -  (TxN,k) matrix 
+**  Input:   data	 -  (TxN,k) matrix
 **                      k is number of variables in SUR model
 **                      Important:
 **                      Only k = 2 is allowed in this code
@@ -28,12 +28,12 @@
 **                      vnames = "CPI"$|"EXCR; as an example for 2 variable
 **           pmax    -  Maximum number of lags
 **           ic      -  Information Criterion for optimal lag selection
-**                      1 = Akaike 
+**                      1 = Akaike
 **                      2 = Schwarz
 **           Nboot   -  Number of boostrap replications
 **
 **  Output:  SURwald -  Panel SUR Wald statistics
-**                      Prints individual results and bootstrap critical values 
+**                      Prints individual results and bootstrap critical values
 **
 
 **  Author: Saban Nazlioglu
@@ -44,54 +44,75 @@
 */
 
 proc(1) = Panel_SURwald(data, vnames, pmax, ic, Nboot);
-  local m, j, y1, indvar, y2, p, y, yl; 
-  local SURwald, sur_out, aic, sbc;
-  local SURwald_boot, cvboot;
-  
-  m =1; 
-  do while m <= cols(data);
-   
-    y1 = reshape(data[.,m],n,t)';  
-    indvar = delcols(data,m);
-   
-    j = 1;
-    do while j <= cols(indvar); 
-
-        if m==1;         vnames[j+1];;" does not cause ";; vnames[m]; endif;
-        if m>1 and m==j; vnames[j+1];;" does not cause ";; vnames[m]; endif;   
-        if m>1 and j<m;  vnames[j]  ;;" does not cause ";; vnames[m]; endif;
-        if m>1 and j>m;  vnames[j+1];;" does not cause ";; vnames[m]; endif;
-            
-        y2 = reshape(indvar[.,j],n,t)';
-            
-        p        = _get_p(y1, y2, pmax, ic);
-        {y, yl}  = _get_SURdata(y1, y2, p);
+    local m, j, y1, indvar, y2, p, y, yl;
+    local SURwald, sur_out, aic, sbc;
+    local SURwald_boot, cvboot;
+    
+    m =1;
+    do while m <= cols(data);
         
-        {SURWald,sur_out,aic,sbc}  = _get_sur_wald(y, yl, n, p);
-
-        {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);  
+        y1 = reshape(data[.,m],n,t)';
+        indvar = delcols(data,m);
         
-        format /rd 8,3;
-             
-        
-        "N   " ;; N;
-        "T   " ;; T;
-        "Lag " ;; p;
+        j = 1;
+        do while j <= cols(indvar);
             
-         "     i        Wald   Bootstrap CVs (1% 5% 10%)";
-         "---------------------------------------------";;
-                 seqa(1,1,N)~SURwald~cvboot;
-         "---------------------------------------------";      
-
-        "";
+            if m==1;
+                vnames[j+1];;
+                " does not cause ";;
+                vnames[m];
+            endif;
+            if m>1 and m==j;
+                vnames[j+1];;
+                " does not cause ";;
+                vnames[m];
+            endif;
+            if m>1 and j<m;
+                vnames[j]  ;;
+                " does not cause ";;
+                vnames[m];
+            endif;
+            if m>1 and j>m;
+                vnames[j+1];;
+                " does not cause ";;
+                vnames[m];
+            endif;
             
-   j = j + 1; endo;
-   m = m + 1; endo;
-  
-retp(SURWald);
+            y2 = reshape(indvar[.,j],n,t)';
+            
+            p        = _get_p(y1, y2, pmax, ic);
+            {y, yl}  = _get_SURdata(y1, y2, p);
+            
+            {SURWald,sur_out,aic,sbc}  = _get_sur_wald(y, yl, n, p);
+            
+            {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
+            
+            format /rd 8,3;
+            
+            
+            "N   " ;;
+            N;
+            "T   " ;;
+            T;
+            "Lag " ;;
+            p;
+            
+            "     i        Wald   Bootstrap CVs (1% 5% 10%)";
+            "---------------------------------------------";;
+            seqa(1,1,N)~SURwald~cvboot;
+            "---------------------------------------------";
+            
+            "";
+            
+            j = j + 1;
+        endo;
+        m = m + 1;
+    endo;
+    
+    retp(SURWald);
 endp;
-  
-  
+
+
 
 // Procedures
 
@@ -100,7 +121,7 @@ proc(4) = _get_sur_wald(y,yl,n,p);
     local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi, tr;
     local cove,IT,xx,bsur, omega, covb, vsur,sesur,tsur;
     local aic,sbc,sur_out, surwald;
- 
+    
     t = rows(yl)/n;
     x = ones(n*t,1)~yl;
     
@@ -108,7 +129,7 @@ proc(4) = _get_sur_wald(y,yl,n,p);
     k = cols(x);
     bols = zeros(n*k,1);
     sols = zeros(n*k,1);
- 
+    
     i = 1;
     do while i <= N;
         yi = y[(i-1)*t+1:i*t];
@@ -119,51 +140,51 @@ proc(4) = _get_sur_wald(y,yl,n,p);
         e[.,i] = ei;
         bols[(i-1)*k+1:i*k] = bi;
         sols[(i-1)*k+1:i*k] = sqrt(vi);
-    i=i+1;
+        i=i+1;
     endo;
-
+    
     //e=reshape(e,t,n);
-
+    
     cove= e'e/t;
     IT  = eye(t);
     xx  = zeros(t*n,n*k);
     i = 1;
     do while i <= n;
         xx[(i-1)*t+1:i*t,(i-1)*k+1:i*k] = x[(i-1)*t+1:i*t,.];
-    i=i+1;
+        i=i+1;
     endo;
-
+    
     bsur = inv(xx'*inv(cove.*.IT)*xx)*xx'*inv(cove.*.IT)*y;
     omega= (cove.*.IT);
-    covb = inv(xx'*inv(omega)*xx); 
+    covb = inv(xx'*inv(omega)*xx);
     vsur = diag(covb);
     sesur= sqrt(vsur);
     tsur = bsur./sesur;
     aic  = ln(det(omega))+(2*N*k*p/T);
     sbc  = ln(det(omega))+(N*k*p/T)*ln(T);
- 
+    
     sur_out = bsur~sesur~tsur;
- 
-    {surwald} = _get_SURwald(bsur, covb, k);  
- 
-retp(surwald, sur_out, aic, sbc);
+    
+    {surwald} = _get_SURwald(bsur, covb, k);
+    
+    retp(surwald, sur_out, aic, sbc);
 endp;
 
 proc(1) = _get_SURwald(bsur, covb, k);
-    local surwald, r, rmat; 
+    local surwald, r, rmat;
     
     surwald = {};
-
+    
     r = k;
     do while r <= rows(bsur);
         rmat = zeros(n*k,1);
         rmat[r] = 1;
         rmat = rmat';
         surwald = surwald|(rmat*bsur)'*inv(rmat*covb*rmat')*(rmat*bsur);
-    r=r+k;
+        r=r+k;
     endo;
-retp(surwald);
-endp; 
+    retp(surwald);
+endp;
 
 
 proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
@@ -171,7 +192,7 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
     local cove, IT, xx, bsur, esur, NeH0, bH0;
     local Waldboot, s, ustar, ystar, y1, Wboot, aic, sbc;
     local cvboot, Wb, cv1, cv5, cv10, sur_out;
-   
+    
     t = rows(yl)/n;
     x = ones(n*t,1)~yl[.,1];
     
@@ -179,7 +200,7 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
     k = cols(x);
     bols = zeros(n*k,1);
     sols = zeros(n*k,1);
- 
+    
     i = 1;
     do while i <= N;
         yi = y[(i-1)*t+1:i*t];
@@ -190,33 +211,33 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
         e[.,i] = ei;
         bols[(i-1)*k+1:i*k] = bi;
         sols[(i-1)*k+1:i*k] = sqrt(vi);
-    i=i+1;
+        i=i+1;
     endo;
-
+    
     //e=reshape(e,t,n);
-
+    
     cove= e'e/t;
     IT  = eye(t);
     xx  = zeros(t*n,n*k);
     i = 1;
     do while i <= n;
         xx[(i-1)*t+1:i*t,(i-1)*k+1:i*k] = x[(i-1)*t+1:i*t,.];
-    i=i+1;
+        i=i+1;
     endo;
-
+    
     bsur = inv(xx'*inv(cove.*.IT)*xx)*xx'*inv(cove.*.IT)*y;
     esur = y-xx*bsur;
-
+    
     NeH0 = (reshape(esur,n,t))';
-    bH0  = (reshape(bsur,n,p+1))';    
-
+    bH0  = (reshape(bsur,n,p+1))';
+    
     NeH0 = e;
     Waldboot = zeros(nboot,n);
     s = 1;
     do while s <=Nboot;
-    
-        {ustar} = _get_ustar_sur(NeH0, p); 
-
+        
+        {ustar} = _get_ustar_sur(NeH0, p);
+        
         // Centered residuals
         ustar = ustar - meanc(ustar');
         
@@ -226,18 +247,18 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
                 ystar[1,i] = ustar[1,i];
                 bi = bH0[.,i];
                 ystar[s,i] = bi[1] + ystar[s-1,i]*bi[2:rows(bi)] + ustar[s,i];
-            endfor;    
+            endfor;
         endfor;
-    
+        
         {y, yl}  = _get_SURdata(ystar, y2, p);
-    
+        
         {Wboot, sur_out, aic,sbc} = _get_sur_wald(y, yl, n, p);
-    
+        
         Waldboot[s,.] =Wboot';
-    
-    s = s + 1;
+        
+        s = s + 1;
     endo;
-
+    
     cvboot={};
     i=1;
     do while i<=n;
@@ -246,15 +267,15 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
         cv5   = Wb[Nboot*0.95];
         cv10  = Wb[Nboot*0.90];
         cvboot=cvboot|cv1~cv5~cv10;
-    i=i+1;
+        i=i+1;
     endo;
     
-retp(Waldboot, cvboot);
-endp; 
+    retp(Waldboot, cvboot);
+endp;
 
 
 proc (1) = _get_ustar_sur(NeH0, p);
-    local T, N, replace, eb, order, ustar; 
+    local T, N, replace, eb, order, ustar;
     
     T  = rows(NeH0);
     N  = cols(NeH0);
@@ -262,80 +283,84 @@ proc (1) = _get_ustar_sur(NeH0, p);
     eb    = sampleData(NeH0', T, replace);
     order = trunc(T*rndu(T+p,1)+1);
     ustar = eb[order,.];
-  
-retp(ustar);
+    
+    retp(ustar);
 endp;
 
 
 // OLS estimation
 proc(4) = _get_ols(y,yl,t);
-local k,x,rss,e,bols,sols,i,yi,xi,bi,ei,vi;
-
- x=ones(n*t,1)~yl;
- rss=zeros(n,1);
- e=zeros(t,n);
- k=cols(yl)+1;
- bols=zeros(n*k,1);
- sols=zeros(n*k,1);
- i=1;
- do while i<=N;
-    yi=y[(i-1)*t+1:i*t];
-    xi=x[(i-1)*t+1:i*t,.];
-    bi=yi/xi;
-    ei=yi-xi*bi;
-    rss[i]=ei'ei;
-    vi=diag((ei'ei/(t-rows(bi))*inv(xi'xi)));
-    e[.,i]=ei;
-    bols[(i-1)*k+1:i*k]=bi;
-    sols[(i-1)*k+1:i*k]=sqrt(vi);
- i=i+1;
- endo;
-retp(bols,sols,rss,e);
+    local k,x,rss,e,bols,sols,i,yi,xi,bi,ei,vi;
+    
+    x=ones(n*t,1)~yl;
+    rss=zeros(n,1);
+    e=zeros(t,n);
+    k=cols(yl)+1;
+    bols=zeros(n*k,1);
+    sols=zeros(n*k,1);
+    i=1;
+    do while i<=N;
+        yi=y[(i-1)*t+1:i*t];
+        xi=x[(i-1)*t+1:i*t,.];
+        bi=yi/xi;
+        ei=yi-xi*bi;
+        rss[i]=ei'ei;
+        vi=diag((ei'ei/(t-rows(bi))*inv(xi'xi)));
+        e[.,i]=ei;
+        bols[(i-1)*k+1:i*k]=bi;
+        sols[(i-1)*k+1:i*k]=sqrt(vi);
+        i=i+1;
+    endo;
+    retp(bols,sols,rss,e);
 endp;
 
 proc(2) = _get_SURdata(y1, y2, p);
-   local t, y, yl, i, yp, ylp;
-   
+    local t, y, yl, i, yp, ylp;
+    
     t = rows(y1);
     t = t-p;
-    y = {}; 
+    y = {};
     yl= {};
     i=1;
     do while i<=n;
         {yp,ylp} = _get_lagp(y1[.,i]~y2[.,i],p);
-        y =y|yp[.,1]; 
+        y =y|yp[.,1];
         yl=yl|ylp;
-    i=i+1;
+        i=i+1;
     endo;
-retp(y,yl);
+    retp(y,yl);
 endp;
 
 // selection of optimal lag
 proc(1) = _get_p(y1,y2,pmax,ic);
     local aicp,sbcp,p,t,y,yl,yp,ylp,i;
     local Wstat,sur_out,aic,sbc;
-
+    
     aicp = zeros(pmax,1);
     sbcp = zeros(pmax,1);
     
     for p(1,pmax,1);
         t = rows(y1)-p;
-        y = {}; 
+        y = {};
         yl= {};
         for i(1,n,1);
             {yp,ylp} = _get_lagp(y1[.,i]~y2[.,i],p);
-            y  = y|yp[.,1]; 
+            y  = y|yp[.,1];
             yl = yl|ylp;
         endfor;
-
+        
         {Wstat, sur_out, aic, sbc} = _get_sur_wald(y,yl,n,p);
         
         aicp[p] = aic;
         sbcp[p] = sbc;
-endfor;
-    if ic==1; p=minindc(aicp); endif;
-    if ic==2; p=minindc(sbcp); endif;
-retp(p);
+    endfor;
+    if ic==1;
+        p=minindc(aicp);
+    endif;
+    if ic==2;
+        p=minindc(sbcp);
+    endif;
+    retp(p);
 endp;
-  
+
 
