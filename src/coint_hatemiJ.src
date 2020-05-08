@@ -1,6 +1,7 @@
 
 /*
 **  coint_hatemiJ
+**
 **  Reference:
 **  Hatemi-J (2008).
 **  "Tests for cointegration with two unknown regime shifts
@@ -9,18 +10,24 @@
 **
 **
 **  Format:  { ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa }
-**                              = coint_hatemiJ(y, x, model, ic, pmax, varm, trimm);
-
+**                              = coint_hatemiJ(y, x, model, bwl, ic, pmax, varm, trimm);
 **
-**  Input:   Y	     -  Nx1 matrix, dependent variable
+**  Input:   
+**           Y	     -  Nx1 matrix, dependent variable
+**
 **           X       -  NxK matrix, independent variables
-**           k       -  Columns of x (upper bound is 4)
+**
 **           model   - 	3 = C/S (regime shift)
-**           pmax    -  Maximum number of lags for Dy in ADF test; 0=no lags
+**
+**           bwl     -  Bandwidth for long-run variance computations. 
+**
 **           ic      -  Information Criterion for ADF-based test:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
+**
+**           pmax    -  Maximum number of lags for Dy in ADF test; 0=no lags
+**
 **           varm    -  Long-run consistent variance estimation method for PP-based test
 **                      1 = iid;
 **                      2 = Bartlett
@@ -34,15 +41,31 @@
 **                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
-**           trimm   -  Trimming rate Default [0.15,0.85] as in GH (1996)
 **
+**           trimm   -  Trimming rate Default [0.15, 0.85] as in GH (1996)
 **
-**  Output: ADF_min -   ADF test
-**          Za_min  -   Zalpha test
+**  Output: 
+**          ADF_min -   ADF test
+**
+**          TB1_adf -   First date break location using ADF testing. 
+**
+**          TB2_adf -   Second date break location using ADF testing. 
+**
 **          Zt_min  -   Zt test
-**          TB      -   break location
-**	    cv      -   1%, 5%, 10% critical values for the chosen model
 **
+**          TB1_zt -    First date break location using Zt testing. 
+**
+**          TB2_zt -    Second date break location using Zt testing. 
+**
+**          Za_min  -   Zalpha test
+**          
+**          TB1_za  -   First date break location using Za testing.
+**
+**          TB2_za -    Second date break location using Za testing. 
+**
+**	        cvADFZt -   1%, 5%, 10% critical values for ADF and Zt test statistics.
+**
+**          cvZa    -   1%, 5%, 10% critical values for Za test statistics.
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.

@@ -8,13 +8,20 @@
 **
 **
 **  Format:  {CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols} = 
-**                              coint_tsongetal(y, x, model, kmax, varm, q);
+**                              coint_tsongetal(y, x, model, bwl, kmax, varm, q);
 **           
-**  Input:   Y	     -  Nx1 matrix, dependent variable
+**  Input:   
+**           Y	     -  Nx1 matrix, dependent variable
+**
 **           X       -  NxK matrix, independent variables
-**           k       -  Columns of x (upper bound is 4)      
+**             
 **           model   - 	1 = Level shift model with Fourier
 **                      2 = Level & trend shift model with Fourier
+**
+**           bwl     -  Bandwidth for long-run variance computations. 
+**
+**           kmax    -  Maximum number of Fourier frequency
+**
 **           varm    -  Long-run consistent variance estimation method for PP-baed test
 **                      1 = iid; 
 **                      2 = Bartlett 
@@ -27,18 +34,26 @@
 **                      See:
 **                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006). 
 **                      A guide to the computation of stationarity tests. 
-**                      Empirical Economics, 31(2), 433.           
+**                      Empirical Economics, 31(2), 433.     
+**
 **              q   -   Number of leads and lags for DOLS estimation
-**          kmax    -   Maximum number of Fourier frequency
 **
 **
-**  Output: CIfols  -   CIf test based on OLS estimation
-**          CIfdols -   Cis test based on DOLS estimation
+**
+**  Output: 
+**          CIfols  -   CIf test based on OLS estimation
+**
 **          FFols   -   Optimal Fourier frequency based on OLS estimation
+**
+**          CIfdols -   Cis test based on DOLS estimation
+**
 **          FFdols  -   Optimal Fourier frequency based on DOLS estimation
+**
 **          Fols    -   F-stat for Fourier terms significance based on OLS
+**
 **          Fdols   -   F-stat for Fourier terms significance based on DOLS
-**	    cv      -   1%, 5%, 10% critical values for the chosen model 
+**
+**	        cv      -   1%, 5%, 10% critical values for the chosen model 
 **
 **  Author: Saban Nazlioglu
         -- The author makes no performance guarantees.
@@ -161,7 +176,7 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     p    = cols(x);
     {cv} = cv_coint_tsongetal(model, k2_min, p);
 
-    retp(SC1_min,k1_min,SC2_min,k2_min,cv,Fols,Fdols);
+    retp(SC1_min, k1_min, SC2_min, k2_min, cv, Fols, Fdols);
 endp;
 
 proc (1) = cv_coint_tsongetal(model, k, p);

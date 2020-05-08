@@ -2,12 +2,12 @@ new;
 cls;
 library tspdlib;
 
-//Number of observations
+// Load the dataset
 data = loadd(__FILE_DIR $+ "TScoint.dat");
 
 // Define y and x matrix
-y = data[.,1];
-x = data[.,2:cols(data)];
+y = data[., 1];
+x = data[., 2:cols(data)];
 
 T = rows(data);
 
@@ -23,7 +23,7 @@ ic = 2;
 pmax = 12;  
 
 // Trimming rate
-trimm= 0.10;             
+trimm = 0.10;             
 
 // Long-run consistent variance estimation method
 varm = 3;
@@ -47,7 +47,7 @@ model = 1;
 "-----------Level shift with trend-----------------------";
 model = 2; 
 
-{ ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa}=
+{ ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } =
     coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
     "    Test         Statistic   TB     CV(1%, 5%, 10%)";
     "Ho: no co-integration   (GH, 1996)";  
@@ -58,7 +58,7 @@ model = 2;
 "-----------Regime shift---------------------------------";
 model = 3;
 
-{ ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa}=
+{ ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } =
     coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
     "    Test         Statistic   TB     CV(1%, 5%, 10%)";
     "Ho: no co-integration   (GH, 1996)";  
@@ -69,7 +69,7 @@ model = 3;
 "-----------Regime and trend shift-----------------------";
 model = 4; 
 
-{ ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa}=
+{ ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } =
     coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
     "    Test         Statistic   TB     CV(1%, 5%, 10%)";
     "Ho: no co-integration   (GH, 1996)";  

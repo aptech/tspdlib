@@ -12,21 +12,30 @@
 **
 **
 **  Format:  { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa }
-**                              = coint_ghansen(y, x, model, ic, pmax, varm, trimm);
+**                              = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
 **
 **
-**  Input:   Y	     -  Nx1 matrix, dependent variable
+**  Input:   
+**           Y	     -  Nx1 matrix, dependent variable
+**     
 **           X       -  NxK matrix, independent variables
+**
 **           k       -  Columns of x (upper bound is 4)
+**
 **           model   - 	1 = C   (level shift)
 **                      2 = C/T (level shift with trend)
 **                      3 = C/S (regime shift)
 **                      4 = regime and trend shift
+**
+**           bwl     -  Bandwidth for long-run variance computations. 
+**
 **           pmax    -  Maximum number of lags for for Dy in ADF test; 0=no lags
+**
 **           ic      -  Information Criterion for ADF-based test:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
+**
 **           varm   -   Long-run consistent variance estimation method for PP-based tests
 **                      1 = iid;
 **                      2 = Bartlett
@@ -40,13 +49,24 @@
 **                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
 **                      A guide to the computation of stationarity tests.
 **
+**          trimm   -   Trimming rate Default [0.15,0.85] as in GH (1996)
 **
-**  Output: ADF_min -   ADF test
+**  Output: 
+**          ADF_min -   ADF test
+**
+**          TB_adf  -   Break date using ADF testing. 
+**
 **          Za_min  -   Zalpha test
-**          Zt_min  -   Zt test
-**          TB      -   break location
-**	    cv      -   1%, 5%, 10% critical values for the chosen model
 **
+**          TB_Za   -   Break date using Zalpha test.
+**
+**          Zt_min  -   Zt test
+**
+**          TB_Zt   -   Break data using Zt test.
+**
+**	        cvADFZt -   1%, 5%, 10% critical values for ADF and Zt test statistics.
+**
+**          cvZa    -   1%, 5%, 10% critical values for Za test statistics.
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
@@ -57,7 +77,7 @@
 
 /*Procedures*/
 
-proc(8)=coint_ghansen(y,x,model,bwl,ic,pmax,varm,trimm);
+proc(8) = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
     local n,TBadf,TBZa,TBZt,ADF_min,Za_min,Zt_min;
     local T1,T2,DF,Za,Zt,lagadf,tb1,du1,x1,stat1,stat2,stat3,optl;
     local b,e1,sig2,se,ssr,cvADFZt,cvZa,k;

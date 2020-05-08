@@ -1,5 +1,6 @@
 /*
-** This example program tests for cointegration with alternatives hypothesis up to m structural breaks
+** This example program tests for cointegration 
+** with alternatives hypothesis up to m structural breaks
 */
 new;
 cls; 
@@ -36,7 +37,7 @@ model = 2;
 **   This should be a percentage between
 **   0 and 1. 0.05 represents 5%
 */
-tp = 0.05;
+trimm = 0.05;
 
 /* 
 ** Set lagoption
@@ -46,4 +47,4 @@ tp = 0.05;
 lagoption = 1;
 
 // Perform test
-call coint_maki(datap,m,model,tp,lagoption);
+call coint_maki(datap, m, model, trimm, lagoption);

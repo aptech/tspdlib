@@ -2,7 +2,7 @@ new;
 cls;
 library tspdlib;
 
-//Number of observations
+// Load the dataset
 data = loadd(__FILE_DIR $+ "TScoint.dat");
 
 // Define y and x matrix
@@ -23,7 +23,7 @@ ic = 2;
 pmax = 12;  
 
 // Trimming rate
-trimm= 0.10;             
+trimm = 0.10;             
 
 // Long-run consistent variance estimation method
 varm = 3;
@@ -40,7 +40,7 @@ format/m1/rd 8,3;
 model = 3;
 
 // Two breaks
-{ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa } =
+{ ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa } =
     coint_hatemiJ(y, x, model, bwl, ic, pmax, varm, trimm);
     "Two breaks   (Hatemi-J, 2008)";
     "   Test         Statistic   TB1    TB2     CV(1%, 5%, 10%)";

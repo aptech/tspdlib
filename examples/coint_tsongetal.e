@@ -2,12 +2,12 @@ new;
 cls;
 library tspdlib;
 
-//Number of observations
+// Load the dataset
 data = loadd(__FILE_DIR $+ "TScoint.dat");
 
 // Define y and x matrix
-y = data[.,1];
-x = data[.,2:cols(data)];
+y = data[., 1];
+x = data[., 2:cols(data)];
 
 T = rows(data);
 

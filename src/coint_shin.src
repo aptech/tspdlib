@@ -8,16 +8,21 @@
 **  Econometric Theory, 10(1), 91-115.
 **
 **
-**  Format:  {CIols,CIdols,cv}  = coint_shin(y, x, model, varm, q);
+**  Format:  { CIols, CIdols, cv }  = coint_shin(y, x, model, bwl, varm, q);
 **
 **
-**  Input:   Y	     -  Nx1 matrix, dependent variable
+**  Input:   
+**           Y	     -  Nx1 matrix, dependent variable
+**
 **           X       -  NxK matrix, independent variables
-**           k       -  Columns of x (upper bound is 4)
+**
 **           model   - 	0 = none
 **                      1 = constant
 **                      2 = constant & trend
-**         varm    -    Long-run consistent variance estimation method for PP-baed test
+**
+**           bwl     -  Band width for long-run variance computations.
+**
+**           varm    -  Long-run consistent variance estimation method for PP-baed test
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Qudratic Spectral (QS);
@@ -37,9 +42,12 @@
 **                      Tsong et al. (2016)
 **
 **
-**  Output: CIols   -   CI  test based on OLS estimation
-**          CIdols  -   CI* test based on DOLS estimation
-**	    cv      -   1%, 5%, 10% critical values for the chosen model
+**  Output: 
+**              CIols   -   CI  test based on OLS estimation
+**
+**              CIdols  -   CI* test based on DOLS estimation
+**
+**	            cv      -   1%, 5%, 10% critical values for the chosen model
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
@@ -50,7 +58,7 @@
 
 /*Procedures*/
 
-proc(3)=coint_shin(y,x,model,bwl,varm,q);
+proc(3) = coint_shin(y, x, model, bwl, varm, q);
     local n, z, b1, e1, ssr1, St1, lrv1, C1;
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
     local b2, e2, ssr2, St2, lrv2, C2, k, cv;

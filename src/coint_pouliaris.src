@@ -7,16 +7,21 @@
 **  Econometrica, 58 (1), pp. 165-193
 **
 **
-**  Format:  {Zt,Za,cvZt,cvZa}  = coint_pouliaris(y, x, model, varm);
+**  Format:  { Zt, Za, cvZt, cvZa }  = coint_pouliaris(y, x, model, bwl, varm);
 **
 **
-**  Input:   Y	     -  Nx1 matrix, dependent variable
+**  Input:   
+**           Y	     -  Nx1 matrix, dependent variable
+**
 **           X       -  NxK matrix, independent variables
-**           k       -  Columns of x (upper bound is 5)
+**
 **           model   - 	0 = none
 **                      1 = constant
 **                      2 = constant & trend
-**         varm    -    Long-run consistent variance estimation method for PP-baed test
+**
+**           bwl     -  Bandwidth for long-run variance computations. 
+**
+**           varm    -   Long-run consistent variance estimation method for PP-baed test
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Qudratic Spectral (QS);
@@ -30,9 +35,14 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**  Output: Zt, Za  -   Phillips & Ouliaris (1989) tests
-**	    cv      -   1%, 5%, 10% critical values for the chosen model
+**  Output:  
+**         Zt    -   Phillips & Ouliaris (1989) tests
 **
+**         Za    -   Phillips & Ouliaris (1989) tests
+**
+**	       cvZt  -   Zt 1%, 5%, 10% critical values for the chosen model
+**
+**	       cvZa  -   Za 1%, 5%, 10% critical values for the chosen model
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
@@ -43,7 +53,7 @@
 
 /*Procedures*/
 
-proc(4)=coint_pouliaris(y,x,model,bwl,varm);
+proc(4) = coint_pouliaris(y, x, model, bwl, varm);
     local n,x1,b,e1,sig2,se,ssr,Zt,Za,cvZt,cvZa,k, cv1, cv2;
     
     n=rows(y);
@@ -168,5 +178,5 @@ proc(4)=coint_pouliaris(y,x,model,bwl,varm);
         endif;
     endif;
     
-    retp(Zt,Za,cvZt,cvZa);
+    retp(Zt, Za, cvZt, cvZa);
 endp;

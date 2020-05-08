@@ -11,20 +11,27 @@
 **  Format:  { tau, cvADF }        = coint_egranger(y, x, model, pmax, ic);
 **
 **
-**  Input:   Y	     -  Nx1 matrix, dependent variable
+**  Input:   
+**           Y	     -  Nx1 matrix, dependent variable
+**
 **           X       -  NxK matrix, independent variables
+**
 **           k       -  Columns of x (upper bound is 5)
+**
 **           model   - 	0 = none
 **                      1 = constant
 **                      2 = constant & trend
+**
 **           pmax    -  Maximum number of lags for Dy in ADF test; 0=no lags
+**
 **           ic      -  Information Criterion for ADF-based test:
 **                      1=Akaike
 **                      2=Schwarz
 **
+**  Output: 
+**           tau     -   Engle & Granger (1987) ADF test
 **
-**  Output: tau     -   Engle & Granger (1987) ADF test
-**	    cv      -   1%, 5%, 10% critical values for the chosen model
+**	         cv      -   1%, 5%, 10% critical values for the chosen model
 **
 **
 **  Author: Saban Nazlioglu
@@ -36,7 +43,7 @@
 
 /*Procedures*/
 
-proc(2)=coint_egranger(y,x,model,pmax,ic);
+proc(2) = coint_egranger(y, x, model, pmax, ic);
     local n,x1,b,e1,sig2,se,ssr,tau,lageg,k, cv, cvADF;
     
     n=rows(y);

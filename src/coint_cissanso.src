@@ -9,17 +9,24 @@
 **
 **
 **  Format:  { SCols, TBols, SCdols, TBdols, lambda, cv }
-**                              = coint_cissanso(y, x, model, varm, trimm, q);
+**                              = coint_cissanso(y, x, model, bwl, varm, trimm, q);
 **
 **           
-**  Input:   Y	     -  Nx1 matrix, dependent variable
+**  Input:   
+**           Y	     -  Nx1 matrix, dependent variable
+**
 **           X       -  NxK matrix, independent variables
-**           k       -  Columns of x (upper bound is 4)      
+**
+**           k       -  Columns of x (upper bound is 4)     
+**
 **           model   - 	1 = Model An: Level shift
 **                      2 = Model A: Level shift with trend
 **                      3 = Model D: Regime shift
 **                      4 = Model E: Regime and trend shift
-**         varm    -    Long-run consistent variance estimation method
+**
+**           bwl     - Bandwidth for long-run variance computations. 
+**
+**           varm    -    Long-run consistent variance estimation method
 **                      1 = iid; 
 **                      2 = Bartlett 
 **                      3 = Qudratic Spectral (QS); 
@@ -32,16 +39,23 @@
 **                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006). 
 **                      A guide to the computation of stationarity tests. 
 **                      Empirical Economics, 31(2), 433.           
+**
 **          trimm   -   Trimming rate Default [0.15,0.85] as in GH (1996)
+**
 **              q   -   Number of leads and lags for DOLS estimation
 **
+**  Output: 
+**          SCols   -   SC  test based on OLS estimation
+**          
+**          TBols   -   Break date for OLS estimation.
 **
-**
-**  Output: SCols   -   SC  test based on OLS estimation
 **          SCdols  -   SC+ test based on DOLS estimation
-**          TB      -   break location
+**
+**          TBDols  -   Break date for DOLS estimation.
+**
 **          lambda  -   Fraction of break (TB/T)
-**	    cv      -   1%, 5%, 10% critical values for the chosen model 
+**
+**	        cv      -   1%, 5%, 10% critical values for the chosen model 
 **
 **  Author: Saban Nazlioglu
         -- The author makes no performance guarantees.
@@ -164,7 +178,7 @@ proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
     
     k     = cols(x);
     lambda= tb2_min/rows(y);
-    {cv} = cv_coint_cissanso(model,lambda,k);
+    {cv} = cv_coint_cissanso(model, lambda, k);
     
     retp(SC1_min, tb1_min, SC2_min, tb2_min, lambda, cv);
 endp;

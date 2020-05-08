@@ -2,12 +2,12 @@ new;
 cls;
 library tspdlib;
 
-//Number of observations
+// Load the dataset
 data = loadd(__FILE_DIR $+ "TScoint.dat");
 
 // Define y and x matrix
-y = data[.,1];
-x = data[.,2:cols(data)];
+y = data[., 1];
+x = data[., 2:cols(data)];
 
 // Time variable
 T = rows(data);
@@ -25,7 +25,7 @@ format/m1/rd 8,3;
 
 "-----------None-----------------------------------------";
 model = 0;
-   { CIols, CIdols, cv} = coint_shin(y, x, model, bwl, varm, q);
+   { CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
 
     "    Test         Statistic  CV(1%, 5%, 10%)";
     "Ho: co-integration   (Shin, 1994)";  
@@ -35,7 +35,7 @@ model = 0;
     
 "-----------Constant-------------------------------------";
 model = 1;
-   { CIols, CIdols, cv} = coint_shin(y, x, model, bwl, varm, q);
+   { CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
 
     "    Test         Statistic  CV(1%, 5%, 10%)";
     "Ho: co-integration   (Shin, 1994)";  
@@ -46,7 +46,7 @@ model = 1;
 
 "-----------Constant and Trend---------------------------";
 model = 2;
-   { CIols, CIdols, cv} = coint_shin(y, x, model, bwl, varm, q);
+   { CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
 
     "    Test         Statistic  CV(1%, 5%, 10%)";
     "Ho: co-integration   (Shin, 1994)";  
