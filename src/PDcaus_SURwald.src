@@ -81,6 +81,7 @@ proc(1) = Panel_SURwald(data, vnames, pmax, ic, Nboot);
             y2 = reshape(indvar[.,j],n,t)';
             
             p        = _get_p(y1, y2, pmax, ic);
+            
             {y, yl}  = _get_SURdata(y1, y2, p);
             
             {SURWald,sur_out,aic,sbc}  = _get_sur_wald(y, yl, n, p);
@@ -111,8 +112,6 @@ proc(1) = Panel_SURwald(data, vnames, pmax, ic, Nboot);
     
     retp(SURWald);
 endp;
-
-
 
 // Procedures
 
@@ -165,24 +164,25 @@ proc(4) = _get_sur_wald(y,yl,n,p);
     
     sur_out = bsur~sesur~tsur;
     
-    {surwald} = _get_SURwald(bsur, covb, k);
+    {surwald} = _get_SURwald(bsur, covb, N, p);
     
     retp(surwald, sur_out, aic, sbc);
 endp;
 
-proc(1) = _get_SURwald(bsur, covb, k);
-    local surwald, r, rmat;
+proc(1) = _get_SURwald(b_sur, covb, N, p);
+    local surwald, R;
     
     surwald = {};
+    for i(1, N,1);
+        if i < N;
+            R = zeros(p, (i-1)*(2*p + 1) + p + 1) ~ eye(p) ~ zeros(p, rows(b_sur)-i*(2*p + 1));
+        else;
+            R = zeros(p, (i-1)*(2*p + 1) + p + 1) ~ eye(p);
+        endif;
+        surwald = surwald | (R*b_sur)'*inv(R*covb*R')*(R*b_sur);
+    endfor;
     
-    r = k;
-    do while r <= rows(bsur);
-        rmat = zeros(n*k,1);
-        rmat[r] = 1;
-        rmat = rmat';
-        surwald = surwald|(rmat*bsur)'*inv(rmat*covb*rmat')*(rmat*bsur);
-        r=r+k;
-    endo;
+
     retp(surwald);
 endp;
 
@@ -192,6 +192,7 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
     local cove, IT, xx, bsur, esur, NeH0, bH0;
     local Waldboot, s, ustar, ystar, y1, Wboot, aic, sbc;
     local cvboot, Wb, cv1, cv5, cv10, sur_out;
+    local xxH0, zhat;
     
     t = rows(yl)/n;
     x = ones(n*t,1)~yl[.,1];
@@ -230,6 +231,7 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
     
     NeH0 = (reshape(esur,n,t))';
     bH0  = (reshape(bsur,n,p+1))';
+    xxH0 = (reshape(xx,n,t))';
     
     NeH0 = e;
     Waldboot = zeros(nboot,n);
@@ -243,10 +245,11 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
         
         ystar   = zeros(T+p,N);
         for i(1,N,1);
+            ystar[1,i] = ustar[1,i];
+            bi = bH0[.,i];
+            zhat = xxH0[.,i] * bi';
             for s(2,t,1);
-                ystar[1,i] = ustar[1,i];
-                bi = bH0[.,i];
-                ystar[s,i] = bi[1] + ystar[s-1,i]*bi[2:rows(bi)] + ustar[s,i];
+                ystar[s,i] = sumr(zhat[s,.] + ustar[s,i]);
             endfor;
         endfor;
         
@@ -364,3 +367,126 @@ proc(1) = _get_p(y1,y2,pmax,ic);
 endp;
 
 
+proc(2) = Panel_SURwald_mod(data, vnames, pmax, ic, Nboot);
+    local m, j, y1, indvar, y2, p, y, yl;
+    local SURwald, sur_out, aic, sbc;
+    local SURwald_boot, cvboot, bsur;
+    
+    m =1;
+    do while m <= cols(data);
+        
+        y1 = reshape(data[.,m],n,t)';
+        indvar = delcols(data,m);
+        
+        j = 1;
+        do while j <= cols(indvar);
+            
+            if m==1;
+                vnames[j+1];;
+                " does not cause ";;
+                vnames[m];
+            endif;
+            if m>1 and m==j;
+                vnames[j+1];;
+                " does not cause ";;
+                vnames[m];
+            endif;
+            if m>1 and j<m;
+                vnames[j]  ;;
+                " does not cause ";;
+                vnames[m];
+            endif;
+            if m>1 and j>m;
+                vnames[j+1];;
+                " does not cause ";;
+                vnames[m];
+            endif;
+            
+            y2 = reshape(indvar[.,j],n,t)';
+            
+            p        = _get_p(y1, y2, pmax, ic);
+            {y, yl}  = _get_SURdata(y1, y2, p);
+            
+            {SURWald,sur_out,aic,sbc, bsur}  = _get_sur_wald_mod(y, yl, n, p);
+            
+            {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
+            
+            format /rd 8,3;
+            
+            
+            "N   " ;;
+            N;
+            "T   " ;;
+            T;
+            "Lag " ;;
+            p;
+            
+            "     i        Wald   Bootstrap CVs (1% 5% 10%)";
+            "---------------------------------------------";;
+            seqa(1,1,N)~SURwald~cvboot;
+            "---------------------------------------------";
+            
+            "";
+            
+            j = j + 1;
+        endo;
+        m = m + 1;
+    endo;
+    
+    retp(SURWald, bsur);
+endp;
+
+
+// SUR estimation and Wald statistics
+proc(5) = _get_sur_wald_mod(y,yl,n,p);
+    local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi, tr;
+    local cove,IT,xx,bsur, omega, covb, vsur,sesur,tsur;
+    local aic,sbc,sur_out, surwald;
+    
+    t = rows(yl)/n;
+    x = ones(n*t,1)~yl;
+    
+    e = zeros(t,n);
+    k = cols(x);
+    bols = zeros(n*k,1);
+    sols = zeros(n*k,1);
+    
+    i = 1;
+    do while i <= N;
+        yi = y[(i-1)*t+1:i*t];
+        xi = x[(i-1)*t+1:i*t,.];
+        bi = yi/xi;
+        ei = yi-xi*bi;
+        vi = diag((ei'ei/(t-rows(bi))*inv(xi'xi)));
+        e[.,i] = ei;
+        bols[(i-1)*k+1:i*k] = bi;
+        sols[(i-1)*k+1:i*k] = sqrt(vi);
+        i=i+1;
+    endo;
+    
+    //e=reshape(e,t,n);
+    
+    cove= e'e/t;
+    IT  = eye(t);
+    xx  = zeros(t*n,n*k);
+    i = 1;
+    do while i <= n;
+        xx[(i-1)*t+1:i*t,(i-1)*k+1:i*k] = x[(i-1)*t+1:i*t,.];
+        i=i+1;
+    endo;
+    
+    bsur = inv(xx'*inv(cove.*.IT)*xx)*xx'*inv(cove.*.IT)*y;
+    omega= (cove.*.IT);
+    covb = inv(xx'*inv(omega)*xx);
+    vsur = diag(covb);
+    sesur= sqrt(vsur);
+    tsur = bsur./sesur;
+    aic  = ln(det(omega))+(2*N*k*p/T);
+    sbc  = ln(det(omega))+(N*k*p/T)*ln(T);
+    
+    sur_out = bsur~sesur~tsur;
+    
+    {surwald} = _get_SURwald(bsur, covb, k);
+    
+    retp(surwald, sur_out, aic, sbc, bsur);
+endp;
