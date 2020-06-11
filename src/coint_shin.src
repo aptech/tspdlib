@@ -177,6 +177,11 @@ proc(3) = coint_shin(y, x, model, bwl, varm, q);
             cv = 0.087|0.061|0.050;
         endif;
     endif;
+     if k<6;
+        retp(C1, C2, cv);
+    else;
+        print "Shin cointegration test critical values unavailable for k>5";
+        retp(C1, C2, error(0));
+    endif;
     
-    retp(C1, C2, cv);
 endp;

@@ -2,8 +2,8 @@
 /*
 **  coint_cissanso
 **  Reference:
-**  Carrion-i-Silvestre, J.L., Sanso, A. (2006). 
-**  "Tests the Null of Cointegration with Structural Breaks". 
+**  Carrion-i-Silvestre, J.L., Sanso, A. (2006).
+**  "Tests the Null of Cointegration with Structural Breaks".
 **  Oxford Bulletin Economics and Statistics, 68(5), 623-646.
 **
 **
@@ -11,42 +11,42 @@
 **  Format:  { SCols, TBols, SCdols, TBdols, lambda, cv }
 **                              = coint_cissanso(y, x, model, bwl, varm, trimm, q);
 **
-**           
-**  Input:   
+**
+**  Input:
 **           Y	     -  Nx1 matrix, dependent variable
 **
 **           X       -  NxK matrix, independent variables
 **
-**           k       -  Columns of x (upper bound is 4)     
+**           k       -  Columns of x (upper bound is 4)
 **
 **           model   - 	1 = Model An: Level shift
 **                      2 = Model A: Level shift with trend
 **                      3 = Model D: Regime shift
 **                      4 = Model E: Regime and trend shift
 **
-**           bwl     - Bandwidth for long-run variance computations. 
+**           bwl     - Bandwidth for long-run variance computations.
 **
 **           varm    -    Long-run consistent variance estimation method
-**                      1 = iid; 
-**                      2 = Bartlett 
-**                      3 = Qudratic Spectral (QS); 
-**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005) 
-**                      5 = SPC with QS; 
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Qudratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
 **                      6 = Kurozumi with Bartlett
 **                      7 = Kurozumi with QS
 **                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
 **                      See:
-**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006). 
-**                      A guide to the computation of stationarity tests. 
-**                      Empirical Economics, 31(2), 433.           
+**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
 **
 **          trimm   -   Trimming rate Default [0.15,0.85] as in GH (1996)
 **
 **              q   -   Number of leads and lags for DOLS estimation
 **
-**  Output: 
+**  Output:
 **          SCols   -   SC  test based on OLS estimation
-**          
+**
 **          TBols   -   Break date for OLS estimation.
 **
 **          SCdols  -   SC+ test based on DOLS estimation
@@ -55,12 +55,12 @@
 **
 **          lambda  -   Fraction of break (TB/T)
 **
-**	        cv      -   1%, 5%, 10% critical values for the chosen model 
+**	        cv      -   1%, 5%, 10% critical values for the chosen model
 **
 **  Author: Saban Nazlioglu
-        -- The author makes no performance guarantees.
-        -- for public non-commercial use only.
-        -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 */
 
 
@@ -69,8 +69,8 @@
 
 proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
     local T, t1, t2, tb1, dc, dt, du1, dt1, z;
-    local ssr1_min, tb1_min, SC1_min;   
-    local ssr2_min, tb2_min, SC2_min; 
+    local ssr1_min, tb1_min, SC1_min;
+    local ssr2_min, tb2_min, SC2_min;
     local b1, e1, ssr1, St1, lrv1, SC1;
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
     local b2, e2, ssr2, St2, lrv2, SC2;
@@ -88,49 +88,55 @@ proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
     T2 = round((1 - trimm) * rows(y));
     
     // First break
-    tb1 = t1;              
+    tb1 = t1;
     do until tb1 > t2;
         // Deterministic term=constant
-        dc = ones(t, 1);   
-
+        dc = ones(t, 1);
+        
         // Deterministic term=trend
-        dt = seqa(1, 1, t);             
-
+        dt = seqa(1, 1, t);
+        
         // Break dummy
         du1 = zeros(tb1,1)|ones(t-tb1,1);
         dt1 = zeros(tb1,1)|seqa(1,1,t-tb1);
         
         // Model An: Level shift
-        if model==1; z=dc~du1~x; endif; 
+        if model==1;
+            z=dc~du1~x;
+        endif;
         
         // Model A: Level shift with trend
-        if model==2; z=dc~du1~dt~x; endif;
+        if model==2;
+            z=dc~du1~dt~x;
+        endif;
         
         // Model D: Regime shift
-        if model==3; z=dc~du1~x~du1.*x; endif;
+        if model==3;
+            z=dc~du1~x~du1.*x;
+        endif;
         
         // Model E: Regime shift and trend shift
-        if model==4; 
+        if model==4;
             z=dc~du1~x~du1.*x~dt~dt1;
         endif;
-
+        
         
         // OLS estimation
-        b1  = y/z;     
-        e1  = y - z * b1;  
-        ssr1= e1'e1;  
-        St1 = cumsumc(e1);     
+        b1  = y/z;
+        e1  = y - z * b1;
+        ssr1= e1'e1;
+        St1 = cumsumc(e1);
         
         // DOLS estimation
         dx = diff(x,1);
-            {dx_leads,dx_lags}=_get_LeadsLags(dx,q);
+        {dx_leads,dx_lags}=_get_LeadsLags(dx,q);
         xdols = z~dx_leads~dx~dx_lags;
         ydols = trimr(y,q+1,q);
         zdols = trimr(xdols,q+1,q);
         
-        b2  = ydols/zdols;     
-        e2  = ydols - zdols * b2;  
-        ssr2= e2'e2;  
+        b2  = ydols/zdols;
+        e2  = ydols - zdols * b2;
+        ssr2= e2'e2;
         St2 = cumsumc(e2);
         
         if varm == 1;
@@ -150,30 +156,30 @@ proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
             lrv2 = spc_qs(e2, round(4 * (T/100)^(2/9)));
         elseif varm == 6;
             lrv1 = kurozumi_bartlett(e1);
-            lrv2 = kurozumi_bartlett(e2);            
+            lrv2 = kurozumi_bartlett(e2);
         elseif varm == 7;
             lrv1 = kurozumi_qs(e1);
-            lrv2 = kurozumi_qs(e2);            
+            lrv2 = kurozumi_qs(e2);
         endif;
         
         
         // Global minimization for OLS-based stat
-           SC1 = T^(-2) * (St1'St1)/lrv1;  
+        SC1 = T^(-2) * (St1'St1)/lrv1;
         if  ssr1 < ssr1_min;
-            ssr1_min= ssr1;    
-            tb1_min = tb1;   
-            SC1_min = SC1;   
+            ssr1_min= ssr1;
+            tb1_min = tb1;
+            SC1_min = SC1;
         endif;
         
         // Global minimization for DOLS-based stat
-           SC2 = T^(-2) * (St2'St2)/lrv2;  
+        SC2 = T^(-2) * (St2'St2)/lrv2;
         if  ssr2 < ssr2_min;
-            ssr2_min= ssr2;    
-            tb2_min = tb1;   
-            SC2_min = SC2;   
+            ssr2_min= ssr2;
+            tb2_min = tb1;
+            SC2_min = SC2;
         endif;
         
-     tb1 = tb1 + 1;
+        tb1 = tb1 + 1;
     endo;
     
     k     = cols(x);
@@ -184,97 +190,103 @@ proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
 endp;
 
 proc (1) = cv_coint_cissanso(model,lam,k);
-  local mat_cv, cv1, cv5, cv10, lamcol;
-
-  IF model == 1; @ Model An @
-     //Fraction  0.1      0.2       0.3       0.4      0.5     
-     if k == 1;
-@10%@ mat_cv = {0.1932    0.1583    0.1395    0.1281    0.1256,  
-@5 %@           0.2582    0.2087    0.1855    0.1632    0.1553,  
-@1 %@           0.4546    0.3543    0.2948    0.2503    0.2287};      
-     elseif k == 2;
-      mat_cv = {0.1336    0.1157    0.1079    0.1020    0.1029, 
-                0.1796    0.1557    0.1400    0.1306    0.1292,  
-                0.3116    0.2631    0.2259    0.2035    0.1903};                
-     elseif k == 3;
-      mat_cv = {0.1007    0.0907    0.0856    0.0847    0.0840,
+    local mat_cv, cv1, cv5, cv10, lamcol;
+    
+    If model == 1; @ Model An @
+        //Fraction  0.1      0.2       0.3       0.4      0.5
+        if k == 1;
+            @10%@ mat_cv = {0.1932    0.1583    0.1395    0.1281    0.1256,
+                @5 %@           0.2582    0.2087    0.1855    0.1632    0.1553,
+                @1 %@           0.4546    0.3543    0.2948    0.2503    0.2287};
+        elseif k == 2;
+            mat_cv = {0.1336    0.1157    0.1079    0.1020    0.1029,
+                0.1796    0.1557    0.1400    0.1306    0.1292,
+                0.3116    0.2631    0.2259    0.2035    0.1903};
+        elseif k == 3;
+            mat_cv = {0.1007    0.0907    0.0856    0.0847    0.0840,
                 0.1319    0.1179    0.1094    0.1063    0.1051,
                 0.2238    0.1989    0.1773    0.1602    0.1594};
-     elseif k == 4;
-      mat_cv = {0.0799    0.0738    0.0712    0.0704    0.0706,
+        elseif k == 4;
+            mat_cv = {0.0799    0.0738    0.0712    0.0704    0.0706,
                 0.1037    0.0924    0.0873    0.0878    0.0874,
                 0.1754    0.1502    0.1385    0.1365    0.350};
-     endif;       
-  ENDIF;
-
-  IF model == 2; @ Model A @
-     if k == 1;
-      mat_cv = {0.0827    0.0736    0.0747    0.0821    0.0840,  
-                0.1028    0.0855    0.0907    0.1021    0.1060,  
-                0.1537    0.1305    0.1251    0.1508    0.1642};      
-     elseif k == 2;
-      mat_cv = {0.0700    0.0630    0.0650    0.0690    0.0693, 
-                0.0865    0.0759    0.0774    0.0852    0.0858,  
-                0.1273    0.1095    0.1083    0.1254    0.1348};                
-     elseif k == 3;
-      mat_cv = {0.0594    0.0554    0.0571    0.0581    0.0584,
+        endif;
+    ENDIF;
+    
+    IF model == 2; @ Model A @
+        if k == 1;
+            mat_cv = {0.0827    0.0736    0.0747    0.0821    0.0840,
+                0.1028    0.0855    0.0907    0.1021    0.1060,
+                0.1537    0.1305    0.1251    0.1508    0.1642};
+        elseif k == 2;
+            mat_cv = {0.0700    0.0630    0.0650    0.0690    0.0693,
+                0.0865    0.0759    0.0774    0.0852    0.0858,
+                0.1273    0.1095    0.1083    0.1254    0.1348};
+        elseif k == 3;
+            mat_cv = {0.0594    0.0554    0.0571    0.0581    0.0584,
                 0.0728    0.0670    0.0692    0.0712    0.0725,
                 0.1064    0.0941    0.0971    0.1035    0.1103};
-     elseif k == 4;
-      mat_cv = {0.0507    0.0490    0.0501    0.0509    0.0510,
+        elseif k == 4;
+            mat_cv = {0.0507    0.0490    0.0501    0.0509    0.0510,
                 0.0616    0.0588    0.0606    0.0617    0.0621,
                 0.0898    0.0846    0.0864    0.0886    0.0938};
-     endif;       
-  ENDIF;
-
-  IF model == 3; @ Model D @
-     if k == 1;
-      mat_cv = {0.1908    0.1547    0.1265    0.1098    0.1044,  
-                0.2560    0.2067    0.1670    0.1395    0.1309,  
-                0.4463    0.3449    0.2669    0.2224    0.1941};      
-     elseif k == 2;
-      mat_cv = {0.1319    0.1087    0.0885    0.0760    0.0735, 
-                0.1759    0.1459    0.1163    0.0969    0.0922,  
-                0.3068    0.2510    0.1942    0.1578    0.1419};                
-     elseif k == 3;
-      mat_cv = {0.0983    0.0803    0.0664    0.0572    0.0542,
+        endif;
+    ENDIF;
+    
+    IF model == 3; @ Model D @
+        if k == 1;
+            mat_cv = {0.1908    0.1547    0.1265    0.1098    0.1044,
+                0.2560    0.2067    0.1670    0.1395    0.1309,
+                0.4463    0.3449    0.2669    0.2224    0.1941};
+        elseif k == 2;
+            mat_cv = {0.1319    0.1087    0.0885    0.0760    0.0735,
+                0.1759    0.1459    0.1163    0.0969    0.0922,
+                0.3068    0.2510    0.1942    0.1578    0.1419};
+        elseif k == 3;
+            mat_cv = {0.0983    0.0803    0.0664    0.0572    0.0542,
                 0.1286    0.1049    0.0851    0.0721    0.0672,
                 0.2307    0.1816    0.1425    0.1145    0.1039};
-     elseif k == 4;
-      mat_cv = {0.0772    0.0616    0.0512    0.0451    0.0423,
+        elseif k == 4;
+            mat_cv = {0.0772    0.0616    0.0512    0.0451    0.0423,
                 0.0981    0.0791    0.0648    0.0548    0.0514,
                 0.1579    0.1312    0.1048    0.0852    0.0766};
-     endif;       
-  ENDIF;
-
-  IF model == 4; @ Model E @
-     if k == 1;
-      mat_cv = {0.0808    0.0654    0.0538    0.0463    0.0436,  
-                0.1004    0.0804    0.0659    0.0552    0.0512,  
-                0.1480    0.1223    0.0960    0.0763    0.0681};      
-     elseif k == 2;
-      mat_cv = {0.0671    0.0540    0.0448    0.0387    0.0363, 
-                0.0832    0.0661    0.0544    0.0462    0.0423,  
-                0.1218    0.0980    0.0795    0.0641    0.0574};                
-     elseif k == 3;
-      mat_cv = {0.0561    0.0457    0.0375    0.0323    0.0309,
+        endif;
+    ENDIF;
+    
+    IF model == 4; @ Model E @
+        if k == 1;
+            mat_cv = {0.0808    0.0654    0.0538    0.0463    0.0436,
+                0.1004    0.0804    0.0659    0.0552    0.0512,
+                0.1480    0.1223    0.0960    0.0763    0.0681};
+        elseif k == 2;
+            mat_cv = {0.0671    0.0540    0.0448    0.0387    0.0363,
+                0.0832    0.0661    0.0544    0.0462    0.0423,
+                0.1218    0.0980    0.0795    0.0641    0.0574};
+        elseif k == 3;
+            mat_cv = {0.0561    0.0457    0.0375    0.0323    0.0309,
                 0.0696    0.0559    0.0454    0.0379    0.0360,
                 0.1040    0.0821    0.0660    0.0529    0.0474};
-     elseif k == 4;
-      mat_cv = {0.0484     0.0391    0.0326    0.0282    0.0266,
+        elseif k == 4;
+            mat_cv = {0.0484     0.0391    0.0326    0.0282    0.0266,
                 0.0597     0.0476    0.0393    0.0329    0.0308,
                 0.0899     0.0703    0.0570    0.0454    0.0411};
-     endif;       
-  ENDIF;
-  
-    lamcol = round(10 * lam);
-    if lamcol > 5;
-        lamcol = 10 - lamcol;
+        endif;
+    ENDIF;
+    
+    if k < 5;
+        lamcol = round(10 * lam);
+        if lamcol > 5;
+            lamcol = 10 - lamcol;
+        endif;
+        
+        cv10= mat_cv[1, lamcol];
+        cv5 = mat_cv[2, lamcol];
+        cv1 = mat_cv[3, lamcol];
+        retp(cv1|cv5|cv10);
+    else;
+        print "'coint_cissano': Critical values unavailable for k>4";
+        retp(error(0));
     endif;
     
-    cv10= mat_cv[1,lamcol];
-    cv5 = mat_cv[2,lamcol];
-    cv1 = mat_cv[3,lamcol];
     
-retp(cv1|cv5|cv10);
 endp;

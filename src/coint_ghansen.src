@@ -234,5 +234,11 @@ proc(2) = cv_coint_ghansen(k, model);
         endif;
     endif;
     
-    retp(cvADFZt, cvZa);
+    if k < 5;
+        retp(cvADFZt, cvZa);
+    else;
+        print "Gregory-Hansen test critical values unavailable for k>4";
+        retp(error(0), error(0));
+    endif;
+    
 endp;

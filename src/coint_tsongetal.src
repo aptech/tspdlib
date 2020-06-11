@@ -2,45 +2,45 @@
 /*
 **  coint_tsongetal
 **  Reference:
-**  Tsong, C.C., Lee, C.F., Tsai, L.J., & Hu, T.C. (2016). 
-**  "The Fourier approximation and testing for the null of cointegration". 
+**  Tsong, C.C., Lee, C.F., Tsai, L.J., & Hu, T.C. (2016).
+**  "The Fourier approximation and testing for the null of cointegration".
 **  Empirical Economics, 51(3), 1085-1113.
 **
 **
-**  Format:  {CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols} = 
+**  Format:  {CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols} =
 **                              coint_tsongetal(y, x, model, bwl, kmax, varm, q);
-**           
-**  Input:   
+**
+**  Input:
 **           Y	     -  Nx1 matrix, dependent variable
 **
 **           X       -  NxK matrix, independent variables
-**             
+**
 **           model   - 	1 = Level shift model with Fourier
 **                      2 = Level & trend shift model with Fourier
 **
-**           bwl     -  Bandwidth for long-run variance computations. 
+**           bwl     -  Bandwidth for long-run variance computations.
 **
 **           kmax    -  Maximum number of Fourier frequency
 **
 **           varm    -  Long-run consistent variance estimation method for PP-baed test
-**                      1 = iid; 
-**                      2 = Bartlett 
-**                      3 = Qudratic Spectral (QS); 
-**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005) 
-**                      5 = SPC with QS; 
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Qudratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
 **                      6 = Kurozumi with Bartlett
 **                      7 = Kurozumi with QS
 **                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
 **                      See:
-**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006). 
-**                      A guide to the computation of stationarity tests. 
-**                      Empirical Economics, 31(2), 433.     
+**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
 **
 **              q   -   Number of leads and lags for DOLS estimation
 **
 **
 **
-**  Output: 
+**  Output:
 **          CIfols  -   CIf test based on OLS estimation
 **
 **          FFols   -   Optimal Fourier frequency based on OLS estimation
@@ -53,12 +53,12 @@
 **
 **          Fdols   -   F-stat for Fourier terms significance based on DOLS
 **
-**	        cv      -   1%, 5%, 10% critical values for the chosen model 
+**	        cv      -   1%, 5%, 10% critical values for the chosen model
 **
 **  Author: Saban Nazlioglu
-        -- The author makes no performance guarantees.
-        -- for public non-commercial use only.
-        -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 */
 
 
@@ -66,13 +66,13 @@
 
 proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     local t, dc, dt, sink, cosk, z;
-    local ssr1_min, k1_min, SC1_min;   
-    local ssr2_min, k2_min, SC2_min; 
+    local ssr1_min, k1_min, SC1_min;
+    local ssr2_min, k2_min, SC2_min;
     local b1, e1, ssr1, St1, lrv1, SC1;
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
     local b2, e2, ssr2, St2, lrv2, SC2;
     local p , cv;
-    local Fols , Fdols, zr, zrdols;      
+    local Fols , Fdols, zr, zrdols;
     
     T = rows(y);
     ssr1_min = 1e6;
@@ -84,51 +84,51 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     Fols     = zeros(kmax,1);
     Fdols    = zeros(kmax,1);
     
-    for k(1,kmax,1);              
+    for k(1,kmax,1);
         
         // Deterministic term=constant
-        dc = ones(t, 1);   
-
+        dc = ones(t, 1);
+        
         // Deterministic term=trend
         dt = seqa(1, 1, t);
         
         // Fourier series
         sink = sin(2 * pi * k * seqa(1, 1, t)/t);
         cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
-    
+        
         // Level shift model
         if model == 1;
             z  = dc~x~sink~cosk;
             zr = dc~x;
         endif;
-
-        // Trend shift model            
+        
+        // Trend shift model
         if model == 2;
             z = dc~dt~x~sink~cosk;
-            zr= dc~dt~x;            
+            zr= dc~dt~x;
         endif;
         
         // OLS estimation
-        b1  = y/z;     
-        e1  = y - z * b1;  
-        ssr1= e1'e1;  
-        St1 = cumsumc(e1);     
+        b1  = y/z;
+        e1  = y - z * b1;
+        ssr1= e1'e1;
+        St1 = cumsumc(e1);
         
         Fols[k,1]= _get_Ftest(y,zr,z);
         
         // DOLS estimation
         dx = diff(x,1);
-            {dx_leads,dx_lags}=_get_LeadsLags(dx,q);
+        {dx_leads,dx_lags}=_get_LeadsLags(dx,q);
         xdols = z~dx_leads~dx~dx_lags;
         ydols = trimr(y,q+1,q);
         zdols = trimr(xdols,q+1,q);
         
-        b2  = ydols/zdols;     
-        e2  = ydols - zdols * b2;  
-        ssr2= e2'e2;  
+        b2  = ydols/zdols;
+        e2  = ydols - zdols * b2;
+        ssr2= e2'e2;
         St2 = cumsumc(e2);
         
-        zrdols=trimr(zr~dx_leads~dx~dx_lags,q+1,q); 
+        zrdols=trimr(zr~dx_leads~dx~dx_lags,q+1,q);
         Fdols[k,1]= _get_Ftest(ydols,zrdols,zdols);
         
         if varm == 1;
@@ -148,102 +148,112 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
             lrv2 = spc_qs(e2, round(4 * (T/100)^(2/9)));
         elseif varm == 6;
             lrv1 = kurozumi_bartlett(e1);
-            lrv2 = kurozumi_bartlett(e2);            
+            lrv2 = kurozumi_bartlett(e2);
         elseif varm == 7;
             lrv1 = kurozumi_qs(e1);
-            lrv2 = kurozumi_qs(e2);            
+            lrv2 = kurozumi_qs(e2);
         endif;
         
         
         // Global minimization for OLS-based stat
-           SC1 = T^(-2) * (St1'St1)/lrv1;
+        SC1 = T^(-2) * (St1'St1)/lrv1;
         if  ssr1 < ssr1_min;
-            ssr1_min= ssr1;    
-            k1_min  = k;   
-            SC1_min = SC1;   
+            ssr1_min= ssr1;
+            k1_min  = k;
+            SC1_min = SC1;
         endif;
         
         // Global minimization for DOLS-based stat
-           SC2 = T^(-2) * (St2'St2)/lrv2;  
+        SC2 = T^(-2) * (St2'St2)/lrv2;
         if  ssr2 < ssr2_min;
-            ssr2_min= ssr2;    
-            k2_min  = k;   
-            SC2_min = SC2;   
+            ssr2_min= ssr2;
+            k2_min  = k;
+            SC2_min = SC2;
         endif;
-
+        
     endfor;
-
+    
     p    = cols(x);
     {cv} = cv_coint_tsongetal(model, k2_min, p);
-
+    
     retp(SC1_min, k1_min, SC2_min, k2_min, cv, Fols, Fdols);
 endp;
 
 proc (1) = cv_coint_tsongetal(model, k, p);
-  local mat_cv, cv1, cv5, cv10;
-
-  IF model == 1; @ Level shift model @
-     //            10%      5%       1%     
-     if k == 1;
-        mat_cv = {0.095    0.124    0.198,  // p=1
-                  0.070    0.092    0.155,  // p=2 
-                  0.059    0.076    0.130,  // p=3
-                  0.050    0.061    0.096}; // p=4      
-     elseif k == 2;
-        mat_cv = {0.200    0.276    0.473,  // p=1
-                  0.132    0.182    0.328,  // p=2 
-                  0.098    0.132    0.215,  // p=3
-                  0.072    0.097    0.171}; // p=4                
-     elseif k == 3;
-        mat_cv = {0.224    0.304    0.507,  // p=1
-                  0.148    0.202    0.383,  // p=2 
-                  0.112    0.146    0.250,  // p=3
-                  0.072    0.097    0.171}; // p=4        
-     endif;       
-  ENDIF;
-  
-  IF model == 2; @ Trend shift model @
-  
-     if k == 1;
-        mat_cv = {0.042    0.048    0.063,  // p=1
-                  0.038    0.045    0.059,  // p=2 
-                  0.036    0.042    0.055,  // p=3
-                  0.034    0.038    0.050}; // p=4      
-     elseif k == 2;
-        mat_cv = {0.078    0.099    0.163,  // p=1
-                  0.063    0.081    0.127,  // p=2 
-                  0.051    0.066    0.103,  // p=3
-                  0.044    0.055    0.086}; // p=4                
-     elseif k == 3;
-        mat_cv = {0.090    0.114    0.170,  // p=1
-                  0.075    0.094    0.143,  // p=2 
-                  0.061    0.075    0.116,  // p=3
-                  0.053    0.065    0.099}; // p=4        
-     endif;       
-  ENDIF;
-  
-    cv10= mat_cv[p,1];
-    cv5 = mat_cv[p,2];
-    cv1 = mat_cv[p,3];
-
- retp(cv1|cv5|cv10);
+    local mat_cv, cv1, cv5, cv10;
+    
+    IF model == 1; @ Level shift model @
+        //            10%      5%       1%
+        if k == 1;
+            mat_cv = {0.095    0.124    0.198,  // p=1
+                0.070    0.092    0.155,  // p=2
+                0.059    0.076    0.130,  // p=3
+                0.050    0.061    0.096}; // p=4
+        elseif k == 2;
+            mat_cv = {0.200    0.276    0.473,  // p=1
+                0.132    0.182    0.328,  // p=2
+                0.098    0.132    0.215,  // p=3
+                0.072    0.097    0.171}; // p=4
+        elseif k == 3;
+            mat_cv = {0.224    0.304    0.507,  // p=1
+                0.148    0.202    0.383,  // p=2
+                0.112    0.146    0.250,  // p=3
+                0.072    0.097    0.171}; // p=4
+        endif;
+    ENDIF;
+    
+    IF model == 2; @ Trend shift model @
+        
+        if k == 1;
+            mat_cv = {0.042    0.048    0.063,  // p=1
+                0.038    0.045    0.059,  // p=2
+                0.036    0.042    0.055,  // p=3
+                0.034    0.038    0.050}; // p=4
+        elseif k == 2;
+            mat_cv = {0.078    0.099    0.163,  // p=1
+                0.063    0.081    0.127,  // p=2
+                0.051    0.066    0.103,  // p=3
+                0.044    0.055    0.086}; // p=4
+        elseif k == 3;
+            mat_cv = {0.090    0.114    0.170,  // p=1
+                0.075    0.094    0.143,  // p=2
+                0.061    0.075    0.116,  // p=3
+                0.053    0.065    0.099}; // p=4
+        endif;
+    ENDIF;
+    
+      if k<4 and p<5;
+        cv10= mat_cv[p, 1];
+        cv5 = mat_cv[p, 2];
+        cv1 = mat_cv[p, 3];
+        retp(cv1|cv5|cv10);
+    else;
+        if p>4;
+            print "Tsong, et al. cointegration test critical values unavailable for more than 4 independent variables";
+        endif;
+        if k>3;
+            print "Tsong, et al. cointegration test critical values unavailable for more than 3 Fourier frequencies";
+        endif;
+        retp(error(0));
+    endif;
+    
 endp;
 
 /*F-test for significance of Fourier terms*/
 proc(1)=_get_Ftest(y,Xr,Xur);
     local br ,er ,sigR ,ser ,RSSr;
     local bur,eur,sigUR,seur,RSSur;
-    local q, df, Fstat, pval;    
-
+    local q, df, Fstat, pval;
+    
     {br ,er ,sigR ,ser ,RSSr}  = myols(y,Xr);
     {bur,eur,sigUR,seur,RSSur} = myols(y,Xur);
-     
+    
     q  = cols(Xur)-cols(Xr);
     df = rows(Xur)-cols(Xur);
-
-    fstat= ((RSSr - RSSur)/q) / (RSSur/df); 
+    
+    fstat= ((RSSr - RSSur)/q) / (RSSur/df);
     pval = cdfFc(fstat, q, df);
     
-retp(Fstat);
-endp; 
+    retp(Fstat);
+endp;
 

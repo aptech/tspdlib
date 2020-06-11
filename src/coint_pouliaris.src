@@ -10,7 +10,7 @@
 **  Format:  { Zt, Za, cvZt, cvZa }  = coint_pouliaris(y, x, model, bwl, varm);
 **
 **
-**  Input:   
+**  Input:
 **           Y	     -  Nx1 matrix, dependent variable
 **
 **           X       -  NxK matrix, independent variables
@@ -19,7 +19,7 @@
 **                      1 = constant
 **                      2 = constant & trend
 **
-**           bwl     -  Bandwidth for long-run variance computations. 
+**           bwl     -  Bandwidth for long-run variance computations.
 **
 **           varm    -   Long-run consistent variance estimation method for PP-baed test
 **                      1 = iid;
@@ -35,7 +35,7 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**  Output:  
+**  Output:
 **         Zt    -   Phillips & Ouliaris (1989) tests
 **
 **         Za    -   Phillips & Ouliaris (1989) tests
@@ -177,6 +177,10 @@ proc(4) = coint_pouliaris(y, x, model, bwl, varm);
             cvZa = -58.1615|-47.3830|-42.3231;
         endif;
     endif;
-    
-    retp(Zt, Za, cvZt, cvZa);
+    if k<6;
+        retp(Zt, Za, cvZt, cvZa);
+    else;
+        print "Phillips & Ouliaris cointegration test critical values unavailable for k>5";
+        retp(Zt, Za, error(0),  error(0));
+    endif;
 endp;
