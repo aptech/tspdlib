@@ -40,15 +40,18 @@
 */
 
 
-proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot);
-    local m, j, i, depvar, indvar, cause, control, y_tn, y_i;
+proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot, Ncross);
+    local m, j, i, depvar, indvar, cause, control, y_tn, y_i, N, t;
     local obs, k, p, dmax, VARy, ylag, VARx, W, Ti, Ki;
     local Nwald, Npval, Nlag, Ne_Znt, Nv_Znt, Ne_Zn, Nv_Zn;
     local e0, z0, NeH0, NzH0, Wbar, Z_nt, Z_n, temp1, temp2;
     local Znt_b, Zn_b, Z_nt_cv10, Z_nt_cv5, Z_nt_cv1;
     local Z_n_cv10, Z_n_cv5, Z_n_cv1;
     
-    m =1;
+    m = 1;
+    N = Ncross;
+    t = rows(data)/N;
+    
     do while m <= cols(data);
         
         depvar = data[.,m];
@@ -130,8 +133,8 @@ proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot);
             Z_nt = sqrt(N) * (Wbar-meanc(Ne_Znt))/ sqrt(meanc(Nv_Znt));
             Z_n  = sqrt(N) * (Wbar-meanc(Ne_Zn)) / sqrt(meanc(Nv_Zn));
             
-            // Boostrap distribution
-            {Znt_b, Zn_b}= _get_Zhnc_bootstrap(y_tn, NzH0, NeH0, pmax, Nboot);
+            // Bootstrap distribution
+            {Znt_b, Zn_b}= _get_Zhnc_bootstrap(y_tn, NzH0, NeH0, pmax, ic, Nboot, N, t);
             Z_nt_cv10 = Znt_b[Ceil(Nboot*.90)];
             Z_nt_cv5  = Znt_b[Ceil(Nboot*.95)];
             Z_nt_cv1  = Znt_b[Ceil(Nboot*.99)];
@@ -182,7 +185,7 @@ proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot);
 endp;
 
 
-proc(2) = _get_Zhnc_bootstrap(y_tn, NzH0, NeH0, pmax, Nboot);
+proc(2) = _get_Zhnc_bootstrap(y_tn, NzH0, NeH0, pmax, ic, Nboot, N, t);
     local Nwald, Npval, Nlag, Ne_Znt, Nv_Znt, Ne_Zn, Nv_Zn;
     local s, y_i, obs, test, dmax, k, p, VARy, ylag, VARx;
     local W, Ti, Ki, Wbar, Z_nt, Z_n, temp1, temp2;

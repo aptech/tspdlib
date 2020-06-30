@@ -43,10 +43,13 @@
 **
 */
 
-proc(1) = Panel_SURwald(data, vnames, pmax, ic, Nboot);
-    local m, j, y1, indvar, y2, p, y, yl;
+proc(1) = Panel_SURwald(data, vnames, pmax, ic, Nboot, Ncross);
+    local m, j, y1, indvar, y2, p, y, yl, t, n;
     local SURwald, sur_out, aic, sbc;
     local SURwald_boot, cvboot;
+    
+    t = rows(data)/Ncross;
+    n = Ncross;
     
     m =1;
     do while m <= cols(data);
@@ -80,13 +83,13 @@ proc(1) = Panel_SURwald(data, vnames, pmax, ic, Nboot);
             
             y2 = reshape(indvar[.,j],n,t)';
             
-            p        = _get_p(y1, y2, pmax, ic);
+            p        = _get_p(y1, y2, pmax, ic, n);
             
-            {y, yl}  = _get_SURdata(y1, y2, p);
+            {y, yl}  = _get_SURdata(y1, y2, p, n);
             
             {SURWald,sur_out,aic,sbc}  = _get_sur_wald(y, yl, n, p);
             
-            {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
+            {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
             
             format /rd 8,3;
             
@@ -173,7 +176,7 @@ proc(1) = _get_SURwald(b_sur, covb, N, p);
     local surwald, R;
     
     surwald = {};
-    for i(1, N,1);
+    for i(1, N, 1);
         if i < N;
             R = zeros(p, (i-1)*(2*p + 1) + p + 1) ~ eye(p) ~ zeros(p, rows(b_sur)-i*(2*p + 1));
         else;
@@ -187,7 +190,7 @@ proc(1) = _get_SURwald(b_sur, covb, N, p);
 endp;
 
 
-proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
+proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
     local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi;
     local cove, IT, xx, bsur, esur, NeH0, bH0;
     local Waldboot, s, ustar, ystar, y1, Wboot, aic, sbc;
@@ -253,7 +256,7 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
             endfor;
         endfor;
         
-        {y, yl}  = _get_SURdata(ystar, y2, p);
+        {y, yl}  = _get_SURdata(ystar, y2, p, n);
         
         {Wboot, sur_out, aic,sbc} = _get_sur_wald(y, yl, n, p);
         
@@ -292,7 +295,7 @@ endp;
 
 
 // OLS estimation
-proc(4) = _get_ols(y,yl,t);
+proc(4) = _get_ols(y,yl,t,n);
     local k,x,rss,e,bols,sols,i,yi,xi,bi,ei,vi;
     
     x=ones(n*t,1)~yl;
@@ -317,7 +320,7 @@ proc(4) = _get_ols(y,yl,t);
     retp(bols,sols,rss,e);
 endp;
 
-proc(2) = _get_SURdata(y1, y2, p);
+proc(2) = _get_SURdata(y1, y2, p, ncross);
     local t, y, yl, i, yp, ylp;
     
     t = rows(y1);
@@ -325,7 +328,7 @@ proc(2) = _get_SURdata(y1, y2, p);
     y = {};
     yl= {};
     i=1;
-    do while i<=n;
+    do while i<=ncross;
         {yp,ylp} = _get_lagp(y1[.,i]~y2[.,i],p);
         y =y|yp[.,1];
         yl=yl|ylp;
@@ -335,7 +338,7 @@ proc(2) = _get_SURdata(y1, y2, p);
 endp;
 
 // selection of optimal lag
-proc(1) = _get_p(y1,y2,pmax,ic);
+proc(1) = _get_p(y1, y2, pmax, ic, n);
     local aicp,sbcp,p,t,y,yl,yp,ylp,i;
     local Wstat,sur_out,aic,sbc;
     
@@ -347,12 +350,12 @@ proc(1) = _get_p(y1,y2,pmax,ic);
         y = {};
         yl= {};
         for i(1,n,1);
-            {yp,ylp} = _get_lagp(y1[.,i]~y2[.,i],p);
+            {yp,ylp} = _get_lagp(y1[.,i]~y2[.,i], p);
             y  = y|yp[.,1];
             yl = yl|ylp;
         endfor;
         
-        {Wstat, sur_out, aic, sbc} = _get_sur_wald(y,yl,n,p);
+        {Wstat, sur_out, aic, sbc} = _get_sur_wald(y, yl, n, p);
         
         aicp[p] = aic;
         sbcp[p] = sbc;
@@ -367,10 +370,13 @@ proc(1) = _get_p(y1,y2,pmax,ic);
 endp;
 
 
-proc(2) = Panel_SURwald_mod(data, vnames, pmax, ic, Nboot);
-    local m, j, y1, indvar, y2, p, y, yl;
+proc(2) = Panel_SURwald_mod(data, vnames, pmax, ic, Nboot, Ncross);
+    local m, j, y1, indvar, y2, p, y, yl, t, n;
     local SURwald, sur_out, aic, sbc;
     local SURwald_boot, cvboot, bsur;
+    
+    t = rows(data)/Ncross;
+    n = Ncross;
     
     m =1;
     do while m <= cols(data);
@@ -404,12 +410,12 @@ proc(2) = Panel_SURwald_mod(data, vnames, pmax, ic, Nboot);
             
             y2 = reshape(indvar[.,j],n,t)';
             
-            p        = _get_p(y1, y2, pmax, ic);
-            {y, yl}  = _get_SURdata(y1, y2, p);
+            p        = _get_p(y1, y2, pmax, ic, n);
+            {y, yl}  = _get_SURdata(y1, y2, p, n);
             
             {SURWald,sur_out,aic,sbc, bsur}  = _get_sur_wald_mod(y, yl, n, p);
             
-            {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot);
+            {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
             
             format /rd 8,3;
             

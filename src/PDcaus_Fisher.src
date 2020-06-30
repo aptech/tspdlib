@@ -41,12 +41,14 @@
 */
 
 
-proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot);
-    local m, j, i, depvar, indvar, cause, control, y_tn, y_i;
+proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
+    local m, j, i, depvar, indvar, cause, control, y_tn, y_i, t, N;
     local obs, k, p, VARy, ylag, VARx, W, Nwald, Npval, Nlag;
     local e0, z0, NeH0, NzH0, Fisher, test_out;
     local Fisher_b, boot_cv10, boot_cv5, boot_cv1;
     
+    n = Ncross;
+    t = rows(data)/n;
     
     m =1;
     do while m <= cols(data);
@@ -113,7 +115,7 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot);
             Fisher   = -2*sumc(ln(Npval));
             
             // Boostrap distribution
-            Fisher_b = _get_Fisher_bootstrap(y_tn, NzH0, NeH0, pmax, dmax, Nboot);
+            Fisher_b = _get_Fisher_bootstrap(y_tn, NzH0, NeH0, pmax, ic, dmax, Nboot, Ncross);
             boot_cv10 = Fisher_b[Ceil(Nboot*.90)];
             boot_cv5  = Fisher_b[Ceil(Nboot*.95)];
             boot_cv1  = Fisher_b[Ceil(Nboot*.99)];
@@ -142,11 +144,12 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot);
     retp(Fisher);
 endp;
 
-proc(1) = _get_Fisher_bootstrap(y_tn, NzH0, NeH0, pmax, dmax, Nboot);
-    local s,  i, y_i, obs, test, k, p, VARy, ylag, VARx;
+proc(1) = _get_Fisher_bootstrap(y_tn, NzH0, NeH0, pmax, ic, dmax, Nboot, Ncross);
+    local s,  i, y_i, obs, test, k, p, VARy, ylag, VARx, n, t;
     local Fisher_boot, Nwald, Npval, ustar, ystar_i, W;
     
-    
+    n = Ncross;
+    t = rows(y_tn)/n;
     Fisher_boot = zeros(Nboot,1);
     s = 1;
     do while s <= Nboot;
@@ -159,7 +162,7 @@ proc(1) = _get_Fisher_bootstrap(y_tn, NzH0, NeH0, pmax, dmax, Nboot);
             y_i  = y_tn[(i-1)*t+1:i*t,.];
             obs  = rows(y_i);
             test = 1;
-            {k,p}       = _get_kp(y_i,pmax,0,ic,test);
+            {k,p}       = _get_kp(y_i, pmax, 0, ic, test);
             {VARy,ylag} = _get_lagp(y_i,p+dmax);
             {VARx}      = _get_VARdata(VARy,ylag,1,k,p,dmax);
             
