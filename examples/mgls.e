@@ -8,7 +8,6 @@ T = rows(y);
 
 // bandwidth lag
 bwl = round(4 * (T/100)^(2/9));
-bwl = 1;   
 
 format /m1 /rd 8,4;
 

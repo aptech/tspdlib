@@ -8,10 +8,9 @@ T = rows(y);
 
 // bandwidth lag
 bwl = round(4 * (T/100)^(2/9));
-bwl = 1;
 
 // Trimming rate
-trimm= 0.10;
+trimm = 0.10;
 
 format /m1 /rd 8,4;
 // Iterate through LR variance options
