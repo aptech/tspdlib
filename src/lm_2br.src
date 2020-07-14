@@ -6,7 +6,7 @@
 **  "Minimum Lagrange Multiplier Unit Root Test with Two Structural Breaks",
 **  Review of Economics and Statistics 85(4), 1082-1089.
 **
-**  Format:  {tstat,tb1,tb2,p,cv} = LM_2breaks(y,model,pmax,ic,trimm);
+**  Format:  { tstat, tb1, tb2, p, cv } = LM_2breaks(y, model, pmax, ic, trimm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1=Model A: break in level
@@ -16,7 +16,7 @@
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
-**			 trim    - 	Trimming rate
+**			 trimm   - 	Trimming rate
 **                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
 **
 **  Output:  tstat   - minimum test statistic

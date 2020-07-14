@@ -18,14 +18,13 @@ pmax = 12;
 // 2 = Schwarz; 
 ic   = 1; 
 
-
 order= 0;  // 0 = VAR in levels for Granger causality test
            // 1 = VAR in first differences for Granger causality test
            
-//Load data matrix
+// Load data matrix
 GCdata = loadd(__FILE_DIR $+ "TScaus.dat");
 
-for test(0, 5, 1);
+for test(1, 5, 1);
 
     data   = ln(GCdata);
     vnames = "y1"$|"y2"$|"y3"$|"y4";

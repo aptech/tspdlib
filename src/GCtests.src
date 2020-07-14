@@ -54,7 +54,7 @@
 **                          (Nazlioglu etal., 2019)
 **          Nboot    -  Number of bootstrap replications
 **
-**           Defaul settings
+**           Default settings
 **           kmax    -  Maximum number of Fourier frequency
 **                      Default kmax = 3.
 **           dmax    -  Maximum integration degree of variables
@@ -76,20 +76,24 @@
 */
 
 
-proc(1)= GC_tests(data,vnames, pmax, ic, test, Nboot);
+proc(1)= GC_tests(data, vnames, pmax, ic, test, Nboot);
     local i, j, depvar, indvar, cause, control, y, obs;
     local dmax, kmax, k, p, VARy, ylag, VARx;
-    local W, Wboot, pval_boot, GC_out;
+    local W, Wboot, pval_boot, GC_out, n_tests, indx;
     
+    n_tests = cols(data)*(cols(data)-1);
     
-    for i(1,cols(data),1);
+    GC_out = zeros(n_tests, 5);
+    indx = 1;
+    
+    for i(1, cols(data), 1);
         
-        depvar = data[.,i];
-        indvar = delcols(data,i);
+        depvar = data[., i];
+        indvar = delcols(data, i);
         
-        for j(1,cols(indvar),1);
-            cause  = indvar[.,j];
-            control= delcols(indvar,j);
+        for j(1, cols(indvar), 1);
+            cause  = indvar[., j];
+            control= delcols(indvar, j);
             y  = depvar~cause~control;
             
             if test==0;
@@ -126,37 +130,39 @@ proc(1)= GC_tests(data,vnames, pmax, ic, test, Nboot);
             {Wboot} = _get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
             
             pval_boot= 1-(sumc(W.>Wboot)/Nboot);
-            
-            GC_out = W~(cdfchic(W,p))~pval_boot~p~k;
+
+            GC_out[indx,.] = W~(cdfchic(W,p))~pval_boot~p~k;
             
             if i==1;
                 vnames[j+1];;
                 "=>";;
                 vnames[i];
                 "         ";;
-                GC_out;
+                GC_out[indx,.];
             endif;
             if i>1 and i==j;
                 vnames[j+1];;
                 "=>";;
                 vnames[i];
                 "         ";;
-                GC_out;
+                GC_out[indx,.];
             endif;
             if i>1 and j<i;
                 vnames[j]  ;;
                 "=>";;
                 vnames[i];
                 "         ";;
-                GC_out;
+                GC_out[indx,.];
             endif;
             if i>1 and j>i;
                 vnames[j+1];;
                 "=>";;
                 vnames[i];
                 "         ";;
-                GC_out;
+                GC_out[indx,.];
             endif;
+            indx = indx + 1;
+            
         endfor;
     endfor;
     

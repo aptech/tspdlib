@@ -11,7 +11,7 @@
 ** Standard Chi-squared and Normal Limiting Distributions.
 ** Oxford Bulletin of Economics and Statistics, 78(3), 347-364.
 **
-**  Format:  {Ncadf,Nmcadf,Nlags,pcadf,pmcadf} = CIPS(y,model,pmax,ic);
+**  Format:  { Ncadf, Nmcadf, Nlags, pcadf, pmcadf } = CIPS(y, model, pmax, ic);
 **
 **  Input:   Y	     -  TxN matrix, data
 **           model   - 	0 = none
@@ -38,7 +38,7 @@
 */
 
 
-proc(6)=cips(y, model, pmax, ic);
+proc(6) = cips(y, model, pmax, ic);
     local n, Ncadf, Nlm, Nd, Nlags, f, p, pcadf, pmcadf, q;
     
     n     = cols(y);

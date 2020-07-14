@@ -6,7 +6,7 @@
 **  The KPSS test with two structural breaks,
 **  Spanish Economic Review, 9, 2, 105-127.
 **
-**  Format:  {stat,tb1,tb2,cv} = KPSS_2breaks(y,model,l,varm);
+**  Format:  { stat, tb1, tb2, cv } = KPSS_2breaks(y, model, l, varm);
 **           {cv}           = cv_kpss2(model,t,tb1,tb2);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
@@ -18,7 +18,7 @@
 **           varm    -  Long-run consistent variance estimation method
 **                      1 = iid;
 **                      2 = Bartlett
-**                      3 = Qudratic Spectral (QS);
+**                      3 = Quadratic Spectral (QS);
 **                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
 **                      5 = SPC with QS;
 **                      6 = Kurozumi with Bartlett

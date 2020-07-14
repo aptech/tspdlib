@@ -6,7 +6,7 @@
 ** LM tests for a unit root in the presence of deterministic trends.
 ** Oxford Bulletin of Economics and Statistics, 54(3), 257-287.
 **
-**  Format:  {tstat, p, cv} = LM(y, pmax, ic);
+**  Format:  { tstat, p, cv } = LM(y, pmax, ic);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           pmax    -  Maximum number of lags for Dy; 0=no lags

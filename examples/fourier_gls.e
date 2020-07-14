@@ -25,7 +25,6 @@ fmax = 3;
 format /m1 /rd 8,4;
 
 /*
-** 0 = No deterministic component
 ** 1 = With constant
 ** 2 = With constant and trend
 */

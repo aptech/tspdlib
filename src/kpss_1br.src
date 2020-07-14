@@ -6,17 +6,17 @@
 **  Testing for stationarity with a break,
 **  Journal of Econometrics 108, 105-127.
 **
-**  Format:  {stat,tb,lambda,crit[tb,.]} = KPSS_1break(y,model,l,varm, trimm);
+**  Format:  { stat, tb, lambda, cv } = KPSS_1break(y, model, bwl, varm, trimm);
 **           {PS,cv}              = STps(y,model,varm,tb);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1 = Case 0 (Level shift);
 **                      2 = Case 3 (Level and trend shift)
-**           l       -  Bandwidth for spectral window
+**           bwl     -  Bandwidth for spectral window
 **           varm    -  Long-run consistent variance estimation method
 **                      1 = iid;
 **                      2 = Bartlett
-**                      3 = Qudratic Spectral (QS);
+**                      3 = Quadratic Spectral (QS);
 **                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
 **                      5 = SPC with QS;
 **                      6 = Kurozumi with Bartlett

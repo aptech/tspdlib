@@ -6,7 +6,7 @@
 **  "Minimum LM Unit Root Test with One Structural Break"
 **  Economics Bulletin 33(4), 2483-2492.
 **
-**  Format:  {tstat,tb, p,lambda,cv}  =   LM_1break(y,model, pmax,ic,trimm);
+**  Format:  { tstat, tb, p, lambda, cv }  =   LM_1break(y, model, pmax, ic, trimm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1 =  Model A: break in level
