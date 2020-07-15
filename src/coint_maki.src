@@ -28,7 +28,7 @@
 **                       1: t-sig criterion
 */
 proc (1) = coint_maki(y, m, model, trimm, lagoption);
-    local n,y,i,j,x,tb,tau,vectau,mintau,yt,b,lag,dy,r,q;
+    local n,i,j,x,tb,tau,vectau,mintau,yt,b,lag,dy,r,q;
     local rz,rz1,statistic,p,power,e,k;
     local power1,power2,power3,power4,d0,d1,taucv;
     
