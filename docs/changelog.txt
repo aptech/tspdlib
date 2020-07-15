@@ -1,4 +1,4 @@
-Change log:
+Change log 1.1.0:
 1. BNG_PANICnew model inputs changed to 1 for intercept, 2 for intercept and trend.
 2. Change outputs from adf procedure to include tstat, p-value, and critical value.
 3. Add critical values to output from dfgls procedure.
@@ -24,3 +24,10 @@ Change log:
     - PD_cips
     - GCtest
     
+Change log 1.1.1:
+1.  Added new example files:
+    - lm.e
+    - lmkpss.e
+    - mgls.e
+2. Fixed minor formatting in the function headers
+3. Add Wald statistics and corresponding bootstrap critical values for the cases with more lags to PDcaus_SURwald
