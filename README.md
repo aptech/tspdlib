@@ -34,7 +34,7 @@ We have not yet developed detailed documentation about the library. However, you
 
 ![accessing GAUSS source files](images/tspdlib_src_file.png)
 
-You can access these source codes through the library tool by expanding the tspdlib.lcg menu and clicking on the file name. The file will open in the program editor and you will be able to view the headers for each specific function.
+You can access these source codes through the library tool by expanding the `tspdlib.lcg` menu and clicking on the file name. The file will open in the program editor and you will be able to view the headers for each specific function.
 
 ## License
 The author makes no performance guarantees. The `tspdlib` is available for public non-commercial use only.
