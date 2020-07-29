@@ -33,10 +33,10 @@ proc (1) = coint_maki(y, m, model, trimm, lagoption);
     local power1,power2,power3,power4,d0,d1,taucv;
     
     print /lz "Sample Size T=:" rows(datap);
-    print /lz "The trimming parametr:" tp;
+    print /lz "The trimming parametr:" trimm;
     print /lz "Maximum number of breaks:" m;
     
-    {d0,d1}=pf(datap,m,model,tp,lagoption);
+    {d0,d1}=pf(datap,m,model,trimm,lagoption);
     
     print "==========================================================";
     print /lz "Cointegration tests with multiple breaks:";
