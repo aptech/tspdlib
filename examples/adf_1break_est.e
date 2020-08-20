@@ -22,8 +22,6 @@ ic = 3;
 // Trimming rate
 trimm = 0.10;             
 
-format /m1 /rd 8,4;
-
 /*
 ** 1=Model A: break in level  
 ** 2=Model C: break in level and trend
