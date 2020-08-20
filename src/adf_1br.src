@@ -120,12 +120,45 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
         tb1 = tb1 + 1;
     endo;
     
+   print "One break ADF test (Zivot & Andrews, 1992)";
     if model == 1;
         cv = -5.34|-4.80|-4.58;
+        print "--------Model A: Break in level        -----";
     endif;
     
     if model == 2;
         cv = -5.57|-5.08|-4.82;
+        print "--------Model C: Break in level & trend-----";
+
+    endif;
+    
+    // Print results & Critical values
+    local hd, tmp1, tmp2;
+    hd = "ADF-stat"$|"Break date"$|"Fraction"$|"Lag";
+    tmp1 = ADF_min|tb1_min|tb1_min/rows(y)|p-1;
+    
+    #ifminkernelversion(20)
+        sprintf("%10s %10.4f", hd, tmp1);
+        print;
+        print "Critical Values:";
+        sprintf("%10s", "1%"$~"5%"$~"10%");
+        sprintf("%10.2f", cv');
+        print;
+    #else;
+        hd$~(ntos(tmp1, 4));
+        print "Critical Values:";
+        ("1%"$~"5%"$~"10%")$|ntos(cv',5);
+    #endif;
+    
+    // Print conclusion
+    if ADF_min < cv[1];
+        print "Reject the null hypothesis of a unit root at the 1% level.";
+    elseif ADF_min < cv[2];
+           print "Reject the null hypothesis of a unit root at the 5% level.";
+    elseif ADF_min < cv[3];  
+           print "Reject the null hypothesis of a unit root at the 10% level.";
+    else;  
+           print "Cannot reject the null hypothesis of a unit root.";
     endif;
     
     retp(ADF_min, tb1_min, p-1, cv);
