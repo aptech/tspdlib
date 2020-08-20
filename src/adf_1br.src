@@ -35,7 +35,7 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
     local t, tb1, tb1_min, ADF_min, T1, T2, dc, dt, du1, dt1, z;
     local taup, aicp, sicp, tstatp, dy, y1, z1, lmat, j, p;
     local dep, ldy, ly, lz, x, stat;
-    local b, e1, sig2, se, ssr, cv;
+    local b, e1, sig2, se, ssr, cv, p_keep;
     
     t = rows(y);
     tb1_min = 0;
@@ -114,7 +114,10 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
             tb1_min=tb1;   
             
             // t-statistic with break
-            ADF_min =stat;  
+            ADF_min =stat; 
+            
+            // Keep optimal p value
+            p_keep = p;
         endif;
         
         tb1 = tb1 + 1;
@@ -161,5 +164,5 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
            print "Cannot reject the null hypothesis of a unit root.";
     endif;
     
-    retp(ADF_min, tb1_min, p-1, cv);
+    retp(ADF_min, tb1_min, p_keep - 1, cv);
 endp;
