@@ -125,9 +125,7 @@ proc(6) = ADF_1break_est(y, model, pmax, ic, trimm);
             ADF_min =stat;  
             
             // Store coefficient estimates
-            print "p"; p;
             p_keep = p;
-            print "1+cols(z)+p-1"; 1+cols(z)+p-1;
             b_keep = b_mat[p, 1:1+cols(z)+p-1];
             
             // Store se estimates
