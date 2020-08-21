@@ -79,12 +79,18 @@ proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
     dx = diff(y, 1);
     x = dx[2:rows(y), .];
     
+    if model == 0;
+        print "No constant or trend";
+    endif;
+    
     if model == 1;
         x = x;
+        print "Model with constant";
     endif;
     
     if model == 2;
         x = x - meanc(x)';
+        print "Model with constant and trend";
     endif;
     
     nf = Fnumber(x, kmax, ic);
@@ -116,6 +122,31 @@ proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
     endfor;
     
     Pe = ((-2 * sumc(ln(pval)) - 2 * n))/sqrt(4 * n);
+    
+     // Print results & Critical values
+    local hd1, hd2, tmp1, tmp2;
+    hd1 = "PANIC-stat"$~"P-value";
+    tmp1 = Pe~(1-cdfn(Pe));
+    hd2 = "CS"$~"ADF"$~"p-val"$~"lags";
+    tmp2 = seqa(1, 1, N)~ADFe~pval~lags;
+    
+#ifminkernelversion(20)
+    sprintf("%12s", hd1);
+    sprintf("%12.4f", tmp1);
+    print;
+    sprintf("%12s", hd2);
+    sprintf("%12.4f", tmp2);
+    print;
+    
+#else;
+    hd1$~(ntos(tmp1, 4));
+    hd2$~(ntos(tmp2, 4));
+#endif;
+    
+    print "Number of factors";
+    "ICp2";;
+    nf[2];
+    
     retp(ADFe, pval, lags, Pe, nf);
 endp;
 

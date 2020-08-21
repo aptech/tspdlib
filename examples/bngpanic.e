@@ -28,40 +28,12 @@ ic = 2;
 ** Model with constant
 */
 model = 0;
-print "Model with constant";
-
 { ADFe, pval, lags, Pe, nf } = BNG_PANIC(y, pmax, kmax, model, ic);
 
-"PANIC     Stat.   p-value";
-"Pe     ";;
-Pe       ;;
-1-cdfn(Pe);
-
-"";
-"# Factors";
-"ICp2";;
-nf[2];
-"";
-"       CS        ADF        p-val        Lags "
-seqa(1,1,N)~ADFe~pval~lags;
 
 /*
 ** Model with constant and trend
 */
 model = 1;
-print "Model with constant and trend";
-
 { ADFe, pval, lags, Pe, nf } = BNG_PANIC(y, pmax, kmax, model, ic);
 
-"PANIC     Stat.   p-value";
-"Pe     ";;
-Pe       ;;
-1-cdfn(Pe);
-
-"";
-"# Factors";
-"ICp2";;
-nf[2];
-"";
-"       CS        ADF        p-val        Lags "
-seqa(1, 1, N)~ADFe~pval~lags;
