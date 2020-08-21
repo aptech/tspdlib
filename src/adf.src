@@ -102,6 +102,44 @@ proc(3) = ADF(y, model, pmax, ic);
     tau = taup[p];
     cv  = _get_cv_adf(model, t);
     
+    // Print results
+    if model == 0;
+        print "ADF &  lag no deterministic component";
+    elseif model == 1;
+        print "ADF &  lag with constant";
+    elseif  model == 2;
+        print "ADF &  lag with constant and trend";
+    endif;
+    
+    // Print results & Critical values
+    local hd, tmp1, tmp2;
+    hd = "ADF-stat"$|"Lag";
+    tmp1 = tau|p-1;
+    
+    #ifminkernelversion(20)
+        sprintf("%10s %10.4f", hd, tmp1);
+        print;
+        print "Critical Values:";
+        sprintf("%10s", "1%"$~"5%"$~"10%");
+        sprintf("%10.2f", cv');
+        print;
+    #else;
+        hd$~(ntos(tmp1, 4));
+        print "Critical Values:";
+        ("1%"$~"5%"$~"10%")$|ntos(cv,5);
+    #endif;
+    
+    // Print conclusion
+    if tau < cv[1];
+        print "Reject the null hypothesis of a unit root at the 1% level.";
+    elseif tau < cv[2];
+           print "Reject the null hypothesis of a unit root at the 5% level.";
+    elseif tau < cv[3];  
+           print "Reject the null hypothesis of a unit root at the 10% level.";
+    else;  
+           print "Cannot reject the null hypothesis of a unit root.";
+    endif;
+    
     retp(tau, p - 1, cv);
 endp;
 

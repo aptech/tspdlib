@@ -19,18 +19,13 @@ pmax = 12;
 */
 ic = 3;                 
 
-format /m1 /rd 8,4;
-
 /*
 ** 0 = No deterministic component
 ** 1 = With constant
 ** 2 = With constant and trend
 */
 model = 0;                  
-
 { ADFtau, ADFp, cvADF }  = ADF(y, model, pmax, ic);
-
-"ADF &  lag no deterministic component     ";; ADFtau ;; cvADF ;; ADFp ; 
 
 /*
 ** 0 = No deterministic component
@@ -38,10 +33,7 @@ model = 0;
 ** 2 = With constant and trend
 */
 model = 1;                  
-
 { ADFtau, ADFp, cvADF } = ADF(y, model, pmax, ic);
-
-"ADF &  lag with constant                  ";; ADFtau ;; cvADF ;; ADFp ; 
 
 /*
 ** 0 = No deterministic component
@@ -49,7 +41,4 @@ model = 1;
 ** 2 = With constant and trend
 */
 model = 2;
-
 { ADFtau, ADFp, cvADF } = ADF(y, model, pmax, ic);
-
-"ADF &  lag with constant and trend        ";; ADFtau ;; cvADF ;; ADFp ; 
