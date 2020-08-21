@@ -163,6 +163,7 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
     else;  
            print "Cannot reject the null hypothesis of a unit root.";
     endif;
+    print;
     
     retp(ADF_min, tb1_min, p_keep - 1, cv);
 endp;
