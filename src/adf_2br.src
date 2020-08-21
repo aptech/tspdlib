@@ -36,7 +36,7 @@ proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
     local t, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local taup, aicp, sicp, tstatp, dy, y1, z1, lmat, j, p;
     local dep, ldy, ly, lz, x, lagt, stat;
-    local b, e1, sig2, se, ssr, cv;
+    local b, e1, sig2, se, ssr, cv, p_keep;
     
     
     t = rows(y);
@@ -141,6 +141,10 @@ proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
                 
                 // T-statistic with breaks
                 ADF_min = stat;    
+                
+                // Pick lags
+                p_keep = p;
+                
             endif;
             tb2 = tb2 + 1;
         endo;
@@ -183,6 +187,44 @@ proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
             cv = -5.287|-4.692|-4.396;
         endif;
     endif;
+ 
+        
+    print "Two breaks ADF test (Narayan & Popp, 2010)";
+    if model == 1;
+        "--------Model A: Break in level        -----"; 
+    elseif model == 2;
+        "--------Model C: Break in level & trend-----";
+    endif;
+    
+    // Print results & Critical values
+    local hd, tmp1, tmp2;
+    hd = "ADF-stat"$|"Break Date One"$|"Fraction One"$|"Break Date Two"$|"Fraction Two"$|"Lag";
+    tmp1 = ADF_min|tb1_min|tb1_min/rows(y)|tb2_min|tb2_min/rows(y)|p_keep-1;
+    
+    #ifminkernelversion(20)
+        sprintf("%10s %10.4f", hd, tmp1);
+        print;
+        print "Critical Values:";
+        sprintf("%10s", "1%"$~"5%"$~"10%");
+        sprintf("%10.2f", cv');
+        print;
+    #else;
+        hd$~(ntos(tmp1, 4));
+        print "Critical Values:";
+        ("1%"$~"5%"$~"10%")$|ntos(cv',5);
+    #endif;
+    
+    // Print conclusion
+    if ADF_min < cv[1];
+        print "Reject the null hypothesis of a unit root at the 1% level.";
+    elseif ADF_min < cv[2];
+           print "Reject the null hypothesis of a unit root at the 5% level.";
+    elseif ADF_min < cv[3];  
+           print "Reject the null hypothesis of a unit root at the 10% level.";
+    else;  
+           print "Cannot reject the null hypothesis of a unit root.";
+    endif;
+    print;
     
     retp(ADF_min, tb1_min, tb2_min, p - 1, cv);
 endp;
