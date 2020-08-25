@@ -186,6 +186,62 @@ proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
     lambda= tb2_min/rows(y);
     {cv} = cv_coint_cissanso(model, lambda, k);
     
+    // Print model type
+    "Ho: co-integration  (CiS & Sanso, 2006; AK, 2007)";
+    if model == 1;
+        print "-----------Level shift----------------------------------";
+    elseif model == 2;
+        print "-----------Level shift with trend-----------------------";
+    elseif model == 3;
+        print "-----------Regime shift---------------------------------";
+    elseif model == 4;
+        print "-----------Regime and trend shift-----------------------";
+    endif;
+    
+    // Print results
+    local hd, tmp1, tmp2, tmp3;
+    hd = ""$~"SC Stat"$~"Break Date";
+    tmp1 = SC1_min~Tb1_min;
+    tmp2 = SC2_min~Tb2_min;
+    tmp3 = "OLS"$|"DOLS";
+    
+    #ifminkernelversion(20)
+        sprintf("%10s", hd);
+        sprintf("%10s %10.4f", tmp3, tmp1|tmp2);
+        print ;
+        print "Critical Values:";
+        sprintf("%10s", "1%"$~"5%"$~"10%");
+        sprintf("%10.2f", cv');
+        print;
+    #else;
+        hd$|(tmp3$~(ntos(tmp1|tmp2, 4)));
+        print "Critical Values:";
+        ("1%"$~"5%"$~"10%")$|ntos(cv',5);
+    #endif;
+    
+    // Print conclusions
+    print "OLS cointegration conclusion:";
+    if SC1_min > cv[1];
+        print "Reject the null hypothesis of co-integration at the 1% level.";
+    elseif SC1_min > cv[2];
+        print "Reject the null hypothesis of co-integration at the 5% level.";
+    elseif SC1_min > cv[3];
+        print "Reject the null hypothesis of co-integration at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of co-integration.";
+    endif;
+    
+    print "DOLS cointegration conclusion:";
+    if SC2_min > cv[1];
+        print "Reject the null hypothesis of co-integration at the 1% level.";
+    elseif SC2_min > cv[2];
+        print "Reject the null hypothesis of co-integration at the 5% level.";
+    elseif SC2_min > cv[3];
+        print "Reject the null hypothesis of co-integration at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of co-integration.";
+    endif;
+    
     retp(SC1_min, tb1_min, SC2_min, tb2_min, lambda, cv);
 endp;
 
