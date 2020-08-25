@@ -141,13 +141,13 @@ proc(2) = coint_egranger(y, x, model, pmax, ic);
     
     // Print conclusion
     if tau < cvADF[1];
-        print "Reject the null hypothesis of a unit root at the 1% level.";
+        print "Reject the null hypothesis of no cointegration at the 1% level.";
     elseif tau < cvADF[2];
-        print "Reject the null hypothesis of a unit root at the 5% level.";
+        print "Reject the null hypothesis of no cointegration at the 5% level.";
     elseif tau < cvADF[3];
-        print "Reject the null hypothesis of a unit root at the 10% level.";
+        print "Reject the null hypothesis of no cointegration at the 10% level.";
     else;
-        print "Cannot reject the null hypothesis of a unit root.";
+        print "Cannot reject the null hypothesis of no cointegration.";
     endif;
     print;
     
