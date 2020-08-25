@@ -11,7 +11,7 @@
 **  Format:  { tau, cvADF }        = coint_egranger(y, x, model, pmax, ic);
 **
 **
-**  Input:   
+**  Input:
 **           Y	     -  Nx1 matrix, dependent variable
 **
 **           X       -  NxK matrix, independent variables
@@ -28,7 +28,7 @@
 **                      1=Akaike
 **                      2=Schwarz
 **
-**  Output: 
+**  Output:
 **           tau     -   Engle & Granger (1987) ADF test
 **
 **	         cv      -   1%, 5%, 10% critical values for the chosen model
@@ -113,6 +113,43 @@ proc(2) = coint_egranger(y, x, model, pmax, ic);
             cvADF = -5.5849|-5.0282|-4.7311;
         endif;
     endif;
+    
+    // Print results
+    print "Ho: no co-integration (EG, 1987 & P0, 1990)";
+    if model == 0;
+        print "-----------No constant or trend-------------------------";
+    elseif model == 1;
+        print "-----------Constant-------------------------------------";
+    elseif model == 2;
+        print "-----------Constant and Trend---------------------------";
+    endif;
+    
+    // Print results
+#ifminkernelversion(20)
+    sprintf("%10s %10.4f", "Test Statistic:", tau);
+    print;
+    print "Critical Values:";
+    sprintf("%10s", "1%"$~"5%"$~"10%");
+    sprintf("%10.2f", cvADF');
+    print;
+#else;
+    "Test Statistic:"$~(ntos(tau, 4));
+    print "Critical Values:";
+    ("1%"$~"5%"$~"10%")$|ntos(cvADF',5);
+    print;
+#endif;
+    
+    // Print conclusion
+    if tau < cvADF[1];
+        print "Reject the null hypothesis of a unit root at the 1% level.";
+    elseif tau < cvADF[2];
+        print "Reject the null hypothesis of a unit root at the 5% level.";
+    elseif tau < cvADF[3];
+        print "Reject the null hypothesis of a unit root at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of a unit root.";
+    endif;
+    print;
     
     retp(tau, cvADF);
 endp;
