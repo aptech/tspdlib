@@ -174,6 +174,64 @@ proc(11) = coint_hatemiJ(y, x, model, bwl, ic, pmax, varm, trimm);
     
     k = cols(x);
     { cvADFZt, cvZa } = cv_coint_hatemiJ(k);
+
+print "Cointegration test with two breaks   (Hatemi-J, 2008)";
+    print "Ho: no co-integration";
+    
+    // Print results
+    local hd_side, hd_top, tmp1, tmp2;
+    hd_side = "ADF"$|"Zt"$|"Za";
+    hd_top = ""$~"Test"$~"Break 1"$~"Break 2"$~"1%"$~"5%"$~"10%";
+    tmp1 = (ADf_min|Zt_min|Za_min)~(TB1adf|TB1zt|TB1za)~(TB2adf|TB2zt|TB2za)~(cvADFZt'|cvADFZt'|cvZa');
+    
+#ifminkernelversion(20)
+    sprintf("%14s", hd_top);
+    sprintf("%14s %14.2f", hd_side, tmp1);
+    print;
+#else;
+    hd_top$|(hd_side$~(ntos(tmp1, 4)));
+    print;
+#endif;
+    
+    // Print conclusion
+    print "ADF test results:";
+    if ADF_min < cvADFZt[1];
+        print "Reject the null hypothesis of no cointegration at the 1% level.";
+    elseif ADF_min < cvADFZt[2];
+        print "Reject the null hypothesis of no cointegration at the 5% level.";
+    elseif ADF_min < cvADFZt[3];
+        print "Reject the null hypothesis of no cointegration at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of no cointegration.";
+    endif;
+    print;
+    
+    // Print conclusion
+    print "Zt test results:";
+    if Zt_min < cvADFZt[1];
+        print "Reject the null hypothesis of no cointegration at the 1% level.";
+    elseif Zt_min < cvADFZt[2];
+        print "Reject the null hypothesis of no cointegration at the 5% level.";
+    elseif Zt_min < cvADFZt[3];
+        print "Reject the null hypothesis of no cointegration at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of no cointegration.";
+    endif;
+    print;
+    
+    
+    // Print conclusion
+    print "Za test results:";
+    if Za_min < cvZa[1];
+        print "Reject the null hypothesis of no cointegration at the 1% level.";
+    elseif Za_min < cvZa[2];
+        print "Reject the null hypothesis of no cointegration at the 5% level.";
+    elseif Za_min < cvZa[3];
+        print "Reject the null hypothesis of no cointegration at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of no cointegration.";
+    endif;
+    print;
     
     retp(ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa);
 endp;

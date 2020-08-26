@@ -178,7 +178,7 @@ proc(8) = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
     sprintf("%14s %14.2f", hd_side, tmp1);
     print;
 #else;
-    hd_top$|(hd_top$~(ntos(tmp1, 4)));
+    hd_top$|(hd_side$~(ntos(tmp1, 4)));
     print;
 #endif;
   
@@ -209,7 +209,7 @@ proc(8) = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
     print;
     
     // Print conclusion
-    print "Zt test results:";
+    print "Za test results:";
     if Za_min < cvZa[1];
         print "Reject the null hypothesis of no cointegration at the 1% level.";
     elseif Za_min < cvZa[2];
@@ -221,11 +221,8 @@ proc(8) = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
     endif;
     print;
     
-    
     retp(ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa);
 endp;
-
-
 
 proc(2) = cv_coint_ghansen(k, model);
     local cvADFzt, cvZa;
@@ -304,6 +301,7 @@ proc(2) = cv_coint_ghansen(k, model);
             cvZa=-100.69|-88.47|-82.30;
         endif;
     endif;
+    
     
     if k < 5;
         retp(cvADFZt, cvZa);
