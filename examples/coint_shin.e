@@ -21,36 +21,13 @@ bwl = round(4 * (T/100)^(2/9));
 // Leads & Lags for DOLS estimation
 q = int(4*(t/100)^(2/9));
 
-format/m1/rd 8,3;
-
-"-----------None-----------------------------------------";
 model = 0;
-   { CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
-
-    "    Test         Statistic  CV(1%, 5%, 10%)";
-    "Ho: co-integration   (Shin, 1994)";  
-    "   CIols         ";;CIols ;; cv';
-    "   CIdols        ";;CIdols;; cv';    
-    "";
-    
-"-----------Constant-------------------------------------";
+{ CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
+   
 model = 1;
-   { CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
+{ CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
 
-    "    Test         Statistic  CV(1%, 5%, 10%)";
-    "Ho: co-integration   (Shin, 1994)";  
-    "   CIols         ";;CIols ;; cv';
-    "   CIdols        ";;CIdols;; cv';    
-    "";
-    
-
-"-----------Constant and Trend---------------------------";
 model = 2;
-   { CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
+{ CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
 
-    "    Test         Statistic  CV(1%, 5%, 10%)";
-    "Ho: co-integration   (Shin, 1994)";  
-    "   CIols         ";;CIols ;; cv';
-    "   CIdols        ";;CIdols;; cv';    
-    "";
   
