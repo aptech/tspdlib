@@ -32,11 +32,20 @@ proc (1) = coint_maki(y, m, model, trimm, lagoption);
     local rz,rz1,statistic,p,power,e,k;
     local power1,power2,power3,power4,d0,d1,taucv;
     
-    print /lz "Sample Size T=:" rows(datap);
-    print /lz "The trimming parametr:" trimm;
-    print /lz "Maximum number of breaks:" m;
+    #ifminkernelversion(20);
+    local hd_side, tmp1;
+    tmp1 = rows(datap)|trimm|m;
+    hd_side = "Sample Size:"$|"Trimming parameter:"$|"Max. # Breaks:";
     
-    {d0,d1}=pf(datap,m,model,trimm,lagoption);
+    sprintf("%20s %18.0f", hd_side, tmp1);
+    
+#else;
+    print /lz "Sample Size T=:" rows(datap);
+    print /lz "The trimming parameter:" trimm;
+    print /lz "Maximum number of breaks:" m;
+#endif;
+    
+    { d0, d1 } = pf(datap, m, model, trimm, lagoption);
     
     print "==========================================================";
     print /lz "Cointegration tests with multiple breaks:";
@@ -49,10 +58,19 @@ proc (1) = coint_maki(y, m, model, trimm, lagoption);
     elseif model==3;
         print /lz "Trend and Regime shifts";
     endif;
+    
+ #ifminkernelversion(20);
+    hd_side = "Test statistic:"$|"Break One:"$|"Break Two:";
+    tmp1 = d0|d1;
+    sprintf("%20s %18.0f", hd_side, tmp1);
+#elseif;
+    local tmp2, tmp3;
     print /lz "Test statistic:"  d0;
     print /lz "Break points:" d1;
-    print "=======================================================";
-    retp(d0);
+#endif;
+    
+    print "==========================================================";
+  retp(d0);
 endp;
 
 
