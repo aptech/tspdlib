@@ -57,14 +57,15 @@ proc(4) = coint_pouliaris(y, x, model, bwl, varm);
     local n,x1,b,e1,sig2,se,ssr,Zt,Za,cvZt,cvZa,k, cv1, cv2;
     
     n=rows(y);
-    if model==0;
-        x1=x;
-    endif;
-    if model==1;
-        x1=ones(n,1)~x;
-    endif;
-    if model==2;
-        x1=ones(n,1)~seqa(1,1,n)~x;
+     if model == 0;
+        "-----------No deterministic component-------------------";
+        x1 = x;
+    elseif model == 1;
+        "-----------Constant-------------------------------------";
+        x1 = ones(n, 1)~x;
+    elseif model == 2;
+        "-----------Constant and Trend---------------------------";
+        x1 = ones(n, 1)~seqa(1, 1, n)~x;
     endif;
     {b,e1,sig2,se,ssr}=myols(y,x1);  //e1=y-(y/x1)*x1;
     {Zt, Za, cv1, cv2} =pp(e1,0,bwl,varm);
@@ -177,6 +178,52 @@ proc(4) = coint_pouliaris(y, x, model, bwl, varm);
             cvZa = -58.1615|-47.3830|-42.3231;
         endif;
     endif;
+    
+        print;
+    "Ho: no co-integration (EG, 1987 & P0, 1990)";  
+    print;
+    
+    // Print results
+    local hd_side, hd_top, tmp1, tmp2;
+    hd_side = "Zt"$|"Za";
+    hd_top = ""$~"Test"$~"1%"$~"5%"$~"10%";
+    tmp1 = (Zt|Za)~(cvZt'|cvZa');
+    
+#ifminkernelversion(20)
+    sprintf("%14s", hd_top);
+    sprintf("%14s %14.2f", hd_side, tmp1);
+    print;
+#else;
+    hd_top$|(hd_side$~(ntos(tmp1, 4)));
+    print;
+#endif;
+    
+    // Print conclusion
+    print "Zt test results:";
+    if Zt < cvZt[1];
+        print "Reject the null hypothesis of no cointegration at the 1% level.";
+    elseif Zt < cvZt[2];
+        print "Reject the null hypothesis of no cointegration at the 5% level.";
+    elseif Zt < cvZt[3];
+        print "Reject the null hypothesis of no cointegration at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of no cointegration.";
+    endif;
+    print;
+    
+    // Print conclusion
+    print "Za test results:";
+    if Za < cvZa[1];
+        print "Reject the null hypothesis of no cointegration at the 1% level.";
+    elseif Za < cvZa[2];
+        print "Reject the null hypothesis of no cointegration at the 5% level.";
+    elseif Za < cvZa[3];
+        print "Reject the null hypothesis of no cointegration at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of no cointegration.";
+    endif;
+    print;
+
     if k<6;
         retp(Zt, Za, cvZt, cvZa);
     else;
