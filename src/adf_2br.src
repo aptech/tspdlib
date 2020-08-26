@@ -202,11 +202,11 @@ proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
     tmp1 = ADF_min|tb1_min|tb1_min/rows(y)|tb2_min|tb2_min/rows(y)|p_keep-1;
     
     #ifminkernelversion(20)
-        sprintf("%10s %10.4f", hd, tmp1);
+        sprintf("%14s %14.4f", hd, tmp1);
         print;
         print "Critical Values:";
-        sprintf("%10s", "1%"$~"5%"$~"10%");
-        sprintf("%10.2f", cv');
+        sprintf("%14s", "1%"$~"5%"$~"10%");
+        sprintf("%14.2f", cv');
         print;
     #else;
         hd$~(ntos(tmp1, 4));
