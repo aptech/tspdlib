@@ -61,9 +61,9 @@
 proc(3) = coint_shin(y, x, model, bwl, varm, q);
     local n, z, b1, e1, ssr1, St1, lrv1, C1;
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
-    local b2, e2, ssr2, St2, lrv2, C2, k, cv;
+    local b2, e2, ssr2, St2, lrv2, C2, k, cv, T;
     
-    n = rows(y);
+    T = rows(y);
     "Ho: co-integration   (Shin, 1994)";  
     print;
     if model==0;
@@ -71,10 +71,10 @@ proc(3) = coint_shin(y, x, model, bwl, varm, q);
         z=x;
     elseif model==1;
         "-----------Constant-------------------------------------";
-        z=ones(n,1)~x;
+        z=ones(T,1)~x;
     elseif model==2;
         "-----------Constant and Trend---------------------------";
-        z=ones(n,1)~seqa(1,1,n)~x;
+        z=ones(T,1)~seqa(1,1,T)~x;
     endif;
     print;
     
