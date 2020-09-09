@@ -175,24 +175,30 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     
     p    = cols(x);
     {cv} = cv_coint_tsongetal(model, k2_min, p);
+    if model == 1;
+        "-----------Level shift----------------------------------";
+    elseif model == 2;
+        "-----------Level shift with trend-----------------------";
+    endif;
+    print;
     
-    "Ho: co-integration   (Tsong et al., 2016)"; 
+    "Ho: co-integration   (Tsong et al., 2016)";
     // Print results
     local hd_side, hd_top, tmp1, tmp2;
     hd_side = "OLS"$|"DOLS";
     hd_top = ""$~"F-Stat"$~"Freq."$~"CIf"$~"1%"$~"5%"$~"10%";
     tmp1 = (Fols[k1_min]|Fdols[k2_min])~(k1_min|k2_min)~(SC1_min|SC2_min)~(cv'|cv');
     
-    #ifminkernelversion(20)
+#ifminkernelversion(20)
     sprintf("%14s", hd_top);
     sprintf("%14s %14.2f", hd_side, tmp1);
     print;
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));
     print;
-#endif; 
+#endif;
     
-          // Print conclusion
+    // Print conclusion
     print "OLS test results:";
     if SC1_min > cv[1];
         print "Reject the null hypothesis of cointegration at the 1% level.";
@@ -264,7 +270,7 @@ proc (1) = cv_coint_tsongetal(model, k, p);
         endif;
     ENDIF;
     
-      if k<4 and p<5;
+    if k<4 and p<5;
         cv10= mat_cv[p, 1];
         cv5 = mat_cv[p, 2];
         cv1 = mat_cv[p, 3];
