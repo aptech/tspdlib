@@ -198,26 +198,26 @@ proc(3) = coint_shin(y, x, model, bwl, varm, q);
     // Print conclusion
     print "OLS test results:";
     if C1 < cv[1];
-        print "Reject the null hypothesis of no cointegration at the 1% level.";
+        print "Reject the null hypothesis of cointegration at the 1% level.";
     elseif C1 < cv[2];
-        print "Reject the null hypothesis of no cointegration at the 5% level.";
+        print "Reject the null hypothesis of cointegration at the 5% level.";
     elseif C1 < cv[3];
-        print "Reject the null hypothesis of no cointegration at the 10% level.";
+        print "Reject the null hypothesis of cointegration at the 10% level.";
     else;
-        print "Cannot reject the null hypothesis of no cointegration.";
+        print "Cannot reject the null hypothesis of cointegration.";
     endif;
     print;
     
     // Print conclusion
     print "DOLS test results:";
     if C2 < cv[1];
-        print "Reject the null hypothesis of no cointegration at the 1% level.";
+        print "Reject the null hypothesis of cointegration at the 1% level.";
     elseif C2 < cv[2];
-        print "Reject the null hypothesis of no cointegration at the 5% level.";
+        print "Reject the null hypothesis of cointegration at the 5% level.";
     elseif C2 < cv[3];
-        print "Reject the null hypothesis of no cointegration at the 10% level.";
+        print "Reject the null hypothesis of cointegration at the 10% level.";
     else;
-        print "Cannot reject the null hypothesis of no cointegration.";
+        print "Cannot reject the null hypothesis of cointegration.";
     endif;
     print;
     
