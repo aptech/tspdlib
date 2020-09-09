@@ -69,12 +69,15 @@ proc(3) = DFGLS(y, model, pmax, ic);
     sicp = zeros(pmax + 1, 1);
     tstatp = zeros(pmax + 1, 1);
     
+    "ERS tests      ";
     if model == 1;
+        "-----------Constant Only----------------------------------";
         c = -7.00;
         z = ones(t, 1);
     endif;
     
     if model == 2;
+        "-----------Constant and Trend --------------------------";
         c = -13.50;
         z = ones(t, 1)~seqa(1, 1, t);
     endif;
@@ -142,6 +145,37 @@ proc(3) = DFGLS(y, model, pmax, ic);
     p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
     tau = taup[p];
     cv  = _get_cv_dfgls(model, T);
+    
+        // Print results
+    local hd_side, hd_top, tmp1, tmp2;
+    hd_side = "DFGLS"$|"Lags";
+    tmp1 = tau|p-1;
+    
+#ifminkernelversion(20)
+    sprintf("%14s %14.2f", hd_side, tmp1);
+    print;
+    print "Critical Values:";
+    sprintf("%10s", "1%"$~"5%"$~"10%");
+    sprintf("%10.2f", cv);
+    print;
+#else;
+    (hd_side$~(ntos(tmp1, 4)));
+    print "Critical Values:";
+    ("1%"$~"5%"$~"10%")$|ntos(cv,5);
+    print;
+#endif;
+  
+    // Print conclusion
+    if tau < cv[1];
+        print "Reject the null hypothesis of a unit root at the 1% level.";
+    elseif tau < cv[2];
+           print "Reject the null hypothesis of a unit root at the 5% level.";
+    elseif tau < cv[3];  
+           print "Reject the null hypothesis of a unit root at the 10% level.";
+    else;  
+           print "Cannot reject the null hypothesis of a unit root.";
+    endif;
+    print;
     
     retp(tau, p - 1, cv);
 endp;
