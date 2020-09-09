@@ -23,30 +23,11 @@ q = int(4*(t/100)^(2/9));
 // Maximum number of Fourier frequency
 kmax = 3;
 
-format/m1/rd 8,3;
-
-"-----------Level shift----------------------------------";
 model = 1;
 { CIfols, FFols, CIfdols, FFdols, cv_fourier, Fols, Fdols } =
                     coint_tsongetal(y, x, model, bwl, kmax, varm, q);
-    "Ho: co-integration   (Tsong et al., 2016)";                    
-    "   Fourier CIols ";; CIfols;;  cv_fourier';
-    "   Freq. (Fols)  ";; FFols;
-    "   F-stat (Fols) ";; Fols[FFols];
-    "   Fourier CIdols";; CIfdols;;cv_fourier';
-    "   Freq. (Fdols) ";; FFdols;  
-    "   F-stat(Fdols) ";; Fdols[FFdols]; 
-    "";    
-                    
-"-----------Level shift with trend-----------------------";
+                   
 model = 2; 
 { CIfols, FFols, CIfdols, FFdols, cv_fourier, Fols, Fdols } =
                     coint_tsongetal(y, x, model, bwl, kmax, varm, q);
-    "Ho: co-integration   (Tsong et al., 2016)";                    
-    "   Fourier CIols ";; CIfols;;  cv_fourier';
-    "   Freq. (Fols)  ";; FFols;
-    "   F-stat (Fols) ";; Fols[FFols];
-    "   Fourier CIdols";; CIfdols;;cv_fourier';
-    "   Freq. (Fdols) ";; FFdols;  
-    "   F-stat(Fdols) ";; Fdols[FFdols]; 
-    "";  
+ 

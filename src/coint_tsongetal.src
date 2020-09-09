@@ -45,7 +45,7 @@
 **
 **          FFols   -   Optimal Fourier frequency based on OLS estimation
 **
-**          CIfdols -   Cis test based on DOLS estimation
+**          CIfdols -   CIf test based on DOLS estimation
 **
 **          FFdols  -   Optimal Fourier frequency based on DOLS estimation
 **
@@ -175,6 +175,48 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     
     p    = cols(x);
     {cv} = cv_coint_tsongetal(model, k2_min, p);
+    
+    "Ho: co-integration   (Tsong et al., 2016)"; 
+    // Print results
+    local hd_side, hd_top, tmp1, tmp2;
+    hd_side = "OLS"$|"DOLS";
+    hd_top = ""$~"F-Stat"$~"Freq."$~"CIf"$~"1%"$~"5%"$~"10%";
+    tmp1 = (Fols[k1_min]|Fdols[k2_min])~(k1_min|k2_min)~(SC1_min|SC2_min)~(cv'|cv');
+    
+    #ifminkernelversion(20)
+    sprintf("%14s", hd_top);
+    sprintf("%14s %14.2f", hd_side, tmp1);
+    print;
+#else;
+    hd_top$|(hd_side$~(ntos(tmp1, 4)));
+    print;
+#endif; 
+    
+          // Print conclusion
+    print "OLS test results:";
+    if SC1_min > cv[1];
+        print "Reject the null hypothesis of cointegration at the 1% level.";
+    elseif SC1_min > cv[2];
+        print "Reject the null hypothesis of cointegration at the 5% level.";
+    elseif SC1_min > cv[3];
+        print "Reject the null hypothesis of cointegration at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of cointegration.";
+    endif;
+    print;
+    
+    // Print conclusion
+    print "DOLS test results:";
+    if SC2_min > cv[1];
+        print "Reject the null hypothesis of cointegration at the 1% level.";
+    elseif SC2_min > cv[2];
+        print "Reject the null hypothesis of cointegration at the 5% level.";
+    elseif SC2_min > cv[3];
+        print "Reject the null hypothesis of cointegration at the 10% level.";
+    else;
+        print "Cannot reject the null hypothesis of cointegration.";
+    endif;
+    print;
     
     retp(SC1_min, k1_min, SC2_min, k2_min, cv, Fols, Fdols);
 endp;
