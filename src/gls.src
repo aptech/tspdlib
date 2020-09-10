@@ -262,30 +262,8 @@ proc(3) = ERSpt(y, model, l, varm);
     g0 = (t - cols(x)) * s2 * 1/t;
     
     // Long-run variance with Barlett
-    print "LR Variance estimation method :";
-    if varm == 1;
-        lrv = ssr/t;
-        print "iid";
-    elseif varm == 2;
-        lrv = bartlett(e1, l);
-        print "Bartlett";
-    elseif varm == 3;
-        lrv = qs(e1,l);
-        print "Quadratic Spectral (QS)";
-    elseif varm == 4;
-        lrv = spc_bartlett(e1, l);
-        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
-    elseif varm == 5;
-        lrv = spc_qs(e1, l);
-        print "SPC with QS";
-    elseif varm == 6;
-        lrv = kurozumi_bartlett(e1);
-        print "Kurozumi with Bartlett";
-    elseif varm == 7;
-        lrv = kurozumi_qs(e1);
-        print "Kurozumi with QS";
-    endif;
-    
+    lrv = _get_lrv_type(varm, ssr, e1, l, T, 1);
+  
     t = rows(y);
     
     if model == 1;

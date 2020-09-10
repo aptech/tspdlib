@@ -51,21 +51,7 @@ proc(2) = LMkpss(y, model, l, varm);
        
    S = cumsumc(e1);                /*partial sum of residuals*/
     
-   if varm == 1;
-        lrv = ssr/t;
-   elseif varm == 2;
-        lrv = bartlett(e1,l);
-   elseif varm == 3;
-        lrv = qs(e1,l);
-   elseif varm == 4;
-        lrv = spc_bartlett(e1,l);
-   elseif varm == 5;
-        lrv = spc_qs(e1,l);
-   elseif varm == 6;
-        lrv = kurozumi_bartlett(e1);
-   elseif varm == 7;
-        lrv = kurozumi_qs(e1);
-    endif;
+   lrv = _get_lrv_type(varm, ssr, e1, l, T, 1);
     
    kpss = sumc(s.*s)/(t^2*lrv);
    

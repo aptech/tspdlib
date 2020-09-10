@@ -83,21 +83,7 @@ proc(4) = PP(y, model, l, varm);
     g0 = (t - cols(x)) * s2 * 1/t;
     e1 = e;
     
-    if varm == 1;
-        lrv = ssr/t;
-    elseif varm == 2;
-        lrv = bartlett(e1,l);
-    elseif varm == 3;
-        lrv = qs(e1,l);
-    elseif varm == 4;
-        lrv = spc_bartlett(e1,l);
-    elseif varm == 5;
-        lrv = spc_qs(e1,l);
-    elseif varm == 6;
-        lrv = kurozumi_bartlett(e1);
-    elseif varm == 7;
-        lrv = kurozumi_qs(e1);
-    endif;
+    lrv = _get_lrv_type(varm, ssr, e1, l, T, 1);
     
     // Eviews
     Zt = tau * sqrt(g0/lrv) - t * (lrv - g0) * se[1]/(2 * sqrt(lrv) * sqrt(s2));

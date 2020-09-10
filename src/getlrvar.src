@@ -296,7 +296,7 @@ proc(1) = kurozumi_qs(e);
     retp(lrv);
 endp;
 
-proc(1) = _get_lrv_type(varm, ssr, e1, bwl, T, print_varm);
+proc(1) = _get_lrv_type(varm, ssr, e1, bwl, print_varm);
 
     if print_varm;
         print "LR Variance estimation method:";
@@ -320,12 +320,12 @@ proc(1) = _get_lrv_type(varm, ssr, e1, bwl, T, print_varm);
         if print_varm;
             print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
         endif;
-        retp(spc_bartlett(e1, round(4 * (T/100)^(2/9))));
+        retp(spc_bartlett(e1, bwl));
     elseif varm == 5;
         if print_varm;
             print "SPC with QS";
         endif;
-        retp(spc_qs(e1, round(4 * (T/100)^(2/9))));
+        retp(spc_qs(e1, bwl));
     elseif varm == 6;
         if print_varm;
             print "Kurozumi with Bartlett";

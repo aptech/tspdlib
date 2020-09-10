@@ -1,0 +1,24 @@
+changedir("C:/gauss21/pkgs/tspdlib/examples");
+
+#include adf.e;
+#include adf_1break.e;
+#include adf_2break.e;
+#include bngpanic.e;
+#include bngpanicnew.e;
+#include cips.e;
+#include coint_cissanso.e;
+#include coint_egranger.e;
+#include coint_ghansen.e;
+#include coint_hatemiJ.e;
+#include coint_maki.e;
+#include coint_pouliaris.e;
+#include coint_shin.e;
+#include coint_tsongetal.e;
+#include dfgls.e;
+#include erspt.e;
+#include fourier_adf.e;
+#include Fourier_GLS.e;
+#include Fourier_KPSS.e;
+#include Fourier_LM.e;
+#include jwlpanic.e;
+#include jwlpanic_adj.e;

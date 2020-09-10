@@ -130,31 +130,10 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
         
         zrdols=trimr(zr~dx_leads~dx~dx_lags,q+1,q);
         Fdols[k,1]= _get_Ftest(ydols,zrdols,zdols);
-        
-        if varm == 1;
-            lrv1 = ssr1/rows(e1);
-            lrv2 = ssr2/rows(e2);
-        elseif varm == 2;
-            lrv1 = bartlett(e1,bwl);
-            lrv2 = bartlett(e2,bwl);
-        elseif varm == 3;
-            lrv1 = qs(e1,bwl);
-            lrv2 = qs(e2,bwl);
-        elseif varm == 4;
-            lrv1 = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
-            lrv2 = spc_bartlett(e2, round(4 * (T/100)^(2/9)));
-        elseif varm == 5;
-            lrv1 = spc_qs(e1, round(4 * (T/100)^(2/9)));
-            lrv2 = spc_qs(e2, round(4 * (T/100)^(2/9)));
-        elseif varm == 6;
-            lrv1 = kurozumi_bartlett(e1);
-            lrv2 = kurozumi_bartlett(e2);
-        elseif varm == 7;
-            lrv1 = kurozumi_qs(e1);
-            lrv2 = kurozumi_qs(e2);
-        endif;
-        
-        
+          
+        lrv1 = _get_lrv_type(varm, ssr1, e1, bwl, T, 1);
+        lrv2 = _get_lrv_type(varm, ssr2, e2, bwl, T, 0);
+       
         // Global minimization for OLS-based stat
         SC1 = T^(-2) * (St1'St1)/lrv1;
         if  ssr1 < ssr1_min;
