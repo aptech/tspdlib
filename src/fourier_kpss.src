@@ -63,27 +63,38 @@ proc(3) = Fourier_KPSS(y, model, kmax, l, varm);
     // Partial sum of residuals
     S = cumsumc(e1);
     
+    "Fourier KPSS test (Becker, Enders & Lee, 2006)";  
+    print "LR Variance estimation method: ";
     if varm == 1;
         lrv = ssr/t;
+        print "iid";
     elseif varm == 2;
         lrv = bartlett(e1,l);
+        print "Bartlett";
     elseif varm == 3;
         lrv = qs(e1,l);
+        print "Quadratic Spectral (QS)";
     elseif varm == 4;
         lrv = spc_bartlett(e1, l);
+         print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
     elseif varm == 5;
         lrv = spc_qs(e1, l);
+        print "SPC with QS";
     elseif varm == 6;
         lrv = kurozumi_bartlett(e1);
+        print "Kurozumi with Bartlett";
     elseif varm == 7;
         lrv = kurozumi_qs(e1);
+           print "Kurozumi with QS";
     endif;
+    print;
     
     KPSS = sumc(s .* s)/(t^2 * lrv);
     
     // Critical Values (see, Becker, Enders & Lee, 2006, Table 1)
     crit = zeros(5, 3);
     if model == 1;
+        "--------Model A: Break in level        -----";
         if T <= 250;
             crit = {0.2699 0.1720 0.1318,
                 0.6671 0.4152 0.3150,
@@ -110,6 +121,7 @@ proc(3) = Fourier_KPSS(y, model, kmax, l, varm);
     endif;
     
     if model == 2;
+        "--------Model C: Break in level & trend-----";
         if T <= 250;
             crit = {0.0716 0.0546 0.0471,
                 0.2022 0.1321 0.1034,
@@ -135,11 +147,37 @@ proc(3) = Fourier_KPSS(y, model, kmax, l, varm);
         endif;
     endif;
     
-    cv1  = crit[k,1];
-    cv5  = crit[k,2];
-    cv10 = crit[k,3];
+    // Print results & Critical values
+    local hd, tmp1;
+    hd = "KPSS"$|"Frequency";
+    tmp1 = KPSS|k;
     
-    retp(KPSS, k, cv10~cv5~cv1);
+    #ifminkernelversion(20)
+        sprintf("%10s %10.4f", hd, tmp1);
+        print;
+        print "Critical Values:";
+        sprintf("%10s", "1%"$~"5%"$~"10%");
+        sprintf("%10.5f", crit[k, .]);
+        print;
+    #else;
+        hd$~(ntos(tmp1, 4));
+        print "Critical Values:";
+        ("1%"$~"5%"$~"10%")$|ntos(crit[k, .], 5);
+    #endif;
+    
+        // Print conclusion
+    if KPSS > crit[k, 1];
+        print "Reject the null hypothesis of stationarity at the 1% level.";
+    elseif KPSS > crit[k, 2];
+           print "Reject the null hypothesis of stationarity at the 5% level.";
+    elseif KPSS > crit[k, 3];  
+           print "Reject the null hypothesis of stationarity at the 10% level.";
+    else;  
+           print "Cannot reject the null hypothesis of stationarity.";
+    endif;
+    print;
+    
+    retp(KPSS, k, crit[k, .]);
 endp;
 
 /*Selection of optimum k via min SSR*/
