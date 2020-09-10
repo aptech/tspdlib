@@ -252,13 +252,18 @@ proc(3) = JWR_PANICCA(y, model);
     dx = diff(y, 1);
     x  = dx[2:T, .];
     
+    // Panic tests
+    "PANIC tests";
     if model == 1;
+        print "Model with constant";
         z = x;
     endif;
     
     if model == 2;
+        print "Model with constant and trend";
         z = x - meanc(x)';
     endif;
+    print;
     
     // Cross-section averages
     Fp = meanc(z');
@@ -268,6 +273,23 @@ proc(3) = JWR_PANICCA(y, model);
     
     e = cumsumc(vi);
     {Pa, Pb, PMSB} = PaPbPMSB(e, model);
+    
+     // Print results & Critical values
+    local hd_top, hd_side, tmp1;
+    hd_top = ""$~"PANICCA"$~"p-value";
+    hd_side = "PA"$|"Pb"$|"PMSB";
+    tmp1 = (Pa~cdfn(Pa))|(Pb~cdfn(Pb))|(PMSB~cdfn(PMSB));
+    
+#ifminkernelversion(20)
+    sprintf("%14s", hd_top);
+    sprintf("%14s %14.2f", hd_side, tmp1);
+    print;
+#else;
+    hd_top$|(hd_side$~(ntos(tmp1, 4)));
+    print;
+#endif;
+
+    print;
     retp(Pa, Pb, PMSB);
 endp;
 
