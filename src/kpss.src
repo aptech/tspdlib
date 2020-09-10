@@ -2,9 +2,9 @@
 
 /*
 **> kpss
-**  Kwiatkowski, D., Phillips, P. C., Schmidt, P., & Shin, Y. (1992). 
-**  Testing the null hypothesis of stationarity against the alternative of a unit root: 
-**  How sure are we that economic time series have a unit root?. 
+**  Kwiatkowski, D., Phillips, P. C., Schmidt, P., & Shin, Y. (1992).
+**  Testing the null hypothesis of stationarity against the alternative of a unit root:
+**  How sure are we that economic time series have a unit root?.
 **  Journal of econometrics, 54(1-3), 159-178.
 **
 **  Format:  {kpss, cv} = LMkpss(y, model, l, varm);
@@ -38,30 +38,28 @@
 */
 
 proc(2) = LMkpss(y, model, l, varm);
-   local t, z, s, lrv, KPSS;
-   local b, e1, sig2, se, ssr;
-   local bw, w, cv;
-   
-   t = rows(y);
+    local t, z, s, lrv, KPSS;
+    local ssr;
+    local bw, w, cv;
     
-   if model == 1; z = ones(t,1);              endif;
-   if model == 2; z = ones(t,1)~seqa(1,1,t);  endif;
-        
-   {b,e1,sig2,se,ssr} = myols(y,z);
-       
-   S = cumsumc(e1);                /*partial sum of residuals*/
+    t = rows(y);
     
-   lrv = _get_lrv_type(varm, ssr, e1, l, T, 1);
-    
-   kpss = sumc(s.*s)/(t^2*lrv);
-   
     if model == 1;
-       cv     = 0.739 ~ 0.463 ~ 0.347 ;
-    elseif model == 2;
-       cv     = 0.216 ~ 0.146 ~ 0.119 ;
+        z = ones(t,1);
+    endif;
+    if model == 2;
+        z = ones(t,1)~seqa(1,1,t);
     endif;
     
-retp(kpss, cv);
+    { kpss, ssr } = _get_kpss(y, z, varm, l, T, 1);
+
+    if model == 1;
+        cv     = 0.739 ~ 0.463 ~ 0.347 ;
+    elseif model == 2;
+        cv     = 0.216 ~ 0.146 ~ 0.119 ;
+    endif;
+    
+    retp(kpss, cv);
 endp;
 
 

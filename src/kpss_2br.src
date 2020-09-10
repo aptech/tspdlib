@@ -94,22 +94,8 @@ proc(4) = KPSS_2breaks(y, model, l, varm);
                 z = dc~dt~du1~dt1~du2~dt2;
             endif;
             
-            // OLS estimation
-            b = y/z;
-            
-            // Residuals
-            e1 = y - z * b;
-            
-            // Sum of sqaured residuals
-            ssr = e1'e1;
-            
-            // Partial sum of residuals
-            St = cumsumc(e1);
-            
-            lrv = _get_lrv_type(varm, ssr, e1, l, T, 1);
-            
             // KPSS statistic
-            KPSS = T^(-2) * (St'St) / lrv;
+            { kpss, ssr } = _get_kpss(y, z, varm, l, T, 0);
             
             // Global minimization
             if ssr < ssr_min;

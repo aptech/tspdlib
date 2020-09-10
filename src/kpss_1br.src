@@ -45,7 +45,7 @@
 proc(4) = KPSS_1break(y, model, l, varm, trimm);
     local t, ssr_min, tb1_min, KPSS_min;
     local t1, t2, tb1, tb2, dc, dt, du1, dt1, z;
-    local b, e1, ssr, St, lrv, vare, KPSS, crit, TBi, bwl;
+    local vare, KPSS, crit, TBi, bwl;
     
     T = rows(y);
     ssr_min = 1e6;
@@ -74,24 +74,9 @@ proc(4) = KPSS_1break(y, model, l, varm, trimm);
             z = dc~dt~du1~dt1;
         endif;
         
-        // OLS estimation
-        b = y/z;
-        
-        // Residuals
-        e1 = y - z * b;
-        
-        // Sum of sqaured residuals
-        ssr = e1'e1;
-        
-        // Partial sum of residuals
-        St = cumsumc(e1);
-        
-        bwl = round(4 * (T/100)^(2/9));
-        lrv = _get_lrv_type(varm, ssr, e1, bwl, T, 1);
-        
         // KPSS statistic
-        KPSS = T^(-2) * (St'St)/lrv;
-        
+        { kpss, ssr } = _get_kpss(y, z, varm, l, T, 0);
+  
         // Global minimization
         if ssr < ssr_min;
             // Select minimum SSR
@@ -194,4 +179,19 @@ proc(2) = STps(y, model, varm, tb);
     endif;
     
     retp(ps, cv);
+endp;
+
+proc (2) = _get_kpss(y, z, varm, bwl, T, print_lrv);
+    local b, e1, sig2, se, ssr, kpss, S, lrv;
+    
+    { b, e1, sig2, se, ssr } = myols(y, z);
+    
+    S = cumsumc(e1);                /*partial sum of residuals*/
+    
+    lrv = _get_lrv_type(varm, ssr, e1, bwl, T, print_lrv);
+    
+    // KPSS statistic
+    kpss = T^(-2) * (S'S)/lrv;
+    
+    retp(kpss, ssr);
 endp;
