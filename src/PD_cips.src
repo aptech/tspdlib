@@ -68,36 +68,41 @@ proc(6) = cips(y, model, pmax, ic);
     endif;
     pmcadf= sqrt(n)*(meanc(Nd)-q)/sqrt(2*q);
     
-    // Print results
-    local hd_side, hd_top, tmp1, tmp2, hd_top2;
+ // Print results
+    local hd_side, hd_top, tmp1, tmp2, tmp3, hd_top2, hd_top3;
     hd_side = "CIPS"$|"M-CIPS";
     hd_top = ""$~"Test Stat"$~"pval";
     tmp1 = (pcadf~error(30))|(pmcadf~cdfn(pmcadf));
     hd_top2 = "id"$~"CADF"$~"LM"$~"M-CADF"$~"pval"$~"lags";
     tmp2 = seqa(1, 1, N)~Ncadf~Nlm~Nd~cdfchic(abs(Nd), q)~Nlags;
+    tmp3 = cdfchii(0.99, q)~cdfchii(0.95, q)~cdfchii(0.90, q);  
+    hd_top3 = "1%"$~"5%"$~"10%";
     
 #ifminkernelversion(20)
     sprintf("%14s", hd_top);
     sprintf("%14s %14.2f", hd_side, tmp1);
     print;
     
+    "M-CADF Critical Values:"; 
+    sprintf("%14s", hd_top3);
+    sprintf("%14.3f", tmp3);
+    print;
+    
     sprintf("%14s", hd_top2);
     sprintf("%14.3f", tmp2);
+    
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));
     print;
     
+    "M-CADF Critical Values:"; 
+    hd_top3$|(ntos(tmp3, 4));
+    print;
+    
     hd_top2$|(ntos(tmp2, 4));
 #endif;
-
     print;
-    "M-CADF critical values";
-    "cv (0.01)";;
-    cdfchii(0.99, q);
-    "cv (0.05)";;
-    cdfchii(0.95, q);
-    "cv (0.10)";;
-    cdfchii(0.90, q);  
+    
     retp(Ncadf, Nlm, Nd, Nlags, pcadf, pmcadf);
 endp;
 
