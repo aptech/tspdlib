@@ -298,7 +298,9 @@ endp;
 
 proc(1) = _get_lrv_type(varm, ssr, e1, bwl, T, print_varm);
 
-    print "LR Variance estimation method:";
+    if print_varm;
+        print "LR Variance estimation method:";
+    endif;
     if varm == 1;
         if print_varm;
             print "iid";
