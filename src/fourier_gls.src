@@ -206,7 +206,10 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
     // Critical Values (see,  Rodrigues & Taylor,  2012,  Table 2)
     crit = zeros(5, 3);
     
+     "Fourier GLS test (Rodrigues & Taylor, 2012)";
+
     if model == 1;
+         "--------Model A: Break in level        -----";
         if T <= 150;
         crit = {-3.911 -3.294 -2.328, 
                 -3.298 -2.601 -2.187, 
@@ -233,6 +236,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
     endif;
     
     if model == 2;
+        "--------Model C: Break in level & trend-----";
         if T <= 150;
         crit = {-4.771 -4.175 -3.879, 
                 -4.278 -3.647 -3.316, 
@@ -257,6 +261,37 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
                 -3.603 -3.012 -2.690};
         endif;
     endif;
+    print;
+
+    // Print results & Critical values
+    local hd, tmp1;
+    hd = "ADF-GLS"$|"Frequency"$|"Lag";
+    tmp1 = GLS|f|p-1;
+    
+    #ifminkernelversion(20)
+        sprintf("%10s %10.4f", hd, tmp1);
+        print;
+        print "Critical Values:";
+        sprintf("%10s", "1%"$~"5%"$~"10%");
+        sprintf("%10.2f", crit[f, .]);
+        print;
+    #else;
+        hd$~(ntos(tmp1, 4));
+        print "Critical Values:";
+        ("1%"$~"5%"$~"10%")$|ntos(crit[f, .],5);
+    #endif;
+    
+        // Print conclusion
+    if GLS < crit[f, 1];
+        print "Reject the null hypothesis of a unit root at the 1% level.";
+    elseif GLS < crit[f, 2];
+           print "Reject the null hypothesis of a unit root at the 5% level.";
+    elseif GLS < crit[f, 3];  
+           print "Reject the null hypothesis of a unit root at the 10% level.";
+    else;  
+           print "Cannot reject the null hypothesis of a unit root.";
+    endif;
+    print;
     
     retp(GLS, f, p - 1, crit[f, .]);
 endp;
