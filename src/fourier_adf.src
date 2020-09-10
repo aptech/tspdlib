@@ -188,6 +188,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
     if model == 2;
         "--------Model C: Break in level & trend-----";
     endif;
+    print;
     
     // Print results & Critical values
     local hd, tmp1;
@@ -199,7 +200,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         print;
         print "Critical Values:";
         sprintf("%10s", "1%"$~"5%"$~"10%");
-        sprintf("%10.2f", crit[f, .]);
+        sprintf("%10.5f", crit[f, .]);
         print;
     #else;
         hd$~(ntos(tmp1, 4));
