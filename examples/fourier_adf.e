@@ -22,54 +22,19 @@ ic = 3;
 // Maximum number of Fourier
 fmax = 3;
 
-format /m1 /rd 8,4;
-
 /*
 ** 1 = With constant
 ** 2 = With constant and trend
 */
 model = 1;
-
-if model == 1;
-    "--------Model A: Break in level        -----";
-endif;
-if model == 2;
-    "--------Model C: Break in level & trend-----";
-endif;
-
-"Fourier ADF test (Enders & Lee, 2012)";
 { ADFstat, f, p, cv } = Fourier_ADF(y, model, pmax, fmax, ic);
-"       ADF-stat        ";;
-ADFstat;
-"       Fourier         ";;
-f;
-"       Lag             ";;
-p;
-"       CV (1%, 5%, 10%)";;
-cv;
-"";
+
+
 
 /*
 ** 1 = With constant
 ** 2 = With constant and trend
 */
 model = 2;
-
-if model == 1;
-    "--------Model A: Break in level        -----";
-endif;
-if model == 2;
-    "--------Model C: Break in level & trend-----";
-endif;
-
-"Fourier ADF test (Enders & Lee, 2012)";
 { ADFstat, f, p, cv } = Fourier_ADF(y, model, pmax, fmax, ic);
-"       ADF-stat        ";;
-ADFstat;
-"       Fourier         ";;
-f;
-"       Lag             ";;
-p;
-"       CV (1%, 5%, 10%)";;
-cv;
-"";
+

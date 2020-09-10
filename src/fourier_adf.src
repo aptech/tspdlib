@@ -180,5 +180,44 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         endif;
     endif;
     
+        
+    "Fourier ADF test (Enders & Lee, 2012)";
+    if model == 1;
+        "--------Model A: Break in level        -----";
+    endif;
+    if model == 2;
+        "--------Model C: Break in level & trend-----";
+    endif;
+    
+    // Print results & Critical values
+    local hd, tmp1;
+    hd = "ADF-stat"$|"Frequency"$|"Lag";
+    tmp1 = ADF|f|p-1;
+    
+    #ifminkernelversion(20)
+        sprintf("%10s %10.4f", hd, tmp1);
+        print;
+        print "Critical Values:";
+        sprintf("%10s", "1%"$~"5%"$~"10%");
+        sprintf("%10.2f", crit[f, .]);
+        print;
+    #else;
+        hd$~(ntos(tmp1, 4));
+        print "Critical Values:";
+        ("1%"$~"5%"$~"10%")$|ntos(crit[f, .],5);
+    #endif;
+    
+        // Print conclusion
+    if ADF < crit[f, 1];
+        print "Reject the null hypothesis of a unit root at the 1% level.";
+    elseif ADF < crit[f, 2];
+           print "Reject the null hypothesis of a unit root at the 5% level.";
+    elseif ADF < crit[f, 3];  
+           print "Reject the null hypothesis of a unit root at the 10% level.";
+    else;  
+           print "Cannot reject the null hypothesis of a unit root.";
+    endif;
+    print;
+    
     retp(ADF, f, p-1, crit[f, .]);
 endp;
