@@ -273,7 +273,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
         print;
         print "Critical Values:";
         sprintf("%10s", "1%"$~"5%"$~"10%");
-        sprintf("%10.5f", crit[f, .]);
+        sprintf("%10.3f", crit[f, .]);
         print;
     #else;
         hd$~(ntos(tmp1, 4));

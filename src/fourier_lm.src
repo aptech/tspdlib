@@ -144,5 +144,37 @@ proc(4) = Fourier_LM(y, pmax, kmax, ic);
             -3.74 -3.13 -2.83};
     endif;
     
+       
+    "Fourier LM test (Enders & Lee, 2012)";
+    // Print results & Critical values
+    local hd, tmp1;
+    hd = "LM test"$|"Frequency"$|"Lag";
+    tmp1 = LM|f|p-1;
+    
+    #ifminkernelversion(20)
+        sprintf("%10s %10.4f", hd, tmp1);
+        print;
+        print "Critical Values:";
+        sprintf("%10s", "1%"$~"5%"$~"10%");
+        sprintf("%10.2f", crit[f, .]);
+        print;
+    #else;
+        hd$~(ntos(tmp1, 4));
+        print "Critical Values:";
+        ("1%"$~"5%"$~"10%")$|ntos(crit[f, .], 5);
+    #endif;
+    
+        // Print conclusion
+    if LM < crit[f, 1];
+        print "Reject the null hypothesis of a unit root at the 1% level.";
+    elseif LM < crit[f, 2];
+           print "Reject the null hypothesis of a unit root at the 5% level.";
+    elseif LM < crit[f, 3];  
+           print "Reject the null hypothesis of a unit root at the 10% level.";
+    else;  
+           print "Cannot reject the null hypothesis of a unit root.";
+    endif;
+    print;
+    
     retp(LM, f, p - 1, crit[f, .]);
 endp;
