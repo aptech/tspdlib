@@ -27,31 +27,11 @@ ic = 2;
 /*
 ** Model with constant
 */
-model = 0;
-print "Model with constant";
-
+model = 1;
 { Ze, Ze_ba } = JWL_PANICadj(y, kmax, pmax, model, ic);
-
-"PANIC     Stat.   p-value";
-"Ze     ";;
-Ze       ;;
-cdfn(Ze);
-"Ze+    ";;
-Ze_ba    ;;
-cdfn(Ze_ba);
 
 /*
 ** Model with constant and trend
 */
-model = 1;
-print "Model with constant and trend";
-
+model = 2;
 { Ze, Ze_ba } = JWL_PANICadj(y, kmax, pmax, model, ic);
-
-"PANIC     Stat.   p-value";
-"Ze     ";;
-Ze       ;;
-cdfn(Ze);
-"Ze+    ";;
-Ze_ba    ;;
-cdfn(Ze_ba);

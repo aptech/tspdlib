@@ -161,10 +161,12 @@ proc(3) = BNG_PANICnew(y, kmax, model, ic);
     
     if model == 1;
         x = x;
+        print "Model with constant";
     endif;
     
     if model == 2;
         x = x - meanc(x)';
+        print "Model with constant and trend";
     endif;
     
     nf = Fnumber(x, kmax, ic);
@@ -174,7 +176,22 @@ proc(3) = BNG_PANICnew(y, kmax, model, ic);
     
     e = cumsumc(ehat);
     { Pa, Pb, PMSB } = PaPbPMSB(e, model);
+           
+     // Print results & Critical values
+    local hd_top, hd_side, tmp1;
+    hd_top = ""$~"BNG"$~"p-value";
+    hd_side = "PA"$|"Pb"$|"PMSB";
+    tmp1 = (Pa~cdfn(Pa))|(Pb~cdfn(Pb))|(PMSB~cdfn(PMSB));
     
+#ifminkernelversion(20)
+    sprintf("%14s", hd_top);
+    sprintf("%14s %14.2f", hd_side, tmp1);
+    print;
+#else;
+    hd_top$|(hd_side$~(ntos(tmp1, 4)));
+    print;
+#endif;
+
     retp(Pa, Pb, PMSB);
 endp;
 
@@ -191,12 +208,16 @@ proc(2) = JWL_PANICadj(y, kmax, pmax, model, ic);
     dx = diff(y, 1);
     x  = dx[2:T, .];
     
+    // Panic tests
+    "PANIC tests";
     if model == 1;
         x = x;
+        print "Model with constant";
     endif;
     
     if model == 2;
         x = x - meanc(x)';
+        print "Model with constant and trend";
     endif;
     
     nf = Fnumber(x, kmax, ic);
@@ -237,6 +258,23 @@ proc(2) = JWL_PANICadj(y, kmax, pmax, model, ic);
     varB = 0.929;
     Ze = sqrt(N) * (meanc(ADFe) -EB)/sqrt(varB);
     Ze_ba = Ze - djwj * sumc(aN)/(sqrt(varB) * sqrt(N));
+    
+    // Print results & Critical values
+    local hd_top, hd_side, tmp1;
+    hd_top = ""$~"PANICCA"$~"p-value";
+    hd_side = "Ze"$|"Ze+";
+    tmp1 = (Ze~cdfn(Ze))|(Ze_ba~cdfn(Ze_ba));
+    
+#ifminkernelversion(20)
+    sprintf("%14s", hd_top);
+    sprintf("%14s %14.2f", hd_side, tmp1);
+    print;
+#else;
+    hd_top$|(hd_side$~(ntos(tmp1, 4)));
+    print;
+#endif;
+
+    print;
     
     retp(Ze, Ze_ba);
 endp;

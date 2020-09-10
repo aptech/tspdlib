@@ -9,9 +9,6 @@ T = 112;
 // Load date file
 y = loadd(__FILE_DIR $+ "PDe.dat");
 
-// Panic tests
-"PANIC tests";
-
 /*
 ** Set maximum number of lags for ds
 ** 0 = no lags
