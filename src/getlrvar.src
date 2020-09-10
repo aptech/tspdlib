@@ -295,3 +295,47 @@ proc(1) = kurozumi_qs(e);
     
     retp(lrv);
 endp;
+
+proc(1) = _get_lrv_type(varm, ssr, e1, bwl, T, print_varm);
+
+    print "LR Variance estimation method:";
+    if varm == 1;
+        if print_varm;
+            print "iid";
+        endif;
+        retp(ssr/t);
+    elseif varm == 2;
+        if print_varm;
+            print "Bartlett";
+        endif;
+        retp(bartlett(e1, bwl));
+    elseif varm == 3;
+        if print_varm;
+            print "Quadratic Spectral (QS)";
+        endif;
+        retp(qs(e1, bwl));
+    elseif varm == 4;
+        if print_varm;
+            print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
+        endif;
+        retp(spc_bartlett(e1, round(4 * (T/100)^(2/9))));
+    elseif varm == 5;
+        if print_varm;
+            print "SPC with QS";
+        endif;
+        retp(spc_qs(e1, round(4 * (T/100)^(2/9))));
+    elseif varm == 6;
+        if print_varm;
+            print "Kurozumi with Bartlett";
+        endif;
+        
+        retp(kurozumi_bartlett(e1));
+    elseif varm == 7;
+        if print_varm;
+            print "Kurozumi with QS";
+        endif;
+        
+        retp(kurozumi_qs(e1));
+    endif;
+
+endp;
