@@ -52,10 +52,10 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
     do while tb1 <= T2;
         
         // Deterministic term=constant
-        dc = ones(t, 1); 
+        dc = ones(t, 1);
         
         // Deterministic term=trend
-        dt=seqa(1, 1, t);             
+        dt=seqa(1, 1, t);
         
         if  model == 1;
             du1 = zeros(tb1, 1)|ones(t - tb1, 1);
@@ -111,10 +111,10 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
         
         if  stat < ADF_min;
             // First break date
-            tb1_min=tb1;   
+            tb1_min=tb1;
             
             // t-statistic with break
-            ADF_min =stat; 
+            ADF_min =stat;
             
             // Keep optimal p value
             p_keep = p;
@@ -123,7 +123,7 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
         tb1 = tb1 + 1;
     endo;
     
-   print "One break ADF test (Zivot & Andrews, 1992)";
+    print "One break ADF test (Zivot & Andrews, 1992)";
     if model == 1;
         cv = -5.34|-4.80|-4.58;
         print "--------Model A: Break in level        -----";
@@ -132,38 +132,100 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
     if model == 2;
         cv = -5.57|-5.08|-4.82;
         print "--------Model C: Break in level & trend-----";
-
+        
     endif;
     
     // Print results & Critical values
-    local hd, tmp1, tmp2;
-    hd = "ADF-stat"$|"Break date"$|"Fraction"$|"Lag";
-    tmp1 = ADF_min|tb1_min|tb1_min/rows(y)|p_keep-1;
+    local top, stats, dec, colwidth;
+    top = "ADF-stat"$|"Break date"$|"Fraction"$|"Lag";
+    stats = ADF_min|tb1_min|tb1_min/rows(y)|p_keep-1;
+    dec = 2;
+    colwidth = 10;
     
-    #ifminkernelversion(20)
-        sprintf("%10s %10.4f", hd, tmp1);
-        print;
-        print "Critical Values:";
-        sprintf("%10s", "1%"$~"5%"$~"10%");
-        sprintf("%10.2f", cv');
-        print;
-    #else;
-        hd$~(ntos(tmp1, 4));
-        print "Critical Values:";
-        ("1%"$~"5%"$~"10%")$|ntos(cv',5);
-    #endif;
+    _printStatsTable("", top, stats, cv, dec, colwidth);
     
-    // Print conclusion
-    if ADF_min < cv[1];
-        print "Reject the null hypothesis of a unit root at the 1% level.";
-    elseif ADF_min < cv[2];
-           print "Reject the null hypothesis of a unit root at the 5% level.";
-    elseif ADF_min < cv[3];  
-           print "Reject the null hypothesis of a unit root at the 10% level.";
-    else;  
-           print "Cannot reject the null hypothesis of a unit root.";
+    // Print conclusions
+    _printConclusion(ADF_min, cv, 0, "a unit root");
+    
+    retp(ADF_min, tb1_min, p-1, cv);
+endp;
+
+proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth);
+    local tmp1, tmp2, tmp3, format1, format2;
+    
+    tmp1 = "%" $+ ntos(colwidth) $+ "s";
+    tmp2 = "%" $+ ntos(colwidth) $+ "." $+ ntos(dec) $+ "f";
+    tmp3 = "%" $+ ntos(colwidth) $+ ".3f";
+    format1 = tmp1 $+ " " $+ tmp2;
+    format2 = tmp1 $+ " " $+  tmp3;
+    
+#ifminkernelversion(20)
+    if top $=="";
+        top = side;
+    endif;
+    if side $=="";
+        sprintf(format1, top, stats);
+        print "Critical Values:";
+        sprintf(tmp1, "1%"$~"5%"$~"10%");
+        sprintf(tmp2, cv');
+    else;
+        sprintf(tmp1, top);
+        sprintf(format1, side, stats);
+        print "Critical Values:";
+        sprintf(tmp1, ""$~"1%"$~"5%"$~"10%");
+        sprintf(format2, side, cv');
     endif;
     print;
+
+    print;
+#else;
+    if top $== "";
+        side$~(ntos(stats, dec));
+    elseif side $=="";
+        top$|(ntos(stats, dec));
+    else;
+         top$|(side$~(ntos(stats, 4)));
+    print "Critical Values:";
+    ("1%"$~"5%"$~"10%")$|ntos(cv', dec);
+#endif;
     
-    retp(ADF_min, tb1_min, p_keep - 1, cv);
 endp;
+
+proc (0) = _printConclusion(stat, cv, test_type, null_hypothesis);
+    local reject_print, no_reject_print, tmp;
+    
+    reject_print = "Reject the null hypothesis of " $+ null_hypothesis;
+    no_reject_print = "Cannot the null hypothesis of " $+ null_hypothesis $+ ".";
+    if test_type == 0;
+        // Print conclusion
+        if stat < cv[1];
+            tmp = reject_print $+ " at the 1% level.";
+            print tmp;
+        elseif stat < cv[2];
+            tmp = reject_print $+ " at the 5% level.";
+            print tmp;
+        elseif stat < cv[3];
+            tmp = reject_print $+ " at the 10% level.";
+            print tmp;
+        else;
+            print no_reject_print;
+        endif;
+        print;
+    elseif test_type == 1;
+        // Print conclusion
+        if stat > cv[1];
+            tmp = reject_print $+ " at the 1% level.";
+            print tmp;
+        elseif stat > cv[2];
+            tmp = reject_print $+ " at the 5% level.";
+            print tmp;
+        elseif stat > cv[3];
+            tmp = reject_print $+ " at the 10% level.";
+            print tmp;
+        else;
+            print no_reject_print;
+        endif;
+        print;
+    endif;
+endp;
+

@@ -197,34 +197,16 @@ proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
     endif;
     
     // Print results & Critical values
-    local hd, tmp1, tmp2;
-    hd = "ADF-stat"$|"Break Date One"$|"Fraction One"$|"Break Date Two"$|"Fraction Two"$|"Lag";
-    tmp1 = ADF_min|tb1_min|tb1_min/rows(y)|tb2_min|tb2_min/rows(y)|p_keep-1;
+    local top, stats, dec, colwidth;
+    top = "ADF-stat"$|"Break Date One"$|"Fraction One"$|"Break Date Two"$|"Fraction Two"$|"Lag";
+    stats = ADF_min|tb1_min|tb1_min/rows(y)|tb2_min|tb2_min/rows(y)|p_keep-1;
+    dec = 2;
+    colwidth = 14;
     
-    #ifminkernelversion(20)
-        sprintf("%14s %14.4f", hd, tmp1);
-        print;
-        print "Critical Values:";
-        sprintf("%14s", "1%"$~"5%"$~"10%");
-        sprintf("%14.2f", cv');
-        print;
-    #else;
-        hd$~(ntos(tmp1, 4));
-        print "Critical Values:";
-        ("1%"$~"5%"$~"10%")$|ntos(cv',5);
-    #endif;
-    
+    _printStatsTable("", top, stats, cv, dec, colwidth);
+      
     // Print conclusion
-    if ADF_min < cv[1];
-        print "Reject the null hypothesis of a unit root at the 1% level.";
-    elseif ADF_min < cv[2];
-           print "Reject the null hypothesis of a unit root at the 5% level.";
-    elseif ADF_min < cv[3];  
-           print "Reject the null hypothesis of a unit root at the 10% level.";
-    else;  
-           print "Cannot reject the null hypothesis of a unit root.";
-    endif;
-    print;
+    _printConclusion(ADF_min, cv, 0, "a unit root");
     
     retp(ADF_min, tb1_min, tb2_min, p - 1, cv);
 endp;
