@@ -54,6 +54,23 @@ proc(4) = KPSS_2breaks(y, model, l, varm);
     tb2_min = 0;
     KPSS_min = 0;
     
+    "Two breaks KPSS test (CiS & Sanso, 2007)";
+    if varm == 1;
+        print "iid";
+    elseif varm == 2;
+        print "Bartlett";
+    elseif varm == 3;
+        print "Quadratic Spectral (QS)";
+    elseif varm == 4;
+        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
+    elseif varm == 5;
+        print "SPC with QS";
+    elseif varm == 6;
+        print "Kurozumi with Bartlett";
+    elseif varm == 7;
+        print "Kurozumi with QS";
+    endif;
+    
     // First break
     tb1 = 2;
     do until tb1 > t-4;
@@ -93,7 +110,7 @@ proc(4) = KPSS_2breaks(y, model, l, varm);
                 dt2 = zeros(tb2, 1)|seqa(1, 1, (t - tb2));
                 z = dc~dt~du1~dt1~du2~dt2;
             endif;
-            
+
             // KPSS statistic
             { kpss, ssr } = _get_kpss(y, z, varm, l, T, 0);
             
@@ -117,6 +134,25 @@ proc(4) = KPSS_2breaks(y, model, l, varm);
         tb1 = tb1 + 1;
     endo;
     cv = cv_kpss2(model, rows(y), tb1_min, tb2_min);
+    
+    if model == 1;
+        "--------Model A: Break in level        -----";
+    endif;
+    if model == 2;
+        "--------Model C: Break in level & trend-----";
+    endif;
+    
+    // Print results
+    local top, side, stats, dec, colwidth;
+    top = "KPSS Stat"$|"Break 1"$|"Fraction"$|"Break 2"$|"Fraction";
+    side = "";
+    stats = KPSS_min|tb1_min|tb1_min/rows(y)|tb2_min|tb2_min/rows(y);
+    dec = 3;
+    colwidth = 10;
+    
+    _printStatsTable(top, side, stats, cv', dec, colwidth);
+    _printConclusion(KPSS_min, cv, 1, "stationarity");
+    
     retp(KPSS_min, tb1_min, tb2_min, cv);
 endp;
 

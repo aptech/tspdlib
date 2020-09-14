@@ -45,7 +45,7 @@
 proc(4) = KPSS_1break(y, model, l, varm, trimm);
     local t, ssr_min, tb1_min, KPSS_min;
     local t1, t2, tb1, tb2, dc, dt, du1, dt1, z;
-    local vare, KPSS, crit, TBi, bwl;
+    local b, e1, ssr, St, lrv, vare, KPSS, crit, TBi, bwl;
     
     T = rows(y);
     ssr_min = 1e6;
@@ -54,6 +54,23 @@ proc(4) = KPSS_1break(y, model, l, varm, trimm);
     
     T1 = round(trimm * rows(y));
     T2 = round((1 - trimm) * rows(y));
+    
+    "One break KPSS test (Kurozumi, 2002)";
+    if varm == 1;
+        print "iid";
+    elseif varm == 2;
+        print "Bartlett";
+    elseif varm == 3;
+        print "Quadratic Spectral (QS)";
+    elseif varm == 4;
+        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
+    elseif varm == 5;
+        print "SPC with QS";
+    elseif varm == 6;
+        print "Kurozumi with Bartlett";
+    elseif varm == 7;
+        print "Kurozumi with QS";
+    endif;
     
     // First break
     tb1 = t1;
@@ -76,7 +93,7 @@ proc(4) = KPSS_1break(y, model, l, varm, trimm);
         
         // KPSS statistic
         { kpss, ssr } = _get_kpss(y, z, varm, l, T, 0);
-  
+        
         // Global minimization
         if ssr < ssr_min;
             // Select minimum SSR
@@ -113,15 +130,34 @@ proc(4) = KPSS_1break(y, model, l, varm, trimm);
         TBi = 10 - TBi;
     endif;
     
+
+    if model == 1;
+        "--------Model A: Break in level        -----";
+    endif;
+    if model == 2;
+        "--------Model C: Break in level & trend-----";
+    endif;
+    
+    // Print results
+    local top, side, stats, dec, colwidth;
+    top = "KPSS Stat"$|"Break 1"$|"Fraction";
+    side = "";
+    stats = KPSS_min|tb1_min|tb1_min/rows(y);
+    dec = 3;
+    colwidth = 10;
+    
+    _printStatsTable(top, side, stats, crit[TBi, .]', dec, colwidth);
+    _printConclusion(KPSS_min, crit[TBi, .], 1, "stationarity");
+    
     retp(KPSS_min, tb1_min, tb1_min/rows(y), crit[TBi, .]);
 endp;
 
 proc(2) = STps(y, model, varm, tb);
     local t, tt, dc, dt, du1, dt1, ystar, z;
-    local b, e1, ssr, St, lrv, vare, l, bw, w, ps, cv, bwl;
+    local b, e1, ssr, St, lrv, vare, l, bw, w, ps, cv, bwl, tb1;
     
     t = rows(y);
-    tb = tb1;
+    tb1 = tb;
     ystar = zeros(t, 1);
     tt = 1;
     do while tt <= T;
@@ -163,9 +199,9 @@ proc(2) = STps(y, model, varm, tb);
     
     // Partial sum of residuals
     St = cumsumc(e1);
-        
+    
     bwl = round(4 * (T/100)^(2/9));
-    lrv = _get_lrv_type(varm, ssr, e1, bwl, T, 1); 
+    lrv = _get_lrv_type(varm, ssr, e1, bwl, T, 1);
     
     // STps statistic
     ps = T^(-2) * (St'St)/lrv;
@@ -177,6 +213,7 @@ proc(2) = STps(y, model, varm, tb);
     if model == 2;
         cv = 0.21067|0.24654|0.32862;
     endif;
+    
     
     retp(ps, cv);
 endp;

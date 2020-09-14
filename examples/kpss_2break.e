@@ -20,44 +20,14 @@ for i(1, 7, 1);
     ** 2=Model C: break in level and trend
     */
     model = 1;
-    
-    if model == 1;
-        "--------Model A: Break in level        -----";
-    endif;
-    if model == 2;
-        "--------Model C: Break in level & trend-----";
-    endif;
-    
-   "Two breaks KPSS test (CiS & Sanso, 2007)";
     { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model, bwl, varm);
 
-    "       KPSS test       ";;KPSS;
-    "       Break dates     ";;tb1~tb2;
-    "       Fraction        ";;tb1/rows(y)~tb2/rows(y);
-    "       CV (10%, 5%, 1%)";;cv;
-    ""; 
-    
     /*
     ** 1=Model A: break in level
     ** 2=Model C: break in level and trend
     */
-    
     model = 2;
-    
-    if model == 1;
-        "--------Model A: Break in level        -----";
-    endif;
-    if model == 2;
-        "--------Model C: Break in level & trend-----";
-    endif;
-    
-    "Two breaks KPSS test (CiS & Sanso, 2007)";
     { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model, bwl, varm);
 
-    "       KPSS test       ";;KPSS;
-    "       Break dates     ";;tb1~tb2;
-    "       Fraction        ";;tb1/rows(y)~tb2/rows(y);
-    "       CV (10%, 5%, 1%)";;cv;
-    "";
 endfor;
 
