@@ -181,7 +181,7 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
     colwidth = 10;
     
     _printStatsTable(top, side, stats, cv', dec, colwidth);
-    _printConclusion(LM_min, cv, 1, "unit root");
+    _printConclusion(LM_min, cv, 0, "unit root");
     
     
     retp(LM_min, tb1_min, p - 1, tb1_min/rows(y), cv);

@@ -47,6 +47,14 @@ proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
     T1 = round(trimm * rows(y));
     T2 = round((1 - trimm) * rows(y));
     
+    "Two breaks LM test (Lee & Strazicich, 2003)";
+    if model == 1;
+        "--------Model A: Break in level        -----";
+    endif;
+    if model == 2;
+        "--------Model C: Break in level & trend-----";
+    endif;
+    
     // Bounds as in LS
     if T1 < (pmax + 2);
         T1 = pmax + 3;
@@ -234,6 +242,18 @@ proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
         
         cv = cv1~cv5~cv10;
     endif;
+    
+        // Print results
+    local top, side, stats, dec, colwidth;
+    top = "LM Stat"$|"Break 1"$|"Fraction 1"$|"Break 2"$|"Fraction 2"$|"Lags";
+    side = "";
+    stats = Lm_min|tb1_min|tb1_min/rows(y)|tb2_min|tb2_min/rows(y)|p-1;
+    dec = 3;
+    colwidth = 10;
+    
+    _printStatsTable(top, side, stats, cv', dec, colwidth);
+    _printConclusion(LM_min, cv, 0, "unit root");
+    
     retp(LM_min, tb1_min, tb2_min, p - 1, cv);
 endp;
 

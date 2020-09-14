@@ -29,34 +29,12 @@ format /m1 /rd 8,4;
 ** 2=Model C: break in level and trend
 */
 model = 1;                  
-
-if model == 1; "--------Model A: Break in level        -----"; endif;
-if model == 2; "--------Model C: Break in level & trend-----"; endif;
-    
-"Two breaks LM test (Lee & Strazicich, 2003)";
-    { LM_min, tb1, tb2, p, cv } = LM_2breaks(y, model, pmax, ic, trimm);
-    "       LM-stat         ";;LM_min;
-    "       Break dates     ";;tb1~tb2;
-    "       Fraction        ";;tb1/rows(y)~tb2/rows(y);
-    "       Lag             ";;p;
-    "       CV (1%, 5%, 10%)";;cv;
-    "";
+{ LM_min, tb1, tb2, p, cv } = LM_2breaks(y, model, pmax, ic, trimm);
     
 /*
 ** 1=Model A: break in level  
 ** 2=Model C: break in level and trend
 */
 model = 2;                  
+{ LM_min, tb1, tb2, p, cv } = LM_2breaks(y, model, pmax, ic, trimm);
 
-if model == 1; "--------Model A: Break in level        -----"; endif;
-if model == 2; "--------Model C: Break in level & trend-----"; endif;
-    
-"Two breaks LM test (Lee & Strazicich, 2003)";
-    { LM_min, tb1, tb2, p, cv } = LM_2breaks(y, model, pmax, ic, trimm);
-    "       LM-stat         ";;LM_min;
-    "       Break dates     ";;tb1~tb2;
-    "       Fraction        ";;tb1/rows(y)~tb2/rows(y);
-    "       Lag             ";;p;
-    "       CV (1%, 5%, 10%)";;cv;
-    "";
-    
