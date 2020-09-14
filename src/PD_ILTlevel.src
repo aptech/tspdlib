@@ -105,17 +105,17 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     local top, side, stats, dec, colwidth;
     if nbreak == 0;
         top = "Group"$~"Ind. Test"$~"Lags";
-        sprintf("%14s", top);
+        sprintf("%15s", top);
         sprintf("%14.0f %14.4f %14.0f", seqa(1, 1, cols(y)), Nlm, Np);
 
     elseif nbreak == 1;
         top = "Group"$~"Ind. Test"$~"Break"$~"Lags";
-        sprintf("%14s", top);
+        sprintf("%15s", top);
         sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
 
     elseif nbreak == 2;
         top = "Group"$~"Ind. Test"$~"Break 1"$~"Break 2"$~"Lags";
-        sprintf("%14s", top);
+        sprintf("%15s", top);
         sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
     endif;
 

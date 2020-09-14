@@ -45,7 +45,11 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     Nlm = zeros(N, 1);
     Np = zeros(N, 1);
     
+    // Run LM test with level and trend shifts
+    "Panel LM test with level and trend shifts";
+
     if nbreak == 1;
+        print "Testing with one break.";
         Ntb = zeros(N, 1);
         
         for i(1, N, 1);
@@ -61,6 +65,8 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     endif;
     
     if nbreak == 2;
+        print "Testing with two breaks.";
+        print;
         Ntb = zeros(N, 2);
         for i(1, N, 1);
             {LM, tb1, tb2, p} = _get_LMtrend_2breaks(y[., i], model, pmax, ic, trimm);
@@ -76,11 +82,25 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     
     PDlm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
     
+       // Print results
+    local top, side, stats, dec, colwidth;
+    if nbreak == 1;
+        top = "Group"$~"Ind. Test"$~"Break"$~"Lags";
+        sprintf("%15s", top);
+        sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+
+    elseif nbreak == 2;
+        top = "Group"$~"Ind. Test"$~"Break 1"$~"Break 2"$~"Lags";
+        sprintf("%15s", top);
+        sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+    endif;
+
+    "Panel LM test statistic:";
+    sprintf("%14s %14.4f", "PDLM"$|"p-val", PDlm|(1 - cdfnc(PDlm)));
+    print;
+    
     retp(Nlm, Ntb, Np, PDlm, 1 - cdfnc(PDlm));
 endp;
-
-
-
 
 proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
     local t, tb1, tb1_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;

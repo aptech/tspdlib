@@ -26,21 +26,11 @@ ic = 3;
 // Trimming rate
 trimm = 0.10;
 
-// Run LM test with level and trend shifts
-"Panel LM test with level and trend shifts";
-
 // One break
-print "Testing with one break";
 nbreak = 1;
 { Nlm, Ntb, Np, PDlm, pval } = PDLMtrend(y, 2, pmax, ic, trimm, nbreak);
-seqa(1, 1, cols(y))~Nlm~Ntb~Np;
-PDlm;
-pval;
 
 // Two breaks
-print "Testing with two breaks";
 nbreak = 2;
 { Nlm, Ntb, Np, PDlm, pval } = PDLMtrend(y, 2, pmax, ic, trimm, nbreak);
-seqa(1, 1, cols(y))~Nlm~Ntb~Np;
-PDlm;
-pval;
+
