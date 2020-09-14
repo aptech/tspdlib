@@ -11,7 +11,7 @@
 **  Format:  { CIols, CIdols, cv }  = coint_shin(y, x, model, bwl, varm, q);
 **
 **
-**  Input:
+**  Input:   
 **           Y	     -  Nx1 matrix, dependent variable
 **
 **           X       -  NxK matrix, independent variables
@@ -42,7 +42,7 @@
 **                      Tsong et al. (2016)
 **
 **
-**  Output:
+**  Output: 
 **              CIols   -   CI  test based on OLS estimation
 **
 **              CIdols  -   CI* test based on DOLS estimation
@@ -64,7 +64,7 @@ proc(3) = coint_shin(y, x, model, bwl, varm, q);
     local b2, e2, ssr2, St2, lrv2, C2, k, cv, T;
     
     T = rows(y);
-    "Ho: co-integration   (Shin, 1994)";  
+     "Ho: co-integration   (Shin, 1994)";  
     print;
     if model==0;
         "-----------No deterministic component-------------------";
@@ -77,6 +77,7 @@ proc(3) = coint_shin(y, x, model, bwl, varm, q);
         z=ones(T,1)~seqa(1,1,T)~x;
     endif;
     print;
+    
     
     // OLS estimation
     b1  = y/z;
@@ -95,10 +96,10 @@ proc(3) = coint_shin(y, x, model, bwl, varm, q);
     e2  = ydols - zdols * b2;
     ssr2= e2'e2;
     St2 = cumsumc(e2);
-          
+    
     lrv1 = _get_lrv_type(varm, ssr1, e1, bwl, T, 1);
     lrv2 = _get_lrv_type(varm, ssr2, e2, bwl, T, 0);
-      
+    
     // Co-integration test based on OLS
     C1 = T^(-2) * (St1'St1)/lrv1;
     
@@ -161,47 +162,25 @@ proc(3) = coint_shin(y, x, model, bwl, varm, q);
         endif;
     endif;
     
-       // Print results
-    local hd_side, hd_top, tmp1, tmp2;
-    hd_side = "OLS"$|"DOLS";
-    hd_top = ""$~"Test"$~"1%"$~"5%"$~"10%";
-    tmp1 = (C1|C2)~(cv'|cv');
-    #ifminkernelversion(20)
-    sprintf("%14s", hd_top);
-    sprintf("%14s %14.2f", hd_side, tmp1);
-    print;
-#else;
-    hd_top$|(hd_side$~(ntos(tmp1, 4)));
-    print;
-#endif;
+          // Print results
+    local side, top, stats, dec, colwidth;
+    side = "OLS"$|"DOLS";
+    top = ""$~"Test";
+    stats = (C1|C2);
+    dec = 2;
+    colwidth = 14;
     
+    _printStatsTable(top, side, stats, cv~cv, dec, colwidth);
+
     // Print conclusion
     print "OLS test results:";
-    if C1 < cv[1];
-        print "Reject the null hypothesis of cointegration at the 1% level.";
-    elseif C1 < cv[2];
-        print "Reject the null hypothesis of cointegration at the 5% level.";
-    elseif C1 < cv[3];
-        print "Reject the null hypothesis of cointegration at the 10% level.";
-    else;
-        print "Cannot reject the null hypothesis of cointegration.";
-    endif;
-    print;
+    _printConclusion(C1, cv, 1, "cointegration");
     
     // Print conclusion
     print "DOLS test results:";
-    if C2 < cv[1];
-        print "Reject the null hypothesis of cointegration at the 1% level.";
-    elseif C2 < cv[2];
-        print "Reject the null hypothesis of cointegration at the 5% level.";
-    elseif C2 < cv[3];
-        print "Reject the null hypothesis of cointegration at the 10% level.";
-    else;
-        print "Cannot reject the null hypothesis of cointegration.";
-    endif;
-    print;
-    
-    if k<6;
+    _printConclusion(C2, cv, 1, "cointegration");
+
+     if k<6;
         retp(C1, C2, cv);
     else;
         print "Shin cointegration test critical values unavailable for k>5";

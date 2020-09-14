@@ -64,12 +64,14 @@ proc(3) = Fourier_KPSS(y, model, kmax, l, varm);
     S = cumsumc(e1);
     
     "Fourier KPSS test (Becker, Enders & Lee, 2006)";  
-     lrv = _get_lrv_type(varm, ssr, e1, l, T, 1);
+    lrv = _get_lrv_type(varm, ssr, e1, l, T, 1);
+    print;
     
     KPSS = sumc(s .* s)/(t^2 * lrv);
     
     // Critical Values (see, Becker, Enders & Lee, 2006, Table 1)
     crit = zeros(5, 3);
+   
     if model == 1;
         "--------Model A: Break in level        -----";
         if T <= 250;
@@ -123,37 +125,19 @@ proc(3) = Fourier_KPSS(y, model, kmax, l, varm);
                 0.2153 0.1451 0.1163};
         endif;
     endif;
-    
-    // Print results & Critical values
-    local hd, tmp1;
-    hd = "KPSS"$|"Frequency";
-    tmp1 = KPSS|k;
-    
-    #ifminkernelversion(20)
-        sprintf("%10s %10.4f", hd, tmp1);
-        print;
-        print "Critical Values:";
-        sprintf("%10s", "1%"$~"5%"$~"10%");
-        sprintf("%10.5f", crit[k, .]);
-        print;
-    #else;
-        hd$~(ntos(tmp1, 4));
-        print "Critical Values:";
-        ("1%"$~"5%"$~"10%")$|ntos(crit[k, .], 5);
-    #endif;
-    
-        // Print conclusion
-    if KPSS > crit[k, 1];
-        print "Reject the null hypothesis of stationarity at the 1% level.";
-    elseif KPSS > crit[k, 2];
-           print "Reject the null hypothesis of stationarity at the 5% level.";
-    elseif KPSS > crit[k, 3];  
-           print "Reject the null hypothesis of stationarity at the 10% level.";
-    else;  
-           print "Cannot reject the null hypothesis of stationarity.";
-    endif;
     print;
-    
+
+    // Print results & Critical values
+    local top, side, stats, dec, colwidth;
+    top = "KPSS"$|"Frequency";
+    side = "";   
+    stats = KPSS|k;
+    dec = 5;
+    colwidth = 10;
+                 
+    _printStatsTable(top, side, stats, crit[k, .]', dec, colwidth);
+    _printConclusion(KPSS, crit[k, .], 1, "stationarity");
+
     retp(KPSS, k, crit[k, .]);
 endp;
 

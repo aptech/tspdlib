@@ -45,7 +45,7 @@
 **
 **          FFols   -   Optimal Fourier frequency based on OLS estimation
 **
-**          CIfdols -   CIf test based on DOLS estimation
+**          CIfdols -   Cis test based on DOLS estimation
 **
 **          FFdols  -   Optimal Fourier frequency based on DOLS estimation
 **
@@ -130,10 +130,10 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
         
         zrdols=trimr(zr~dx_leads~dx~dx_lags,q+1,q);
         Fdols[k,1]= _get_Ftest(ydols,zrdols,zdols);
-          
+     
         lrv1 = _get_lrv_type(varm, ssr1, e1, bwl, T, 1);
         lrv2 = _get_lrv_type(varm, ssr2, e2, bwl, T, 0);
-       
+         
         // Global minimization for OLS-based stat
         SC1 = T^(-2) * (St1'St1)/lrv1;
         if  ssr1 < ssr1_min;
@@ -154,6 +154,7 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     
     p    = cols(x);
     {cv} = cv_coint_tsongetal(model, k2_min, p);
+    
     if model == 1;
         "-----------Level shift----------------------------------";
     elseif model == 2;
@@ -161,48 +162,25 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     endif;
     print;
     
-    "Ho: co-integration   (Tsong et al., 2016)";
+    "Ho: co-integration   (Tsong et al., 2016)"; 
     // Print results
-    local hd_side, hd_top, tmp1, tmp2;
-    hd_side = "OLS"$|"DOLS";
-    hd_top = ""$~"F-Stat"$~"Freq."$~"CIf"$~"1%"$~"5%"$~"10%";
-    tmp1 = (Fols[k1_min]|Fdols[k2_min])~(k1_min|k2_min)~(SC1_min|SC2_min)~(cv'|cv');
-    
-#ifminkernelversion(20)
-    sprintf("%14s", hd_top);
-    sprintf("%14s %14.2f", hd_side, tmp1);
-    print;
-#else;
-    hd_top$|(hd_side$~(ntos(tmp1, 4)));
-    print;
-#endif;
-    
+    local side, top, stats, dec, colwidth;
+    side = "OLS"$|"DOLS";
+    top = ""$~"F-Stat"$~"Freq."$~"CIf";
+    stats = (Fols[k1_min]|Fdols[k2_min])~(k1_min|k2_min)~(SC1_min|SC2_min);
+    dec = 3;
+    colwidth = 14;
+        
+    _printStatsTable(top, side, stats, cv~cv, dec, colwidth);
+  
     // Print conclusion
     print "OLS test results:";
-    if SC1_min > cv[1];
-        print "Reject the null hypothesis of cointegration at the 1% level.";
-    elseif SC1_min > cv[2];
-        print "Reject the null hypothesis of cointegration at the 5% level.";
-    elseif SC1_min > cv[3];
-        print "Reject the null hypothesis of cointegration at the 10% level.";
-    else;
-        print "Cannot reject the null hypothesis of cointegration.";
-    endif;
-    print;
-    
+    _printConclusion(SC1_min, cv, 1, "cointegration");
+
     // Print conclusion
     print "DOLS test results:";
-    if SC2_min > cv[1];
-        print "Reject the null hypothesis of cointegration at the 1% level.";
-    elseif SC2_min > cv[2];
-        print "Reject the null hypothesis of cointegration at the 5% level.";
-    elseif SC2_min > cv[3];
-        print "Reject the null hypothesis of cointegration at the 10% level.";
-    else;
-        print "Cannot reject the null hypothesis of cointegration.";
-    endif;
-    print;
-    
+    _printConclusion(SC2_min, cv, 1, "cointegration");
+
     retp(SC1_min, k1_min, SC2_min, k2_min, cv, Fols, Fdols);
 endp;
 
@@ -249,7 +227,7 @@ proc (1) = cv_coint_tsongetal(model, k, p);
         endif;
     ENDIF;
     
-    if k<4 and p<5;
+      if k<4 and p<5;
         cv10= mat_cv[p, 1];
         cv5 = mat_cv[p, 2];
         cv1 = mat_cv[p, 3];

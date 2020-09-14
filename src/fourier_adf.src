@@ -54,10 +54,10 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         ly = lagn(y, 1);
         
         // Deterministic term=constant
-        dc = ones(t, 1);      
+        dc = ones(t, 1);
         
         // Deterministic term=trend
-        dt = seqa(1, 1, t);     
+        dt = seqa(1, 1, t);
         sink = sin(2 * pi * k * seqa(1, 1, t)/t);
         cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
         p = 0;
@@ -114,7 +114,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
     crit = zeros(5, 3);
     if model == 1;
         if T <= 150;
-         crit = {-4.42 -3.81 -3.49,
+            crit = {-4.42 -3.81 -3.49,
                 -3.97 -3.27 -2.91,
                 -3.77 -3.07 -2.71,
                 -3.64 -2.97 -2.64,
@@ -122,7 +122,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         endif;
         
         if 151 < T and T <= 349;
-         crit = {-4.37 -3.78 -3.47,
+            crit = {-4.37 -3.78 -3.47,
                 -3.93 -3.26 -2.92,
                 -3.74 -3.06 -2.72,
                 -3.62 -2.98 -2.65,
@@ -130,7 +130,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         endif;
         
         if 350 < T and T <= 500;
-         crit = {-4.35 -3.76 -3.46,
+            crit = {-4.35 -3.76 -3.46,
                 -3.91 -3.26 -2.91,
                 -3.70 -3.06 -2.72,
                 -3.62 -2.97 -2.66,
@@ -138,7 +138,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         endif;
         
         if 500 < T;
-        crit = {-4.31 -3.75 -3.45,
+            crit = {-4.31 -3.75 -3.45,
                 -3.89 -3.25 -2.90,
                 -3.69 -3.05 -2.71,
                 -3.61 -2.96 -2.64,
@@ -148,7 +148,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
     
     if model == 2;
         if T <= 150;
-        crit = {-4.95 -4.35 -4.05,
+            crit = {-4.95 -4.35 -4.05,
                 -4.69 -4.05 -3.71,
                 -4.45 -3.78 -3.44,
                 -4.29 -3.65 -3.29,
@@ -156,7 +156,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         endif;
         
         if 151 < T and T <= 349;
-        crit = {-4.87 -4.31 -4.02,
+            crit = {-4.87 -4.31 -4.02,
                 -4.62 -4.01 -3.69,
                 -4.38 -3.77 -3.43,
                 -4.27 -3.63 -3.31,
@@ -164,7 +164,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         endif;
         
         if 350 < T and  T<= 500;
-        crit = {-4.81 -4.29 -4.01,
+            crit = {-4.81 -4.29 -4.01,
                 -4.57 -3.99 -3.67,
                 -4.38 -3.76 -3.43,
                 -4.25 -3.64 -3.31,
@@ -172,7 +172,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         endif;
         
         if 500 < T;
-        crit = {-4.80 -4.27 -4.00,
+            crit = {-4.80 -4.27 -4.00,
                 -4.58 -3.98 -3.67,
                 -4.38 -3.75 -3.43,
                 -4.24 -3.63 -3.30,
@@ -180,7 +180,6 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
         endif;
     endif;
     
-        
     "Fourier ADF test (Enders & Lee, 2012)";
     if model == 1;
         "--------Model A: Break in level        -----";
@@ -188,37 +187,17 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
     if model == 2;
         "--------Model C: Break in level & trend-----";
     endif;
-    print;
     
     // Print results & Critical values
-    local hd, tmp1;
-    hd = "ADF-stat"$|"Frequency"$|"Lag";
-    tmp1 = ADF|f|p-1;
-    
-    #ifminkernelversion(20)
-        sprintf("%10s %10.4f", hd, tmp1);
-        print;
-        print "Critical Values:";
-        sprintf("%10s", "1%"$~"5%"$~"10%");
-        sprintf("%10.2f", crit[f, .]);
-        print;
-    #else;
-        hd$~(ntos(tmp1, 4));
-        print "Critical Values:";
-        ("1%"$~"5%"$~"10%")$|ntos(crit[f, .], 5);
-    #endif;
-    
-        // Print conclusion
-    if ADF < crit[f, 1];
-        print "Reject the null hypothesis of a unit root at the 1% level.";
-    elseif ADF < crit[f, 2];
-           print "Reject the null hypothesis of a unit root at the 5% level.";
-    elseif ADF < crit[f, 3];  
-           print "Reject the null hypothesis of a unit root at the 10% level.";
-    else;  
-           print "Cannot reject the null hypothesis of a unit root.";
-    endif;
-    print;
-    
+    local top, side, stats, dec, colwidth;
+    top = "ADF-stat"$|"Frequency"$|"Lag";
+    side = "";
+    stats = ADF|f|p-1;
+    dec = 4;
+    colwidth = 10;
+            
+    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth);
+    _printConclusion(ADF, crit[f, .], 0, "unit root");
+
     retp(ADF, f, p-1, crit[f, .]);
 endp;

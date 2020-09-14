@@ -115,8 +115,8 @@ proc(8) = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
         endif;
         
         {b,e1,sig2,se,ssr}= myols(y,x1);
-        {DF[tb1-T1+1],lagadf[tb1-T1+1], cv0}  = adf(e1,0,pmax,ic);
-        {Zt[tb1-T1+1],Za[tb1-T1+1], cv1, cv2} = pp(e1,0,bwl,varm);
+        {DF[tb1-T1+1],lagadf[tb1-T1+1], cv0}  = adf(e1, 0, pmax, ic);
+        {Zt[tb1-T1+1],Za[tb1-T1+1], cv1, cv2} = pp(e1, 0, bwl, varm);
         
         stat1=minc(DF);
         optl=lagadf[minindc(DF)];
@@ -168,58 +168,21 @@ proc(8) = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
     endif;
     
     // Print results
-    local hd_side, hd_top, tmp1, tmp2;
-    hd_side = "ADF"$|"Zt"$|"Za";
-    hd_top = ""$~"Test Stat"$~"Break Point"$~"1%"$~"5%"$~"10%";
-    tmp1 = (ADf_min|Zt_min|Za_min)~(TBadf|TBzt|TBza)~(cvADFZt'|cvADFZt'|cvZa');
+    local top, side, stats, dec, colwidth;
+    side = "ADF"$|"Zt"$|"Za";
+    top = ""$~"Test"$~"Break";
+    stats = (ADf_min|Zt_min|Za_min)~(TBadf|TBzt|TBza);
+    dec = 2;
+    colwidth = 14;
     
-#ifminkernelversion(20)
-    sprintf("%14s", hd_top);
-    sprintf("%14s %14.2f", hd_side, tmp1);
-    print;
-#else;
-    hd_top$|(hd_side$~(ntos(tmp1, 4)));
-    print;
-#endif;
-  
-    // Print conclusion
+    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, 4, 12);
+
     print "ADF test results:";
-    if ADF_min < cvADFZt[1];
-        print "Reject the null hypothesis of no cointegration at the 1% level.";
-    elseif ADF_min < cvADFZt[2];
-        print "Reject the null hypothesis of no cointegration at the 5% level.";
-    elseif ADF_min < cvADFZt[3];
-        print "Reject the null hypothesis of no cointegration at the 10% level.";
-    else;
-        print "Cannot reject the null hypothesis of no cointegration.";
-    endif;
-    print;
-    
-    // Print conclusion
+    _printConclusion(ADF_min, cvADFZt, 0, "no co-integration");
     print "Zt test results:";
-    if Zt_min < cvADFZt[1];
-        print "Reject the null hypothesis of no cointegration at the 1% level.";
-    elseif Zt_min < cvADFZt[2];
-        print "Reject the null hypothesis of no cointegration at the 5% level.";
-    elseif Zt_min < cvADFZt[3];
-        print "Reject the null hypothesis of no cointegration at the 10% level.";
-    else;
-        print "Cannot reject the null hypothesis of no cointegration.";
-    endif;
-    print;
-    
-    // Print conclusion
+     _printConclusion(Zt_min, cvADFZt, 0, "no co-integration");
     print "Za test results:";
-    if Za_min < cvZa[1];
-        print "Reject the null hypothesis of no cointegration at the 1% level.";
-    elseif Za_min < cvZa[2];
-        print "Reject the null hypothesis of no cointegration at the 5% level.";
-    elseif Za_min < cvZa[3];
-        print "Reject the null hypothesis of no cointegration at the 10% level.";
-    else;
-        print "Cannot reject the null hypothesis of no cointegration.";
-    endif;
-    print;
+     _printConclusion(Za_min, cvZa, 0, "no co-integration");
     
     retp(ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa);
 endp;
@@ -301,7 +264,6 @@ proc(2) = cv_coint_ghansen(k, model);
             cvZa=-100.69|-88.47|-82.30;
         endif;
     endif;
-    
     
     if k < 5;
         retp(cvADFZt, cvZa);
