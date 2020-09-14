@@ -43,6 +43,31 @@
 proc(3) = PDfzk(y, model, k, varm);
     local t, n, ft, Nkpss, i, fpk, d, mu, var, fzk;
     
+    print "Panel stationary test with gradual shifts.";
+    print "LR Variance estimation method";
+    if varm == 1;
+        print "iid";
+    endif;
+    if varm == 2;
+        print "Bartlett";
+    endif;
+    if varm == 3;
+        print "Quadratic Spectral (QS)";
+    endif;
+    if varm == 4;
+        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
+    endif;
+    if varm == 5;
+        print "SPC with QS";
+    endif;
+    if varm == 6;
+        print "Kurozumi with Bartlett";
+    endif;
+    if varm == 7;
+        print "Kurozumi with QS";
+    endif;
+    print;
+    
     t = rows(y);
     n = cols(y);
     
@@ -57,6 +82,13 @@ proc(3) = PDfzk(y, model, k, varm);
     endfor;
     
     FPk = meanc(Nkpss);
+    
+    if model == 1;
+        "Panel stationarity test with level.";
+    elseif model == 2;
+        "Panel stationarity test with level and trend shifts.";
+    endif;
+    print;
     
     if model == 1 and k == 1;
         mu = 0.0658;
@@ -110,6 +142,16 @@ proc(3) = PDfzk(y, model, k, varm);
     
     FZk = sqrt(n) * (FPk - mu)/sqrt(var);
     
+    // Print individual results
+    local top1;
+    top1 = "Group"$~"Ind. Test";
+    sprintf("%15s", top1);
+    sprintf("%14.0f %14.4f", seqa(1, 1, cols(y)), Nkpss);
+   
+    // Print panel results
+    "Panel test statistic:";
+    sprintf("%14s %14.4f", "FzK"$|"p-val", FZk|(1 - cdfn(FZk)));
+    
     retp(Nkpss, FZk, 1 - cdfn(FZk));
 endp;
 
@@ -117,7 +159,7 @@ endp;
 proc(1) = _get_FKPSS_Ft(y, model, k, varm, ft);
     local t, sink, cosk, z, s, lrv, kpss;
     local b, e1, sig2, se, ssr;
-    local vare, l, bw, w;
+    local vare, l, bw, w, bwl;
     
     t = rows(y);
     sink = sin(2 * pi * k * seqa(1, 1, t)/t);
@@ -136,21 +178,8 @@ proc(1) = _get_FKPSS_Ft(y, model, k, varm, ft);
     // Partial sum of residuals
     S = cumsumc(e1);
     
-    if varm == 1;
-        lrv = ssr/t;
-    elseif varm == 2;
-        lrv = bartlett(e1, round(4 * (T/100)^(2/9)));
-    elseif varm == 3;
-        lrv = qs(e1, round(4 * (T/100)^(2/9)));
-    elseif varm == 4;
-        lrv = spc_bartlett(e1, round(4 * (T/100)^(2/9)));
-    elseif varm == 5;
-        lrv = spc_qs(e1, round(4 * (T/100)^(2/9)));
-    elseif varm == 6;
-        lrv = kurozumi_bartlett(e1);
-    elseif varm == 7;
-        lrv = kurozumi_bartlett(e1);
-    endif;
+    bwl = round(4 * (T/100)^(2/9));
+    lrv = _get_lrv_type(varm, ssr, e1, bwl, T, 1);
     
     KPSS = sumc(s .* s)/(t^2 * lrv);
     
