@@ -47,12 +47,18 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     Nlm = zeros(N, 1);
     Np = zeros(N, 1);
     
+    // Run panel LM test with level shifts
+    "Panel LM test with level shifts";
     if nbreak == 0;
         Ntb = zeros(N, 1);
+        print "No breaks implemented.";
+        print;
         
         for i(1, N, 1);
+            screen off;
             {LMtau, p, cv} = LM(y[., i], pmax, ic);
-            // i~LM~tb1~p;
+            screen on;
+
             Nlm[i] = LMtau;
             Np[i]  = p;
         endfor;
@@ -61,9 +67,12 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     
     if nbreak == 1;
         Ntb = zeros(N, 1);
-        
+        print "Testing with one break.";
+        print;
         for i(1, N, 1);
-            {LMtau, tb1, p, lambda, cv} = LM_1break(y[., i], model, pmax, ic, trimm);
+            screen off;
+                {LMtau, tb1, p, lambda, cv} = LM_1break(y[., i], model, pmax, ic, trimm);
+            screen on;
             // i~LM~tb1~p;
             Nlm[i] = LMtau;
             Ntb[i] = tb1;
@@ -74,10 +83,13 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     
     if nbreak == 2;
         Ntb = zeros(N, 2);
+        print "Testing with two breaks.";
+        print;
         
         for i(1, N, 1);
-            {LMtau, tb1, tb2, p, cv} = LM_2breaks(y[., i], model, pmax, ic, trimm);
-            //i~LM~tb1~p;
+            screen off;
+                {LMtau, tb1, tb2, p, cv} = LM_2breaks(y[., i], model, pmax, ic, trimm);
+            screen on;
             Nlm[i] = LMtau;
             Ntb[i, 1] = tb1;
             Ntb[i, 2] = tb2;
@@ -88,6 +100,28 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     
     {meanp, varp} = _get_ILTmoments(T, N, Nlm, Np);
     PDlm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
+    
+    // Print results
+    local top, side, stats, dec, colwidth;
+    if nbreak == 0;
+        top = "Group"$~"Ind. Test"$~"Lags";
+        sprintf("%14s", top);
+        sprintf("%14.0f %14.4f %14.0f", seqa(1, 1, cols(y)), Nlm, Np);
+
+    elseif nbreak == 1;
+        top = "Group"$~"Ind. Test"$~"Break"$~"Lags";
+        sprintf("%14s", top);
+        sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+
+    elseif nbreak == 2;
+        top = "Group"$~"Ind. Test"$~"Break 1"$~"Break 2"$~"Lags";
+        sprintf("%14s", top);
+        sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+    endif;
+
+    "Panel LM test statistic:";
+    sprintf("%14s %14.4f", "PDLM"$|"p-val", PDlm|(1 - cdfnc(PDlm)));
+    print;
     
     retp(Nlm, Ntb, Np, PDlm, 1 - cdfnc(PDlm));
 endp;

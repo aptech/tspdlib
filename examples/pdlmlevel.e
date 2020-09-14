@@ -30,17 +30,14 @@ ic = 3;
 trimm = 0.10;
 
 // One break
-nbreak = 1;
-print "Testing with one break";
+nbreak = 0;
 { Nlm, Ntb, Np, PDlm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
-seqa(1, 1, cols(y))~Nlm~Ntb~Np;
-PDlm;
-pval;
+
+// One break
+nbreak = 1;
+{ Nlm, Ntb, Np, PDlm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
 
 // Two breaks
 nbreak = 2;
-print "Testing with two breaks";
 { Nlm, Ntb, Np, PDlm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
-seqa(1, 1, cols(y))~Nlm~Ntb~Np;
-PDlm;
-pval;
+
