@@ -45,6 +45,14 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
     T1 = round(trimm * rows(y));
     T2 = round((1 - trimm) * rows(y));
     
+    "One break LM test (Lee & Strazicich, 2013)";
+    if model == 1;
+        "--------Model A: Break in level        -----";
+    endif;
+    if model == 2;
+        "--------Model C: Break in level & trend-----";
+    endif;
+    
     if T1 < (pmax + 2);
         T1 = pmax + 3;
     endif;
@@ -53,10 +61,10 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
     do while tb1 <= T2;
         
         // Deterministic term =  constant
-        dc = ones(t, 1);  
-
+        dc = ones(t, 1);
+        
         // Deterministic term =  trend
-        dt = seqa(1, 1, t);              
+        dt = seqa(1, 1, t);
         
         if model == 1;
             du1 = zeros(tb1, 1)|ones(t - tb1, 1);
@@ -135,16 +143,16 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
         
         if  lm_k < LM_min;
             // First break date
-            tb1_min = tb1;    
+            tb1_min = tb1;
             
             // LM statistic with break
-            LM_min = lm_k;   
+            LM_min = lm_k;
         endif;
         
         tb1 =  tb1 + 1;
     endo;
     
-    // Critical Values (see, Lee & Strazicih, 2013, Table 1) 
+    // Critical Values (see, Lee & Strazicih, 2013, Table 1)
     if model == 1;
         cv = -4.239~-3.566~-3.211;
     endif;
@@ -163,6 +171,18 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
         
         cv = crit[lambda, .];
     endif;
+    
+        // Print results
+    local top, side, stats, dec, colwidth;
+    top = "LM Stat"$|"Break 1"$|"Fraction"$|"Lags";
+    side = "";
+    stats = Lm_min|tb1_min|tb1_min/rows(y)|p-1;
+    dec = 3;
+    colwidth = 10;
+    
+    _printStatsTable(top, side, stats, cv', dec, colwidth);
+    _printConclusion(LM_min, cv, 1, "unit root");
+    
     
     retp(LM_min, tb1_min, p - 1, tb1_min/rows(y), cv);
 endp;
