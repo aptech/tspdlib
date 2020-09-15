@@ -82,21 +82,32 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     
     PDlm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
     
-       // Print results
+          // Print results
     local top, side, stats, dec, colwidth;
     if nbreak == 1;
         top = "Group"$~"Ind. Test"$~"Break"$~"Lags";
-        sprintf("%15s", top);
-        sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
-
+        #ifminkernelversion(20)
+            sprintf("%15s", top);
+            sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+        #else
+            top$|(ntos(seqa(1, 1, cols(y))~Nlm~Ntb~Np, 4));
+        #endif;
     elseif nbreak == 2;
         top = "Group"$~"Ind. Test"$~"Break 1"$~"Break 2"$~"Lags";
-        sprintf("%15s", top);
-        sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+        #ifminkernelversion(20)
+            sprintf("%15s", top);
+            sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+        #else
+            top$|(ntos(seqa(1, 1, cols(y))~Nlm~Ntb~Np, 4));
+        #endif;
     endif;
 
     "Panel LM test statistic:";
-    sprintf("%14s %14.4f", "PDLM"$|"p-val", PDlm|(1 - cdfnc(PDlm)));
+    #ifminkernelversion(20)
+        sprintf("%14s %14.4f", "PDLM"$|"p-val", PDlm|(1 - cdfnc(PDlm)));
+    #else;
+        ("PDLM"$|"p-val")~ntos(PDlm|(1 - cdfnc(PDlm)), 4);
+    #endif;
     print;
     
     retp(Nlm, Ntb, Np, PDlm, 1 - cdfnc(PDlm));

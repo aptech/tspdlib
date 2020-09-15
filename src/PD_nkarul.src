@@ -145,12 +145,20 @@ proc(3) = PDfzk(y, model, k, varm);
     // Print individual results
     local top1;
     top1 = "Group"$~"Ind. Test";
+    #ifminkernelversion(20)
     sprintf("%15s", top1);
     sprintf("%14.0f %14.4f", seqa(1, 1, cols(y)), Nkpss);
    
     // Print panel results
     "Panel test statistic:";
     sprintf("%14s %14.4f", "FzK"$|"p-val", FZk|(1 - cdfn(FZk)));
+    #else;
+    top1$|(ntos(seqa(1, 1, cols(y))~Nkpss, 4));
+
+    // Print panel results
+    "Panel test statistic:";
+    ("FzK"$|"p-val")~ntos(FZk|(1 - cdfn(FZk)), 4);
+    #endif;
     
     retp(Nkpss, FZk, 1 - cdfn(FZk));
 endp;

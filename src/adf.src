@@ -121,7 +121,7 @@ proc(3) = ADF(y, model, pmax, ic);
         print;
         print "Critical Values:";
         sprintf("%10s", "1%"$~"5%"$~"10%");
-        sprintf("%10.2f", cv');
+        sprintf("%10.2f", cv);
         print;
     #else;
         hd$~(ntos(tmp1, 4));
