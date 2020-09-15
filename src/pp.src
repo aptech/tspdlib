@@ -52,11 +52,13 @@ proc(4) = PP(y, model, l, varm);
     dy = diff(y, 1);
     ly = lagn(y, 1);
     
+    "Phillips-Perron Test";
+    print;
     // Deterministic term=constant
     dc = ones(t, 1);
     
     // Deterministic term=trend
-    dt = seqa(1, 1 , t);
+    dt = seqa(1, 1, t);
     
     dep = trimr(dy, 1, 0);
     y1 = trimr(ly, 1, 0);
@@ -65,14 +67,13 @@ proc(4) = PP(y, model, l, varm);
     
     if model == 0;
         x = y1;
-    endif;
-    
-    if model == 1;
+        "---------No deterministic component---------";
+    elseif model == 1;
         x = y1~sbt;
-    endif;
-    
-    if model == 2;
+        "----------------With constant---------------";
+    elseif model == 2;
         x = y1~sbt~trnd;
+        "------------With constant and trend---------";
     endif;
     
     { b, e, s2, se, ssr} = myols(dep, x);
@@ -105,7 +106,20 @@ proc(4) = PP(y, model, l, varm);
     MZt = MZa * MSB;
     retp(Zt, Za, MZt, MZa, MSB);
     @
-    
+    // Print results
+    local top, side, stats, dec, colwidth;
+    top = ""$~"Stat";
+    side = "Zt"$|"Za";
+    stats = Zt|Za;
+    dec = 4;
+    colwidth = 10;
+                             
+    _printStatsTable(top, side, stats, (cvZt|cvZa)', dec, colwidth);
+    "Zt test conclusion:";
+    _printConclusion(Zt, cvZt, 0, "unit root");
+     "Za test conclusion:";
+    _printConclusion(Za, cvZa, 0, "unit root");
+  
     retp(Zt, Za, cvZt, cvZa);
 endp;
 
