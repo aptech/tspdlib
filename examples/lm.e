@@ -19,9 +19,4 @@ pmax = 12;
 */
 ic = 3;                 
 
-format /m1 /rd 8,4;
-
 { lm_tau, lm_p, lm_cv }  = lm(y, pmax, ic);
-
-"LM unit root test";; lm_tau ;; lm_cv ;; lm_p ; 
-

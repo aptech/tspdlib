@@ -18,13 +18,4 @@ pmax = 12;
 ** 3=t-stat sign.
 */
 ic = 3;
-
-format /m1 /rd 8,4;
-
-
-"RALS-LM";
 { tauRALS, p2, cv } = RALSLM(y, pmax, ic);
-    "       RALS-LM stat       ";; tauRALS;
-    "       p2                  ";; p2;
-    "       CV (1%, 5%, 10%)    ";;cv;
-  "";

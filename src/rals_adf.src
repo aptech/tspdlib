@@ -103,7 +103,7 @@ proc(3) = RALSADF(y, model, pmax, ic);
     cv = crit_RALSadf(p2, model);
     
     local top, side, stats, dec, colwidth;
-    top = "RALS-ADF"$|"p-val";
+    top = "RALS-ADF"$|"Rho^2";
     side = "";
     stats = tauRALS|p2;
     dec = 4;
