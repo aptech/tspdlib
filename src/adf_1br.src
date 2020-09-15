@@ -195,7 +195,7 @@ proc (0) = _printConclusion(stat, cv, test_type, null_hypothesis);
     local reject_print, no_reject_print, tmp;
     
     reject_print = "Reject the null hypothesis of " $+ null_hypothesis;
-    no_reject_print = "Cannot the null hypothesis of " $+ null_hypothesis $+ ".";
+    no_reject_print = "Cannot reject the null hypothesis of " $+ null_hypothesis $+ ".";
     if test_type == 0;
         // Print conclusion
         if stat < cv[1];
