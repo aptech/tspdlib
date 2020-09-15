@@ -389,12 +389,31 @@ proc(8) = MGLS(y, model, l, varm);
     
     t = rows(y);
     
-    if model == 1;
-        c = -7.00;
-        z = ones(t, 1);
+     print "LR Variance estimation method";
+    if varm == 1;
+        print "iid";
+    elseif varm == 2;
+        print "Bartlett";
+    elseif varm == 3;
+        print "Quadratic Spectral (QS)";
+    elseif varm == 4;
+        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
+    elseif varm == 5;
+        print "SPC with QS";
+    elseif varm == 6;
+        print "Kurozumi with Bartlett";
+    elseif varm == 7;
+        print "Kurozumi with QS";
     endif;
     
-    if model == 2;
+    if model == 0;
+        "---------No deterministic component---------";
+    elseif model == 1;
+        "----------------With constant---------------";
+        c = -7.00;
+        z = ones(t, 1);
+    elseif model == 2;
+        "------------With constant and trend---------";
         c = -13.50;
         z = ones(t, 1)~seqa(1, 1, t);
     endif;
@@ -444,6 +463,25 @@ proc(8) = MGLS(y, model, l, varm);
         cvMSB =  0.143 ~  0.168  ~ 0.185;
         cvMPT =  4.030 ~  5.480  ~ 6.670;
     endif;
+    
+    // Print results
+    local top, side, stats, dec, colwidth, cv2;
+    top = ""$~"Stat";
+    side = "MZa"$|"MZt"$|"MSB"$|"MPT";
+    stats = MZa|MZt|MSB|MPT;
+    cv2 = (cvMZA|cvMZt|cvMSB|cvMPT)';
+    dec = 3;
+    colwidth = 14;
+                         
+    _printStatsTable(top, side, stats, cv2, dec, colwidth);
+    "Conclusion from MZA test:";
+    _printConclusion(MZa, cvMZA, 0, "unit root");
+    "Conclusion from MZt test:";
+    _printConclusion(MZt, cvMZt, 0, "unit root");
+    "Conclusion from MSB test:";
+    _printConclusion(MSB, cvMSB, 0, "unit root");
+    "Conclusion from MPT test:";
+    _printConclusion(MPT, cvMPT, 0, "unit root");
     
     retp(Mza, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT);
 endp;
