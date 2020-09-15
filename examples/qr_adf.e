@@ -25,23 +25,11 @@ tau   = 0.1;
 // Turn printing on
 _print= "true";
 
-
-format /m1 /rd 8,4;
-
 /*
 ** 1 = With constant
 ** 2 = With constant and trend
 */
 model = 1;
-
-if model == 1;
-    "--------Model A: Break in level        -----";
-endif;
-if model == 2;
-    "--------Model C: Break in level & trend-----";
-endif;
-
-"Quantile-ADF";
 stat = QRADF(y, model, pmax, ic, tau, _print); 
 
 /*
@@ -49,14 +37,5 @@ stat = QRADF(y, model, pmax, ic, tau, _print);
 ** 2 = With constant and trend
 */
 model = 2;
-
-if model == 1;
-    "--------Model A: Break in level        -----";
-endif;
-if model == 2;
-    "--------Model C: Break in level & trend-----";
-endif;
-
-"Quantile-ADF";
 stat = QRADF(y, model, pmax, ic, tau, _print); 
 

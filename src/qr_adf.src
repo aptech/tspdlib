@@ -155,19 +155,26 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     cv = crit_QRadf(delta2, model);
     
     if _print == "true";
-        "                 ADF-Statistics";
-        "quantil        ";;
-        tau;
-        "rho(quantile)   ";;
-        rho_tau;
-        "rho (OLS)      ";;
-        rho_ols;
-        "delta^2        ";;
-        delta2;
-        "ADF(quantile)  ";;
-        QURadf;
-        "CV (1%,5%,10%) ";;
-        cv;
+        local top, side, stats, dec, colwidth;
+        top = "";
+        side = "quantil"$|"rho(quantile)"$|"rho (OLS)"$|"delta^2"$|"ADF(quantile)";
+        stats = tau|rho_tau|rho_ols|delta2|QURadf;
+
+        #ifminkernelversion(20)
+            sprintf("%14s %14.4f", side, stats);
+            print;
+            print "Critical Values:";
+            sprintf("%14s", "1%"$~"5%"$~"10%");
+            sprintf("%14.4f", cv);
+            print;
+        #else;
+            side$~(ntos(stats, dec));
+        #endif;
+        
+        // Print conclusions
+        _printConclusion(QURadf, cv', 0, "a unit root");
+        print;
+        
     endif;
     
     retp(QURadf);

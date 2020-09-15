@@ -185,6 +185,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth);
         top$|(ntos(stats, dec));
     else;
          top$|(side$~(ntos(stats, 4)));
+    endif;
     print "Critical Values:";
     ("1%"$~"5%"$~"10%")$|ntos(cv', dec);
 #endif;
