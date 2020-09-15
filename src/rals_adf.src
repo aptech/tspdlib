@@ -33,8 +33,15 @@ proc(3) = RALSADF(y, model, pmax, ic);
     local tauADF, lag_var, t, dy, ly, dc, dt, dep, y1, ldy, sbt, trnd, lmat, x;
     local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cvADF, cv;
     
+    "RALS-ADF ";
+    if model == 1;
+        "--------Model A: Break in level        -----";
+    elseif model == 2;
+        "--------Model C: Break in level & trend-----";
+    endif;
+    
     T = rows(y);
-    { tauADF, lag_var, cvADF} = ADF(y, model, pmax, ic);
+    { tauADF, lag_var, cvADF } = ADF(y, model, pmax, ic);
     dy = diff(y, 1);
     ly = lagn(y, 1);
     
@@ -52,8 +59,8 @@ proc(3) = RALSADF(y, model, pmax, ic);
     endif;
     
     if lag_var ne 0;
-        lmat=zeros(rows(dy), lag_var);
-        j=1;
+        lmat = zeros(rows(dy), lag_var);
+        j = 1;
         do while j<= lag_var;
             lmat[., j] = lagn(dy, j);
             j = j + 1;
@@ -69,18 +76,14 @@ proc(3) = RALSADF(y, model, pmax, ic);
     if lag_var == 0;
         if model == 1;
             x = y1~sbt;
-        endif;
-        
-        if model == 2;
+        elseif model == 2;
             x = y1~sbt~trnd;
         endif;
         
     elseif lag_var > 0;
         if model == 1;
             x = y1~sbt~ldy[., 1:lag_var];
-        endif;
-        
-        if model == 2;
+        elseif model == 2;
             x = y1~sbt~trnd~ldy[., 1:lag_var];
         endif;
     endif;
@@ -99,10 +102,18 @@ proc(3) = RALSADF(y, model, pmax, ic);
     
     cv = crit_RALSadf(p2, model);
     
+    local top, side, stats, dec, colwidth;
+    top = "RALS-ADF"$|"p-val";
+    side = "";
+    stats = tauRALS|p2;
+    dec = 4;
+    colwidth = 12;
+    
+    _printStatsTable(top, side, stats, cv', dec, colwidth);
+    _printConclusion(tauRALS, cv, 0, "a unit root");  
+    
     retp(tauRALS, p2, cv);
 endp;
-
-
 
 proc(1) = crit_RALSadf(r2, model);
     local cra, crt, ca, cv, r210, r2a, r2b, wa;
