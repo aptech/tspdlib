@@ -146,10 +146,10 @@ proc(4) = KPSS_1break(y, model, l, varm, trimm);
     dec = 3;
     colwidth = 10;
     
-    _printStatsTable(top, side, stats, crit[TBi, .]', dec, colwidth);
-    _printConclusion(KPSS_min, crit[TBi, .], 1, "stationarity");
+    _printStatsTable(top, side, stats, rev(crit[TBi, .]'), dec, colwidth);
+    _printConclusion(KPSS_min, rev(crit[TBi, .]'), 1, "stationarity");
     
-    retp(KPSS_min, tb1_min, tb1_min/rows(y), crit[TBi, .]);
+    retp(KPSS_min, tb1_min, tb1_min/rows(y), rev(crit[TBi, .]'));
 endp;
 
 proc(2) = STps(y, model, varm, tb);
