@@ -1,0 +1,51 @@
+/*
+**> Purpose: Calculate critical values for DF-GLS test 
+**           based on response surface regressions  
+**
+**  Reference:
+**  Otero, J., & Baum, C. F. (2017).
+**  Response surface models for the Elliott, Rothenberg, and Stock unit-root test.
+**  The Stata Journal 17, Number 4, pp. 985–1002
+**
+**  Format:  {cv} = get_cv_DFGLSrsf(model, T, p);
+** 
+**  Input:   model   - 	1 = model with constant
+**                      2 = model with constant and trend  
+**           T       -  Number of observations
+**           p       -  Number of lags
+**
+**  Output:  cv      - The lag adjsuted finite sample 
+**                     1, 5, and 10 percent critical values for DF-GLS stat. based on response surfaces
+**			 
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+** April 27, 2020
+*/
+
+
+// Response Surface Estimations
+
+proc(1) = _get_cv_DFGLSrsf(model, T, p);
+    local mat_reg, mat_param;    
+
+    mat_reg = 1|1/T|(1/T)^2|(1/T)^3|(1/T)^4|p/T|(p^2/T)|(p^3/T)|(p^4/T);
+  
+
+    if model == 1;    
+    mat_param= {-2.569 -18.779  151.900   -814.600  -9349.300  -0.306   1.059   -0.214  0.013,
+                -1.942 -22.761  427.300  -6537.600  33816.400   0.057   0.764   -0.155  0.010,  
+                -1.617 -25.453  555.300  -8898.600  53120.100   0.237   0.618   -0.128  0.008};
+
+    endif;
+
+    if model == 2;    
+    mat_param= {-3.405 -23.650  251.500   -4110.300   9281.300   0.404   1.327   -0.269  0.017,
+                -2.844 -23.823  477.700   -8786.700  50347.000   0.532   1.060   -0.215  0.014,  
+                -2.555 -24.288  563.500  -10354.100  63554.900   0.584   0.922   -0.187  0.012};
+    endif;
+
+
+retp(mat_param*mat_reg);
+endp;

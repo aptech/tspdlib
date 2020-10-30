@@ -1,0 +1,322 @@
+
+/*
+**> rals_lm with breaks
+**  Reference:
+**  Meng, M., Im, K. S., Lee, J., & Tieslau, M. A. (2014).
+**  More powerful LM unit root tests with non-normal errors.
+*   In Festschrift in Honor of Peter Schmidt (pp. 343-357). Springer New York.
+**
+**  Meng, M., Lee, J., & Payne, J. E. (2017). 
+**  RALS-LM unit root test with trend breaks and non-normal errors: 
+**  application to the Prebisch-Singer hypothesis. 
+**  Studies in Nonlinear Dynamics & Econometrics, 21(1), 31-45.
+**
+**  Nazlioglu, S., Lee, J. (2020).
+**  Response Surface Estimates of the LM Unit Root Tests.
+**  Economics Letters, Vol. 192, Article 109136.
+**
+**  Format: {LM_min, tb, p, cv_lm, RALS_lm, p2, cv_ralslm} 
+                    = RALSLM_breaks(y, model, nbr, pmax, ic, trimm);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = Level break (see Meng, Im, Lee, & Tieslau (2014))
+**                      2 = Level and trend break (see Meng, Lee, & Payne (2017))
+**           nbr     -  Number of breaks 
+**                      nbr = 1 : One break
+**                      nbr = 2 : Two breaks
+**           pmax    -  Maximum number of lags for Ds; 0 =no lags
+**           ic      -  Information Criterion to select optimal lags:
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
+**			 trimm   -  Trimming rate
+**                      10% trimmage is defined as in ZA (1992) and LS (2003).
+**
+**  Output:  LM_min  -  Minimum LM statistic without RALS terms
+**			 tb      -  Break location(s)
+**			 p       -  Number of lags selected by choosen information criterion
+**			 cv_lm   -  1%, 5%, 10% critical values for LM test based on response surfaces
+**                      (see Nazlioglu and Lee, 2020)
+**           RALS_lm -  LM statistic based on RALS procedure
+**			 p2      -  the estimated rho square
+**			 cv_ralslm -  1%, 5%, 10% critical values for RALS-LM test basen the estimated p2
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+** August 10, 2020
+*/
+
+
+proc(7) = RALSLM_breaks(y, model, nbr, pmax, ic, trimm);
+    local t, tb1, tb2, tb1_min, tb2_min, LM_min;
+    local T1, T2, dc, dt, du1, du2, dt1, dt2, z;
+    local dy, b0, s0, ylm, dsl, dep, s1, dz, ds, x;
+    local taup, aicp, sicp, tstatp, j, p, lagt, laglm, stat;
+    local b, e, sig2, se, ssr, opt_lag, cv_lm, cv_ralslm;
+    local nobs, pos, pos1, pos2, s, st;
+    local e2, e3, m2, m3, w, tau_rals, sig2A, p2, rals_lm, rho2;
+    
+    t = rows(y);
+    tb1_min = 0;
+    tb2_min = 0;
+    LM_min = 1000;
+    T1 = round(trimm * rows(y));
+    T2 = round((1 - trimm) * rows(y));
+    
+    // Bounds as in LS
+    if T1 < (pmax + 2);
+        T1 = pmax + 3;
+    endif;  
+    
+    // Bounds as in LS
+    tb1 = T1; 
+    do while tb1 <= T2;
+        if model == 1; tb2 = tb1 + 2; endif;    
+        if model == 2; tb2 = tb1 + 3; endif;
+    do while tb2 <= T2;
+
+            // Constant
+            dc = ones(t, 1);           
+            // Deterministic trend
+            dt = seqa(1, 1, t);              
+
+            if nbr == 1;
+                if model == 1;
+                    du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+                    z = dt~du1;
+                endif;
+            
+                if model == 2;
+                    du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+                    dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
+                    z = dt~du1~dt1;
+                endif;
+            endif;
+            
+            if nbr == 2;
+                if model == 1;
+                    du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+                    du2 = zeros(tb2, 1)|ones(t - tb2, 1);
+                    z = dt~du1~du2;
+                endif;
+            
+                if model == 2;
+                    du1 = zeros(tb1, 1)|ones(t - tb1, 1);
+                    du2 = zeros(tb2, 1)|ones(t - tb2, 1);
+                    dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
+                    dt2 = zeros(tb2, 1)|seqa(1, 1, (t - tb2));
+                    z = dt~du1~dt1~du2~dt2;
+                endif;
+            endif;
+            
+            dy = trimr(diff(y, 1), 1, 0);
+            dz = trimr(diff(z, 1), 1, 0);
+            b0 = dy/dz;
+            s0 = y[1] - z[1,.] * b0;
+            s  = y - s0- z * b0;
+            
+            if model == 1;
+                ylm = s;
+            endif;
+            
+            if model == 2;
+                // Transformation starts
+                if nbr == 1;
+                nobs = t;
+                pos  = tb1;
+                st   = zeros(nobs, 1);
+                st[ 1:pos, 1 ]      = s[ 1:pos, 1 ] / (pos/nobs);
+                st[ pos+1:nobs, 1 ] = s[ pos+1:nobs, 1 ] / ((nobs-pos)/nobs);
+                endif;
+            
+                if nbr == 2;
+                nobs = t;
+                pos1 = tb1;
+                pos2 = tb2;
+                st = zeros(nobs, 1);
+                st[ 1:pos1, 1 ]      = s[ 1:pos1, 1 ] / (pos1/nobs);
+                st[ pos1+1:pos2, 1]  = s[ pos1+1:pos2, 1 ] / ((pos2-pos1)/nobs);
+                st[ pos2+1:nobs, 1 ] = s[ pos2+1:nobs, 1 ] / ((nobs-pos2)/nobs);
+                endif;
+                // Transformation ends
+                ylm = st;
+            endif;
+            
+            taup = zeros(pmax + 1, 1);
+            aicp = zeros(pmax + 1, 1);
+            sicp = zeros(pmax + 1, 1);
+            tstatp = zeros(pmax + 1, 1);
+            tau_rals = zeros(pmax + 1, 1);
+            p2 = zeros(pmax + 1, 1);
+            
+            ds = trimr(diff(ylm, 1), 1, 0);
+            dsl = zeros(rows(ds), pmax);
+            
+            j = 1;
+            do while j <= pmax;
+                dsl[ ., j ] = lagn(ds, j);
+                j = j + 1;
+            endo;
+            
+            p = 0;
+            do while p <= pmax;
+                dep = trimr(diff(y, 1), p + 1, 0);
+                s1 = trimr(lagn(ylm, 1), p + 1, 0);
+                dz = trimr(diff(z, 1), p + 1, 0);
+                ds = trimr(dsl, p, 0);
+                
+                if p == 0;
+                    x = s1 ~ dz;
+                elseif p > 0;
+                    x = s1 ~ dz ~ ds[ ., 1:p ];
+                endif;
+                
+                { b, e, sig2, se, ssr } = myols(dep, x);
+                taup[ p+1 ] = b[ 1 ]/se[ 1 ];
+                aicp[ p+1 ] = ln(e'e/rows(x)) + 2 * (cols(x)+2)/rows(x);
+                sicp[ p+1 ] = ln(e'e/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
+                tstatp[ p+1 ] = abs(b[ cols(x) ]/se[ cols(x) ]);
+                
+                e2 = e^2;
+                e3 = e^3;
+                m2 = T^-1*sumc(e2);
+                m3 = T^-1*sumc(e3);
+                w  = (e2-m2) ~ (e3-m3-3*m2*e);
+                x  = x ~ w;
+                {b, e, sig2A, se, ssr} = myols(dep,x);
+                tau_rals[ p+1 ]= b[1]/se[1];
+                p2[ p+1 ] = sig2A / sig2;
+
+            p = p + 1;
+            endo;
+            
+            // Choose the optimal lag
+            laglm = _get_lag(ic, pmax, aicp, sicp, tstatp);
+            
+            // LM stat for choosen lag
+            stat  = taup[laglm];
+            
+            // Determine the break location by minimizing LM stat
+            // See Lee and Strazicich (2003)
+            if nbr == 1;
+                if stat < LM_min;
+                // First break date 
+                tb1_min = tb1;    
+                // LM statistic with break
+                LM_min = stat; 
+                // Selected lag number
+                opt_lag = laglm;
+                // RALS-LM statistic
+                rals_lm = tau_rals[laglm];
+                // rho-square for RALS-LM statistic
+                rho2 = p2[laglm];                    
+                endif;
+            endif;
+            
+            if nbr == 2;
+                if  stat < LM_min;
+                    // First break date
+                    tb1_min = tb1;    
+                    // Second break date
+                    tb2_min = tb2;   
+                    // LM statistic with breaks
+                    LM_min = stat;
+                    // Selected lag number
+                    opt_lag = laglm;
+                    // RALS-LM statistic
+                    rals_lm = tau_rals[laglm];
+                    // rho-square for RALS-LM statistic
+                    rho2 = p2[laglm];                     
+                endif;
+            endif;             
+        tb2 = tb2 + 1;
+        endo;
+    tb1 = tb1 + 1;
+    endo;
+    
+    // Critical values for LM-stat based on Response surfaces
+    if model == 1; cv_lm  = _get_cv_LMrsf(0,   T-opt_lag , opt_lag); endif;
+    if model == 2; cv_lm  = _get_cv_LMrsf(nbr, T-opt_lag , opt_lag); endif;
+
+    // Critical values for RALS-LM stat.   
+    cv_ralslm = _get_cv_RALSLM_breaks(model, nbr, rho2);
+        
+    if nbr == 1;
+        retp(LM_min, tb1_min, opt_lag - 1, cv_lm, rals_lm, rho2, cv_ralslm);
+    elseif nbr == 2;
+        retp(LM_min, tb1_min|tb2_min, opt_lag - 1, cv_lm, rals_lm, rho2, cv_ralslm);
+    endif;
+endp;
+
+proc(1) = _get_cv_RALSLM_breaks(model, nbr, r2);
+    local cra, crt, ca, cv, r210, r2a, r2b, wa;
+    
+    // T = 1000
+    if model == 1;
+        // See Meng, Im, Lee and Tieaslau (2014)
+        if nbr == 1 or nbr == 2;
+        let crt[10, 3] =
+        -2.892       -2.223      -1.871
+        -3.080       -2.428      -2.083
+        -3.205       -2.568      -2.234
+        -3.299       -2.677      -2.352
+        -3.374       -2.761      -2.451
+        -3.428       -2.836      -2.535
+        -3.474       -2.897      -2.605
+        -3.510       -2.947      -2.667
+        -3.538       -2.990      -2.715
+        -3.570       -3.031      -2.755;
+        endif;    
+    endif;
+
+    // T = 1000
+    if model == 2;
+        // See Meng, Lee and Tieaslau (2017)  
+        if nbr == 1;
+        let crt[10, 3] =
+        -3.102       -2.433      -2.080
+        -3.368       -2.725      -2.379
+        -3.548       -2.927      -2.599
+        -3.688       -3.091      -2.771
+        -3.798       -3.222      -2.919
+        -3.894       -3.333      -3.046
+        -3.983       -3.429      -3.153
+        -4.049       -3.516      -3.245
+        -4.114       -3.594      -3.325
+        -4.175       -3.654      -3.395;
+        endif;
+
+        if nbr == 2;
+        let crt[10, 3] =
+        -3.258       -2.599      -2.242
+        -3.586       -2.953      -2.610
+        -3.821       -3.212      -2.881
+        -4.006       -3.149      -3.100
+        -4.153       -3.591      -3.286
+        -4.281       -3.741      -3.444
+        -4.398       -3.867      -3.579
+        -4.496       -3.982      -3.703
+        -4.592       -4.079      -3.811
+        -4.672       -4.158      -3.907;
+        endif;
+    endif;
+    
+    // Hansen (1995) interpolation procedure
+    if r2<.1;
+        cv = crt[1, .];
+    else;
+        r210 = r2*10;
+        if r210 >= 10;
+            cv = crt[10, .];
+        else;    
+            r2a = floor(r210);
+            r2b = ceil(r210);
+            wa  = r2b - r210;
+            cv = wa * crt[r2a, .] + (1-wa) * crt[r2b, .];
+        endif;
+    endif;
+    
+retp(cv);
+endp;

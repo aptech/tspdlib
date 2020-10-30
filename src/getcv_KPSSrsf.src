@@ -1,0 +1,48 @@
+/*
+**> Purpose: Calculate critical values for KPSS test 
+**           based on response surface regressions  
+**
+**  Reference:
+**  Sephton, P. S. (1995). 
+**  Response surface estimates of the KPSS stationarity test. 
+**  Economics Letters, 47(3-4), 255-261.
+**
+**  Format:  {cv} = _get_cv_KPSSrsf(model, T);
+** 
+**  Input:   Model   - 	1 = model with constant
+**                      2 = model with constant and trend
+**           T       -  Number of observations
+**
+**  Output:  cv      - The lag adjsuted finite sample 
+**                     1, 5, and 10 percent critical values for KPSS stat based on response surfaces.
+**			 
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+** August 10, 2020
+*/
+
+
+
+// Response Surface Estimations
+proc(1) = _get_cv_KPSSrsf(model, T);
+    local mat_reg, mat_param;    
+
+    mat_reg = 1|1/T;
+
+    if model == 1;
+    mat_param= {0.74375 -0.99187,
+                0.46119  0.45911,
+                0.34732  0.20695};
+    endif;    
+
+    if model == 2;
+    mat_param= {0.21778  -0.235089,
+                0.14795   0.035327,
+                0.119298  0.100804};
+    endif; 
+
+retp(mat_param*mat_reg);
+endp;

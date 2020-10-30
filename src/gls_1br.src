@@ -1,0 +1,302 @@
+
+/*
+**> gls_1br
+**  Reference:
+**  Perron, P., & Rodrı́guez, G. (2003). 
+**  GLS detrending, efficient unit root tests and structural change. 
+**  Journal of Econometrics, 115(1), 1-27.
+**
+**  Carrion-i-Silvestre, J. L., Kim, D., & Perron, P. (2009). 
+**  "GLS-based unit root tests with multiple structural breaks under both the null and the alternative hypotheses".  
+**  Econometric theory, 25(6), 1754-1792.
+**
+**  Format:  {GLStau,p,PT,MZa,MZt,MSB,MPT,s2,tb,lambda,cvPT,cvMPT,cvMZt,cvDFGLS,cvMSB,cvMZa} = GLS_1break(y,model,pmax,ic);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	0 = Level shift
+**                      1 = Trend shift
+**                      2 = Level and trend shift
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           ic      -  Information Criterion:
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
+**  Output:  GLStau  - ADF-GLS statistic
+**			 p       - number of lags for ADF-GLS statistic
+**			 PT      - PT statistic
+**           Mza     - MZalpha statistic
+**           Mzt     - MZt statistic
+**           MSB     - MSB statistic
+**           MPT     - MPT statistic
+**           s2     - Long-run variance based on autoregressive spectral estimate
+**			 tb      - location of break
+**           lambda  - fraction of break (tb/T)
+**			 cv      - 1, 5, and 10 percent critical values for the break location
+
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/*05 May 2020*/
+
+     
+proc(16) =  GLS_1break(y, model, pmax, ic);
+    local t, tb1_min, ssra_min, tb1, dc, dt, du1, dt1, z, cbar, lambda, i;
+    local ygls, y1, SSRa, SSR1, ADF_GLS, p, cv_temp, s2, PT, MZa, MSB, MZt, MPT;
+    local ADFGLS_min, PT_min, MZa_min, MSB_min, MZt_min, MPT_min;
+    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa;
+    
+    t = rows(y);
+    tb1_min = 0; 
+    ssra_min = 1000;
+
+    // Loop as in  CiS, Kim & Perron (2009) code       
+    tb1 = 3;             
+    do while tb1 <= T-3;
+        
+        // Constant
+        dc = ones(t,1);
+
+        // Trend        
+        dt = seqa(1,1,t); 
+
+        // Level shift dummy        
+        du1 = zeros(tb1,1)|ones(t-tb1,1); 
+        
+        // Trend shift dummy
+        dt1 = zeros(tb1,1)|seqa(1,1,t-tb1);  
+        
+        // Level shift (crash): change in mean
+        if model == 0;   
+           z   = dc ~ dt ~ du1;
+        endif;
+
+        // Slope (trend) shift : change in trend
+        if model == 1;   
+           z   = dc ~ dt ~ dt1;
+        endif;
+        
+        // Level and trend shift : change in mean and trend
+        if model == 2;   
+           z   = dc ~ dt ~ du1 ~ dt1;
+        endif;
+        
+        if model == 0; 
+           cbar = -13.5;
+        else;
+           cbar = _get_cbar((tb1/t)|0|0|0|0);
+        @    
+        // Table-I in CiS, Kim & Perron (2009)
+            cbar_vec = { -16.0, -17.6, -18.2, -18.2, -17.8, -17.2, -16.4, -15.6, -14.8}; 
+            lam1  = tb1 / T;
+            if   lam1 <= 0.15; i = 1;
+            elseif (0.15< lam1) and (lam1 <= 0.85); i = round(10*lam1);
+            elseif lam1 > 0.85; i = 9; 
+            endif; 
+            cbar = cbar_vec[i];
+        @    
+        endif;
+ 
+        // Get GLS detrending series
+        {ygls, SSRa, SSR1} = _get_ygls(y, z, cbar); 
+ 
+        // ADF-GLS test
+        {ADF_GLS, p, cv_temp} = ADF(ygls, 0, pmax, ic);
+        
+        // Autoregressive estimate of the long-run variance
+        s2 = _get_s2ar(ygls, p); 
+           
+        // PT test
+        PT = (SSRa - (1 + cbar/t) * SSR1) / s2;     
+     
+        // M-tests
+        y1 = trimr(lagn(ygls,1), 1, 0);
+        MZa = (t^-1 * ygls[t]^2 - s2) / (2 * t^-2 * sumc(y1^2));
+        MSB = (t^-2 * sumc(y1^2) / s2)^(1/2);
+        MZt = MZa * MSB;
+        MPT = (cbar^2 * t^-2 * sumc(y1^2) + (1 - cbar) * t^-1 * ygls[t]^2)/s2;
+        
+        // Minimization of SSR under the alternative hypothesis
+        if ssra < ssra_min;
+           ADFGLS_min  = ADF_GLS;
+           PT_min   = PT;
+           MZa_min  = MZa;
+           MSB_min  = MSB;
+           MZt_min  = MZt;
+           MPT_min  = MPT; 
+           tb1_min  = tb1;
+           ssra_min = ssra; 
+       endif;        
+       //tb1;; ssra;; ssra_min;; ADFGLS_min;; PT_min;; MZa_min;; MSB_min;; MZt_min;;tb1_min;
+
+    tb1 = tb1 + 1;
+    endo;
+    
+    lambda = tb1_min / t;
+    {cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa} = _get_cv_gls_1break(model,lambda);
+    
+ retp(ADFGLS_min, p, PT_min, MZa_min, MZt_min, MSB_min, MPT_min, s2, tb1_min, lambda, cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa);                
+endp;
+
+
+// Return GLS detrending series
+proc(3) = _get_ygls(y, z, cbar);
+ local t, a, ya, za, ba, ygls, ua, SSRa, u1, SSR1;
+
+   // Estimation on transformed data
+    t = rows(y);
+    a = 1 + cbar/t;
+    ya = zeros(t, 1);
+    za = zeros(t, cols(z));
+    ya[1:1, 1] = y[1:1, 1];
+    za[1:1, .] = z[1:1, .];
+    ya[2:t,1]  = y[2:t, 1] - a * y[1:t-1, 1];
+    za[2:t,.]  = z[2:t, .] - a * z[1:t-1, .];
+    ba = inv(za'za)*za'ya;
+    ua = ya - za * ba;
+    SSRa = ua'ua;
+    
+    // GLS detrending
+    ygls = y - z * ba; 
+
+   /*Estimation on untransformed data*/  
+    a = 1;
+    ya = zeros(t,1);
+    za = zeros(t,cols(z));
+    ya[1:1,1] = y[1:1,1];
+    za[1:1,.] = z[1:1,.];
+    ya[2:t,1] = y[2:t,1] - a*y[1:t-1,1];
+    za[2:t,.] = z[2:t,.] - a*z[1:t-1,.];         
+    ba = ya / za;
+    u1  = ya - za * ba;
+    SSR1 = u1'u1;   
+    
+ retp(ygls,SSRa, SSR1);
+endp;
+
+
+// Long-run variance based on autoregressive estimate of the spectral density
+proc(1) = _get_s2ar(y_detrended, p);   
+ local e, de, e1, k, de_lags, x, b, etk, s2ek, s2ar;
+    
+    e = y_detrended;    
+    // s2 : Autoregressive estimate of the spectral density
+    de  = trimr(diff(e,1) , 1, 0);
+    e1  = trimr(lagn(e,1), 1, 0);
+        
+    if p == 0; k =  1; endif;
+    if p > 0;  k = p;  endif;
+ 
+    de_lags = {};
+    for j(1, k, 1);
+        de_lags  = de_lags ~ lagn(de, j);
+    endfor;
+    
+    x  = trimr(e1, p + 1, 0) ~ trimr(de_lags, p + 1, 0);
+    de = trimr(de, p+1, 0);
+    b  = de / x;
+    
+    etk  = de - x * b;
+    s2ek = etk'etk / (rows(etk) - k);
+    s2ar = s2ek / (1 - sumc(b[2:cols(b)]));
+    
+ retp(s2ar);
+endp;   
+
+
+// Response surface to approximate the c_bar parameter
+proc(1)=_get_cbar(lam);
+
+    local lam1, lam2, lam3, lam4, lam5, xreg, param;
+
+    lam1=lam[1];
+    lam2=lam[2];
+    lam3=lam[3];
+    lam4=lam[4];
+    lam5=lam[5];
+
+    xreg =  1~LAM1~LAM2~LAM3~LAM4~LAM5~LAM1^2~LAM2^2~LAM3^2~LAM4^2~LAM5^2~LAM1^3~LAM2^3~LAM3^3~LAM4^3~LAM5^3~LAM1^4~LAM2^4~
+            LAM3^4~LAM4^4~LAM5^4~ABS(LAM1-LAM2)~ABS(LAM1-LAM3)~ABS(LAM1-LAM4)~ABS(LAM1-LAM5)~ABS(LAM2-LAM3)~ABS(LAM2-LAM4)~
+            ABS(LAM2-LAM5)~ABS(LAM3-LAM4)~ABS(LAM3-LAM5)~ABS(LAM4-LAM5)~ABS(LAM1-LAM2)^2~ABS(LAM1-LAM3)^2~ABS(LAM1-LAM4)^2~
+            ABS(LAM1-LAM5)^2~ABS(LAM2-LAM3)^2~ABS(LAM2-LAM4)^2~ABS(LAM2-LAM5)^2~ABS(LAM3-LAM4)^2~ABS(LAM3-LAM5)^2~
+            ABS(LAM4-LAM5)^2~ABS(LAM1-LAM2)^3~ABS(LAM1-LAM3)^3~ABS(LAM1-LAM4)^3~ABS(LAM1-LAM5)^3~ABS(LAM2-LAM3)^3~ABS(LAM2-LAM4)^3~
+            ABS(LAM2-LAM5)^3~ABS(LAM3-LAM4)^3~ABS(LAM3-LAM5)^3~ABS(LAM4-LAM5)^3~ABS(LAM1-LAM2)^4~ABS(LAM1-LAM3)^4~ABS(LAM1-LAM4)^4~
+            ABS(LAM1-LAM5)^4~ABS(LAM2-LAM3)^4~ABS(LAM2-LAM4)^4~ABS(LAM2-LAM5)^4~ABS(LAM3-LAM4)^4~ABS(LAM3-LAM5)^4~ABS(LAM4-LAM5)^4;
+                
+    param = -13.12832|-36.53045|0|20.2423|-4.596202|-10.31678|115.2092|-29.18712|-68.36453|5.873121|0|
+            -130.337|74.64396|85.48737|0|0|51.98117|-53.03452|-36.27221|0|11.27727|-23.39517|-5.360149|23.99683|
+            4.788676|-27.10002|-35.78388|51.12371|-29.8518|-3.069174|-37.45898|64.95842|5.825729|-88.78176|
+            -11.54197|83.48645|125.2349|-173.1259|80.95821|2.863782|118.2829|-80.1287|0|128.872|6.387147|
+            -118.1043|-199.0615|247.6469|-98.05947|0|-160.5713|38.52177|0|-65.21576|0|62.86494|
+            117.9976|-127.5544|46.2304|0|79.1693;
+
+    retp(xreg*param);
+
+endp;
+
+// Return critical values
+proc(6) = _get_cv_gls_1break(model,lambda);
+    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa, col;
+    local cvmat_PT, cvmat_MPT, cvmat_MZt, cvmat_DFGLS, cvmat_MSB, cvmat_MZa;
+    
+    // Critical Values (see Elliot et al. 1996; Ng & Perron, 2001)
+    if  model == 0; //1%    5%       10%
+        cvPT    = { 3.960 ,   5.620 ,   6.890};
+        cvMPT   = { 4.030 ,   5.480 ,   6.670};
+        cvMZt   = {-3.420 ,  -2.910 ,  -2.620};
+        cvDFGLS = {-3.420 ,  -2.910 ,  -2.620}; 
+        cvMSB   = { 0.143 ,   0.168 ,   0.185};
+        cvMZa   = {-23.800, -17.300 , -14.200};
+    endif;
+    
+       // Lambda     0.1     0.2      0.3      0.4    0.5      0.6       0.7     0.8      0.9 
+    if model > 0;
+       // Table 2A in CiS, Kim & Perron (2009)
+@1% @  cvmat_PT = {4.354    4.807    5.042    5.079   4.949    4.704    4.423    4.191    4.075,  
+@5% @              6.238    6.759    6.992    6.986   6.789    6.746    6.146    5.910    5.865, 
+@10%@              7.492    8.076    8.344    8.335   8.105    7.744    7.373    7.118    7.086};
+
+@1% @  cvmat_MPT= {4.354    4.807    5.042    5.079   4.949    4.704    4.423    4.191    4.075,  
+@5% @              6.238    6.759    6.992    6.986   6.789    6.746    6.146    5.910    5.865, 
+@10%@              7.492    8.076    8.344    8.335   8.105    7.744    7.373    7.118    7.086};
+        
+       // Table 2B in CiS, Kim & Perron (2009)
+@1% @  cvmat_MZt= {-3.800 -3.942    -3.981   -3.969  -3.938   -3.897   -3.843   -3.763   -3.639,  
+@5% @              -3.232 -3.396    -3.448   -3.445  -3.419   -3.382   -3.328   -3.240   -3.094,  
+@10%@              -2.950 -3.118    -3.171   -3.166  -3.137   -3.096   -3.039   -2.949   -2.801};
+
+@1% @ cvmat_DFGLS={-3.800 -3.942    -3.981   -3.969  -3.938   -3.897   -3.843   -3.763   -3.639,  
+@5% @              -3.232 -3.396    -3.448   -3.445  -3.419   -3.382   -3.328   -3.240   -3.094,  
+@10%@              -2.950 -3.118    -3.171   -3.166  -3.137   -3.096   -3.039   -2.949   -2.801};
+        
+       // Table 2C in CiS, Kim & Perron (2009)
+@1% @ cvmat_MSB = {0.130    0.125    0.123    0.124   0.125    0.127    0.129    0.132    0.137,  
+@5% @              0.152    0.144    0.142    0.143   0.144    0.147    0.149    0.154    0.161,  
+@10%@              0.166    0.157    0.154    0.155   0.157    0.159    0.163    0.169    0.178};
+
+       // Table 2D in CiS, Kim & Perron (2009)
+@1% @ cvmat_MZa = {-29.315   -31.442   -32.024   -31.828  -31.333   -30.713   -29.873   -28.539   -26.400,  
+@5% @              -21.244   -23.322   -24.018   -23.969  -23.612   -23.113   -22.393   -21.188   -19.126,  
+@10%@              -17.815   -19.793   -20.433   -20.350  -19.965   -19.450   -18.743   -17.599   -15.657};
+
+
+       if   lambda <= 0.15; col = 1;
+       elseif (0.15< lambda) and (lambda <= 0.85); col = round(10*lambda);
+       elseif lambda > 0.85; col = 9; 
+       endif; 
+       
+       cvPT  = cvmat_PT[.,col];
+       cvMPT = cvmat_MPT[.,col];
+       cvMZt = cvmat_MZt[.,col];       
+       cvDFGLS = cvmat_DFGLS[.,col];  
+       cvMSB = cvmat_MSB[.,col];  
+       cvMZa = cvmat_MZa[.,col];  
+    endif;
+
+retp(cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa);
+endp;    
+
+

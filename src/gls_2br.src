@@ -1,0 +1,293 @@
+
+/*
+**> gls_2br
+**  Reference:
+**  Perron, P., & Rodrı́guez, G. (2003). 
+**  GLS detrending, efficient unit root tests and structural change. 
+**  Journal of Econometrics, 115(1), 1-27.
+**
+**  Carrion-i-Silvestre, J. L., Kim, D., & Perron, P. (2009). 
+**  "GLS-based unit root tests with multiple structural breaks under both the null and the alternative hypotheses".  
+**  Econometric theory, 25(6), 1754-1792.
+**
+**
+**  Format:  {GLStau,p,PT,MZa,MZt,MSB,MPT,s2,tb1,tb2,lambda1,lambda2,cvPT,cvMPT,cvMZt,cvDFGLS,cvMSB,cvMZa} = GLS_1break(y,model,pmax,ic);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	0 = Level shift
+**                      1 = Trend shift
+**                      2 = Level and trend shift
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           ic      -  Information Criterion:
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
+**  Output:  GLStau  - ADF-GLS statistic
+**			 p       - number of lags for ADF-GLS statistic
+**			 PT      - PT statistic
+**           Mza     - MZalpha statistic
+**           Mzt     - MZt statistic
+**           MSB     - MSB statistic
+**           MPT     - MPT statistic
+**           s2      - Long-run variance based on autoregressive spectral estimate
+**			 tb      - locations of breaks
+**           lambda  - fractions of breaks (tb/T)
+**			 cv      - 1, 5, and 10 percent critical values for the break location
+
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/*06 May 2020*/
+
+proc(18) =  GLS_2breaks(y, model, pmax, ic);
+    local t, tb1_min, tb2_min, ssra_min, tb1, tb2, dc, dt, du1, dt1, du2, dt2,  lambda1, lambda2;
+    local z, cbar, ygls, y1, SSRa, SSR1, ADF_GLS, p, cv_temp, s2, PT, MZa, MSB, MZt, MPT;
+    local ADFGLS_min, PT_min, MZa_min, MSB_min, MZt_min, MPT_min;
+    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa;
+   
+    t = rows(y);
+    tb1_min = 0;
+    tb1_min = 0;
+    ssra_min = 1000;
+
+    // Loop for the first break as in  CiS, Kim & Perron (2009) code       
+    tb1 = 3;             
+    do while tb1 <= T-3-2;
+    
+    // Loop for the second break as in  CiS, Kim & Perron (2009) code 
+    tb2 = tb1 + 2;
+    do while tb2 <= T-3;
+        
+        // Constant
+        dc = ones(t,1);
+
+        // Trend        
+        dt = seqa(1,1,t); 
+
+        // Level shift dummy        
+        du1 = zeros(tb1,1)|ones(t-tb1,1); 
+        du2 = zeros(tb2,1)|ones(t-tb2,1);
+        
+        // Trend shift dummy
+        dt1 = zeros(tb1,1)|seqa(1,1,t-tb1);  
+        dt2 = zeros(tb2,1)|seqa(1,1,(t-tb2));
+        
+        // Level shift (crash): change in mean
+        if model == 0;   
+           z   = dc ~ dt ~ du1 ~ du2;
+        endif;
+
+        // Slope (trend) shift : change in trend
+        if model == 1;   
+           z   = dc ~ dt ~ dt1 ~ dt2;
+        endif;
+        
+        // Level and trend shift : change in mean and trend
+        if model == 2;   
+           z   = dc ~ dt ~ du1 ~ du2 ~ dt1 ~ dt2;
+        endif;
+        
+        if model == 0; 
+           cbar = -13.5;
+        else; 
+           cbar = _get_cbar((tb1/t)|(tb2/t)|0|0|0);
+        endif;
+        
+        // Get GLS detrending series
+        {ygls, SSRa, SSR1} = _get_ygls(y, z, cbar); 
+ 
+        // ADF-GLS test
+        {ADF_GLS, p, cv_temp} = ADF(ygls, 0, pmax, ic);
+        
+        // Autoregressive estimate of the long-run variance
+        s2 = _get_s2ar(ygls, p); 
+           
+        // PT test
+        PT = (SSRa - (1 + cbar/t) * SSR1) / s2;     
+     
+        // M-tests
+        y1 = trimr(lagn(ygls,1), 1, 0);
+        MZa = (t^-1 * ygls[t]^2 - s2) / (2 * t^-2 * sumc(y1^2));
+        MSB = (t^-2 * sumc(y1^2) / s2)^(1/2);
+        MZt = MZa * MSB;
+        MPT = (cbar^2 * t^-2 * sumc(y1^2) + (1 - cbar) * t^-1 * ygls[t]^2)/s2;
+        
+        // Minimization of SSR under the alternative hypothesis
+        if ssra < ssra_min;
+           ADFGLS_min  = ADF_GLS;
+           PT_min   = PT;
+           MZa_min  = MZa;
+           MSB_min  = MSB;
+           MZt_min  = MZt;
+           MPT_min  = MPT; 
+           tb1_min  = tb1;
+           tb2_min  = tb2; 
+           ssra_min = ssra; 
+       endif;        
+       //tb1;; tb2;; ssra;; ssra_min;; ADFGLS_min;; PT_min;; MZa_min;; MSB_min;; MZt_min;;tb1_min;
+
+    tb2 = tb2 + 1; 
+    endo;
+    tb1 = tb1 + 1;
+    endo;
+    
+    lambda1 = tb1_min / t;
+    lambda2 = tb2_min / t;
+    
+    {cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa} = _get_cv_gls_2breaks(model,lambda1, lambda2);
+    
+retp(ADFGLS_min,p,PT_min,MZa_min,MZt_min,MSB_min,MPT_min,s2,tb1_min,tb2_min,lambda1,lambda2,cvPT,cvMPT,cvMZt,cvDFGLS,cvMSB,cvMZa);    
+endp;
+
+// Return critical values
+proc(6) = _get_cv_gls_2breaks(model,lambda1, lambda2);
+    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa, col, row;
+    local cv1_PT, cv5_PT, cv10_PT; 
+    local cv1_MZt, cv5_MZt, cv10_MZt; 
+    local cv1_MSB, cv5_MSB, cv10_MSB; 
+    local cv1_MZa, cv5_MZa, cv10_MZa; 
+    
+    // Critical Values (see Elliot et al. 1996; Ng & Perron, 2001)
+    if  model == 0; //1%    5%       10%
+        cvPT    = { 3.960   5.620   6.890};
+        cvMPT   = { 4.030   5.480   6.670};
+        cvMZt   = {-3.420   -2.910  -2.620};
+        cvDFGLS = {-3.420   -2.910  -2.620}; 
+        cvMSB   = { 0.143   0.168   0.185};
+        cvMZa   = {-23.800  -17.300 -14.200};
+    endif;
+   
+    if model > 0;    
+        // Table 2A in CiS, Kim & Perron (2009)
+        //Lamda2    0.2      0.3     0.4    0.5     0.6     0.7     0.8     0.9    //Lambda1
+        cv1_PT = { 4.723	5.213	5.536	5.710	5.724	5.573	5.266	4.810, //0.1
+                    0	    5.134	5.585	5.819	5.866	5.743	5.475	5.087, //0.2
+                    0	    0	    5.471	5.829	5.932	5.841	5.596	5.241, //0.3
+                    0	    0	    0	    5.617	5.848	5.812	5.595	5.252, //0.4
+                    0	    0	    0	    0	    5.524	5.622	5.461	5.135, //0.5
+                    0	    0	    0	    0	    0	    5.214	5.197	4.923, //0.6
+                    0	    0	    0	    0	    0	    0	    4.722	4.654, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    4.328};//0.8
+        cv5_PT = { 6.478	7.034	7.398	7.592	7.607	7.434	7.072	6.511, //0.1
+                    0	    6.897	7.431	7.708	7.765	7.624	7.310	5.844, //0.2
+                    0	    0	    7.264	7.712	7.850	7.749	7.461	7.037, //0.3
+                    0	    0	    0	    7.435	7.747	7.727	7.475	7.070, //0.4
+                    0	    0	    0	    0	    7.338	7.498	7.328	6.951, //0.5
+                    0	    0	    0	    0	    0	    6.997	7.015	6.719, //0.6
+                    0	    0	    0	    0	    0	    0	    6.524	6.424, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    6.094};//0.8
+        cv10_PT = { 7.791	8.376	8.733	8.903	8.887	8.697	8.361	7.902, //0.1
+                    0	    8.210	8.757	9.013	9.039	8.873	8.563	8.159, //0.2
+                    0	    0	    8.568	9.012	9.123	8.997	8.706	8.322, //0.3
+                    0	    0	    0	    8.719	9.019	8.978	8.722	8.345, //0.4
+                    0	    0	    0	    0	    8.600	8.754	8.582	8.226, //0.5
+                    0	    0	    0	    0	    0	    8.245	8.276	7.998, //0.6
+                    0	    0	    0	    0	    0	    0	    7.772	7.705, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    7.358};//0.8
+
+        // Table 2B in CiS, Kim & Perron (2009)
+        //Lamda2     0.2      0.3     0.4    0.5     0.6     0.7     0.8     0.9    //Lambda1
+        cv1_MZt = { -4.131  -4.726	-4.338	-4.347	-4.326	-4.285	-4.222	-4.124, //0.1
+                    0	    -4.288	-4.384	-4.415	-4.403	-4.363	-4.298	-4.203, //0.2
+                    0	    0	    -4.337	-4.403	-4.415	-4.385	-4.321	-4.226, //0.3
+                    0	    0	    0	    -4.325	-4.371	-4.365	-4.313	-4.223, //0.4
+                    0	    0	    0	    0	    -4.278	-4.304	-4.277	-4.202, //0.5
+                    0	    0	    0	    0	    0	    -4.203	-4.206	-4.158, //0.6
+                    0	    0	    0	    0	    0	    0	    -4.100	-4.079, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    -3.960};//0.8
+        cv5_MZt = { -3.566	-3.729	-3.797	-3.812	-3.801	-3.768	-3.699	-3.558, //0.1
+                    0	    -3.723	-3.836	-3.872	-3.865	-3.834	-3.775	-3.665, //0.2
+                    0	    0	    -3.780	-3.861	-3.875	-3.849	-3.792	-3.693, //0.3
+                    0	    0	    0	    -3.777	-3.836	-3.832	-3.781	-3.684, //0.4
+                    0	    0	    0	    0	    -3.737	-3.777	-3.747	-3.657, //0.5
+                    0	    0	    0	    0	    0	    -3.665	-3.678	-3.609, //0.6
+                    0	    0	    0	    0	    0	    0	    -3.551	-3.524, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    -3.377};//0.8
+       cv10_MZt = { -3.266	-3.425	-3.499	-3.524	-3.519	-3.489	-3.417	-3.272, //0.1
+                    0	    -3.437	-3.553	-3.598	-3.600	-3.571	-3.507	-3.387, //0.2
+                    0	    0	    -3.502	-3.588	-3.611	-3.589	-3.528	-3.417, //0.3
+                    0	    0	    0	    -3.502	-3.566	-3.565	-3.512	-3.405, //0.4
+                    0	    0	    0	    0	    -3.463	-3.503	-3.470	-3.372, //0.5
+                    0	    0	    0	    0	    0	    -3.388	-3.395	-3.319, //0.6
+                    0	    0	    0	    0	    0	    0	    -3.269	-3.232, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    -3.089};//0.8
+
+        // Table 2C in CiS, Kim & Perron (2009)
+        //Lamda2    0.2      0.3     0.4    0.5     0.6     0.7     0.8     0.9    //Lambda1
+       cv1_MSB = { 0.120	0.115	0.114	0.114	0.115	0.116	0.118	0.121, //0.1
+                    0	    0.115	0.113	0.112	0.113	0.114	0.116	0.119, //0.2
+                    0	    0	    0.114	0.112	0.112	0.113	0.115	0.118, //0.3
+                    0	    0	    0	    0.115	0.114	0.114	0.115	0.118, //0.4
+                    0	    0	    0	    0	    0.116	0.115	0.116	0.119, //0.5
+                    0	    0	    0	    0	    0	    0.118	0.118	0.120, //0.6
+                    0	    0	    0	    0	    0	    0	    0.121	0.122, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    0.126};//0.8
+       cv5_MSB = { 0.138	0.132	0.130	0.129	0.130	0.131	0.134	0.140, //0.1
+                    0	    0.132	0.128	0.127	0.128	0.129	0.132	0.136, //0.2
+                    0	    0	    0.131	0.128	0.128	0.129	0.131	0.135, //0.3
+                    0	    0	    0	    0.131	0.129	0.130	0.132	0.135, //0.4
+                    0	    0	    0	    0	    0.133	0.131	0.133	0.137, //0.5
+                    0	    0	    0	    0	    0	    0.135	0.135	0.138, //0.6
+                    0	    0	    0	    0	    0	    0	    0.140	0.142, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    0.148};//0.8                 
+      cv10_MSB = { 0.150	0.143	0.140	0.140	0.140	0.142	0.145	0.153, //0.1
+                    0	    0.143	0.138	0.137	0.137	0.139	0.141	0.147, //0.2
+                    0	    0	    0.140	0.137	0.137	0.138	0.141	0.146, //0.3
+                    0	    0	    0	    0.131	0.138	0.139	0.141	0.146, //0.4
+                    0	    0	    0	    0	    0.143	0.141	0.143	0.148, //0.5
+                    0	    0	    0	    0	    0	    0.146	0.146	0.150, //0.6
+                    0	    0	    0	    0	    0	    0	    0.152	0.154, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    0.162};//0.8  
+
+        // Table 2D in CiS, Kim & Perron (2009)
+        //Lamda2      0.2      0.3    0.4     0.5     0.6     0.7     0.8     0.9    //Lambda1
+        cv1_MZa = { -34.600 -36.957	-38.023	-38.147	-37.698 -36.884 -35.727 -34.161, //0.1
+                    0	    -37.208	-38.881	-39.455	-39.195 -38.368 -37.097 -35.403, //0.2
+                    0	    0	    -38.001	-39.208	-39.418 -38.798 -37.548 -35.792, //0.3
+                    0	    0	    0	    -37.720	-38.551 -38.408 -37.405 -35.764, //0.4
+                    0	    0	    0	    0	    -36.806 -37.238 -36.726 -35.428, //0.5
+                    0	    0	    0	    0	    0	    -35.447	-35.441	-34.674, //0.6
+                    0	    0	    0	    0	    0	    0	    -33.666	-33.314, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    -31.352};//0.8
+        cv5_MZa = { -25.856 -28.150	-29.163	-29.379	-29.144 -28.555 -27.445 -25.411, //0.1
+                    0	    -28.133	-29.825	-30.383	-30.243 -29.663 -28.640 -26.924, //0.2
+                    0	    0	    -28.948	-30.194	-30.399 -29.929 -28.935 -27.329, //0.3
+                    0	    0	    0	    -28.848	-29.736 -29.612 -28.740 -27.186, //0.4
+                    0	    0	    0	    0	    -28.176 -28.715 -28.187 -26.768, //0.5
+                    0	    0	    0	    0	    0	    -27.045	-27.150	-26.073, //0.6
+                    0	    0	    0	    0	    0	    0	    -25.350	-24.879, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    -22.848};//0.8
+       cv10_MZa = { -21.932 -23.932	-24.888	-25.178	-25.044 -24.528 -23.466 -21.514, //0.1
+                    0	    -24.159	-25.683	-26.270	-26.245 -25.760 -24.763 -23.021, //0.2
+                    0	    0	    -24.966	-26.113	-26.385 -26.014 -25.061 -23.405, //0.3
+                    0	    0	    0	    -24.890	-25.715 -25.642 -24.811 -23.218, //0.4
+                    0	    0	    0	    0	    -24.275 -24.744 -24.210 -22.756, //0.5
+                    0	    0	    0	    0	    0	    -23.210	-23.204	-22.054, //0.6
+                    0	    0	    0	    0	    0	    0	    -21.564	-20.930, //0.7
+                    0	    0	    0	    0	    0	    0	    0	    -19.082};//0.8
+    
+      
+        if     lambda1 <= 0.15;                    row = 1; 
+        elseif (0.15< lambda1) and (lambda1 <= 0.75); row = round(10*lambda1); 
+        elseif lambda1 > 0.75;                     row = 8; 
+        endif;
+
+        if     lambda2 <= 0.25;                    col = 1; 
+        elseif (0.25< lambda2) and (lambda2 <= 0.85); col = round(10*lambda2) -1 ; 
+        elseif lambda2 > 0.85;                     col = 8; 
+        endif;
+        
+        cvPT  = cv1_PT[row,col]  ~ cv5_PT[row,col]  ~ cv10_PT[row,col]; 
+        cvMPT = cvPT; 
+        cvMZt = cv1_MZt[row,col] ~ cv5_MZt[row,col] ~ cv10_MZt[row,col]; 
+        cvDFGLS = cvMZt; 
+        cvMSB = cv1_MSB[row,col] ~ cv5_MSB[row,col] ~ cv10_MSB[row,col];
+        cvMZa = cv1_MZa[row,col] ~ cv5_MZa[row,col] ~ cv10_MZa[row,col]; 
+    endif;
+    
+retp(cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa);
+endp; 
