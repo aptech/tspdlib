@@ -7,7 +7,11 @@
 **  Distribution of the estimators for autoregressive time series with a unit root.
 **  Journal of the American Statistical Society75, 427-431.
 **
-**  Format:  { tstat, p, cv } = ADF(y, model, pmax, ic);
+**  Cheung, Y. W., & Lai, K. S. (1995).
+**  Lag order and critical values of the augmented Dickey–Fuller test.
+**  Journal of Business & Economic Statistics, 13(3), 277-280.
+**
+**  Format:  {tstat, p, cv} = ADF(y, model, pmax, ic);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	0 = none
@@ -21,7 +25,7 @@
 **
 **  Output:  tstat   - ADF tau-statistic
 **			 p       - number of lags selected by chosen information criterion
-**			 cv      - 1, 5, and 10 percent critical values for ADF tau-stat
+**			 cv      - 1, 5, and 10 percent critical values for ADF tau-stat based on response surfaces
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
@@ -100,16 +104,10 @@ proc(3) = ADF(y, model, pmax, ic);
  
     p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
     tau = taup[p];
-    cv  = _get_cv_adf(model, t);
+    //cv  = _get_cv_adf(model, t);
     
-    // Print results
-    if model == 0;
-        print "ADF &  lag no deterministic component";
-    elseif model == 1;
-        print "ADF &  lag with constant";
-    elseif  model == 2;
-        print "ADF &  lag with constant and trend";
-    endif;
+    // T and p adjusted critical values based on response surfaces
+    cv = _get_cv_ADFrsf(model, T-p , p);
     
     // Print results & Critical values
     local hd, tmp1, tmp2;
