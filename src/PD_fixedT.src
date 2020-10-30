@@ -1,0 +1,118 @@
+
+/*
+**> fixed-T panel stationarity and unit root tests
+**
+**  References:
+**  Hadri, K., & Larsson, R. (2005), 
+**  Testing for stationarity in heterogeneous panel data where the time dimension is finite. 
+**  The Econometrics Journal, 8(1), 55-69.
+**
+**  Carrion‐i‐Silvestre, J. L., & Hadri, K. (2010).
+**  Panel data unit root test with fixed time dimension. 
+**  Bulletin of Economic Research, 62(3), 269-277.
+**
+**  Format:  {Nlm1,Zlm1,Npval1,Nlm2,Zlm2,Npval2,Zhl,pval_Zhl,Zch,pval_Zch} = fixed_T_panel(y, model);
+**
+**  Input:   Y	     -  TxN matrix, data,
+**           model   - 	1 = Constant
+**                      2 = Constant and trend
+**           N       -  Number of cross-sections
+**
+**  Output:  Hadri and Larsson (2005) 
+**           Nlm1     - LM stationarity statistic for each cross-section
+**           NZlm1    - Normalized LM stationarity statistic for each cross-section
+**           Npval1   - p-value of Zlm1 statistic for each cross-section
+**           Zhl      - Panel stationarity statistic
+**           pval_Zhl - p-value of Zhl panel stationarity statistic
+**
+**           Carrion-i-Silvestre and Hadri (2010) 
+**           Nlm2     - LM unit root statistic for each cross-section
+**           NZlm2    - Normalized LM unit root statistic for each cross-section
+**           Npval2   - p-value of Zlm2 statistic for each cross-section
+**           Zch      - Panel unit root statistic
+**           pval_Zch - p-value of Zhl panel unit root statistic
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+** August 10, 2020
+*/
+
+
+proc(10)= fixed_T_panel(y, model);
+    local Nlm1, Nlm2, Nzlm1, Nzlm2, Npval1, Npval2;
+    local mu_lm1, var_lm1, mu_lm2, var_lm2, lm1, lm2;
+    local lm1_bar, lm2_bar, Zhl, Zch, pval_Zhl, pval_Zch; 
+
+    Nlm1   = zeros(N,1);
+    Nlm2   = zeros(N,1);
+    Nzlm1  = zeros(N,1);
+    Nzlm2  = zeros(N,1);
+    Npval1 = zeros(N,1);    
+    Npval2 = zeros(N,1);    
+    
+    if model == 1;
+        mu_lm1  = (T+1) / (6*T);
+        var_lm1 = ((T^2+1) / (20*T^2))-(mu_lm1^2);
+        mu_lm2  = (T+1) / (2*T);
+        var_lm2 = (1/12) * ((T+1)*(7*T^2+7*T+4) / ((2+T)*T^2))-(mu_lm2^2);
+    elseif model == 2;
+        mu_lm1  = (T+2)/ (15*T);
+        var_lm1 = (T+2) * (13*T^2+23) / (2100*T^3)-(mu_lm1^2);
+        mu_lm2  = (T+1)/(6*T);
+        var_lm2 = ((T^2+1) / (20*T^2))-(mu_lm2^2);
+    endif;
+    
+    // Individual statistics
+    for i(1,N,1);
+        {lm1, lm2}  = _get_lm_stats(y[.,i], model);    
+        Nlm1[i] = lm1;
+        Nlm2[i] = lm2;
+        Nzlm1[i] = (lm1 - mu_lm1) / sqrt(var_lm1);
+        Nzlm2[i] = (lm2 - mu_lm2) / sqrt(var_lm2);
+        Npval1[i] = 1-cdfn(Nzlm1[i]); 
+        Npval2[i] = cdfn(Nzlm2[i]); 
+    endfor;
+    
+    // Hadri and Larsson (2005) panel stationarity statistic
+    LM1_bar  = meanc(Nlm1);
+    Zhl      = sqrt(n) * (LM1_bar - mu_lm1) / sqrt(var_lm1);
+    pval_Zhl = 1-cdfn(Zhl);
+
+    // C-i-S and Hadri (2010) panel unit root statistic
+    LM2_bar  = meanc(Nlm2); 
+    Zch      = sqrt(n) * (LM2_bar - mu_lm2) / sqrt(var_lm2);
+    pval_Zch = cdfn(Zch);
+    
+retp(Nlm1, Nzlm1, Npval1, Nlm2, Nzlm2, Npval2, Zhl, pval_Zhl, Zch, pval_Zch);
+endp;
+
+/*Procedures*/   
+proc(2) = _get_lm_stats(y, model);
+    local t, z, b, e, Se, lm1, de, Sde, lm2;
+    
+    t   = rows(y);
+    
+    if model == 1;
+        z = ones(t,1);
+    endif;
+    if model == 2;
+        z = ones(t,1)~seqa(1,1,t);
+    endif;
+    
+    b = y/z;
+    e = y - z*b;
+    
+    // Univariate LM(KPSS) stationarity statistic
+    Se  = cumsumc(e);                /*partial sum of residuals*/
+    lm1 = sumc(se.*se)/(t*e'e);
+    
+    // Univariate LM(Bhargava) unit root statistic
+    de  = e[2:T] - e[1:T-1];
+    Sde = cumsumc(de);
+    lm2 = sumc(Sde.*Sde)/(t*(de'de));
+    
+    retp(lm1, lm2);
+endp;
+
