@@ -6,12 +6,14 @@
 **  "Further Evidence on the Great Crasch, the Oil-Price Shock, and the Unit-Root Hypothesis"
 **  Journal of Business & Economic Statistics 10(3), 251-270.
 **
-**  Format:  {tstat,tb,p,cv} = ADF_1break(y,model,pmax,ic,trimm);
+**  Format:  {tstat, tb, p, cv} = ADF_1break(y, model, outlier, pmax, ic,trimm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
-**           model   - 	1=Model A: break in level
-**                      2=Model C: break in level and trend
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           model   - 	1 = Model A: break in level
+**                      2 = Model C: break in level and trend
+**           outlier - 	1 = Innovational outlier (IO) model
+**                      2 = Additive outlier (AO) model
+**           pmax    -  Maximum number of lags for Dy; 0 = no lags
 **           ic      -  Information Criterion:
 **                      1=Akaike
 **                      2=Schwarz
@@ -27,25 +29,27 @@
 -- The author makes no performance guarantees.
 -- for public non-commercial use only.
 -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+** August 10, 2020
 **
 */
 
 
-proc(4)=ADF_1break(y, model, pmax, ic, trimm);
-    local t, tb1, tb1_min, ADF_min, T1, T2, dc, dt, du1, dt1, z;
-    local taup, aicp, sicp, tstatp, dy, y1, z1, lmat, j, p;
-    local dep, ldy, ly, lz, x, stat;
-    local b, e1, sig2, se, ssr, cv, p_keep;
+proc(4)=ADF_1break(y, model, outlier, pmax, ic, trimm);
+    local t, tb1_min, ADF_min, T1, T2, tbmat, tmat, tb1;
+    local dc, dt, du1, dt1, br1, taup, aicp, sicp, tstatp, p;
+    local dy, y1, dep, z, x, stat, de, brlag, e1, br, ze;
+    local b, sig2, se, ssr, resid, e, opt_lag, cv;
     
     t = rows(y);
     tb1_min = 0;
     ADF_min = 1000;
     
-    T1 = round(trimm * rows(y));
-    T2 = round((1 - trimm) * rows(y));
-    
+    T1 = maxc((3 + pmax)|ceil(trimm * t));
+    T2 = minc((t - 3 -pmax)|floor((1 - trimm) * t));
+
+
     if T1 < (pmax + 2);
-        T1 = pmax + 3;
+       T1 = pmax + 3;
     endif;
     
     tb1 = T1;
@@ -57,67 +61,119 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
         // Deterministic term=trend
         dt=seqa(1, 1, t);
         
-        if  model == 1;
-            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
-            z = dc~dt~du1;
-        endif;
-        
-        if  model == 2;
-            du1 = zeros(tb1, 1)|ones(t - tb1, 1);
-            dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
-            z = dc~dt~du1~dt1;
-        endif;
-        
-        t = rows(y);
+        // Break dummies
+        du1 = zeros(tb1-1, 1)|ones(t - tb1 + 1, 1);
+        dt1 = zeros(tb1-1, 1)|seqa(1, 1, (t - tb1 + 1));
+        br1 = zeros(tb1-1, 1)|ones(1, 1)|zeros(t-tb1, 1);
+
         taup = zeros(pmax + 1, 1);
         aicp = zeros(pmax + 1, 1);
         sicp = zeros(pmax + 1, 1);
-        tstatp = zeros(pmax + 1, 1);
-        
-        dy = trimr(diff(y, 1), 1, 0);
-        y1 = trimr(lagn(y, 1), 1, 0);
-        z1 = trimr(lagn(z, 1), 1, 0);
-        
-        lmat = zeros(rows(dy), pmax);
-        
-        j = 1;
-        do while j<= pmax;
-            lmat[., j]=lagn(dy, j);
-            j = j + 1;
-        endo;
-        
-        p = 0;
-        do while p <= pmax;
-            dep = trimr(dy, p + 1, 0);
-            ldy = trimr(lmat, p + 1, 0);
-            ly = trimr(y1, p + 1, 0);
-            lz = trimr(z1, p + 1, 0);
-            if p == 0;
-                x = ly~lz;
-            elseif p > 0;
-                x = ly~lz~ldy[., 1:p];
+        tstatp = zeros(pmax + 1, 1);     
+  
+        if outlier == 1; 
+            
+            for p(0, pmax, 1);
+                
+                if model == 1; 
+                    z = dc ~ du1 ~ br1;
+                endif;
+                
+                if model == 2; 
+                    z = dc ~ dt ~ du1 ~ dt1 ~ br1; 
+                endif;
+                
+                if p > 0;
+                    dy   = zeros(rows(y), p);
+                    for j(1,p,1);
+                        dy[., j] = diff(lagn(y, j),1);
+                    endfor;
+                    dy = trimr(dy, p + 1, 0);
+                endif;
+                
+                y1  = trimr(lagn(y, 1), p + 1, 0);
+                dep = trimr(y,  p + 1, 0); 
+                z   = trimr(z,  p + 1, 0);
+
+                if p == 0;
+                    x   = y1 ~ z;
+                endif; 
+                
+                if p > 0;
+                    x   = y1 ~ z ~ dy;
+                endif; 
+                
+                    {b, e1, sig2, se, ssr} = myols(dep, x);
+            
+                taup[p+1] = (b[1]-1)/se[1];
+                aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
+                sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
+                tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
+            endfor; 
+        endif;    
+ 
+        if outlier == 2;
+            
+            if model == 1; 
+               x = dc ~ du1;
             endif;
             
-            {b, e1, sig2, se, ssr} = myols(dep, x);
-            taup[p+1] = b[1]/se[1];
-            aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
-            sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
-            tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
-            p = p + 1;
-        endo;
-        
-        p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
+            if model == 2; 
+                x = dc ~ dt ~ du1 ~ dt1;
+            endif;
+            
+            {b, resid, sig2, se, ssr} = myols(y, x);
+
+            for p(0, pmax, 1);
+                
+                if p > 0;
+                    de = zeros(rows(resid), p);
+                    for j(1,p,1);
+                        de[., j] = diff(lagn(resid, j),1);
+                    endfor;
+            
+                    brlag = zeros(rows(br1), p);
+                    for j(1,p,1);
+                        brlag[., j] = lagn(br1, j);
+                    endfor;
+                    
+                    de = trimr(de, p + 1, 0);
+                    br = br1 ~ brlag; 
+                    ze = trimr(br,  p + 1, 0);    
+                endif;
+                
+                e1 = trimr(lagn(resid, 1), p + 1, 0);
+                e  = trimr(resid,  p + 1, 0); 
+                
+                if p == 0;
+                    x = e1;
+                endif;  
+                
+                if p > 0;
+                    x = e1 ~ ze ~ de;
+                endif;  
+                
+                    {b, e1, sig2, se, ssr} = myols(e, x);
+                   
+                taup[p+1] = (b[1]-1)/se[1];
+                aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
+                sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
+                tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
+            endfor;
+        endif;
+
+        p = _get_lag(ic, pmax, aicp, sicp, tstatp);
         stat = taup[p];
         
-        if  stat < ADF_min;
-            // First break date
-            tb1_min=tb1;
+        if  stat < ADF_min;    
+            // Break date
+            tb1_min = tb1;   
             
             // t-statistic with break
-            ADF_min =stat;
+            ADF_min = stat; 
             
-            // Keep optimal p value
-            p_keep = p;
+            // Optimal lag
+            opt_lag = p;                 
         endif;
         
         tb1 = tb1 + 1;
@@ -147,7 +203,7 @@ proc(4)=ADF_1break(y, model, pmax, ic, trimm);
     // Print conclusions
     _printConclusion(ADF_min, cv, 0, "a unit root");
     
-    retp(ADF_min, tb1_min, p-1, cv);
+    retp(ADF_min, tb1_min, opt_lag-1, cv);
 endp;
 
 proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth);
