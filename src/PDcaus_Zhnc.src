@@ -14,7 +14,7 @@
 **  "Financial Development, Trade Openness and Economic Growth in African Countries: New Insights from a Panel Causality Approach".
 **  Economic Modelling 37: 386-394.
 **
-**  Format:  {Znt, Zn} = Panel_Zhnc(data, vnames, pmax, ic, Nboot);
+**  Format:  {Znt, Zn} = Panel_Zhnc(data, vnames, pmax, ic, Nboot, Ncross);
 **
 **
 **  Input:   data	 -  (TxN,k) matrix
@@ -26,6 +26,7 @@
 **                      1 = Akaike
 **                      2 = Schwarz
 **           Nboot   -  Number of boostrap replications
+**           Ncross  -  Number of cross sections
 **
 **  Output:  Znt     -  Panel Zhnc statistic with asymptotic distribution
 **           Zn      -  Panel Zhnc statistic with semi-asymptotic distribution

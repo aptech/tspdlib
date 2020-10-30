@@ -28,6 +28,7 @@
 **                      1 = Akaike
 **                      2 = Schwarz
 **           Nboot   -  Number of boostrap replications
+**           Ncross  -  Number of cross sections
 **
 **  Output:  Fisher  -  Panel Fisher statistics
 **                      Prints individual results and bootstrap critical values

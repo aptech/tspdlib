@@ -16,7 +16,7 @@
 **  Economic Modelling 37: 386-394.
 **
 **
-**  Format:  SURwald = Panel_SURwald(data, vnames, pmax, ic, Nboot);
+**  Format:  SURwald = Panel_SURwald(data, vnames, pmax, ic, Nboot, Ncross);
 **
 **
 **  Input:   data	 -  (TxN,k) matrix
@@ -31,6 +31,7 @@
 **                      1 = Akaike
 **                      2 = Schwarz
 **           Nboot   -  Number of boostrap replications
+**           Ncross  -  Number of cross sections
 **
 **  Output:  SURwald -  Panel SUR Wald statistics
 **                      Prints individual results and bootstrap critical values
