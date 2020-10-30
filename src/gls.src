@@ -10,6 +10,9 @@
 **  Lag length selection and the construction of unit root tests with good size and power.
 **  Econometrica 69,1519-1554.
 **
+**  Otero, J., & Baum, C. F. (1995).
+**  Response surface models for the Elliott, Rothenberg, and Stock unit-root test.
+**  The Stata Journal (2017) 17, Number 4, pp. 985–1002
 **
 **  Format:  {GLStau, p, cvGLS}   = DFGLS(y,model,pmax,ic);
 **           {Pt,lrv, cvPT}       = ERSpt(y,model,l,varm);
@@ -144,7 +147,13 @@ proc(3) = DFGLS(y, model, pmax, ic);
     
     p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
     tau = taup[p];
-    cv  = _get_cv_dfgls(model, T);
+    //cv  = _get_cv_dfgls(model, T);        
+
+
+    
+           // T and p adjusted critical values based on response surfaces
+    cv = _get_cv_DFGLSrsf(model, T, p);
+
     
         // Print results
     local hd_side, hd_top, tmp1, tmp2;
@@ -177,7 +186,7 @@ proc(3) = DFGLS(y, model, pmax, ic);
     endif;
     print;
     
-    retp(tau, p - 1, cv);
+    retp(tau, p - 1, cv');
 endp;
 
 
