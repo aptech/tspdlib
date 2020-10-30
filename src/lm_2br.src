@@ -6,7 +6,12 @@
 **  "Minimum Lagrange Multiplier Unit Root Test with Two Structural Breaks",
 **  Review of Economics and Statistics 85(4), 1082-1089.
 **
-**  Format:  { tstat, tb1, tb2, p, cv } = LM_2breaks(y, model, pmax, ic, trimm);
+** Nazlioglu, S., Lee, J. (2020).
+** Response Surface Estimates of the LM Unit Root Tests.
+** Economics Letters, Vol. 192, Article 109136.
+**
+**
+**  Format:  {tstat,tb1,tb2,p,cv} = LM_2breaks(y,model,pmax,ic,trimm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1=Model A: break in level
@@ -23,7 +28,7 @@
 **			 tb1     - first break location
 **			 tb2     - second break location
 **			 p       - number of lags selected by choosen information criterion
-**			 cv      - 1%, 5%, 10% critical values for the chosen model
+**			 cv      - 1%, 5%, 10% critical values based on response surfaces
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
@@ -37,7 +42,8 @@
 proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
     local t, tb1, tb2, tb1_min, tb2_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local dy, dz, b0, s0, st, ls, dst, ds, lmat, x, tau, lmp, lmt, j, p, aicp, sicp, tstatp, lm_k;
-    local b, e1, sig2, se, ssr, lam, cv, mat_cv1, mat_cv5 , mat_cv10 , cv1 , cv5 , cv10 , mat_cv11 , mat_cv55 , mat_cv1010;
+    local b, e1, sig2, se, ssr, cv, mat_cv1, mat_cv5, mat_cv10 , cv1, cv5, cv10;
+    local lam1, lam2, lam1row, lam2col, opt_lag; 
     
     t = rows(y);
     tb1_min = 0;
@@ -57,13 +63,13 @@ proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
     
     // Bounds as in LS
     if T1 < (pmax + 2);
-        T1 = pmax + 3;
-    endif;
+       T1 = pmax + 3;
+    endif;  
     
     tb1 = T1;
     do while tb1 <= T2;
         
-        // Bounds as in LS
+         // Bounds as in LS
         if model == 1;
             tb2 = tb1 + 2;
         endif;
@@ -75,10 +81,10 @@ proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
         do while tb2 <= T2;
             
             // Deterministic term=constant
-            dc = ones(t, 1);
-            
+            dc = ones(t, 1);   
+
             // Deterministic term=trend
-            dt = seqa(1, 1, t);
+            dt = seqa(1, 1, t);              
             
             if model == 1;
                 du1 = zeros(tb1, 1)|ones(t - tb1, 1);
@@ -161,7 +167,10 @@ proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
                 tb2_min = tb2;
                 
                 // LM statistic with breaks
-                LM_min = lm_k;
+                LM_min = lm_k;  
+
+                // Optimal lag
+                opt_lag = p;                       
             endif;
             
             tb2 = tb2 + 1;
@@ -182,6 +191,7 @@ proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
     endif;
     
     if model == 2;
+        
         mat_cv1 = {-6.16	 -6.41  -6.33,
             0	 -6.45  -6.42,
             0	   0	-6.32};
@@ -243,6 +253,10 @@ proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
         cv = cv1~cv5~cv10;
     endif;
     
+    // T and p adjusted critical values based on response surfaces
+    if model == 1; cv  = _get_cv_LMrsf(0, T-p , p); endif;
+    if model == 2; cv  = _get_cv_LMrsf(2, T-p , p); endif;
+
         // Print results
     local top, side, stats, dec, colwidth;
     top = "LM Stat"$|"Break 1"$|"Fraction 1"$|"Break 2"$|"Fraction 2"$|"Lags";
@@ -254,6 +268,6 @@ proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
     _printStatsTable(top, side, stats, cv', dec, colwidth);
     _printConclusion(LM_min, cv, 0, "unit root");
     
-    retp(LM_min, tb1_min, tb2_min, p - 1, cv);
+    retp(LM_min, tb1_min, tb2_min, opt_lag - 1, cv');
 endp;
 
