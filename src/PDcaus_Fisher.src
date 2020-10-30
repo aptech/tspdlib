@@ -47,6 +47,7 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
     local e0, z0, NeH0, NzH0, Fisher, test_out;
     local Fisher_b, boot_cv10, boot_cv5, boot_cv1;
     
+    "Emirmahmutoglu & Kose (2011) Panel Causality Test ";
     n = Ncross;
     t = rows(data)/n;
     
