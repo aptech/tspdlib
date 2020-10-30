@@ -61,6 +61,12 @@ proc(2) = LMkpss(y, model, l, varm);
         cv     = 0.216 ~ 0.146 ~ 0.119 ;
     endif;
     
+    // T adjusted critical values based on response surfaces
+    cv = _get_cv_KPSSrsf(model, T);
+
+
+
+    
     // Print results
     local top, side, stats, dec, colwidth;
     top = "KPSS Stat";
