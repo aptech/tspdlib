@@ -36,7 +36,7 @@ proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
     local t, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local taup, aicp, sicp, tstatp, dy, y1, z1, lmat, j, p;
     local dep, ldy, ly, lz, x, lagt, stat;
-    local b, e1, sig2, se, ssr, cv, p_keep;
+    local b, e1, sig2, se, ssr, cv, opt_lag;
     
     
     t = rows(y);
@@ -140,10 +140,10 @@ proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
                 tb2_min=tb2;  
                 
                 // T-statistic with breaks
-                ADF_min = stat;    
+                ADF_min = stat;  
                 
-                // Pick lags
-                p_keep = p;
+                // Optimal lag
+                opt_lag = p; 
                 
             endif;
             tb2 = tb2 + 1;
@@ -208,5 +208,5 @@ proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
     // Print conclusion
     _printConclusion(ADF_min, cv, 0, "a unit root");
     
-    retp(ADF_min, tb1_min, tb2_min, p - 1, cv);
+    retp(ADF_min, tb1_min, tb2_min, opt_lag - 1, cv);
 endp;

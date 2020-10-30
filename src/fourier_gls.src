@@ -40,7 +40,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
         k, cbar, sink, cosk, abar, ya, za, bhat, ygls, 
         dy, ly, dc, dt, lmat, dep, y1, ldy, sbt, trnd, 
         sinp, cosp, z, f, gls, crit, d, 
-        b, e1, sig2, se, ssr;
+        b, e1, sig2, se, ssr, keep_p, opt_lag;
     
     t = rows(y);
     d = model;
@@ -51,6 +51,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
     ssrp = zeros(pmax + 1, 1);
     ssrk = zeros(fmax, 1);
     tauk = zeros(fmax, 1);
+    keep_p = zeros(fmax, 1);
     
     k = 1;
     do while k <= fmax;
@@ -195,6 +196,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
             p = p + 1;
         endo;
         p = _get_lag(ic, pmax, aicp, sicp, tstatp);
+        keep_p[k] = p;
         ssrk[k] = ssrp[p];
         tauk[k] = taup[p];
         k = k + 1;
@@ -202,6 +204,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
     
     f = minindc(ssrk);
     GLS = tauk[f];
+    opt_lag = keep_p[f];
     
     // Critical Values (see,  Rodrigues & Taylor,  2012,  Table 2)
     crit = zeros(5, 3);
@@ -274,6 +277,6 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
     _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth);
     _printConclusion(GLS, crit[f, .], 0, "unit root");
 
-    retp(GLS, f, p - 1, crit[f, .]);
+    retp(GLS, f, opt_lag - 1, crit[f, .]);
 endp;
 

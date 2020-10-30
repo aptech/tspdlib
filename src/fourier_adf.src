@@ -37,7 +37,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
     local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
         k, dy, ly, dc, dt, sink, cosk, lmat, dep, y1, ldy,
         sbt, trnd, sinp, cosp, z, jj, isw, adf,
-        b, e1, sig2, se, ssr, f, crit;
+        b, e1, sig2, se, ssr, f, crit, keep_p, opt_lag;
     
     t = rows(y);
     taup = zeros(pmax + 1, 1);
@@ -47,6 +47,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
     ssrp = zeros(pmax + 1, 1);
     ssrk = zeros(fmax, 1);
     tauk = zeros(fmax, 1);
+    keep_p = zeros(fmax, 1);
     
     k = 1;
     do while k <= fmax;
@@ -102,6 +103,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
             p = p + 1;
         endo;
         p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
+        keep_p[k] = p;
         ssrk[k] = ssrp[p];
         tauk[k] = taup[p];
         k = k + 1;
@@ -109,6 +111,7 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
     
     f = minindc(ssrk);
     ADF = tauk[f];
+    opt_lag = keep_p[f];
     
     // Critical Values (see, Enders & Lee, 2012, Table 1b)
     crit = zeros(5, 3);
@@ -199,5 +202,5 @@ proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
     _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth);
     _printConclusion(ADF, crit[f, .], 0, "unit root");
 
-    retp(ADF, f, p-1, crit[f, .]);
+    retp(ADF, f, opt_lag-1, crit[f, .]);
 endp;

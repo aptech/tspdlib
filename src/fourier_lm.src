@@ -35,7 +35,7 @@ proc(4) = Fourier_LM(y, pmax, kmax, ic);
         k, dc, dt, sink, cosk, dy, dsink, dcosk, dz,
         b0, psi, ylm, ly, lmat, dep, y1, ldy,
         sbt, trnd, sinp, cosp, z, jj, isw, f, lm,
-        b, e1, sig2, se, ssr, crit;
+        b, e1, sig2, se, ssr, crit, keep_p, opt_lag;
     
     t = rows(y);
     taup = zeros(pmax + 1, 1);
@@ -45,6 +45,7 @@ proc(4) = Fourier_LM(y, pmax, kmax, ic);
     ssrp = zeros(pmax + 1, 1);
     ssrk = zeros(fmax, 1);
     tauk = zeros(fmax, 1);
+    keep_p = zeros(fmax, 1);
     
     k = 1;
     do while k <= fmax;
@@ -102,12 +103,14 @@ proc(4) = Fourier_LM(y, pmax, kmax, ic);
             p = p + 1;
         endo;
         p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
+        keep_p[k] = p;
         ssrk[k] = ssrp[p];
         tauk[k] = taup[p];
         k = k + 1;
     endo;
     f = minindc(ssrk);
     LM = tauk[f];
+    opt_lag = keep_p[f];   
     
     // Critical Values (see, Enders & Lee, 2012, Table 1)
     crit = zeros(5, 3);
@@ -156,5 +159,5 @@ proc(4) = Fourier_LM(y, pmax, kmax, ic);
     _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth);
     _printConclusion(LM, crit[f, .], 0, "unit root");
 
-    retp(LM, f, p - 1, crit[f, .]);
+    retp(LM, f, opt_lag - 1, crit[f, .]);
 endp;
