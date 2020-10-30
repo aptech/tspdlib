@@ -6,7 +6,11 @@
 **  "Minimum LM Unit Root Test with One Structural Break"
 **  Economics Bulletin 33(4), 2483-2492.
 **
-**  Format:  { tstat, tb, p, lambda, cv }  =   LM_1break(y, model, pmax, ic, trimm);
+** Nazlioglu, S., Lee, J. (2020).
+** Response Surface Estimates of the LM Unit Root Tests.
+** Economics Letters, Vol. 192, Article 109136.
+**
+**  Format:  {tstat,tb, p,lambda,cv}  =   LM_1break(y,model, pmax,ic,trimm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1 =  Model A: break in level
@@ -23,7 +27,7 @@
 **			 tb      - location of break
 **			 p       - number of lags selected by chosen information criterion
 **           lambda  - fraction of break (tb/T)
-**			 cv      - 1%, 5%, 10% critical values for the break location
+**			 cv      - 1%, 5%, 10% critical values for the break location based on response surfaces
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
 -- for public non-commercial use only.
@@ -36,7 +40,7 @@
 proc(5) = LM_1break(y, model, pmax, ic, trimm);
     local t, tb1, tb1_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local dy, dz, b0, s0, st, ls, dst, ds, lmat, x, tau, lmt, j, p, aicp, sicp, tstatp;
-    local lm_k, b, e1, sig2, se, ssr, cv, crit, lambda;
+    local lm_k, b, e1, sig2, se, ssr, cv, crit, lambda, opt_lag;
     
     t = rows(y);
     tb1_min = 0;
@@ -136,6 +140,7 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
         if  pmax == 0;
             lm_k = tau;
             p = 0;
+            opt_lag = p + 1;
         else;
             p =  _get_lag(ic, pmax, aicp, sicp, tstatp);
             lm_k = lmt[p];
@@ -147,6 +152,9 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
             
             // LM statistic with break
             LM_min = lm_k;
+            
+            // Optimal lag
+            opt_lag = p;                   
         endif;
         
         tb1 =  tb1 + 1;
@@ -172,6 +180,10 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
         cv = crit[lambda, .];
     endif;
     
+    // T and p adjusted critical values based on response surfaces
+    if model == 1; cv  = _get_cv_LMrsf(0, T-p , p); endif;
+    if model == 2; cv  = _get_cv_LMrsf(1, T-p , p); endif;
+
         // Print results
     local top, side, stats, dec, colwidth;
     top = "LM Stat"$|"Break 1"$|"Fraction"$|"Lags";
@@ -184,5 +196,5 @@ proc(5) = LM_1break(y, model, pmax, ic, trimm);
     _printConclusion(LM_min, cv, 0, "unit root");
     
     
-    retp(LM_min, tb1_min, p - 1, tb1_min/rows(y), cv);
+    retp(LM_min, tb1_min, opt_lag - 1, tb1_min/rows(y), cv);
 endp;
