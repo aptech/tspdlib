@@ -29,22 +29,26 @@
 **           JWL_PANICadj : Westerlund and Larsson (2009).
 **           JWR_PANICCA  : Reese and Westerlund (2016)
 **
-**  Format:  {ADFe,pval,lags,Pe,nf} = BNG_PANIC(y,model,ic);
-**           {Pa_pc,Pb_pc,PMSB_pc}  = BNG_PANICnew(y,model,ic);
-**           {Ze,Ze_ba}             = JWL_PANICadj(y,model,ic);
+**  Format:  {ADFe,pval,lags,Pe,nf} = BNG_PANIC(y, model, pmax, icp, kmax, ick);
+**           {Ze,Ze_ba}             = JWL_PANICadj(y, model, pmax, icp, kmax, ick);
+**           {Pa_pc,Pb_pc,PMSB_pc}  = BNG_PANICnew(y, model, kmax, ick);
 **           {Pa_ca,Pb_ca,PMSB_ca}  = JWR_PANICCA(y,model);
 **
 **  Input:   Y	     -  TxN matrix, data,
 **           model   - 	1= Constant
 **                      2= Constant and trend
 **           pmax    -  Maximum number of lags for ADF regressions; 0=no lags
+**           icp     -  Information Criterion for optimal number of lags
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
 **           kmax    -  Maximum number of factors
-**           ic      -  Information Criterion for optimal number of factors
-**                      1= PCp criterion
-**                      2= ICp criterion
+**           ick     -  Information Criterion for optimal number of factors
+**                      1 = PCp criterion
+**                      2 = ICp criterion
 **                      (See Bai and Ng, 2002)
 **
-**  Output:  ADFe    -  ADF statistic with common factor for each cross-section
+**  Output:  ADFe    -  ADF statistic for idiosyncratic components for each cross-section
 **           pval    -  p-value of ADFe
 **			 p       -  number of lags selected by chosen information criterion
 **           nf      -  number of factors by chosen information criterion
@@ -71,7 +75,7 @@
 #include panel.txt  /* for p-vals */
 
 /*Pe test on ADF p-values in Bai & Ng (2004)*/
-proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
+proc(5) = BNG_PANIC(y, model, pmax, icp, kmax, ick);
     local dx, x, e, t, n, nf, Fhat, lambda, ehat;
     local ADFe, lags, cv0, pval, par, qval, j, Pe;
     
@@ -93,7 +97,7 @@ proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
         print "Model with constant and trend";
     endif;
     
-    nf = Fnumber(x, kmax, ic);
+    nf = Fnumber(x, kmax, ick);
     
     // nf is selected with ICp2
     { Fhat, lambda, ehat } = pca(x, nf[2]);
@@ -107,7 +111,7 @@ proc(5) = BNG_PANIC(y, pmax, kmax, model, ic);
     pval = zeros(N, 1);
     
     for i(1, N, 1);
-        { ADFe[i], lags[i], cv0} = ADF(e[., i], 0, pmax, 3);
+        { ADFe[i], lags[i], cv0} = ADF(e[., i], 0, pmax, icp);
         par = 1 ./ (1|t|t^2);
         qval = coe_adfnc * par;
         
@@ -152,7 +156,7 @@ endp;
 
 // Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010)
 
-proc(3) = BNG_PANICnew(y, kmax, model, ic);
+proc(3) = BNG_PANICnew(y, model, kmax, ick);
     local dx, nf, fhat, Floads, ehat, e, e1, rho, v, t, n, boti, topi, rhoi, sigi, bw, j, u, k;
     local x, w, alpha, omega2, sigma2, lambda2, lambda, phi4, rho1, s, temp, Pa, Pb, PMSB;
     
@@ -169,7 +173,7 @@ proc(3) = BNG_PANICnew(y, kmax, model, ic);
         print "Model with constant and trend";
     endif;
     
-    nf = Fnumber(x, kmax, ic);
+    nf = Fnumber(x, kmax, ick);
     
     // nf is selected with ICp2
     { Fhat, Floads, ehat } = pca(x, nf[2]);
@@ -197,7 +201,7 @@ endp;
 
 // Ze and Ze+ tests in Westerlund & Larsson (2009)
 
-proc(2) = JWL_PANICadj(y, kmax, pmax, model, ic);
+proc(2) = JWL_PANICadj(y, model, pmax, icp, kmax, ick);
     local nf, Fhat, lambda, ehat, E, ADFe, lagp, eb, varB, Ze, aN, Ze_ba;
     local lags, dx, x, de, de0, del, rho, djwj, wj, cv0;
     local T, N;
@@ -220,7 +224,7 @@ proc(2) = JWL_PANICadj(y, kmax, pmax, model, ic);
         print "Model with constant and trend";
     endif;
     
-    nf = Fnumber(x, kmax, ic);
+    nf = Fnumber(x, kmax, ick);
     
     // nf is selected with ICp2
     {Fhat, lambda, ehat} = pca(x, nf[2]);
@@ -229,7 +233,7 @@ proc(2) = JWL_PANICadj(y, kmax, pmax, model, ic);
     lags = zeros(N, 1);
     
     for i(1, N, 1);
-        { ADFe[i], lags[i], cv0} = ADF(e[., i], 0, pmax, 3);
+        { ADFe[i], lags[i], cv0} = ADF(e[., i], 0, pmax, icp);
     endfor;
     
     an = zeros(n, 1);
@@ -385,8 +389,7 @@ proc(3) = pca(x, nf);
         lambda = inv(Fhat'Fhat) * Fhat' * X; //lambda=Fhat'X/T
         ehat = X - Fhat * lambda;
         
-    else;
-        
+    else;     
         { eigval, eigvec } = eighv(x' * x);
         lambda = sqrt(N) * eigvec[., N-nf+1:N];
         Fhat = X * lambda/N;
@@ -449,7 +452,7 @@ proc(1) = Fnumber(X, kmax, ic);
 endp;
 
 
-// Estimates long-run variance with Bartlett in Bain & Ng (2010)
+// Estimates long-run variance with Bartlett in Bai & Ng (2010)
 proc(3) = _get_lrv(e, bw);
     local e1, rho, v, t, n, boti, topi, rhoi, sigi, j, u;
     local k, w, alpha, omega2, sigma2, temp, lambda2;
