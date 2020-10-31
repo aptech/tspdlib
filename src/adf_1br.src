@@ -34,7 +34,7 @@
 */
 
 
-proc(4)=ADF_1break(y, model, outlier, pmax, ic, trimm);
+proc(4) = ADF_1break(y, model, outlier, pmax, ic, trimm);
     local t, tb1_min, ADF_min, T1, T2, tbmat, tmat, tb1;
     local dc, dt, du1, dt1, br1, taup, aicp, sicp, tstatp, p;
     local dy, y1, dep, z, x, stat, de, brlag, e1, br, ze;
@@ -59,7 +59,7 @@ proc(4)=ADF_1break(y, model, outlier, pmax, ic, trimm);
         dc = ones(t, 1);
         
         // Deterministic term=trend
-        dt=seqa(1, 1, t);
+        dt = seqa(1, 1, t);
         
         // Break dummies
         du1 = zeros(tb1-1, 1)|ones(t - tb1 + 1, 1);
@@ -191,10 +191,16 @@ proc(4)=ADF_1break(y, model, outlier, pmax, ic, trimm);
         
     endif;
     
+    if outlier == 1;
+        print "Innovational (IO) outlier model";
+    elseif outlier == 2;
+        print "Additive (AO) outlier model";
+    endif;
+    
     // Print results & Critical values
     local top, stats, dec, colwidth;
     top = "ADF-stat"$|"Break date"$|"Fraction"$|"Lag";
-    stats = ADF_min|tb1_min|tb1_min/rows(y)|p_keep-1;
+    stats = ADF_min|tb1_min|tb1_min/rows(y)|opt_lag-1;
     dec = 2;
     colwidth = 10;
     
