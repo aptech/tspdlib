@@ -34,7 +34,7 @@
 */
 
 
-proc(4) = ADF_1break(y, model, outlier, pmax, ic, trimm);
+proc(4)=ADF_1break(y, model, outlier, pmax, ic, trimm);
     local t, tb1_min, ADF_min, T1, T2, tbmat, tmat, tb1;
     local dc, dt, du1, dt1, br1, taup, aicp, sicp, tstatp, p;
     local dy, y1, dep, z, x, stat, de, brlag, e1, br, ze;
@@ -59,7 +59,7 @@ proc(4) = ADF_1break(y, model, outlier, pmax, ic, trimm);
         dc = ones(t, 1);
         
         // Deterministic term=trend
-        dt = seqa(1, 1, t);
+        dt=seqa(1, 1, t);
         
         // Break dummies
         du1 = zeros(tb1-1, 1)|ones(t - tb1 + 1, 1);
@@ -191,12 +191,6 @@ proc(4) = ADF_1break(y, model, outlier, pmax, ic, trimm);
         
     endif;
     
-    if outlier == 1;
-        print "Innovational (IO) outlier model";
-    elseif outlier == 2;
-        print "Additive (AO) outlier model";
-    endif;
-    
     // Print results & Critical values
     local top, stats, dec, colwidth;
     top = "ADF-stat"$|"Break date"$|"Fraction"$|"Lag";
@@ -204,7 +198,7 @@ proc(4) = ADF_1break(y, model, outlier, pmax, ic, trimm);
     dec = 2;
     colwidth = 10;
     
-    _printStatsTable("", top, stats, cv, dec, colwidth);
+    _printStatsTable("", top, stats, cv, dec, colwidth, 0);
     
     // Print conclusions
     _printConclusion(ADF_min, cv, 0, "a unit root");
@@ -212,7 +206,7 @@ proc(4) = ADF_1break(y, model, outlier, pmax, ic, trimm);
     retp(ADF_min, tb1_min, opt_lag-1, cv);
 endp;
 
-proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth);
+proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv);
     local tmp1, tmp2, tmp3, format1, format2;
     
     tmp1 = "%" $+ ntos(colwidth) $+ "s";
@@ -234,8 +228,14 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth);
         sprintf(tmp1, top);
         sprintf(format1, side, stats);
         print "Critical Values:";
-        sprintf(tmp1, ""$~"1%"$~"5%"$~"10%");
-        sprintf(format2, side, cv');
+        
+        if multistat_in_cv;
+            sprintf(tmp1, ""$~"1%"$~"5%"$~"10%");
+            sprintf(format2, side, cv');
+        else;
+            sprintf(tmp1, "1%"$~"5%"$~"10%");
+            sprintf(tmp3, cv');
+        endif;
     endif;
     print;
 
