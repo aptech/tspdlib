@@ -48,7 +48,7 @@
         "myols.src",
         "PD_cdtests.src",
         "PD_cips.src",
-        "PD_fixedT.src".
+        "PD_fixedT.src",
         "PD_ILTlevel.src",
         "PD_LTtrend.src",
         "PD_nkarul.src",
@@ -60,7 +60,8 @@
         "qr_adf.src",
         "rals_adf.src",
         "rals_lm.src",
+        "rals_lm_breaks.src",
         "coint_maki.src"
     ],
-    "version": "2.0.0"
+    "version": "2.2.0"
 }
