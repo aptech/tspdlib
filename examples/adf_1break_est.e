@@ -26,8 +26,11 @@ trimm = 0.10;
 ** 1=Model A: break in level  
 ** 2=Model C: break in level and trend
 */
-model = 1;                  
-{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model, pmax, ic, trimm);
+model = 1;      
+
+// Outlier model
+outlier = 1;
+{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model, outlier, pmax, ic, trimm);
 
     
 /*
@@ -35,5 +38,5 @@ model = 1;
 ** 2=Model C: break in level and trend
 */
 model = 2;                  
-{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model, pmax, ic, trimm);
+{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model, outlier, pmax, ic, trimm);
 
