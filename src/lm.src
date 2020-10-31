@@ -17,7 +17,7 @@
 **
 **  Output:  tstat   - LM tau-statistic
 **			 p       - number of lags selected by chosen information criterion
-**			 cv      - 1, 5, and 10 percent critical values
+**			 cv      - 1%, 5%, 10% critical values for the break location based on response surfaces
 **
 **
 **  Author: Saban Nazlioglu
@@ -96,9 +96,21 @@ proc(3) = LM(y, pmax, ic);
     check = taup~aicp~sicp~tstatp;
     p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
     tau = taup[p];
-    cv  = _get_cv_lm(t);
+    // cv  = _get_cv_lm(t);
+    cv  = _get_cv_LMrsf(0, T-p , p);
     
-    retp(tau, p - 1, cv);
+      // Print results
+    local top, side, stats, dec, colwidth;
+    top = "LM Stat"$|"Lags";
+    side = "";
+    stats = tau|p-1;
+    dec = 3;
+    colwidth = 10;
+    
+    _printStatsTable(top, side, stats, cv, dec, colwidth);
+    _printConclusion(tau, cv, 0, "unit root");
+    
+    retp(tau, p - 1, cv');
 endp;
 
 // Critical Values (see Schmidt & Phillips, 1992, Table 1A)

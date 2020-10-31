@@ -31,3 +31,20 @@ Change log 1.1.1:
     - mgls.e
 2. Fixed minor formatting in the function headers
 3. Add Wald statistics and corresponding bootstrap critical values for the cases with more lags to PDcaus_SURwald
+
+Change log 2.0.0:
+1. Added response surface critical values in ADF, GLS, LM, and KPSS tests.   
+2. Added innovational outlier and additive outlier options for Zivot & Andrews unit root tests.
+3. Bug Fix: Optimal lag selection in adf_1br, adf_2br, lm_1br, fourier_adf, fourier_lm, and fourier_gls.
+4. Add standardized output printing. 
+5. New procedures: 
+i.   gls_1br - GLS unit root test with one break.
+ii.  gls_2br - GLS unit root tests with two breaks. 
+iii. RALSLM_breaks - RALS-LM unit root tests with one and two breaks.
+iv.  fixed_T_panel - Fixed T unit root tests. 
+v.   _get_cd_error - Error-cross section dependence tests.
+vi.  ADF_1break_est - ADF break with 1 break unit root tests with regression coefficients returned.
+vii. ADF_2break_est - ADF break with 2 break unit root tests with regression coefficients returned.
+
+ 
+    

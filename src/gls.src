@@ -147,15 +147,11 @@ proc(3) = DFGLS(y, model, pmax, ic);
     
     p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
     tau = taup[p];
-    //cv  = _get_cv_dfgls(model, T);        
 
-
-    
-           // T and p adjusted critical values based on response surfaces
+    // T and p adjusted critical values based on response surfaces
     cv = _get_cv_DFGLSrsf(model, T, p);
-
     
-        // Print results
+    // Print results
     local hd_side, hd_top, tmp1, tmp2;
     hd_side = "DFGLS"$|"Lags";
     tmp1 = tau|p-1;
