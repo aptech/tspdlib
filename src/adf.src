@@ -19,9 +19,9 @@
 **                      2 = model with constant and trend
 **           pmax    -  Maximum number of lags for Dy; 0=no lags
 **           ic      -  Information Criterion:
-**                      1=Akaike
-**                      2=Schwarz
-**                      3=t-stat significance
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
 **
 **  Output:  tstat   - ADF tau-statistic
 **			 p       - number of lags selected by chosen information criterion
@@ -119,12 +119,12 @@ proc(3) = ADF(y, model, pmax, ic);
         print;
         print "Critical Values:";
         sprintf("%10s", "1%"$~"5%"$~"10%");
-        sprintf("%10.2f", cv);
+        sprintf("%10.2f", cv');
         print;
     #else;
         hd$~(ntos(tmp1, 4));
         print "Critical Values:";
-        ("1%"$~"5%"$~"10%")$|ntos(cv,5);
+        ("1%"$~"5%"$~"10%")$|ntos(cv',5);
     #endif;
     
     // Print conclusion
@@ -138,7 +138,7 @@ proc(3) = ADF(y, model, pmax, ic);
            print "Cannot reject the null hypothesis of a unit root.";
     endif;
     
-    retp(tau, p - 1, cv);
+    retp(tau, p - 1, cv');
 endp;
 
 // Critical Values (see Fuller, 1976, Table 5.3)
