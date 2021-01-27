@@ -121,8 +121,11 @@ proc(11) = coint_hatemiJ(y, x, model, bwl, ic, pmax, varm, trimm);
                 "Error: Only Model 3 is avaliable";
             endif;
             {b,e1,sig2,se,ssr}    = myols(y,x1);
+            
+            screen off;
             {DF[tb1-T1+1,tb2-T1*2+1],lagadf[tb1-T1+1,tb2-T1*2+1], cv0}  = adf(e1,0,pmax,ic);
             {Zt[tb1-T1+1,tb2-T1*2+1],Za[tb1-T1+1,tb2-T1*2+1], cv1, cv2} = pp(e1,0,bwl,varm);
+            screen on;
             
             stat1=minc(minc(DF));
             if stat1<ADF_min;
@@ -186,7 +189,7 @@ proc(11) = coint_hatemiJ(y, x, model, bwl, ic, pmax, varm, trimm);
     dec = 2;
     colwidth = 14;
     
-    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, dec, colwidth);
+    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, dec, colwidth, 1);
 
     print "ADF test results:";
     _printConclusion(ADF_min, cvADFZt, 0, "no co-integration");
