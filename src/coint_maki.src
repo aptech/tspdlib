@@ -34,18 +34,18 @@ proc (1) = coint_maki(y, m, model, trimm, lagoption);
     
     #ifminkernelversion(20);
     local hd_side, tmp1;
-    tmp1 = rows(datap)|trimm|m;
+    tmp1 = rows(y)|trimm|m;
     hd_side = "Sample Size:"$|"Trimming parameter:"$|"Max. # Breaks:";
     
     sprintf("%20s %18.2f", hd_side, tmp1);
     
 #else;
-    print /lz "Sample Size T=:" rows(datap);
+    print /lz "Sample Size T=:" rows(y);
     print /lz "The trimming parameter:" trimm;
     print /lz "Maximum number of breaks:" m;
 #endif;
     
-    { d0, d1 } = pf(datap, m, model, trimm, lagoption);
+    { d0, d1 } = pf(y, m, model, trimm, lagoption);
     
     print "==========================================================";
     print /lz "Cointegration tests with multiple breaks:";
