@@ -43,7 +43,7 @@ proc(5) = LM_2breaks(y, model, pmax, ic, trimm);
     local t, tb1, tb2, tb1_min, tb2_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local dy, dz, b0, s0, st, ls, dst, ds, lmat, x, tau, lmp, lmt, j, p, aicp, sicp, tstatp, lm_k;
     local b, e1, sig2, se, ssr, cv, mat_cv1, mat_cv5, mat_cv10 , cv1, cv5, cv10;
-    local lam1, lam2, lam1row, lam2col, opt_lag; 
+    local lam1, lam2, lam1row, lam2col, opt_lag, lam, mat_cv11, mat_cv55, mat_cv1010; 
     
     t = rows(y);
     tb1_min = 0;
