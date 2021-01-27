@@ -19,10 +19,10 @@ ic = 2;
 ** Model with constant and trend
 */
 model = 1;
-{ Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, kmax, model, ic);
+{ Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, model, kmax, ic);
 
 /*
 ** Model with constant and trend
 */
 model = 2;
-{ Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, kmax, model, ic);
+{ Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, model, kmax, ic);
