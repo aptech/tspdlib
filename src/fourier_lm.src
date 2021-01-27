@@ -156,7 +156,7 @@ proc(4) = Fourier_LM(y, pmax, kmax, ic);
     dec = 4;
     colwidth = 10;
                      
-    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth);
+    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0);
     _printConclusion(LM, crit[f, .], 0, "unit root");
 
     retp(LM, f, opt_lag - 1, crit[f, .]);

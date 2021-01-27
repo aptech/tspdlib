@@ -135,7 +135,7 @@ proc(3) = Fourier_KPSS(y, model, kmax, l, varm);
     dec = 5;
     colwidth = 10;
                  
-    _printStatsTable(top, side, stats, crit[k, .]', dec, colwidth);
+    _printStatsTable(top, side, stats, crit[k, .]', dec, colwidth, 0);
     _printConclusion(KPSS, crit[k, .], 1, "stationarity");
 
     retp(KPSS, k, crit[k, .]);

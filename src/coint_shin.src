@@ -170,7 +170,7 @@ proc(3) = coint_shin(y, x, model, bwl, varm, q);
     dec = 2;
     colwidth = 14;
     
-    _printStatsTable(top, side, stats, cv~cv, dec, colwidth);
+    _printStatsTable(top, side, stats, cv~cv, dec, colwidth, 1);
 
     // Print conclusion
     print "OLS test results:";

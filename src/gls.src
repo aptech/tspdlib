@@ -478,7 +478,7 @@ proc(8) = MGLS(y, model, l, varm);
     dec = 3;
     colwidth = 14;
                          
-    _printStatsTable(top, side, stats, cv2, dec, colwidth);
+    _printStatsTable(top, side, stats, cv2, dec, colwidth, 0);
     "Conclusion from MZA test:";
     _printConclusion(MZa, cvMZA, 0, "unit root");
     "Conclusion from MZt test:";

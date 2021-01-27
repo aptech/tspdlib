@@ -75,7 +75,7 @@ proc(2) = LMkpss(y, model, l, varm);
     dec = 3;
     colwidth = 10;
     
-    _printStatsTable(top, side, stats, cv', dec, colwidth);
+    _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
     _printConclusion(lm_KPSS, cv, 1, "stationarity");
     
     retp(kpss, cv);

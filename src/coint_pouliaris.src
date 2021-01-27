@@ -190,7 +190,7 @@ proc(4) = coint_pouliaris(y, x, model, bwl, varm);
     dec = 2;
     colwidth = 14;
     
-    _printStatsTable(top, side, stats, cvZt~cvZa, dec, colwidth);
+    _printStatsTable(top, side, stats, cvZt~cvZa, dec, colwidth, 1);
 
     print "Zt test results:";
     _printConclusion(Zt, cvZt, 0, "no co-integration");

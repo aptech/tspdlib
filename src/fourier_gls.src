@@ -274,7 +274,7 @@ proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
     dec = 3;
     colwidth = 10;
              
-    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth);
+    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0);
     _printConclusion(GLS, crit[f, .], 0, "unit root");
 
     retp(GLS, f, opt_lag - 1, crit[f, .]);

@@ -150,7 +150,7 @@ proc(4) = KPSS_2breaks(y, model, l, varm);
     dec = 3;
     colwidth = 10;
     
-    _printStatsTable(top, side, stats, rev(cv'), dec, colwidth);
+    _printStatsTable(top, side, stats, rev(cv'), dec, colwidth, 0);
     _printConclusion(KPSS_min, rev(cv'), 1, "stationarity");
     
     retp(KPSS_min, tb1_min, tb2_min, rev(cv'));
