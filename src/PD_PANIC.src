@@ -5,7 +5,7 @@
 **  References:
 **  Bai, J. and Ng, S. (2004)
 **  "A PANIC attack on unit roots and cointegration".
-**  Econometrica, 72, 1127–78.
+**  Econometrica, 72, 1127-78.
 **
 **  Westerlund, J., & Larsson, R. (2009).
 **  "A note on the pooling of individual PANIC unit root tests".
@@ -111,7 +111,9 @@ proc(5) = BNG_PANIC(y, model, pmax, icp, kmax, ick);
     pval = zeros(N, 1);
     
     for i(1, N, 1);
+        screen off;
         { ADFe[i], lags[i], cv0} = ADF(e[., i], 0, pmax, icp);
+        screen on;
         par = 1 ./ (1|t|t^2);
         qval = coe_adfnc * par;
         
@@ -233,7 +235,9 @@ proc(2) = JWL_PANICadj(y, model, pmax, icp, kmax, ick);
     lags = zeros(N, 1);
     
     for i(1, N, 1);
+        screen off;
         { ADFe[i], lags[i], cv0} = ADF(e[., i], 0, pmax, icp);
+        screen on;
     endfor;
     
     an = zeros(n, 1);
