@@ -19,18 +19,19 @@ pmax = 5;
 kmax = 4;
 
 // Information Criterion for optimal number of factors
-ic = 2;
+icp = 2;
+ick = 2;
 
 /*
 ** Model with constant
 */
 model = 0;
-{ ADFe, pval, lags, Pe, nf } = BNG_PANIC(y, pmax, kmax, model, ic);
+{ ADFe, pval, lags, Pe, nf } = BNG_PANIC(y, model, pmax, icp, kmax, ick);
 
 
 /*
 ** Model with constant and trend
 */
 model = 1;
-{ ADFe, pval, lags, Pe, nf } = BNG_PANIC(y, pmax, kmax, model, ic);
+{ ADFe, pval, lags, Pe, nf } = BNG_PANIC(y, model, pmax, icp, kmax, ick);
 
