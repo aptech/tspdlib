@@ -84,7 +84,7 @@ proc(4) = PP(y, model, l, varm);
     g0 = (t - cols(x)) * s2 * 1/t;
     e1 = e;
     
-    lrv = _get_lrv_type(varm, ssr, e1, l, T, 1);
+    lrv = _get_lrv_type(varm, ssr, e1, l, 1);
     
     // Eviews
     Zt = tau * sqrt(g0/lrv) - t * (lrv - g0) * se[1]/(2 * sqrt(lrv) * sqrt(s2));

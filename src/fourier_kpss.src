@@ -64,7 +64,7 @@ proc(3) = Fourier_KPSS(y, model, kmax, l, varm);
     S = cumsumc(e1);
     
     "Fourier KPSS test (Becker, Enders & Lee, 2006)";  
-    lrv = _get_lrv_type(varm, ssr, e1, l, T, 1);
+    lrv = _get_lrv_type(varm, ssr, e1, l, 1);
     print;
     
     KPSS = sumc(s .* s)/(t^2 * lrv);

@@ -131,8 +131,8 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
         zrdols=trimr(zr~dx_leads~dx~dx_lags,q+1,q);
         Fdols[k,1]= _get_Ftest(ydols,zrdols,zdols);
      
-        lrv1 = _get_lrv_type(varm, ssr1, e1, bwl, T, 1);
-        lrv2 = _get_lrv_type(varm, ssr2, e2, bwl, T, 0);
+        lrv1 = _get_lrv_type(varm, ssr1, e1, bwl, 1);
+        lrv2 = _get_lrv_type(varm, ssr2, e2, bwl, 0);
          
         // Global minimization for OLS-based stat
         SC1 = T^(-2) * (St1'St1)/lrv1;

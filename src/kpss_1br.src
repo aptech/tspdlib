@@ -201,7 +201,7 @@ proc(2) = STps(y, model, varm, tb);
     St = cumsumc(e1);
     
     bwl = round(4 * (T/100)^(2/9));
-    lrv = _get_lrv_type(varm, ssr, e1, bwl, T, 1);
+    lrv = _get_lrv_type(varm, ssr, e1, bwl, 1);
     
     // STps statistic
     ps = T^(-2) * (St'St)/lrv;
@@ -225,7 +225,7 @@ proc (2) = _get_kpss(y, z, varm, bwl, T, print_lrv);
     
     S = cumsumc(e1);                /*partial sum of residuals*/
     
-    lrv = _get_lrv_type(varm, ssr, e1, bwl, T, print_lrv);
+    lrv = _get_lrv_type(varm, ssr, e1, bwl, print_lrv);
     
     // KPSS statistic
     kpss = T^(-2) * (S'S)/lrv;
