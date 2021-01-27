@@ -114,7 +114,7 @@ proc(4) = PP(y, model, l, varm);
     dec = 4;
     colwidth = 10;
                              
-    _printStatsTable(top, side, stats, (cvZt|cvZa)', dec, colwidth);
+    _printStatsTable(top, side, stats, (cvZt|cvZa)', dec, colwidth, 1);
     "Zt test conclusion:";
     _printConclusion(Zt, cvZt, 0, "unit root");
      "Za test conclusion:";
