@@ -305,7 +305,7 @@ proc(1) = _get_lrv_type(varm, ssr, e1, bwl, print_varm);
         if print_varm;
             print "iid";
         endif;
-        retp(ssr/t);
+        retp(ssr/rows(e1));
     elseif varm == 2;
         if print_varm;
             print "Bartlett";
