@@ -175,7 +175,7 @@ proc(8) = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
     dec = 2;
     colwidth = 14;
     
-    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, 4, 12);
+    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, 4, 12, 1);
 
     print "ADF test results:";
     _printConclusion(ADF_min, cvADFZt, 0, "no co-integration");
