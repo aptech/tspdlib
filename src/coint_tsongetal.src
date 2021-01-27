@@ -171,7 +171,7 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     dec = 3;
     colwidth = 14;
         
-    _printStatsTable(top, side, stats, cv~cv, dec, colwidth);
+    _printStatsTable(top, side, stats, cv~cv, dec, colwidth, 0);
   
     // Print conclusion
     print "OLS test results:";
