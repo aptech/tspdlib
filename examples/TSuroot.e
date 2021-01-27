@@ -70,11 +70,14 @@ trimm= 0.10;
 // Maximum number of frequency in tests with Fourier
 fmax = 3;
 
+// Innovational outlier
+outlier = 1;
+
 if model==1; "--------Model A: Break in level        -----"; endif;
 if model==2; "--------Model C: Break in level & trend-----"; endif;
     
 "One break ADF test (Zivot & Andrews, 1992)";
-    { ADF_min, tb1, p, cv } = ADF_1break(y, model, pmax, ic, trimm);
+    { ADF_min, tb1, p, cv } = ADF_1break(y, model, outlier, pmax, ic, trimm);
     "       ADF-stat        ";;ADF_min;
     "       Break date      ";;tb1;
     "       Fraction (λ)    ";;tb1/rows(y);

@@ -52,5 +52,5 @@ Fisher = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, N);
 {Znt, Zn} = Panel_Zhnc(data, vnames, pmax, ic, Nboot, N);
 "";
 
-" Konya (2006) Boostrap Panel Causality Test  ";
+" Konya (2006) Bootstrap Panel Causality Test  ";
 SURwald = Panel_SURwald(data, vnames, pmax, ic, Nboot, N);
