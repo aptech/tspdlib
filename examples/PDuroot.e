@@ -96,12 +96,13 @@ varm = 2;
 model= 1;        /* 1=constant, 2= linear trend */   
 pmax = 4;        /* max lags for ADF regression*/
 kmax = 4;        /* max no of factors for PCA*/
-ic   = 2;        /* 1=PCp, 2 =ICp*/
+icp   = 2;        /* 1=PCp, 2 =ICp*/
+ick = 2;
 
-    {ADFe,pval,lags,Pe,nf}=BNG_PANIC(y, pmax, kmax, model, ic);
-    {Pa_pc,Pb_pc,PMSB_pc} =BNG_PANICnew(y, kmax, model, ic);
-    {Ze,Ze_ba}            =JWL_PANICadj(y, kmax, pmax, model, ic);
-    {Pa_ca,Pb_ca,PMSB_ca} =JWR_PANICCA(y,model);
+    {ADFe,pval,lags,Pe,nf} = BNG_PANIC(y, model, pmax, icp, kmax, ick);
+    {Pa_pc,Pb_pc,PMSB_pc} = BNG_PANICnew(y, model, kmax, ick);
+    {Ze,Ze_ba}            = JWL_PANICadj(y, model, pmax, icp, kmax, ick);
+    {Pa_ca,Pb_ca,PMSB_ca} = JWR_PANICCA(y, model);
 
     "PANIC     Stat.   p-value"; 
     "Pe     ";;Pe       ;;1-cdfn(Pe);
