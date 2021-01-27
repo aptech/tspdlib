@@ -22,16 +22,17 @@ pmax = 5;
 kmax = 4;
 
 // Information Criterion for optimal number of factors
-ic = 2;
+icp = 2;
+ick = 2;
 
 /*
 ** Model with constant
 */
 model = 1;
-{ Ze, Ze_ba } = JWL_PANICadj(y, kmax, pmax, model, ic);
+{ Ze, Ze_ba } = JWL_PANICadj(y, model, pmax, icp, kmax, ick);
 
 /*
 ** Model with constant and trend
 */
 model = 2;
-{ Ze, Ze_ba } = JWL_PANICadj(y, kmax, pmax, model, ic);
+{ Ze, Ze_ba } = JWL_PANICadj(y, model, pmax, icp, kmax, ick);
