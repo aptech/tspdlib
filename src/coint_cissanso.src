@@ -191,7 +191,7 @@ proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
     dec = 2;
     colwidth = 12;
     
-    _printStatsTable(top, side, stats, cv, dec, colwidth);
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 1);
     
     print "OLS cointegration conclusion:";
     _printConclusion(SC1_min, cv, 1, "co-integration");
