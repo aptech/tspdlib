@@ -217,7 +217,16 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
     
 #ifminkernelversion(20)
     if top $=="";
-        top = side;
+        sprintf(format1, side, stats);
+        print "Critical Values:";
+        
+        if multistat_in_cv;
+            sprintf(tmp1, ""$~"1%"$~"5%"$~"10%");
+            sprintf(format2, side, cv');
+        else;
+            sprintf(tmp1, "1%"$~"5%"$~"10%");
+            sprintf(tmp3, cv');
+        endif;
     endif;
     if side $=="";
         sprintf(format1, top, stats);
