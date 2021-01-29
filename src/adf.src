@@ -14,11 +14,12 @@
 **  Format:  {tstat, p, cv} = ADF(y, model, pmax, ic);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
-**           model   - 	0 = none
+**           model   - 	Optional, specifies deterministic components.
+**                      0 = none
 **                      1 = model with constant
 **                      2 = model with constant and trend
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
-**           ic      -  Information Criterion:
+**           pmax    -  Optional, maximum number of lags for Dy; 0 = no lags
+**           ic      -  Optional, information criterion:
 **                      1 = Akaike
 **                      2 = Schwarz
 **                      3 = t-stat significance
@@ -35,11 +36,14 @@
 */
 
 
-proc(3) = ADF(y, model, pmax, ic);
+proc(3) = ADF(y, ...);
     local t, p, j, taup, aicp, sicp, tstatp;
     local dy, ly, dc, dt, lmat, dep, y1, ldy;
     local sbt, trnd, x, tau, LL, n, k;
     local b, e1, sig2, se, ssr, cv;
+    local model, pmax, ic;
+    
+    { model, pmax, ic } = dynargsGet(1|3, 0, 8, 3);
     
     t    = rows(y);
     taup = zeros(pmax + 1, 1);

@@ -19,26 +19,20 @@ pmax = 12;
 */
 ic = 3;                 
 
-/*
-** 0 = No deterministic component
-** 1 = With constant
-** 2 = With constant and trend
-*/
-model = 0;                  
-{ ADFtau, ADFp, cvADF }  = ADF(y, model, pmax, ic);
+// Default model
+// No deterministic term
+// Default pmax = 8
+// Default t-stat information criterion               
+{ ADFtau, ADFp, cvADF }  = ADF(y);
 
-/*
-** 0 = No deterministic component
-** 1 = With constant
-** 2 = With constant and trend
-*/
+// Constant only
+// Default pmax = 8
+// Default t-stat information criterion  
 model = 1;                  
-{ ADFtau, ADFp, cvADF } = ADF(y, model, pmax, ic);
+{ ADFtau, ADFp, cvADF } = ADF(y, model);
 
-/*
-** 0 = No deterministic component
-** 1 = With constant
-** 2 = With constant and trend
-*/
+// Constant and trend
+// Default pmax = 8
+// Default t-stat information criterion  
 model = 2;
-{ ADFtau, ADFp, cvADF } = ADF(y, model, pmax, ic);
+{ ADFtau, ADFp, cvADF } = ADF(y, model);
