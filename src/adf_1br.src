@@ -8,17 +8,22 @@
 **
 **  Format:  {tstat, tb, p, cv} = ADF_1break(y, model, outlier, pmax, ic,trimm);
 **
-**  Input:   Y	     -  Nx1 matrix, data,
-**           model   - 	1 = Model A: break in level
+**  Input:   Y	     -  Nx1 matrix, data
+**           model   - 	Optional
+**                      1 = Model A: break in level
 **                      2 = Model C: break in level and trend
-**           outlier - 	1 = Innovational outlier (IO) model
+**                      Default = 1.
+**           outlier - 	Optional, outlier modeling type.
+**                      1 = Innovational outlier (IO) model
 **                      2 = Additive outlier (AO) model
-**           pmax    -  Maximum number of lags for Dy; 0 = no lags
-**           ic      -  Information Criterion:
+**                      Default = 1.
+**           pmax    -  Optional, maximum number of lags for Dy; 0 = no lags. Default = 8.
+**           ic      -  Optional, information criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
-**			 trim    - 	Trimming rate
+**                      Default = 3.
+**			 trim    - 	Optional, trimming rate. Default = 15%.
 **                      10% in ZA (1992) and LS (2003).
 **
 **  Output:  tstat   - minimum test statistic
@@ -34,11 +39,13 @@
 */
 
 
-proc(4)=ADF_1break(y, model, outlier, pmax, ic, trimm);
-    local t, tb1_min, ADF_min, T1, T2, tb1;
-    local dc, dt, du1, dt1, br1, taup, aicp, sicp, tstatp, p;
-    local dy, y1, dep, z, x, stat, de, brlag, e1, br, ze;
-    local b, sig2, se, ssr, resid, e, opt_lag, cv;
+proc(4)=ADF_1break(y, model, ...);
+    local t, tb1_min, ADF_min, T1, T2, tb1, dc, dt, du1, dt1, br1, 
+    taup, aicp, sicp, tstatp, p,  dy, y1, dep, z, x, stat, de, brlag, 
+    e1, br, ze, b, sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, 
+    ic, trimm;
+    
+    { outlier, pmax, ic, trimm } = dynargsGet(1|4, 1, 8, 3, 0.15);
     
     t = rows(y);
     tb1_min = 0;

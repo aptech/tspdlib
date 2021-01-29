@@ -36,14 +36,14 @@
 */
 
 
-proc(3) = ADF(y, ...);
+proc(3) = ADF(y, model, ...);
     local t, p, j, taup, aicp, sicp, tstatp;
     local dy, ly, dc, dt, lmat, dep, y1, ldy;
     local sbt, trnd, x, tau, LL, n, k;
     local b, e1, sig2, se, ssr, cv;
     local model, pmax, ic;
     
-    { model, pmax, ic } = dynargsGet(1|3, 0, 8, 3);
+    { pmax, ic } = dynargsGet(1|2, 8, 3);
     
     t    = rows(y);
     taup = zeros(pmax + 1, 1);

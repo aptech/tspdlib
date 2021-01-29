@@ -5,41 +5,34 @@ library tspdlib;
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
 
-/*
-** Maximum number of lags for ds; 
-** 0=no lags
-*/
-pmax = 12;                 
-
-/*
-** Information Criterion: 
-** 1=Akaike; 
-** 2=Schwarz; 
-** 3=t-stat sign.
-*/
-ic = 3;                 
-
-// Trimming rate
-trimm = 0.10;             
-
-/*
-** 1=Model A: break in level  
-** 2=Model C: break in level and trend
-*/
+// Model 1: break in level  
+// Default innovational outlier
+// Default 8 maximum lags
+// Default t-stat information criterion
+// Default trimming rate of 0.15
 model = 1;    
 
-// Innovational outlier
-outlier = 1;
-{ ADF_min, tb1, p, cv } = ADF_1break(y, model, outlier, pmax, ic, trimm);
+// Call test
+{ ADF_min, tb1, p, cv } = ADF_1break(y, model);
   
-/*
-** 1=Model A: break in level  
-** 2=Model C: break in level and trend
-*/
+// Model 1: break in level  
+// Additive outlier
+// Default 8 maximum lags
+// Default t-stat information criterion
+// Default trimming rate of 0.15
+outlier = 2;
+model = 1;                  
 
-// Innovational outlier
-outlier = 1;
+// Call test
+{ ADF_min, tb1, p, cv } = ADF_1break(y, model, outlier);
 
-model = 2;                  
-{ ADF_min, tb1, p, cv } = ADF_1break(y, model, outlier, pmax, ic, trimm);
+// Model 2: break in level and trend
+// Default innovational outlier
+// Default 8 maximum lags
+// Default t-stat information criterion
+// Default trimming rate of 0.15
+model = 2;    
+
+// Call test
+{ ADF_min, tb1, p, cv } = ADF_1break(y, model);
 

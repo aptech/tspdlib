@@ -22,8 +22,9 @@ ic = 3;
 // Default model
 // No deterministic term
 // Default pmax = 8
-// Default t-stat information criterion               
-{ ADFtau, ADFp, cvADF }  = ADF(y);
+// Default t-stat information criterion    
+model = 0;
+{ ADFtau, ADFp, cvADF }  = ADF(y, model);
 
 // Constant only
 // Default pmax = 8
