@@ -54,7 +54,7 @@
 /*Procedures*/
 
 proc(4) = coint_pouliaris(y, x, model, bwl, varm);
-    local n,x1,b,e1,sig2,se,ssr,Zt,Za,cvZt,cvZa,k, cv1, cv2;
+    local n, x1, b, e1, sig2, se, ssr, Zt, Za, cvZt, cvZa, k, cv1, cv2;
     
     n=rows(y);
     if model == 0;

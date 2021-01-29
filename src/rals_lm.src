@@ -100,7 +100,7 @@ proc (3) = RALSLM(y, pmax, ic);
 endp;
 
 proc(1) = crit_RALSlm(r2);
-    local cra, crt, ca, ct, r210, r2a, r2b, wa;
+    local crt, ct, r210, r2a, r2b, wa;
     
     /*See MILT (2014) RALS-LM critical values*/
     let crt[10, 3] =

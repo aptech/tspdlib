@@ -102,7 +102,7 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     PDlm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
     
     // Print results
-    local top, side, stats, dec, colwidth;
+    local top;
     if nbreak == 0;
         top = "Group"$~"Ind. Test"$~"Lags";
         #ifminkernelversion(20)
@@ -141,7 +141,7 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
 endp;
 
 proc(2) = _get_ILTmoments(T, N, Nlm, Np);
-    local fname, crit, row_n, panel_k, meanp, varp, mm, optk, ct1, ct2, ct;
+    local fname, crit, row_n, panel_k, meanp, varp, optk, ct1, ct2, ct;
     
     // Reading critical values
     fname = __FILE_DIR $+ "/ILTlevel_crit.tsv";

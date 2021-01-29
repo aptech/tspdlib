@@ -38,7 +38,7 @@
 /*22 January 2015*/
 
 proc(5) = LM_1break(y, model, pmax, ic, trimm);
-    local t, tb1, tb1_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
+    local t, tb1, tb1_min, LM_min, T1, T2, dc, dt, du1, dt1, z;
     local dy, dz, b0, s0, st, ls, dst, ds, lmat, x, tau, lmt, j, p, aicp, sicp, tstatp;
     local lm_k, b, e1, sig2, se, ssr, cv, crit, lambda, opt_lag;
     

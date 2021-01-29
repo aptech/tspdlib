@@ -39,7 +39,7 @@
 
 
 proc(6) = cips(y, model, pmax, ic);
-    local n, Ncadf, Nlm, Nd, Nlags, f, p, pcadf, pmcadf, q;
+    local n, Ncadf, Nlm, Nd, Nlags, f, pcadf, pmcadf, q;
     
     n     = cols(y);
     Ncadf = zeros(N,1);

@@ -36,7 +36,7 @@
 proc(4) = Fourier_ADF(y, model, pmax, fmax, ic);
     local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
         k, dy, ly, dc, dt, sink, cosk, lmat, dep, y1, ldy,
-        sbt, trnd, sinp, cosp, z, jj, isw, adf,
+        sbt, trnd, sinp, cosp, z, adf,
         b, e1, sig2, se, ssr, f, crit, keep_p, opt_lag;
     
     t = rows(y);

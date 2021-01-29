@@ -39,7 +39,7 @@
 /*Procedures*/
 proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     local n, y1, dy, dyl, x, ADFt, p, cv;
-    local qr_beta, u_plus, u_minus, rho_tau, beta_ols, rho_ols, res, ind, phi, cvADF;
+    local qr_beta, rho_tau, beta_ols, rho_ols, res, ind, phi, cvADF;
     local w, cov, delta2, crv, h, x1, rq1, rq2, z, mz, q1, q2, fz, xx, px, QURadf;
     
     n = rows(y);
@@ -155,7 +155,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     cv = crit_QRadf(delta2, model);
     
     if _print == "true";
-        local top, side, stats, dec, colwidth;
+        local top, side, stats, dec;
         top = "";
         side = "quantil"$|"rho(quantile)"$|"rho (OLS)"$|"delta^2"$|"ADF(quantile)";
         stats = tau|rho_tau|rho_ols|delta2|QURadf;
@@ -198,7 +198,7 @@ endp;
 
 
 proc(1) = crit_QRadf(r2,model);
-    local cra, crt, ca, ct, r210, r2a, r2b, wa;
+    local crt, ct, r210, r2a, r2b, wa;
     
     // See Hansen (1995) CADF critical values
     if model == 0;

@@ -36,9 +36,9 @@
 
 
 proc(3) = ADF(y, model, pmax, ic);
-    local t, p, j, taup, aicp, sicp, tstatp, check;
+    local t, p, j, taup, aicp, sicp, tstatp;
     local dy, ly, dc, dt, lmat, dep, y1, ldy;
-    local sbt, trnd, x, lagt, tau, LL, n, k;
+    local sbt, trnd, x, tau, LL, n, k;
     local b, e1, sig2, se, ssr, cv;
     
     t    = rows(y);

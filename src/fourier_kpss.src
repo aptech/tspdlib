@@ -44,7 +44,7 @@
 proc(3) = Fourier_KPSS(y, model, kmax, l, varm);
     local t, sink, cosk, z, s, lrv, kpss;
     local b, e1, sig2, se, ssr, k;
-    local vare, crit, cv1, cv5, cv10;
+    local crit;
     
     t = rows(y);
     k = _get_fourier(y, model, kmax);

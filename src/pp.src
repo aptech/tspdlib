@@ -45,7 +45,7 @@
 proc(4) = PP(y, model, l, varm);
     local t, dy, ly, dc, dt, dep, y1, sbt, trnd, x;
     local tau, g0, lrv, Zt, lambda, mbaryy, Za;
-    local b, e, e1, s2, se, ssr, vare, cvZt, cvZa;
+    local b, e, e1, s2, se, ssr, cvZt, cvZa;
     //  local k, yols, MZt, MZa, MSB;
     
     t = rows(y);

@@ -116,7 +116,7 @@ proc(3) = RALSADF(y, model, pmax, ic);
 endp;
 
 proc(1) = crit_RALSadf(r2, model);
-    local cra, crt, ca, cv, r210, r2a, r2b, wa;
+    local crt, cv, r210, r2a, r2b, wa;
     
     // See Hansen (1995) CADF critical values
     if model == 1;

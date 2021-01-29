@@ -83,7 +83,7 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     PDlm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
     
           // Print results
-    local top, side, stats, dec, colwidth;
+    local top;
     if nbreak == 1;
         top = "Group"$~"Ind. Test"$~"Break"$~"Lags";
         #ifminkernelversion(20)
@@ -114,9 +114,9 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
 endp;
 
 proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
-    local t, tb1, tb1_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
+    local t, tb1, tb1_min, LM_min, T1, T2, dc, dt, du1, dt1, z;
     local dy, b0, s0, ylm, dylm, lmat, dep, ls, dz, ds, x;
-    local taup, aicp, sicp, tstatp, j, p, lagt, laglm, stat;
+    local taup, aicp, sicp, tstatp, j, p, laglm, stat;
     local b, e1, sig2, se, ssr;
     
     // Locals for transformation
@@ -233,7 +233,7 @@ endp;
 proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
     local t, tb1, tb2, tb1_min, tb2_min, LM_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local dy, b0, s0, ylm, dylm, lmat, dep, ls, dz, ds, x;
-    local taup, aicp, sicp, tstatp, j, p, lagt, laglm, stat;
+    local taup, aicp, sicp, tstatp, j, p, laglm, stat;
     local b, e1, sig2, se, ssr;
     
     // Locals for transformation

@@ -246,8 +246,8 @@ endp;
 
 /*F-test for significance of Fourier terms*/
 proc(1)=_get_Ftest(y,Xr,Xur);
-    local br ,er ,sigR ,ser ,RSSr;
-    local bur,eur,sigUR,seur,RSSur;
+    local br , er, sigR, ser, RSSr;
+    local bur, eur, sigUR, seur, RSSur;
     local q, df, Fstat, pval;
     
     {br ,er ,sigR ,ser ,RSSr}  = myols(y,Xr);

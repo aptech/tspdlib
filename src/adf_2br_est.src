@@ -35,7 +35,7 @@
 proc(7) = ADF_2breaks_est(y, model, pmax, ic, trimm);
     local t, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local taup, aicp, sicp, tstatp, dy, y1, z1, lmat, j, p;
-    local dep, ldy, ly, lz, x, lagt, stat;
+    local dep, ldy, ly, lz, x, stat;
     local b, e1, sig2, se, ssr, cv, p_keep, b_mat, se_mat, b_keep, se_keep;
     
     

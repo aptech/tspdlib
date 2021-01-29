@@ -44,8 +44,8 @@
 
 proc(4) = KPSS_1break(y, model, l, varm, trimm);
     local t, ssr_min, tb1_min, KPSS_min;
-    local t1, t2, tb1, tb2, dc, dt, du1, dt1, z;
-    local b, e1, ssr, St, lrv, vare, KPSS, crit, TBi, bwl;
+    local t1, t2, tb1, dc, dt, du1, dt1, z;
+    local ssr, KPSS, crit, TBi;
     
     T = rows(y);
     ssr_min = 1e6;
@@ -154,7 +154,7 @@ endp;
 
 proc(2) = STps(y, model, varm, tb);
     local t, tt, dc, dt, du1, dt1, ystar, z;
-    local b, e1, ssr, St, lrv, vare, l, bw, w, ps, cv, bwl, tb1;
+    local b, e1, ssr, St, lrv, ps, cv, bwl, tb1;
     
     t = rows(y);
     tb1 = tb;

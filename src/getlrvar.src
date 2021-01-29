@@ -48,7 +48,7 @@ endp;
 
 proc(1) = qs(e,l);
     
-    local t, vare, bw, w, x1, x2, lrv;
+    local t, bw, w, x1, x2, lrv;
     
     T   = rows(e);
     lrv = e'e/T;
@@ -229,7 +229,7 @@ endp;
 
 /*Andrews (1991) and Kurozumi (2002)*/
 proc(1) = Kurozumi_bartlett(e);
-    local t, a, k, l, lrv, i, w, res;
+    local t, a, k, l, lrv, i, w;
     
     t = rows(e);
     
@@ -264,7 +264,7 @@ endp;
 
 /*Andrews (1991) and Kurozumi (2002)*/
 proc(1) = kurozumi_qs(e);
-    local t, a, k, l, lrv, i, w, res;
+    local t, a, k, l, lrv, i, w;
     
     t = rows(e);
     

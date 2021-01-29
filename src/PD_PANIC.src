@@ -159,8 +159,8 @@ endp;
 // Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010)
 
 proc(3) = BNG_PANICnew(y, model, kmax, ick);
-    local dx, nf, fhat, Floads, ehat, e, e1, rho, v, t, n, boti, topi, rhoi, sigi, bw, j, u, k;
-    local x, w, alpha, omega2, sigma2, lambda2, lambda, phi4, rho1, s, temp, Pa, Pb, PMSB;
+    local dx, nf, fhat, Floads, ehat, e;
+    local x, Pa, Pb, PMSB;
     
     dx = diff(y, 1);
     x  = dx[2:rows(y), .];
@@ -204,7 +204,7 @@ endp;
 // Ze and Ze+ tests in Westerlund & Larsson (2009)
 
 proc(2) = JWL_PANICadj(y, model, pmax, icp, kmax, ick);
-    local nf, Fhat, lambda, ehat, E, ADFe, lagp, eb, varB, Ze, aN, Ze_ba;
+    local nf, Fhat, lambda, ehat, E, ADFe, eb, varB, Ze, aN, Ze_ba;
     local lags, dx, x, de, de0, del, rho, djwj, wj, cv0;
     local T, N;
     

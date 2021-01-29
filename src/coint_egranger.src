@@ -44,7 +44,7 @@
 /*Procedures*/
 
 proc(2) = coint_egranger(y, x, model, pmax, ic);
-    local n,x1,b,e1,sig2,se,ssr,tau,lageg,k, cv, cvADF;
+    local n, x1, b, e1, sig2, se, ssr, tau, lageg, k, cv, cvADF;
     
     n=rows(y);
     if model==0;

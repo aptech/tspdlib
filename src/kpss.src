@@ -38,9 +38,9 @@
 */
 
 proc(2) = LMkpss(y, model, l, varm);
-    local t, z, s, lrv, lm_KPSS;
+    local t, z, lm_KPSS;
     local ssr;
-    local bw, w, cv;
+    local cv;
     
     t = rows(y);
     "KPSS tests for stationarity:";

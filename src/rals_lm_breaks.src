@@ -53,7 +53,7 @@ proc(7) = RALSLM_breaks(y, model, nbr, pmax, ic, trimm);
     local t, tb1, tb2, tb1_min, tb2_min, LM_min;
     local T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local dy, b0, s0, ylm, dsl, dep, s1, dz, ds, x;
-    local taup, aicp, sicp, tstatp, j, p, lagt, laglm, stat;
+    local taup, aicp, sicp, tstatp, j, p, laglm, stat;
     local b, e, sig2, se, ssr, opt_lag, cv_lm, cv_ralslm;
     local nobs, pos, pos1, pos2, s, st;
     local e2, e3, m2, m3, w, tau_rals, sig2A, p2, rals_lm, rho2;
@@ -251,7 +251,7 @@ proc(7) = RALSLM_breaks(y, model, nbr, pmax, ic, trimm);
 endp;
 
 proc(1) = _get_cv_RALSLM_breaks(model, nbr, r2);
-    local cra, crt, ca, cv, r210, r2a, r2b, wa;
+    local crt, cv, r210, r2a, r2b, wa;
     
     // T = 1000
     if model == 1;

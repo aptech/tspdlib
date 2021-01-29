@@ -41,7 +41,7 @@
 
 
 proc(3) = PDfzk(y, model, k, varm);
-    local t, n, ft, Nkpss, i, fpk, d, mu, var, fzk;
+    local t, n, ft, Nkpss, i, fpk, mu, var, fzk;
     
     print "Panel stationary test with gradual shifts.";
     print "LR Variance estimation method";
@@ -167,7 +167,7 @@ endp;
 proc(1) = _get_FKPSS_Ft(y, model, k, varm, ft);
     local t, sink, cosk, z, s, lrv, kpss;
     local b, e1, sig2, se, ssr;
-    local vare, l, bw, w, bwl;
+    local bwl;
     
     t = rows(y);
     sink = sin(2 * pi * k * seqa(1, 1, t)/t);

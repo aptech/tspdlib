@@ -212,8 +212,7 @@ endp;
 proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
     local y, z, t, b, u, zr, br, ur, zhat;
     local nk, tp, Wboot, ystar, simerr, adje;
-    local s, ti, rnd, index, varindx, rejectWb, Wbpval;
-    local ztar;
+    local s, ti, rnd, index, varindx;
     
     y = VARy;
     z = VARx;
@@ -350,7 +349,7 @@ endp;
 //optimal frequency and lag selection
 
 proc(2) = _get_kp(y,pmax,kmax,ic,test);
-    local aic,sbc,aickp,sbckp,k,p,dep,xlag,t,d,z,cf;
+    local aic, sbc, aickp, sbckp, k, p, dep, xlag, t, d, z, cf;
     
     if test==0 or test==1;
         aickp=zeros(pmax,1);
@@ -508,7 +507,7 @@ endp;
 //information criterion estimation
 
 proc(2) = _get_icvalue(dep,z,p);
-    local t,b,e,varcov,nk,aic,sbc;
+    local t, b, e, varcov, nk, aic, sbc;
     t=rows(dep);
     b=(dep/z);
     e=dep-z*b;

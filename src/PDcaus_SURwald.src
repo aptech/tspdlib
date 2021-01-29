@@ -121,7 +121,7 @@ endp;
 
 // SUR estimation and Wald statistics
 proc(4) = _get_sur_wald(y,yl,n,p);
-    local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi, tr;
+    local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi;
     local cove,IT,xx,bsur, omega, covb, vsur,sesur,tsur;
     local aic,sbc,sur_out, surwald;
     
@@ -194,7 +194,7 @@ endp;
 proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
     local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi;
     local cove, IT, xx, bsur, esur, NeH0, bH0;
-    local Waldboot, s, ustar, ystar, y1, Wboot, aic, sbc;
+    local Waldboot, s, ustar, ystar, Wboot, aic, sbc;
     local cvboot, Wb, cv1, cv5, cv10, sur_out;
     local xxH0, zhat;
     
@@ -446,7 +446,7 @@ endp;
 
 // SUR estimation and Wald statistics
 proc(5) = _get_sur_wald_mod(y,yl,n,p);
-    local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi, tr;
+    local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi;
     local cove,IT,xx,bsur, omega, covb, vsur,sesur,tsur;
     local aic,sbc,sur_out, surwald;
     

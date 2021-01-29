@@ -34,7 +34,7 @@ proc(4) = Fourier_LM(y, pmax, kmax, ic);
     local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
         k, dc, dt, sink, cosk, dy, dsink, dcosk, dz,
         b0, psi, ylm, ly, lmat, dep, y1, ldy,
-        sbt, trnd, sinp, cosp, z, jj, isw, f, lm,
+        sbt, trnd, sinp, cosp, z, f, lm,
         b, e1, sig2, se, ssr, crit, keep_p, opt_lag;
     
     t = rows(y);

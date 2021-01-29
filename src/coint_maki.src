@@ -28,9 +28,7 @@
 **                       1: t-sig criterion
 */
 proc (1) = coint_maki(y, m, model, trimm, lagoption);
-    local n,i,j,x,tb,tau,vectau,mintau,yt,b,lag,dy,r,q;
-    local rz,rz1,statistic,p,power,e,k;
-    local power1,power2,power3,power4,d0,d1,taucv;
+    local d0, d1;
     
     #ifminkernelversion(20);
     local hd_side, tmp1;
@@ -64,7 +62,7 @@ proc (1) = coint_maki(y, m, model, trimm, lagoption);
     tmp1 = d0|d1;
     sprintf("%20s %18.2f", hd_side, tmp1);
 #elseif;
-    local tmp2, tmp3;
+
     print /lz "Test statistic:"  d0;
     print /lz "Break points:" d1;
 #endif;
@@ -76,9 +74,9 @@ endp;
 
 
 proc (2) = pf(datap, m, model, tp, lagoption);
-    local n,h1,h2,y,i,j,x,tb,tau,vectau,vectau2,mintau1,mintau2,bp1,iid,d0,d1;
-    local c,a,rz,statistic,p,bp2,b1,bp3,mintau,mintau3,mintau4,bp4,bp,bp123;
-    local b,u,du1,du2,const,e,k,q,r,dy,d2,lag,number,rown,bp1234,mintau5,bp5;
+    local n, tb, mintau1, mintau2, bp1, d0,d1;
+    local bp2, bp3, mintau, mintau3, mintau4, bp4, bp, bp123;
+    local bp1234, mintau5, bp5;
     
     
     n=rows(datap);
@@ -163,8 +161,7 @@ proc (2) = pf(datap, m, model, tp, lagoption);
 endp;
 
 proc (2) = dftau(dy,x);
-    local b,e,n1,k,s2hat,varb,se,tau,s2;
-    local smatrix,nwvarb,nwse,tnw;
+    local b, e, n1, k, s2hat, varb, se, tau, s2;
     
     n1=rows(x);
     k=cols(x);
@@ -180,8 +177,8 @@ proc (2) = dftau(dy,x);
 endp;
 
 proc (2) = mbreak1(datap,n,model,tb,lagoption);
-    local h1,i,j,x,tau,vectau,mintau1,vecbp,bp1,y,dx,k;
-    local b,u,du1,du2,const,e,q,r,dy,d1,lag,s2,rv,du,tr,dtr;
+    local i, x, tau, vectau, mintau1, vecbp, bp1, y, dx, k;
+    local b, u, const, e, q, r, dy, lag, s2, du, tr, dtr;
     
     y=datap[.,1];
     k=cols(datap);
@@ -288,8 +285,8 @@ proc (2) = mbreak2(datap,n,model,tb,bp1,lagoption);
 endp;
 
 proc (2) = mbreak21(datap,n,model,tb,bp1,lagoption);
-    local i,vectau,u,du1,du2,const,b,e,lag,dy,q,r,x,d1,d2,tau,s2;
-    local tau1,vecbp,bp21,dx1,dx2,tr,dtr1,dtr2,k,y;
+    local i, vectau, u, du1, du2, const, b, e, lag, dy, q, r, x, tau, s2;
+    local tau1, vecbp, bp21, dx1, dx2, tr, dtr1, dtr2, k, y;
     
     y=datap[.,1];
     k=cols(datap);
@@ -377,8 +374,8 @@ proc (2) = mbreak21(datap,n,model,tb,bp1,lagoption);
 endp;
 
 proc (2) = mbreak22(datap,n,model,tb,bp1,lagoption);
-    local i,vectau,vecbp,u,du1,du2,const,b,e,lag,dy,q,r,x;
-    local d1,d2,tau,s2,tau2,bp22,dx1,dx2,tr,dtr1,dtr2,k,y;
+    local i, vectau, vecbp, u, du1, du2, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau2, bp22, dx1, dx2, tr, dtr1, dtr2, k, y;
     
     y=datap[.,1];
     k=cols(datap);
@@ -527,7 +524,7 @@ endp;
 
 proc (2) = mbreak31(datap,n,model,tb,bp1,bp2,lagoption);
     local i,vectau,u,du1,du2,du3,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,tau,s2,tau1,vecbp,bp31;
+    local tau,s2,tau1,vecbp,bp31;
     local y,k,dx1,dx2,dx3,tr,dtr1,dtr2,dtr3;
     
     y=datap[.,1];
@@ -618,9 +615,9 @@ proc (2) = mbreak31(datap,n,model,tb,bp1,bp2,lagoption);
 endp;
 
 proc (2) = mbreak32(datap,n,model,tb,bp1,bp2,lagoption);
-    local i,vectau,u,du1,du2,du3,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,tau,s2,tau2,vecbp,bp32;
-    local y,k,dx1,dx2,dx3,tr,dtr1,dtr2,dtr3;
+    local i, vectau, u, du1, du2, du3, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau2, vecbp, bp32;
+    local y, k, dx1, dx2, dx3, tr, dtr1, dtr2, dtr3;
     
     y=datap[.,1];
     k=cols(datap);
@@ -708,9 +705,9 @@ proc (2) = mbreak32(datap,n,model,tb,bp1,bp2,lagoption);
 endp;
 
 proc (2) = mbreak33(datap,n,model,tb,bp1,bp2,lagoption);
-    local i,vectau,u,du1,du2,du3,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,tau,s2,tau3,vecbp,bp33;
-    local y,k,dx1,dx2,dx3,tr,dtr1,dtr2,dtr3;
+    local i, vectau, u, du1, du2, du3, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau3, vecbp, bp33;
+    local y, k, dx1, dx2, dx3, tr, dtr1, dtr2, dtr3;
     
     y=datap[.,1];
     k=cols(datap);
@@ -800,7 +797,7 @@ endp;
 /* Maximum break is 4*/
 
 proc (2) = mbreak4(datap,n,model,tb,bp123,lagoption);
-    local bp1,bp2,bp3,bp4,mintau4,tau1,tau2,tau3,tau4,bp41,bp42,bp43,bp44,minbp;
+    local bp1, bp2, bp3, bp4, mintau4, tau1, tau2, tau3, tau4, bp41, bp42, bp43, bp44, minbp;
     
     bp1=bp123[1,.];
     bp2=bp123[2,.];
@@ -937,9 +934,9 @@ endp;
 
 
 proc (2) = mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-    local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,d4,tau,s2,tau1,vecbp,bp41;
-    local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
+    local i, vectau, u, du1, du2, du3, du4, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau1, vecbp, bp41;
+    local y, k, dx1, dx2, dx3, dx4, tr, dtr1, dtr2, dtr3, dtr4;
     
     y=datap[.,1];
     k=cols(datap);
@@ -1030,9 +1027,9 @@ proc (2) = mbreak41(datap,n,model,tb,bp1,bp2,bp3,lagoption);
 endp;
 
 proc (2) = mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-    local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,d4,tau,s2,tau2,vecbp,bp42;
-    local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
+    local i, vectau, u, du1, du2, du3, du4, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau2, vecbp, bp42;
+    local y, k, dx1, dx2, dx3, dx4, tr, dtr1, dtr2, dtr3, dtr4;
     
     y=datap[.,1];
     k=cols(datap);
@@ -1123,9 +1120,9 @@ proc (2) = mbreak42(datap,n,model,tb,bp1,bp2,bp3,lagoption);
 endp;
 
 proc (2) = mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-    local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,d4,tau,s2,tau3,vecbp,bp43;
-    local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
+    local i, vectau, u, du1, du2, du3, du4, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau3, vecbp, bp43;
+    local y, k, dx1, dx2, dx3, dx4, tr, dtr1, dtr2, dtr3, dtr4;
     
     y=datap[.,1];
     k=cols(datap);
@@ -1216,9 +1213,9 @@ proc (2) = mbreak43(datap,n,model,tb,bp1,bp2,bp3,lagoption);
 endp;
 
 proc (2) = mbreak44(datap,n,model,tb,bp1,bp2,bp3,lagoption);
-    local i,vectau,u,du1,du2,du3,du4,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,d4,tau,s2,tau4,vecbp,bp44;
-    local y,k,dx1,dx2,dx3,dx4,tr,dtr1,dtr2,dtr3,dtr4;
+    local i, vectau, u, du1, du2, du3, du4, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau4, vecbp, bp44;
+    local y, k, dx1, dx2, dx3, dx4, tr, dtr1, dtr2, dtr3, dtr4;
     
     y=datap[.,1];
     k=cols(datap);
@@ -1311,8 +1308,8 @@ endp;
 /* Maximum break is 5*/
 
 proc (2) = mbreak5(datap,n,model,tb,bp1234,lagoption);
-    local bp1,bp2,bp3,bp4,bp5,mintau5,tau1,tau2,tau3,tau4,tau5;
-    local bp51,bp52,bp53,bp54,bp55,minbp;
+    local bp1, bp2, bp3, bp4, bp5, mintau5, tau1, tau2, tau3, tau4, tau5;
+    local bp51, bp52, bp53, bp54, bp55, minbp;
     
     bp1=bp1234[1,.];
     bp2=bp1234[2,.];
@@ -1590,9 +1587,9 @@ proc (2) = mbreak5(datap,n,model,tb,bp1234,lagoption);
 endp;
 
 proc (2) = mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,d4,d5,tau,s2,tau1,vecbp,bp51;
-    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    local i, vectau, u, du1, du2, du3, du4, du5, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau1, vecbp, bp51;
+    local y, k, dx1, dx2, dx3, dx4, dx5, tr, dtr1, dtr2, dtr3, dtr4, dtr5;
     
     y=datap[.,1];
     k=cols(datap);
@@ -1686,9 +1683,9 @@ proc (2) = mbreak51(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
 endp;
 
 proc (2) = mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,d4,d5,tau,s2,tau2,vecbp,bp52;
-    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    local i, vectau, u, du1, du2, du3, du4, du5, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau2, vecbp, bp52;
+    local y, k, dx1, dx2, dx3, dx4, dx5, tr, dtr1, dtr2, dtr3, dtr4, dtr5;
     
     y=datap[.,1];
     k=cols(datap);
@@ -1782,9 +1779,9 @@ proc (2) = mbreak52(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
 endp;
 
 proc (2) = mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,d4,d5,tau,s2,tau3,vecbp,bp53;
-    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    local i, vectau, u, du1, du2, du3, du4, du5, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau3, vecbp, bp53;
+    local y, k, dx1, dx2, dx3, dx4, dx5, tr, dtr1, dtr2, dtr3, dtr4, dtr5;
     
     y=datap[.,1];
     k=cols(datap);
@@ -1878,9 +1875,9 @@ proc (2) = mbreak53(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
 endp;
 
 proc (2) = mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,d4,d5,tau,s2,tau4,vecbp,bp54;
-    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    local i, vectau, u, du1, du2, du3, du4, du5, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau4, vecbp, bp54;
+    local y, k, dx1, dx2, dx3, dx4, dx5, tr, dtr1, dtr2, dtr3, dtr4, dtr5;
     
     y=datap[.,1];
     k=cols(datap);
@@ -1974,9 +1971,9 @@ proc (2) = mbreak54(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
 endp;
 
 proc (2) = mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
-    local i,vectau,u,du1,du2,du3,du4,du5,const,b,e,lag,dy,q,r,x;
-    local d1,d2,d3,d4,d5,tau,s2,tau5,vecbp,bp55;
-    local y,k,dx1,dx2,dx3,dx4,dx5,tr,dtr1,dtr2,dtr3,dtr4,dtr5;
+    local i, vectau, u, du1, du2, du3, du4, du5, const, b, e, lag, dy, q, r, x;
+    local tau, s2, tau5, vecbp, bp55;
+    local y, k, dx1, dx2, dx3, dx4, dx5, tr, dtr1, dtr2, dtr3, dtr4, dtr5;
     
     y=datap[.,1];
     k=cols(datap);
@@ -2070,10 +2067,9 @@ proc (2) = mbreak55(datap,n,model,tb,bp1,bp2,bp3,bp4,lagoption);
 endp;
 
 proc (1) = opttlag(e);
-    local maxlag,p,lag;
-    local b,u,du,const,ly,s2hat,varb,se,e2,n1,k;
-    local delta,dy,i,j,d,n,rhs,temp,taut,x,wald;
-    local nwh,smatrix,nwi,nww,nwvarb,nwse,tnw,nlag;
+    local maxlag, p, lag;
+    local b, ly, s2hat, varb, se, e2, n1, k;
+    local dy, i, j, n, taut, x;
     
     maxlag=12/*round(12*(rows(e)/100)^(1/4))*/;
     p=maxlag;

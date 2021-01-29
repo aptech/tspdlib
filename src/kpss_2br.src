@@ -46,7 +46,7 @@
 proc(4) = KPSS_2breaks(y, model, l, varm);
     local t, ssr_min, tb1_min, tb2_min, KPSS_min;
     local tb1, tb2, dc, dt, du1, du2, dt1, dt2, z;
-    local b, e1, ssr, St, lrv, vare, KPSS, cv;
+    local ssr, KPSS, cv;
     
     t = rows(y);
     ssr_min = 1e6;

@@ -63,8 +63,8 @@
 proc(3) = DFGLS(y, model, pmax, ic);
     local t, taup, aicp, sicp, tstatp, c, z;
     local a, ya, za, bhat, ygls, dy, ly, dc, dt, n, k, LL;
-    local p,lmat,j,dep,y1,ldy,sbt,trnd,x,tau;
-    local b,e1,sig2,se,ssr, cv;
+    local p, lmat, j, dep, y1, ldy, sbt, trnd, x, tau;
+    local b, e1, sig2, se, ssr, cv;
     
     t = rows(y);
     taup = zeros(pmax + 1, 1);
@@ -152,7 +152,7 @@ proc(3) = DFGLS(y, model, pmax, ic);
     cv = _get_cv_DFGLSrsf(model, T, p);
     
     // Print results
-    local hd_side, hd_top, tmp1, tmp2;
+    local hd_side, tmp1;
     hd_side = "DFGLS"$|"Lags";
     tmp1 = tau|p-1;
     
@@ -225,7 +225,7 @@ endp;
 
 
 proc(3) = ERSpt(y, model, l, varm);
-    local t, dy, ly, dc, dt, dep, y1, sbt, trnd, x, tau, g0, lrv;
+    local t, dy, ly, dc, dt, dep, y1, x, tau, g0, lrv;
     local c, a, ya, za, ba, u, SSRa, SSR1, PT;
     local b, e1, s2, se, ssr, z, cv;
     
@@ -319,7 +319,7 @@ proc(3) = ERSpt(y, model, l, varm);
     endif;
     
     // Print results
-    local hd_side, hd_top, tmp1, tmp2;
+    local hd_side, tmp1;
     hd_side = "ERS";
     tmp1 = PT;
     
