@@ -8,7 +8,7 @@
 **
 **
 **
-**  Format:  { tau, cvADF }        = coint_egranger(y, x, model, pmax, ic);
+**  Format:  { tau, cvADF }        = coint_egranger(y, x, model [, pmax, ic]);
 **
 **
 **  Input:
@@ -16,17 +16,16 @@
 **
 **           X       -  NxK matrix, independent variables
 **
-**           k       -  Columns of x (upper bound is 5)
-**
 **           model   - 	0 = none
 **                      1 = constant
 **                      2 = constant & trend
 **
-**           pmax    -  Maximum number of lags for Dy in ADF test; 0=no lags
+**           pmax    -  Optional, maximum number of lags for Dy in ADF test; 0=no lags
+**                      Default = 8.
 **
-**           ic      -  Information Criterion for ADF-based test:
-**                      1=Akaike
-**                      2=Schwarz
+**           ic      -  Optional, information vriterion for ADF-based test. Default = 2:
+**                      1 = Akaike
+**                      2 = Schwarz
 **
 **  Output:
 **           tau     -   Engle & Granger (1987) ADF test
@@ -44,7 +43,9 @@
 /*Procedures*/
 
 proc(2) = coint_egranger(y, x, model, pmax, ic);
-    local n, x1, b, e1, sig2, se, ssr, tau, lageg, k, cv, cvADF;
+    local n, x1, b, e1, sig2, se, ssr, tau, lageg, k, cv, cvADF, pmax, ic;
+    
+    { pmax, ic } = dynargsGet(1|2, 8, 2);
     
     n=rows(y);
     if model==0;

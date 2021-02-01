@@ -11,7 +11,7 @@
 **  Lag order and critical values of the augmented Dickey–Fuller test.
 **  Journal of Business & Economic Statistics, 13(3), 277-280.
 **
-**  Format:  {tstat, p, cv} = ADF(y, model, pmax, ic);
+**  Format:  {tstat, p, cv} = ADF(y, model[, pmax, ic]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	Optional, specifies deterministic components.

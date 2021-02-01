@@ -8,7 +8,7 @@
 **  Econometric Theory, 10(1), 91-115.
 **
 **
-**  Format:  { CIols, CIdols, cv }  = coint_shin(y, x, model, bwl, varm, q);
+**  Format:  { CIols, CIdols, cv }  = coint_shin(y, x, model[, bwl, varm, q]);
 **
 **
 **  Input:   
@@ -20,9 +20,11 @@
 **                      1 = constant
 **                      2 = constant & trend
 **
-**           bwl     -  Band width for long-run variance computations.
+**           bwl     -  Optional, bandwidth for long-run variance computations.
+**                      Default = round(4 * (T/100)^(2/9)).
 **
-**           varm    -  Long-run consistent variance estimation method for PP-baed test
+**           varm   -   Optional, long-run consistent variance estimation method for PP-based tests
+**                      Default = 1.                      
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -35,7 +37,9 @@
 **                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
-**              q   -   Number of leads and lags for DOLS estimation
+**
+**              q   -   Optional, number of leads and lags for DOLS estimation. 
+**                      Default = 4.
 **                      Required for:
 **                      Shin (1994)
 **                      Carrion-i-Silvestre & Sanso (2006).
@@ -58,12 +62,17 @@
 
 /*Procedures*/
 
-proc(3) = coint_shin(y, x, model, bwl, varm, q);
+proc(3) = coint_shin(y, x, model, ...);
     local z, b1, e1, ssr1, St1, lrv1, C1;
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
-    local b2, e2, ssr2, St2, lrv2, C2, k, cv, T;
+    local b2, e2, ssr2, St2, lrv2, C2, k, cv, T, 
+    bwl_dftl, bwl, varm, q;
     
     T = rows(y);
+    bwl_dftl = round(4 * (T/100)^(2/9));
+    
+    { bwl, varm, q } = dynargsGet(1|2, bwl_dftl, 1, 4);
+    
      "Ho: co-integration   (Shin, 1994)";  
     print;
     if model==0;

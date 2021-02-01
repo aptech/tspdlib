@@ -6,17 +6,17 @@
 **  "A new unit root test with two structural breaks in level and slope at unknown time",
 **  Journal of Applied Statistics 37, 1425-1438.
 **
-**  Forat:  { tstat, tb1, tb2, p, cv } = ADF_1break(y, model, pmax, ic, trimm);
+**  Forat:  { tstat, tb1, tb2, p, cv } = ADF_2break_est(y, model[, pmax, ic, trimm]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1=Model A: break in level
 **                      2=Model C: break in level and trend
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
-**           ic      -  Information Criterion:
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags
+**           ic      -  Optional, information Criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
-**			 trim    - 	Trimming rate
+**			 trimm   - 	Optional, trimming rate
 **                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
 **
 **  Output:  tstat   - minimum test statistic

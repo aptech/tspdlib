@@ -19,15 +19,23 @@
 **           {MZa, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT} = MGLS(y,model,l,varm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = model with constant
 **                      2 = model with constant and trend
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
-**           ic      -  Information Criterion:
+**
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags
+**                      Default = 8.
+**
+**           ic      -  Optional, information criterion. Default = 3:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
-**           l       -  Bandwidth for spectral window
-**           varm    -  Long-run consistent variance estimation method
+**
+**           l       -  Optional, bandwidth for spectral window
+**                      Default = round(4 * (T/100)^(2/9)).
+**
+**           varm    -  Optional, long-run consistent variance estimation method.
+**                      Default = iid [1].
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -42,13 +50,21 @@
 **                      Empirical Economics, 31(2), 433.
 **
 **  Output:  GLStau  - DF-GLS statistic
+**
 **			 p       - number of lags for DF-GLS statistic
+**
 **			 PT      - Pt statistic
+**
 **           Mza     - MZalpha statistic
+**
 **           Mzt     - MZt statistic
+**
 **           MSB     - MSB statistic
+**
 **           MPT     - MPT statistic
+**
 **           lrv     - Long-run variance
+**
 **			 cv      - 1, 5, and 10 percent critical values
 
 **  Author: Saban Nazlioglu
@@ -60,13 +76,15 @@
 
 /*17 July 2016*/
 
-proc(3) = DFGLS(y, model, pmax, ic);
+proc(3) = DFGLS(y, model, ...);
     local t, taup, aicp, sicp, tstatp, c, z;
     local a, ya, za, bhat, ygls, dy, ly, dc, dt, n, k, LL;
     local p, lmat, j, dep, y1, ldy, sbt, trnd, x, tau;
-    local b, e1, sig2, se, ssr, cv;
+    local b, e1, sig2, se, ssr, cv, pmax, ic;
     
     t = rows(y);
+    { pmax, ic } = dynargsGet(1|2, 8, 3);
+    
     taup = zeros(pmax + 1, 1);
     aicp = zeros(pmax + 1, 1);
     sicp = zeros(pmax + 1, 1);
@@ -224,12 +242,16 @@ proc(1) = _get_cv_dfgls(model, T);
 endp;
 
 
-proc(3) = ERSpt(y, model, l, varm);
+proc(3) = ERSpt(y, model, ...);
     local t, dy, ly, dc, dt, dep, y1, x, tau, g0, lrv;
     local c, a, ya, za, ba, u, SSRa, SSR1, PT;
-    local b, e1, s2, se, ssr, z, cv;
+    local b, e1, s2, se, ssr, z, cv, l_dftl, l, varm;
     
     t = rows(y);
+    l_dftl = round(4 * (T/100)^(2/9));
+    
+    { l, varm } = dynargsGet(1|2, l_dftl, 1);
+    
     dy = diff(y, 1);
     ly = lagn(y, 1);
     
@@ -387,12 +409,15 @@ proc(1) = _get_cv_erspt(model, T);
     retp(cv);
 endp;
 
-proc(8) = MGLS(y, model, l, varm);
+proc(8) = MGLS(y, model, ...);
     local t, c, a, ya, za, pt, fo, bhat, z;
     local ygls, yd, tt, k, mza, msb, mzt, mpt;
-    local cv, cvMZA, cvMZt, cvMSB, cvMPT;
+    local cv, cvMZA, cvMZt, cvMSB, cvMPT, l_dftl, l, varm;
     
     t = rows(y);
+    l_dftl = round(4 * (T/100)^(2/9));
+    
+    { l, varm } = dynargsGet(1|2, l_dftl, 1);
     
      print "LR Variance estimation method";
     if varm == 1;

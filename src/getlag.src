@@ -8,9 +8,13 @@
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
+**
 **           pmax    -  Maximum number of lags for Dy; 0=no lags
+**
 **			 aicp    - 	(pmax+1,1) Akaike Information Criterion values
+**
 **			 sicp    - 	(pmax+1,1) Schwarz Information Criterion values
+**
 ****	     tstatp  - 	(pmax+1,1) t-statistics of lagged dep.var.
 **
 **  Output:  p       - number of lags selected by choosen information criterion

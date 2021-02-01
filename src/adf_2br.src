@@ -6,18 +6,18 @@
 **  "A new unit root test with two structural breaks in level and slope at unknown time",
 **  Journal of Applied Statistics 37, 1425-1438.
 **
-**  Forat:  { tstat, tb1, tb2, p, cv } = ADF_1break(y, model, pmax, ic, trimm);
+**  Forat:  { tstat, tb1, tb2, p, cv } = ADF_2break(y, model[, pmax, ic, trimm]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **           model   - 	1=Model A: break in level
 **                      2=Model C: break in level and trend
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
-**           ic      -  Information Criterion:
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags, Default = 8.
+**           ic      -  Optional, information criterion. Default = 3.:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
-**			 trim    - 	Trimming rate
-**                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
+**			 trimm   -  Optional, trimming rate
+**                      Default 15% trimmage is defined as in ZA (1992) and LS (2003).
 **
 **  Output:  tstat   - minimum test statistic
 **			 tb1     - first break location
@@ -32,12 +32,14 @@
 **
 */
 
-proc(5) = ADF_2breaks(y, model, pmax, ic, trimm);
+proc(5) = ADF_2breaks(y, model, ...);
     local t, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local taup, aicp, sicp, tstatp, dy, y1, z1, lmat, j, p;
     local dep, ldy, ly, lz, x, stat;
-    local b, e1, sig2, se, ssr, cv, opt_lag;
+    local b, e1, sig2, se, ssr, cv, opt_lag, pmax, ic, trimm;
     
+    
+    { pmax, ic, trimm } = dynargsGet(1|3, 8, 3, 0.15);
     
     t = rows(y);
     tb1_min = 0;

@@ -30,7 +30,7 @@
 
 /*13 May 2016*/
 
-proc(1) = bartlett(e,l);
+proc(1) = bartlett(e, l);
     local t, lrv, bw, w;
     
     T = rows(e);
@@ -46,7 +46,7 @@ proc(1) = bartlett(e,l);
     retp(lrv);
 endp;
 
-proc(1) = qs(e,l);
+proc(1) = qs(e, l);
     
     local t, bw, w, x1, x2, lrv;
     

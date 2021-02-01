@@ -10,7 +10,9 @@
 **  Format:  {cv} = _get_cv_LMrsf(R, T, p);
 ** 
 **  Input:   R       - 	Number of breaks ( R = 0, 1, 2, 3)
+**
 **           T       -  Number of observations
+**
 **           p       -  Number of lags
 
 **

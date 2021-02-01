@@ -8,7 +8,7 @@
 **
 **
 **  Format:  {CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols} =
-**                              coint_tsongetal(y, x, model, bwl, kmax, varm, q);
+**                              coint_tsongetal(y, x, model[, bwl, kmax, varm, q]);
 **
 **  Input:
 **           Y	     -  Nx1 matrix, dependent variable
@@ -18,11 +18,13 @@
 **           model   - 	1 = Level shift model with Fourier
 **                      2 = Level & trend shift model with Fourier
 **
-**           bwl     -  Bandwidth for long-run variance computations.
+**           bwl     -  Optional, bandwidth for long-run variance computations.
+**                      Default = round(4 * (T/100)^(2/9)).
 **
-**           kmax    -  Maximum number of Fourier frequency
+**           kmax    -  Optional, maximum number of Fourier frequency. Default = 8.
 **
-**           varm    -  Long-run consistent variance estimation method for PP-baed test
+**           varm   -   Optional, long-run consistent variance estimation method for PP-based tests
+**                      Default = 1. 
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -36,8 +38,8 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**              q   -   Number of leads and lags for DOLS estimation
-**
+**              q   -   Optional, number of leads and lags for DOLS estimation. 
+**                      Default = 4.
 **
 **
 **  Output:
@@ -64,7 +66,7 @@
 
 /*Procedures*/
 
-proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
+proc(7) = coint_tsongetal(y, x, model, ...);
     local t, dc, dt, sink, cosk, z;
     local ssr1_min, k1_min, SC1_min;
     local ssr2_min, k2_min, SC2_min;
@@ -72,9 +74,13 @@ proc(7) = coint_tsongetal(y, x, model, bwl, kmax, varm, q);
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
     local b2, e2, ssr2, St2, lrv2, SC2;
     local p , cv;
-    local Fols , Fdols, zr, zrdols;
+    local Fols , Fdols, zr, zrdols, bwl_dftl, bwl, kmax, varm, q;
     
     T = rows(y);
+    bwl_dftl = round(4 * (T/100)^(2/9));
+    
+    { bwl, kmax, varm, q } = dynargsGet(1|4, bwl_dftl, 1);
+    
     ssr1_min = 1e6;
     ssr2_min = 1e6;
     k1_min   = 0;

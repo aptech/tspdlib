@@ -15,30 +15,25 @@
 **  http://dx.doi.org/10.1515/snde-2014- 0101.
 
 **  Nazlioglu, S. Gormus, A., Soytas, U. (2016)
-**  “Oil prices and real estate investment trusts (REITs): gradual-shift causality
+**  Oil prices and real estate investment trusts (REITs): gradual-shift causality
 **  and volatility transmission Analysis.
 **  Energy Economics 60(1): 168-175.
 
 **  Gormus, A., Nazlioglu, S., Soytas, U. (2018)
-**  “High-Yield Bond and Energy Markets.
+**  High-Yield Bond and Energy Markets.
 **  Energy Economics 69: 101-110.
 
 **  Nazlioglu, S., Soytas, U., Gormus, A. (2019)
-**  “Oil Prices and Monetary Policy in Emerging Markets: Structural Shifts in Causal Linkages.
+**  Oil Prices and Monetary Policy in Emerging Markets: Structural Shifts in Causal Linkages.
 **  Emerging Markets Finance and Trade. 55, 105-117.
 **
 **
-**  Format:  W = GCtests(data, vnames, pmax, ic, test, Nboot);
+**  Format:  W = GCtests(data, test [, vnames, pmax, ic, Nboot]);
 **
 **
 **  Input:   data	 -  Txk matrix
 **                      k is number of endogenous variables in VAR model
-**           vnames  -  Variable names
-**                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable
-**           pmax    -  Maximum number of lags
-**           ic      -  Information Criterion for optimal lag selection
-**                      1 = Akaike
-**                      2 = Schwarz
+**
 **           test    -  Test option for Granger causality
 **                      0 = Granger Causality
 **                          (Granger, 1969)
@@ -52,11 +47,24 @@
 **                          (Enders & Jones, 2019)
 **                      5 = Cumulative Fourier-frequency Toda & Yamamoto
 **                          (Nazlioglu etal., 2019)
-**          Nboot    -  Number of bootstrap replications
+**
+**           vnames  -  Optional, variable names
+**                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable. 
+**                      Default = dataframe names or X1, X2, ...
+**
+**           pmax    -  Optional, maximum number of lags. Default = 8.
+**
+**           ic      -  Optional, information criterion for optimal lag selection.
+**                      Default = 2.
+**                      1 = Akaike
+**                      2 = Schwarz
+**
+**           Nboot   -  Number of bootstrap replications. Default = 1000.
 **
 **           Default settings
 **           kmax    -  Maximum number of Fourier frequency
 **                      Default kmax = 3.
+**
 **           dmax    -  Maximum integration degree of variables
 **                      default dmax = 0 for Granger causality tests
 **                      default dmax = 1 for Toda & Yamamoto causality tests
@@ -76,15 +84,28 @@
 */
 
 
-proc(1)= GC_tests(data, vnames, pmax, ic, test, Nboot);
+proc(1)= GC_tests(data, test, vnames, pmax, ic, Nboot);
     local i, j, depvar, indvar, cause, control, y, obs;
     local dmax, kmax, k, p, VARy, ylag, VARx;
-    local W, Wboot, pval_boot, GC_out, n_tests, indx;
+    local W, Wboot, pval_boot, GC_out, n_tests, indx, vnames_dftl, vnames, pmax, ic, Nboot;
     
     n_tests = cols(data)*(cols(data)-1);
     
+    if hasmetadata(data);
+        vnames_dftl = getcolnames(data);
+    else;
+        vnames_dftl = "X" $+ ntos(seqa(1, 1, cols(data)));
+    endif;
+    
+    { vnames, pmax, ic, NBoot } = dynargsGet(1|4, vnames_dftl, 8, 2, 1000);
+    
+    if vnames == "";
+        vnames = vnames_dftl;
+    endif;
+    
     GC_out = zeros(n_tests, 5);
     indx = 1;
+    
     
     for i(1, cols(data), 1);
         

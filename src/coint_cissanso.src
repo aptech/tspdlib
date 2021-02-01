@@ -9,7 +9,7 @@
 **
 **
 **  Format:  { SCols, TBols, SCdols, TBdols, lambda, cv }
-**                              = coint_cissanso(y, x, model, bwl, varm, trimm, q);
+**                              = coint_cissanso(y, x, model[, bwl, varm, trimm, q]);
 **
 **
 **  Input:
@@ -17,16 +17,16 @@
 **
 **           X       -  NxK matrix, independent variables
 **
-**           k       -  Columns of x (upper bound is 4)
-**
 **           model   - 	1 = Model An: Level shift
 **                      2 = Model A: Level shift with trend
 **                      3 = Model D: Regime shift
 **                      4 = Model E: Regime and trend shift
 **
-**           bwl     - Bandwidth for long-run variance computations.
+**           bwl     - Optional, bandwidth for long-run 
+**                     variance computations. Default = round(4 * (T/100)^(2/9)).
 **
-**           varm    -    Long-run consistent variance estimation method
+**           varm    - Optional, long-run consistent variance estimation method.
+**                     Default  = 1 (iid).
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -40,9 +40,10 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**          trimm   -   Trimming rate Default [0.15,0.85] as in GH (1996)
+**          trimm   -   Optional, trimming rate. Default [0.15,0.85] as in GH (1996)
 **
-**              q   -   Number of leads and lags for DOLS estimation
+**              q   -   Optional, number of leads and lags for DOLS estimation. 
+**                      Default = 4.
 **
 **  Output:
 **          SCols   -   SC  test based on OLS estimation
@@ -67,16 +68,21 @@
 /*Procedures*/
 
 
-proc(6) = coint_cissanso(y, x, model, bwl, varm, trimm, q);
+proc(6) = coint_cissanso(y, x, model, ...);
     local T, t1, t2, tb1, dc, dt, du1, dt1, z;
     local ssr1_min, tb1_min, SC1_min;
     local ssr2_min, tb2_min, SC2_min;
     local b1, e1, ssr1, St1, lrv1, SC1;
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
     local b2, e2, ssr2, St2, lrv2, SC2;
-    local k, lambda, cv;
+    local k, lambda, cv, bwl_dftl, bwl, varm, trimm, q;
+    
     
     T = rows(y);
+    bwl_dftl = round(4 * (T/100)^(2/9));
+    
+    {bwl, varm, trimm, q} = dynargsGet(1|4, bwl_dftl, 1, 0.15, 4);
+    
     ssr1_min = 1e6;
     ssr2_min = 1e6;
     tb1_min  = 0;

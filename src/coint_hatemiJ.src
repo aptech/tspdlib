@@ -10,7 +10,7 @@
 **
 **
 **  Format:  { ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa }
-**                              = coint_hatemiJ(y, x, model, bwl, ic, pmax, varm, trimm);
+**                              = coint_hatemiJ(y, x, model[, bwl, ic, pmax, varm, trimm]);
 **
 **  Input:
 **           Y	     -  Nx1 matrix, dependent variable
@@ -19,16 +19,20 @@
 **
 **           model   - 	3 = C/S (regime shift)
 **
-**           bwl     -  Bandwidth for long-run variance computations.
+**           bwl     -  Optional, bandwidth for long-run variance computations.
+**                      Default = round(4 * (T/100)^(2/9)).
 **
-**           ic      -  Information Criterion for ADF-based test:
+**           ic      -  Optional, information criterion for ADF-based test:
+**                      Default = 3 [t-stat]
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
 **
-**           pmax    -  Maximum number of lags for Dy in ADF test; 0=no lags
+**           pmax    -  Optional, maximum number of lags for for Dy in ADF test; 0=no lags
+**                      Default = 8.
 **
-**           varm    -  Long-run consistent variance estimation method for PP-based test
+**           varm   -   Optional, long-run consistent variance estimation method for PP-based tests
+**                      Default = 1.
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -42,7 +46,7 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**           trimm   -  Trimming rate Default [0.15, 0.85] as in GH (1996)
+**           trimm   -  Optional, trimming rate. Default [0.15, 0.85] as in GH (1996)
 **
 **  Output:
 **          ADF_min -   ADF test
@@ -76,13 +80,17 @@
 
 /*Procedures*/
 
-proc(11) = coint_hatemiJ(y, x, model, bwl, ic, pmax, varm, trimm);
+proc(11) = coint_hatemiJ(y, x, model, ...);
     local n,TB1adf, TB1za, TB1zt, TB2adf, TB2za, TB2zt, ADF_min, Za_min, Zt_min;
     local T1, T2, T3, DF, Za, Zt, lagadf, tb1, tb2, du1, du2, x1, stat1, stat2, stat3;
     local b, e1, sig2, se, ssr, cvADFZt, cvZa, k;
-    local cv0, cv1, cv2;
+    local cv0, cv1, cv2, bwl_dftl, bwl, ic, pmax, varm, trimm;
     
     n     = rows(y);      /*# of observation*/
+    bwl_dftl = round(4 * (n/100)^(2/9));
+    
+    { bwl, ic, pmax, varm, trimm } = dynargsGet(1|5, bwl_dftl, 3, 8, 1, 0.15);
+    
     TB1adf= 0;
     TB1zt = 0;
     TB1za = 0;

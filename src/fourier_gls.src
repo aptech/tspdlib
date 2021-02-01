@@ -8,23 +8,31 @@
 **  De-trended Unit Root Tests."
 **  Oxford Bulletin of Economics and Statistics,74,5(2012),736-759.
 **
-**  Format:  { GLSk, k, p, cv[k,.] } = Fourier_GLS(y, model, pmax, kmax, ic);
+**  Format:  { GLSk, k, p, cv[k,.] } = Fourier_GLS(y, model[, pmax, kmax, ic]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = Constant
 **                      2 = Constant and trend
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
-**           kmax    -  Maximumum number of single Fourier frequency
+**
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags. Default = 8.
+**
+**           kmax    -  Optional, maximumum number of single Fourier frequency. Default = 5.
 **                      (upper bound is 5)
-**           ic      -  Information Criterion:
+**
+**           ic      -  Optional, information criterion. Default = 3.:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
 **
 **  Output:  GLSk    - GLS(k) statistic
+**
 **           k       - Number of single frequency
+**
 **			 p       - number of lags selected by chosen information criterion
+**
 **			 cv      - 1%, 5%, 10% critical values for the chosen model and k
+**
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
 -- for public non-commercial use only.
@@ -35,12 +43,14 @@
 /*14 December 2014*/
 
 
-proc(4) = Fourier_GLS(y, model, pmax, fmax, ic);
+proc(4) = Fourier_GLS(y, model, ...);
     local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk, 
         k, cbar, sink, cosk, abar, ya, za, bhat, ygls, 
         dy, ly, dc, dt, lmat, dep, y1, ldy, sbt, trnd, 
         sinp, cosp, z, f, gls, crit, d, 
-        b, e1, sig2, se, ssr, keep_p, opt_lag;
+        b, e1, sig2, se, ssr, keep_p, opt_lag, pmax, fmax, ic;
+    
+    { pmax, fmax, ic } = dynargsGet(1|3, 8, 5, 3);
     
     t = rows(y);
     d = model;

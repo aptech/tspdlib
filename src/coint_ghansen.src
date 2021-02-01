@@ -12,7 +12,7 @@
 **
 **
 **  Format:  { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa }
-**                              = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
+**                              = coint_ghansen(y, x, model[, bwl, ic, pmax, varm, trimm]);
 **
 **
 **  Input:
@@ -20,23 +20,25 @@
 **
 **           X       -  NxK matrix, independent variables
 **
-**           k       -  Columns of x (upper bound is 4)
-**
 **           model   - 	1 = C   (level shift)
 **                      2 = C/T (level shift with trend)
 **                      3 = C/S (regime shift)
 **                      4 = regime and trend shift
 **
-**           bwl     -  Bandwidth for long-run variance computations.
+**           bwl     -  Optional, bandwidth for long-run variance computations.
+**                      Default = round(4 * (T/100)^(2/9)).
 **
-**           pmax    -  Maximum number of lags for for Dy in ADF test; 0=no lags
+**           pmax    -  Optional, maximum number of lags for for Dy in ADF test; 0=no lags
+**                      Default = 8.
 **
-**           ic      -  Information Criterion for ADF-based test:
+**           ic      -  Optional, information criterion for ADF-based test:
+**                      Default = 3 [t-stat]
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
 **
-**           varm   -   Long-run consistent variance estimation method for PP-based tests
+**           varm   -   Optional, long-run consistent variance estimation method for PP-based tests
+**                      Default = 1.
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -49,7 +51,7 @@
 **                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
 **                      A guide to the computation of stationarity tests.
 **
-**          trimm   -   Trimming rate Default [0.15,0.85] as in GH (1996)
+**          trimm   -   Trimming rate. Default [0.15,0.85] as in GH (1996)
 **
 **  Output:
 **          ADF_min -   ADF test
@@ -77,13 +79,17 @@
 
 /*Procedures*/
 
-proc(8) = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
+proc(8) = coint_ghansen(y, x, model, ...);
     local n, TBadf, TBZa,TBZt, ADF_min, Za_min, Zt_min;
     local T1, T2, DF, Za, Zt, lagadf, tb1, du1, x1, stat1, stat2, stat3, optl;
     local b, e1, sig2, se, ssr, cvADFZt, cvZa, k;
-    local cv0, cv1, cv2;
+    local cv0, cv1, cv2, bwl_dftl, bwl, ic, varm, trimm;
     
-    n    =rows(y);      /*# of observation*/
+    n = rows(y);      /*# of observation*/
+    bwl_dftl = round(4 * (n/100)^(2/9));
+    
+    { bwl, ic, pmax, varm, trimm } = dynargsGet(1|5, bwl_dftl, 1, 8, 0.15, 4);
+    
     TBadf=0;
     TBZa=0;
     TBZt=0;

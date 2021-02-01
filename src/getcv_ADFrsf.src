@@ -12,7 +12,9 @@
 **  Input:   model   - 	0 = none
 **                      1 = model with constant
 **                      2 = model with constant and trend  
+**
 **           T       -  Number of observations
+**
 **           p       -  Number of lags
 **
 **  Output:  cv      - The lag adjsuted finite sample 

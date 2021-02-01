@@ -5,6 +5,7 @@
 **  Format:  { dx_leads, dx_lags } = _get_LeadsLags(dx,q);
 **
 **  Input:   dx  -  Difference of X matrix
+**
 **           q   -  Number of leads and lags for DOLS estimation
 **
 **  Output:  dx_leads  - Matrix of dx with leads

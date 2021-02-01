@@ -5,38 +5,21 @@ library tspdlib;
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
 
-/*
-** Maximum number of lags for ds; 
-** 0=no lags
-*/
-pmax = 12;                 
-
-/*
-** Information Criterion: 
-** 1=Akaike; 
-** 2=Schwarz; 
-** 3=t-stat sign.
-*/
-ic = 3;                 
-
-// Trimming rate
-trimm = 0.10;             
-
-/*
-** 1=Model A: break in level  
-** 2=Model C: break in level and trend
-*/
+// Model 1: break in level  
 model = 1;      
+{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model);
 
-// Outlier model
-outlier = 1;
-{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model, outlier, pmax, ic, trimm);
+// Model 1: break in level
+// Additive outlier
+outlier = 2;  
+{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model, outlier);
 
-    
-/*
-** 1=Model A: break in level  
-** 2=Model C: break in level and trend
-*/
+// Model 2: break in level and trend
 model = 2;                  
-{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model, outlier, pmax, ic, trimm);
+{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model);
+
+// Model 21: break in level and trend
+// Additive outlier
+outlier = 2;  
+{ ADF_min, tb1, p, cv, b, se } = ADF_1break_est(y, model, outlier);
 

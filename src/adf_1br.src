@@ -6,7 +6,7 @@
 **  "Further Evidence on the Great Crasch, the Oil-Price Shock, and the Unit-Root Hypothesis"
 **  Journal of Business & Economic Statistics 10(3), 251-270.
 **
-**  Format:  {tstat, tb, p, cv} = ADF_1break(y, model, outlier, pmax, ic,trimm);
+**  Format:  {tstat, tb, p, cv} = ADF_1break(y, model[, outlier, pmax, ic, trimm]);
 **
 **  Input:   Y	     -  Nx1 matrix, data
 **           model   - 	Optional

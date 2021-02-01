@@ -7,7 +7,7 @@
 **  Econometrica, 58 (1), pp. 165-193
 **
 **
-**  Format:  { Zt, Za, cvZt, cvZa }  = coint_pouliaris(y, x, model, bwl, varm);
+**  Format:  { Zt, Za, cvZt, cvZa }  = coint_pouliaris(y, x, model[, bwl, varm]);
 **
 **
 **  Input:
@@ -19,9 +19,11 @@
 **                      1 = constant
 **                      2 = constant & trend
 **
-**           bwl     -  Bandwidth for long-run variance computations.
+**           bwl     -  Optional, bandwidth for long-run variance computations.
+**                      Default = round(4 * (T/100)^(2/9)).
 **
-**           varm    -   Long-run consistent variance estimation method for PP-baed test
+**           varm   -   Optional, long-run consistent variance estimation method for PP-based tests
+**                      Default = 1.
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -53,10 +55,15 @@
 
 /*Procedures*/
 
-proc(4) = coint_pouliaris(y, x, model, bwl, varm);
-    local n, x1, b, e1, sig2, se, ssr, Zt, Za, cvZt, cvZa, k, cv1, cv2;
+proc(4) = coint_pouliaris(y, x, model, ...);
+    local n, x1, b, e1, sig2, se, ssr, Zt, Za, cvZt, cvZa, k, cv1, cv2,
+    bwl_dftl, bwl, varm;
     
-    n=rows(y);
+    n = rows(y);
+    bwl_dftl = round(4 * (n/100)^(2/9));
+    
+    { bwl, varm } = dynargsGet(1|2, bwl_dftl, 1);
+    
     if model == 0;
         "-----------No deterministic component-------------------";
         x1 = x;
