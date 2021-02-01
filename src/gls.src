@@ -16,7 +16,7 @@
 **
 **  Format:  {GLStau, p, cvGLS}   = DFGLS(y,model,pmax,ic);
 **           {Pt,lrv, cvPT}       = ERSpt(y,model,l,varm);
-**           {MZa, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT} = MGLS(y,model,l,varm);
+**           {MZa, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT} = MGLS(y, model[, l, varm]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **

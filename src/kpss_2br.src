@@ -10,12 +10,17 @@
 **           {cv}           = cv_kpss2(model,t,tb1,tb2);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = AAn (Level shift without trend);
 **                      2 = AA (Level shift with trend);
 **                      3 = BB (Trend shift);
 **                      4 = CC (Level and trend shift)
-**           l       -  Bandwidth for spectral window
+**
+**           l       -  Optional, Bandwidth for spectral window.
+**                      Default = round(4 * (T/100)^(2/9)).                      
+**
 **           varm    -  Long-run consistent variance estimation method
+**                      Default = 1;
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -30,8 +35,11 @@
 **                      Empirical Economics, 31(2), 433.
 **
 **  Output:  stat    - KPSS statistic with two breaks
+**
 **			 tb1     - first location of minimum test statistic
+**
 **			 tb2     - second location of minimum test statistic
+**
 **			 cv      - 1%, 5%, 10% critical values for the chosen model
 **
 **  Author: Saban Nazlioglu
@@ -46,9 +54,13 @@
 proc(4) = KPSS_2breaks(y, model, l, varm);
     local t, ssr_min, tb1_min, tb2_min, KPSS_min;
     local tb1, tb2, dc, dt, du1, du2, dt1, dt2, z;
-    local ssr, KPSS, cv;
+    local ssr, KPSS, cv, bwl_dftl, l, varm, trimm;
     
     t = rows(y);
+    bwl_dftl = round(4 * (T/100)^(2/9));
+    
+    { l, varm, trimm } = dynargsGet(1|3, bwl_dftl, 1, 0.15);
+    
     ssr_min = 1e6;
     tb1_min = 0;
     tb2_min = 0;

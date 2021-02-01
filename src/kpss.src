@@ -10,10 +10,15 @@
 **  Format:  {kpss, cv} = LMkpss(y, model, l, varm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = model with constant
 **                      2 = model with constant and trend
-**           l       -  Bandwidth for spectral window
-**           varm    -  Long-run consistent variance estimation method
+**
+**           l       -  Optional, bandwidth for spectral window.
+**                      Default = round(4 * (T/100)^(2/9)).
+**
+**           varm    -  Optional, long-run consistent variance estimation method.
+**                      Default = 1 [iid].
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -37,12 +42,14 @@
 **
 */
 
-proc(2) = LMkpss(y, model, l, varm);
-    local t, z, lm_KPSS;
-    local ssr;
-    local cv;
+proc(2) = LMkpss(y, model, ...);
+    local t, z, lm_KPSS, ssr, cv, bwl_dftl, l, varm;
     
     t = rows(y);
+    bwl_dftl = round(4 * (t/100)^(2/9));
+    
+    { l, varm } = dynargsGet(1|2, bwl_dftl, 1);
+    
     "KPSS tests for stationarity:";
     if model == 1;
         "-----------Constant Only----------------------------------";

@@ -7,13 +7,18 @@
 **  Journal of Econometrics 108, 105-127.
 **
 **  Format:  { stat, tb, lambda, cv } = KPSS_1break(y, model, bwl, varm, trimm);
-**           {PS,cv}              = STps(y,model,varm,tb);
+**           {PS,cv}              = STps(y, model, varm, tb);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = Case 0 (Level shift);
 **                      2 = Case 3 (Level and trend shift)
-**           bwl     -  Bandwidth for spectral window
-**           varm    -  Long-run consistent variance estimation method
+**
+**           bwl     -  Optional, bandwidth for spectral window. 
+**                      Default = round(4 * (T/100)^(2/9)).
+**
+**           varm    -  Optional, long-run consistent variance estimation method.
+**                      Default = 1;
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -28,9 +33,13 @@
 **                      Empirical Economics, 31(2), 433.
 **
 **  Output:  stat    - LM statistic with a break
+**
 **           PS      - PS statistic with a break
+**
 **			 tb      - break location
+**
 **           lambda  - break fraction (tb/T)
+**
 **			 cv      - 1%, 5%, 10% critical values for the break location
 **
 **  Author: Saban Nazlioglu
@@ -42,12 +51,16 @@
 
 /*13 May 2016*/
 
-proc(4) = KPSS_1break(y, model, l, varm, trimm);
+proc(4) = KPSS_1break(y, model, ...);
     local t, ssr_min, tb1_min, KPSS_min;
     local t1, t2, tb1, dc, dt, du1, dt1, z;
-    local ssr, KPSS, crit, TBi;
+    local ssr, KPSS, crit, TBi, bwl_dftl, l, varm, trimm;
     
     T = rows(y);
+    bwl_dftl = round(4 * (T/100)^(2/9));
+    
+    { l, varm, trimm } = dynargsGet(1|3, bwl_dftl, 1, 0.15);
+    
     ssr_min = 1e6;
     tb1_min = 0;
     KPSS_min = 0;

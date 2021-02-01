@@ -11,27 +11,42 @@
 **  Econometric theory, 25(6), 1754-1792.
 **
 **
-**  Format:  {GLStau,p,PT,MZa,MZt,MSB,MPT,s2,tb1,tb2,lambda1,lambda2,cvPT,cvMPT,cvMZt,cvDFGLS,cvMSB,cvMZa} = GLS_1break(y,model,pmax,ic);
+**  Format:  { GLStau, p, PT, MZa, MZt, MSB, MPT, s2, tb1, tb2, lambda1, lambda2, cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa } 
+**            = GLS_1break(y, model, pmax, ic);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	0 = Level shift
 **                      1 = Trend shift
 **                      2 = Level and trend shift
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
-**           ic      -  Information Criterion:
+**
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags. Default = 8.
+**
+**           ic      -  Optional, information criterion. Default = 3.:
 **                      1 = Akaike
 **                      2 = Schwarz
 **                      3 = t-stat significance
+**
 **  Output:  GLStau  - ADF-GLS statistic
+**
 **			 p       - number of lags for ADF-GLS statistic
+**
 **			 PT      - PT statistic
+**
 **           Mza     - MZalpha statistic
+**
 **           Mzt     - MZt statistic
+**
 **           MSB     - MSB statistic
+**
 **           MPT     - MPT statistic
+**
 **           s2      - Long-run variance based on autoregressive spectral estimate
+**
 **			 tb      - locations of breaks
+**
 **           lambda  - fractions of breaks (tb/T)
+**
 **			 cv      - 1, 5, and 10 percent critical values for the break location
 
 **  Author: Saban Nazlioglu
@@ -43,12 +58,14 @@
 
 /*06 May 2020*/
 
-proc(18) =  GLS_2breaks(y, model, pmax, ic);
+proc(18) =  GLS_2breaks(y, model, ...);
     local t, tb1_min, tb2_min, ssra_min, tb1, tb2, dc, dt, du1, dt1, du2, dt2,  lambda1, lambda2;
     local z, cbar, ygls, y1, SSRa, SSR1, ADF_GLS, p, cv_temp, s2, PT, MZa, MSB, MZt, MPT;
     local ADFGLS_min, PT_min, MZa_min, MSB_min, MZt_min, MPT_min;
-    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa;
+    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa, pmax, ic;
    
+    { pmax, ic } = dynargsGet(1|2, 8, 3);
+    
     t = rows(y);
     tb1_min = 0;
     tb1_min = 0;
