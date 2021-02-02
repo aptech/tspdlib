@@ -6,7 +6,7 @@
 **  "A Unit Root Test Using a Fourier Series to Approximate Smooth Breaks"
 **  Oxford Bulletin of Economics and Statistics,74,4(2012),574-599.
 **
-**  Format:  { LMk, k, p, cv[k, .] } = Fourier_LM(y, pmax, kmax, ic);
+**  Format:  { LMk, k, p, cv[k, .] } = Fourier_LM(y[, pmax, kmax, ic]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -36,7 +36,7 @@
 
 /*03 February 2015 */
 
-proc(4) = Fourier_LM(y, pmax, kmax, ic);
+proc(4) = Fourier_LM(y, ...);
     local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
         k, dc, dt, sink, cosk, dy, dsink, dcosk, dz,
         b0, psi, ylm, ly, lmat, dep, y1, ldy,
