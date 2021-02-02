@@ -19,16 +19,20 @@
                     = RALSLM_breaks(y, model, nbr, pmax, ic, trimm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = Level break (see Meng, Im, Lee, & Tieslau (2014))
 **                      2 = Level and trend break (see Meng, Lee, & Payne (2017))
+**
 **           nbr     -  Number of breaks 
 **                      nbr = 1 : One break
 **                      nbr = 2 : Two breaks
+**
 **           pmax    -  Maximum number of lags for Ds; 0 =no lags
 **           ic      -  Information Criterion to select optimal lags:
 **                      1 = Akaike
 **                      2 = Schwarz
 **                      3 = t-stat significance
+**
 **			 trimm   -  Trimming rate
 **                      10% trimmage is defined as in ZA (1992) and LS (2003).
 **

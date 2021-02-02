@@ -9,14 +9,15 @@
 **  Format:  { tauRALS, p2, cv } = RALSLM(y, pmax, ic);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
-**           model   - 	1 = Constant
-**                      2 = Constant and trend
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
-**           ic      -  Information Criterion:
+**
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags
+**                      Default = 8;
+**
+**           ic      -  Optional, information criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
-**
+**                      Default = 3;
 **  Output:  tauRALS - tau statistic based on RALS procedure
 **			 p2      - the estimated rho square (see, page 322)
 **			 cv      - 1%, 5%, 10% critical values for the estimated p2
@@ -29,10 +30,12 @@
 */
 
 
-proc (3) = RALSLM(y, pmax, ic);
+proc (3) = RALSLM(y, ...);
     local tauLM, lag_var, cvLM, t, dc, dt, z, dy, dz, b0, psi, ylm, ds, ly, dep, y1, ldy, lmat, x;
-    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cv;
+    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cv, pmax, ic;
     
+    {pmax, ic} = dynargsGet(1|2, 8, 3);
+       
     "RALS-LM";
     T = rows(y);
     { tauLM, lag_var, cvLM } = LM(y, pmax, ic);

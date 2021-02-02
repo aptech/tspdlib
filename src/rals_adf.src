@@ -6,16 +6,21 @@
 **  More powerful unit root tests with non-normal errors.
 **  In Festschrift in Honor of Peter Schmidt (pp. 315-342).Springer New York.
 **
-**  Format:  {tauRALS,p2,cv} = RALSADF(y,model,pmax,ic);
+**  Format:  {tauRALS,p2,cv} = RALSADF(y, model, pmax, ic);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = Constant
 **                      2 = Constant and trend
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
-**           ic      -  Information Criterion:
+**
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags
+**                      Default = 8;
+**
+**           ic      -  Optional, information criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
+**                      Default = 3;
 **
 **  Output:  tauRALS - tau statistic based on RALS procedure
 **			 p2      - the estimated rho square (see, page 322)
@@ -29,9 +34,11 @@
 */
 
 
-proc(3) = RALSADF(y, model, pmax, ic);
+proc(3) = RALSADF(y, model, ...);
     local tauADF, lag_var, t, dy, ly, dc, dt, dep, y1, ldy, sbt, trnd, lmat, x;
-    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cvADF, cv;
+    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cvADF, cv, pmax, ic;
+    
+    {pmax, ic} = dynargsGet(1|2, 8, 3);
     
     "RALS-ADF ";
     if model == 1;
@@ -41,7 +48,9 @@ proc(3) = RALSADF(y, model, pmax, ic);
     endif;
     
     T = rows(y);
-    { tauADF, lag_var, cvADF } = ADF(y, model, pmax, ic);
+    screen off;
+        { tauADF, lag_var, cvADF } = ADF(y, model, pmax, ic);
+    screen on;
     dy = diff(y, 1);
     ly = lagn(y, 1);
     

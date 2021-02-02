@@ -7,17 +7,22 @@
 **  Journal of the American Statistical Association 99, 775-787.
 **
 **
-**  Format:  {QURadf} = QRADF(y, model , pmax, ic, tau, _print);
+**  Format:  {QURadf} = QRADF(y, model[, pmax, ic, tau, _print]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = Constant (Default in Koenker & Xiao (2004)
 **                      2 = Constant and trend
+**
 **           pmax    -  Maximum number of lags for Dy; 0=no lags
+**
 **           ic      -  Information Criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
+**
 **           tau     -  quantile (0.1,...,1)
+**
 **           _print  -  print option "true" for printing results
 **
 **  Output:  rho(quantil) - the estimated rho parameter for a given quantile
