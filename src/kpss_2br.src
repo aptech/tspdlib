@@ -6,7 +6,7 @@
 **  The KPSS test with two structural breaks,
 **  Spanish Economic Review, 9, 2, 105-127.
 **
-**  Format:  { stat, tb1, tb2, cv } = KPSS_2breaks(y, model, l, varm);
+**  Format:  { stat, tb1, tb2, cv } = KPSS_2breaks(y, model[, l, varm]);
 **           {cv}           = cv_kpss2(model,t,tb1,tb2);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
@@ -51,15 +51,15 @@
 
 /*10 January 2015*/
 
-proc(4) = KPSS_2breaks(y, model, l, varm);
+proc(4) = KPSS_2breaks(y, model, ...);
     local t, ssr_min, tb1_min, tb2_min, KPSS_min;
     local tb1, tb2, dc, dt, du1, du2, dt1, dt2, z;
-    local ssr, KPSS, cv, bwl_dftl, l, varm, trimm;
+    local ssr, KPSS, cv, bwl_dftl, l, varm;
     
     t = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
-    { l, varm, trimm } = dynargsGet(1|3, bwl_dftl, 1, 0.15);
+    { l, varm } = dynargsGet(1|2, bwl_dftl, 1);
     
     ssr_min = 1e6;
     tb1_min = 0;
