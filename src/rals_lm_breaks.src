@@ -15,26 +15,29 @@
 **  Response Surface Estimates of the LM Unit Root Tests.
 **  Economics Letters, Vol. 192, Article 109136.
 **
-**  Format: {LM_min, tb, p, cv_lm, RALS_lm, p2, cv_ralslm} 
-                    = RALSLM_breaks(y, model, nbr, pmax, ic, trimm);
+**  Format: { LM_min, tb, p, cv_lm, RALS_lm, p2, cv_ralslm } 
+                    = RALSLM_breaks(y, model, nbreaks[, pmax, ic, trimm]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
 **           model   - 	1 = Level break (see Meng, Im, Lee, & Tieslau (2014))
 **                      2 = Level and trend break (see Meng, Lee, & Payne (2017))
 **
-**           nbr     -  Number of breaks 
-**                      nbr = 1 : One break
-**                      nbr = 2 : Two breaks
+**           nbreaks -  Number of breaks 
+**                      nbreaks = 1 : One break
+**                      nbreaks = 2 : Two breaks
 **
-**           pmax    -  Maximum number of lags for Ds; 0 =no lags
-**           ic      -  Information Criterion to select optimal lags:
-**                      1 = Akaike
-**                      2 = Schwarz
-**                      3 = t-stat significance
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags
+**                      Default = 8;
 **
-**			 trimm   -  Trimming rate
-**                      10% trimmage is defined as in ZA (1992) and LS (2003).
+**           ic      -  Optional, information criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**                      Default = 3;
+**
+**			 trimm   -  Optional, trimming rate
+**                      Default = 10% trimmage is defined as in ZA (1992) and LS (2003).
 **
 **  Output:  LM_min  -  Minimum LM statistic without RALS terms
 **			 tb      -  Break location(s)
@@ -53,14 +56,17 @@
 */
 
 
-proc(7) = RALSLM_breaks(y, model, nbr, pmax, ic, trimm);
+proc(7) = RALSLM_breaks(y, model, nbr, ...);
     local t, tb1, tb2, tb1_min, tb2_min, LM_min;
     local T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local dy, b0, s0, ylm, dsl, dep, s1, dz, ds, x;
     local taup, aicp, sicp, tstatp, j, p, laglm, stat;
     local b, e, sig2, se, ssr, opt_lag, cv_lm, cv_ralslm;
     local nobs, pos, pos1, pos2, s, st;
-    local e2, e3, m2, m3, w, tau_rals, sig2A, p2, rals_lm, rho2;
+    local e2, e3, m2, m3, w, tau_rals, sig2A, p2, rals_lm, rho2, pmax, ic, trimm;
+    
+    // Get optional arguments
+    { pmax, ic, trimm } = dynargsGet(1|3, 8, 3, 0.10);
     
     t = rows(y);
     tb1_min = 0;
