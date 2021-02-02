@@ -10,14 +10,18 @@
 **  Useful modifications to some unit root tests with dependent errors and their local asymptotic properties.
 **  The Review of Economic Studies, 63(3), 435-463.
 **
-**  Format:  {Zt, Za, cvZt, cvZa} = PP(y,model,l,varm);
+**  Format:  {Zt, Za, cvZt, cvZa} = PP(y, model, l, varm);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	0 = none
 **                      1 = model with constant
 **                      2 = model with constant and trend
-**           l       -  Bandwidth for spectral window
-**           varm    -  Long-run consistent variance estimation method
+**
+**           l       -  Optional, bandwidth for spectral window
+**                      Default = round(4 * (T/100)^(2/9)).
+**
+**           varm    -  Optional, long-run consistent variance estimation method
 **                      1 = iid;
 **                      2 = Bartlett
 **                      3 = Quadratic Spectral (QS);
@@ -25,6 +29,8 @@
 **                      5 = SPC with QS;
 **                      6 = Kurozumi with Bartlett
 **                      7 = Kurozumi with QS
+**                      Default = 1;
+**
 **                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
 **                      See:
 **                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
@@ -42,13 +48,17 @@
 **
 */
 
-proc(4) = PP(y, model, l, varm);
+proc(4) = PP(y, model, ...);
     local t, dy, ly, dc, dt, dep, y1, sbt, trnd, x;
     local tau, g0, lrv, Zt, lambda, mbaryy, Za;
-    local b, e, e1, s2, se, ssr, cvZt, cvZa;
-    //  local k, yols, MZt, MZa, MSB;
+    local b, e, e1, s2, se, ssr, cvZt, cvZa, l_dftl, l, varm;
     
     t = rows(y);
+    l_dftl = round(4 * (T/100)^(2/9)); 
+    
+    // Get optional arguments
+    { l, varm } = dynargsGet(1|2, l_dftl, 1);
+    
     dy = diff(y, 1);
     ly = lagn(y, 1);
     
