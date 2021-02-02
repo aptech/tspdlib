@@ -45,7 +45,7 @@
 
 
 proc(3) = PDfzk(y, model, k, ...);
-    local t, n, ft, Nkpss, i, fpk, mu, var, fzk;
+    local t, n, ft, Nkpss, i, fpk, mu, var, fzk, varm;
     
     // Get option arguments
     varm = dynargsGet(1, 1);
