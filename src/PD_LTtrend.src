@@ -8,7 +8,8 @@
 **  Format:  {Nlm, Ntb, Np, PDlm, pval} = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
 **
 **  Input:   Y	     -  TxN matrix, data,
-**           model   - 	2= level and trend break model
+**
+**           model   - 	2 = level and trend break model
 **
 **           pmax    -  Maximum number of lags for Dy; 0=no lags
 **           ic      -  Information Criterion:

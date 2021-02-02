@@ -6,18 +6,94 @@
 **  "Panel LM Unit-root Tests with Level Shifts",
 **  Oxford Bulletin of Economics and Statistics 67, 393-419.
 **
-**  Format:  {Nlm, Ntb, Np, PDlm, pval} = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
+**  Format:  {Nlm, Ntb, Np, PDlm, pval} = PDLM(y, model[, nbreak, pmax, ic, trimm]);
 **
 **  Input:   Y	     -  TxN matrix, data,
-**           model   - 	1= level break model
+**
+**           model   - 	1 = level break model
+**                      2 = level and trend break model
+**                      
+**      	 nbreak  - 	number of breaks are allowed
+**                      0 = no break test
+**                      1 = one break  test
+**                      2 = two breaks test
+**                      Default = 0;
 **
 **           pmax    -  Maximum number of lags for Dy; 0=no lags
+**                      Default = 8;
+**
 **           ic      -  Information Criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
-**			 trim    - 	Trimming rate
+**                      Default = 3;
+**
+**			 trimm   - 	Trimming rate
 **                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
+**
+**
+**  Output:  Nlm     - minimum test statistic for each cross-section
+**
+**			 Ntb     - location of break(s) for each cross-section
+**
+**			 Np      - number of lags selected by choosen information criterion for each cross-section
+**
+**			 PDlm    - Panel LM statistic with N(0,1)
+**
+**           pval    - p-value of PDlm
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(5) = PDLM(y, model, nbreak, pmax, ic, trimm);
+    local n, t, Nlm, Ntb, Np, i;
+    local LMtau, tb1, tb2, p, lambda, cv;
+    local meanp, varp, PDlm;
+    
+    // Get defaults
+    { nbreak, pmax, ic, trimm } = dynargsGet(1|4, 0, 8, 3, 0.10);
+    
+    // Call function
+    if model == 1;
+        retp(PDLMlevel(y, model, pmax, ic, trimm, nbreak));
+    elseif model == 2;
+        retp(PDLMtrend(y, model, pmax, ic, trimm, nbreak));
+    else;
+        errorlog "'PDLM': Invalid model specification.";
+        end;
+    endif;
+   
+endp;
+
+/*
+**> PD_ILTlevel
+**  Reference:
+**  Im, K., Lee, J., Tieslau, M. (2005),
+**  "Panel LM Unit-root Tests with Level Shifts",
+**  Oxford Bulletin of Economics and Statistics 67, 393-419.
+**
+**  Format:  {Nlm, Ntb, Np, PDlm, pval} = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
+**
+**  Input:   Y	     -  TxN matrix, data,
+**
+**           model   - 	1= level break model
+**
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**                      Default = 8;
+**
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**
+**			 trimm   - 	Trimming rate
+**                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
+**
 **      	 nbreak  - 	number of breaks are allowed
 **                      0= no break test
 **                      1= one break  test
