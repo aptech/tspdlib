@@ -29,23 +29,32 @@
 **           JWL_PANICadj : Westerlund and Larsson (2009).
 **           JWR_PANICCA  : Reese and Westerlund (2016)
 **
-**  Format:  {ADFe,pval,lags,Pe,nf} = BNG_PANIC(y, model, pmax, icp, kmax, ick);
-**           {Ze,Ze_ba}             = JWL_PANICadj(y, model, pmax, icp, kmax, ick);
-**           {Pa_pc,Pb_pc,PMSB_pc}  = BNG_PANICnew(y, model, kmax, ick);
-**           {Pa_ca,Pb_ca,PMSB_ca}  = JWR_PANICCA(y,model);
+**  Format:  { ADFe, pval, lags, Pe, nf } = BNG_PANIC(y, model[, pmax, icp, kmax, ick]);
+**           { Ze, Ze_ba}                 = JWL_PANICadj(y, model[, pmax, icp, kmax, ick]);
+**           { Pa_pc, Pb_pc, PMSB_pc }    = BNG_PANICnew(y, model[, kmax, ick]);
+**           { Pa_ca, Pb_ca, PMSB_ca}     = JWR_PANICCA(y, model);
 **
 **  Input:   Y	     -  TxN matrix, data,
+**
 **           model   - 	1= Constant
 **                      2= Constant and trend
+**
 **           pmax    -  Maximum number of lags for ADF regressions; 0=no lags
+**                      Default = 8;
+*
 **           icp     -  Information Criterion for optimal number of lags
 **                      1 = Akaike
 **                      2 = Schwarz
 **                      3 = t-stat significance
+**                      Default = 3;
+**
 **           kmax    -  Maximum number of factors
+**                      Default = 5.
+**
 **           ick     -  Information Criterion for optimal number of factors
 **                      1 = PCp criterion
 **                      2 = ICp criterion
+**                      Default = 1;
 **                      (See Bai and Ng, 2002)
 **
 **  Output:  ADFe    -  ADF statistic for idiosyncratic components for each cross-section
@@ -75,10 +84,12 @@
 #include panel.txt  /* for p-vals */
 
 /*Pe test on ADF p-values in Bai & Ng (2004)*/
-proc(5) = BNG_PANIC(y, model, pmax, icp, kmax, ick);
+proc(5) = BNG_PANIC(y, model, ...);
     local dx, x, e, t, n, nf, Fhat, lambda, ehat;
-    local ADFe, lags, cv0, pval, par, qval, j, Pe;
+    local ADFe, lags, cv0, pval, par, qval, j, Pe, pmax, icp, kmax, ick;
     
+    // Get optional arguments
+    { pmax, icp, kmax, ick } = dynargsGet(1|4, 8, 3, 5, 1);
     
     dx = diff(y, 1);
     x = dx[2:rows(y), .];
@@ -158,9 +169,12 @@ endp;
 
 // Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010)
 
-proc(3) = BNG_PANICnew(y, model, kmax, ick);
+proc(3) = BNG_PANICnew(y, model, ...);
     local dx, nf, fhat, Floads, ehat, e;
-    local x, Pa, Pb, PMSB;
+    local x, Pa, Pb, PMSB, kmax, ick;
+    
+    // Get optional arguments
+    { kmax, ick } = dynargsGet(1|2, 5, 1);
     
     dx = diff(y, 1);
     x  = dx[2:rows(y), .];
@@ -203,10 +217,12 @@ endp;
 
 // Ze and Ze+ tests in Westerlund & Larsson (2009)
 
-proc(2) = JWL_PANICadj(y, model, pmax, icp, kmax, ick);
+proc(2) = JWL_PANICadj(y, model, ...);
     local nf, Fhat, lambda, ehat, E, ADFe, eb, varB, Ze, aN, Ze_ba;
     local lags, dx, x, de, de0, del, rho, djwj, wj, cv0;
-    local T, N;
+    local T, N, pmax, icp, kmax, ick;
+    
+    { pmax, icp, kmax, ick } = dynargsGet(1|4, 8, 3, 5, 1);
     
     T = rows(y);
     N = cols(y);

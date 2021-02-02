@@ -10,23 +10,23 @@
 ** Response Surface Estimates of the LM Unit Root Tests.
 ** Economics Letters, Vol. 192, Article 109136.
 **
-**  Format:  { tstat, tb, p, lambda, cv }  =   LM_1break(y, model, pmax, ic, trimm);
+**  Format:  { tstat, tb, p, lambda, cv }  =   LM_1break(y, model[, pmax, ic, trimm]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
 **           model   - 	1 =  Model A: break in level
 **                      2 =  Model C: break in level and trend
 **
-**           pmax    -  Maximum number of lags for Ds; 0 =  no lags.
+**           pmax    -  Optional, maximum number of lags for Ds; 0 =  no lags.
 **                      Default = 8.
 **
-**           ic      -  Information Criterion:
+**           ic      -  Optional, information criterion:
 **                      1 =  Akaike
 **                      2 =  Schwarz
 **                      3 =  t-stat significance
 **                      Default = 3.
 **
-**			 trimm   - 	Trimming rate
+**			 trimm   - 	Optional, trimming rate
 **                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
 **
 **  Output:  tstat   - minimum test statistic

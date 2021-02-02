@@ -19,13 +19,18 @@
 **
 **  Input:   data	 -  (TxN,k) matrix
 **                      k is number of endogenous variables in VAR model
+**
 **           vnames  -  Variable names
 **                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable
+**
 **           pmax    -  Maximum number of lags
+**
 **           ic      -  Information Criterion for optimal lag selection
 **                      1 = Akaike
 **                      2 = Schwarz
+**
 **           Nboot   -  Number of boostrap replications
+**
 **           Ncross  -  Number of cross sections
 **
 **  Output:  Znt     -  Panel Zhnc statistic with asymptotic distribution

@@ -11,7 +11,7 @@
 ** Standard Chi-squared and Normal Limiting Distributions.
 ** Oxford Bulletin of Economics and Statistics, 78(3), 347-364.
 **
-**  Format:  { Ncadf, Nmcadf, Nlags, pcadf, pmcadf } = CIPS(y, model, pmax, ic);
+**  Format:  { Ncadf, Nmcadf, Nlags, pcadf, pmcadf } = CIPS(y, model[, pmax, ic]);
 **
 **  Input:   Y	     -  TxN matrix, data
 **
@@ -19,10 +19,10 @@
 **                      1 = model with constant
 **                      2 = model with constant and trend
 **
-**           pmax    -  Maximum number of lags; 0=no lags
+**           pmax    -  Optional, maximum number of lags; 0=no lags
 **                      Default = 8.
 **
-**           ic      -  Information Criterion:
+**           ic      -  Optional, information criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
@@ -118,9 +118,9 @@ proc(6) = cips(y, model, ...);
     retp(Ncadf, Nlm, Nd, Nlags, pcadf, pmcadf);
 endp;
 
-proc(3)=cadf(y, f, model, p);
+proc(3) = cadf(y, f, model, p);
     local t, dy, ly, df, lf, dyl, dfl, dyp, dfp, y1, f1;
-    local d, w, g, dg, Mw, Mg, s2, tau, lm, dp;
+    local d, w, g, Mw, Mg, s2, tau, lm, dp;
     
     dy = diff(y, 1);
     ly = lagn(y, 1);
@@ -147,8 +147,7 @@ proc(3)=cadf(y, f, model, p);
     
     if model==1;
         d = ones(t,1);
-    endif;
-    if model==2;
+    elseif model==2;
         d = ones(t,1)~seqa(1,1,t);
     endif;
     

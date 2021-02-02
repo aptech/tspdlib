@@ -19,18 +19,22 @@
 **  Format:  SURwald = Panel_SURwald(data, vnames, pmax, ic, Nboot, Ncross);
 **
 **
-**  Input:   data	 -  (TxN,k) matrix
+**  Input:   data	 -  (TxN, k) matrix
 **                      k is number of variables in SUR model
 **                      Important:
 **                      Only k = 2 is allowed in this code
 **
 **           vnames  -  Variable names
 **                      vnames = "CPI"$|"EXCR; as an example for 2 variable
+**
 **           pmax    -  Maximum number of lags
+**
 **           ic      -  Information Criterion for optimal lag selection
 **                      1 = Akaike
 **                      2 = Schwarz
+**
 **           Nboot   -  Number of boostrap replications
+**
 **           Ncross  -  Number of cross sections
 **
 **  Output:  SURwald -  Panel SUR Wald statistics

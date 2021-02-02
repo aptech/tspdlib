@@ -13,22 +13,22 @@
 **           model   - 	1 = level break model
 **                      2 = level and trend break model
 **                      
-**      	 nbreak  - 	number of breaks are allowed
+**      	 nbreak  - 	Optional, number of breaks are allowed
 **                      0 = no break test
 **                      1 = one break  test
 **                      2 = two breaks test
 **                      Default = 0;
 **
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags
 **                      Default = 8;
 **
-**           ic      -  Information Criterion:
+**           ic      -  Optional, information criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
 **                      Default = 3;
 **
-**			 trimm   - 	Trimming rate
+**			 trimm   - 	Optional, trimming rate
 **                      Default 10% trimmage is defined as in ZA (1992) and LS (2003).
 **
 **

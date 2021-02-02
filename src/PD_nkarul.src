@@ -7,11 +7,12 @@
 **  an application to international commodity price shocks",
 ** Economic Modelling 61 (2017). pp.181-192.
 **
-**  Format:  { Nkpss, FZk, pval } = PDfzk(y, model, k, varm);
+**  Format:  { Nkpss, FZk, pval } = PDfzk(y, model, k[, varm]);
 **
 **  Input:   Y	     -  TxN matrix, data,
-**           model   - 	1= level shift model
-**                      2= level and trend shift model
+**
+**           model   - 	1 = level shift model
+**                      2 = level and trend shift model
 **
 **           k       -  number of single frequency
 **
@@ -43,8 +44,11 @@
 */
 
 
-proc(3) = PDfzk(y, model, k, varm);
+proc(3) = PDfzk(y, model, k, ...);
     local t, n, ft, Nkpss, i, fpk, mu, var, fzk;
+    
+    // Get option arguments
+    varm = dynargsGet(1, 1);
     
     print "Panel stationary test with gradual shifts.";
 
@@ -70,54 +74,48 @@ proc(3) = PDfzk(y, model, k, varm);
     endif;
     print;
     
-    if model == 1 and k == 1;
-        mu = 0.0658;
-        var = 0.0029;
+    // Check for maximum frequencies
+    if k>5;
+        errorlog "'PDfzk': Maximum number of single frequency is 5.";
+        end;
     endif;
     
-    if model == 1 and k == 2;
-        mu = 0.1410;
-        var = 0.0176;
+    if model == 1;
+        if k == 1;
+            mu = 0.0658;
+            var = 0.0029;
+        elseif k == 2;
+            mu = 0.1410;
+            var = 0.0176;
+        elseif k == 3;
+            mu = 0.1550;
+            var = 0.0202;
+        elseif k == 4;
+            mu = 0.1600;
+            var = 0.0214;
+        elseif k == 5;
+            mu = 0.1630;
+            var = 0.0219;
+        endif;
     endif;
     
-    if model == 1 and k == 3;
-        mu = 0.1550;
-        var = 0.0202;
-    endif;
-    
-    if model == 1 and k == 4;
-        mu = 0.1600;
-        var = 0.0214;
-    endif;
-    
-    if model == 1 and k == 5;
-        mu = 0.1630;
-        var = 0.0219;
-    endif;
-    
-    if model == 2 and k == 1;
-        mu = 0.0295;
-        var = 0.00017;
-    endif;
-    
-    if model == 2 and k == 2;
-        mu = 0.0523;
-        var = 0.00150;
-    endif;
-    
-    if model == 2 and k == 3;
-        mu = 0.0601;
-        var = 0.00169;
-    endif;
-    
-    if model == 2 and k == 4;
-        mu = 0.0633;
-        var = 0.00180;
-    endif;
-    
-    if model == 2 and k == 5;
-        mu = 0.0642;
-        var = 0.00179;
+    if model == 2;
+        if k == 1;
+            mu = 0.0295;
+            var = 0.00017;
+        elseif k == 2;
+            mu = 0.0523;
+            var = 0.00150;
+        elseif k == 3;
+            mu = 0.0601;
+            var = 0.00169;
+        elseif k == 4;
+            mu = 0.0633;
+            var = 0.00180;
+        elseif k == 5;
+            mu = 0.0642;
+            var = 0.00179;
+        endif;
     endif;
     
     FZk = sqrt(n) * (FPk - mu)/sqrt(var);
