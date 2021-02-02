@@ -15,20 +15,20 @@
 **  http://dx.doi.org/10.1515/snde-2014- 0101.
 
 **  Nazlioglu, S. Gormus, A., Soytas, U. (2016)
-**  Oil prices and real estate investment trusts (REITs): gradual-shift causality
+**  “Oil prices and real estate investment trusts (REITs): gradual-shift causality
 **  and volatility transmission Analysis.
 **  Energy Economics 60(1): 168-175.
 
 **  Gormus, A., Nazlioglu, S., Soytas, U. (2018)
-**  High-Yield Bond and Energy Markets.
+**  “High-Yield Bond and Energy Markets.
 **  Energy Economics 69: 101-110.
 
 **  Nazlioglu, S., Soytas, U., Gormus, A. (2019)
-**  Oil Prices and Monetary Policy in Emerging Markets: Structural Shifts in Causal Linkages.
+**  “Oil Prices and Monetary Policy in Emerging Markets: Structural Shifts in Causal Linkages.
 **  Emerging Markets Finance and Trade. 55, 105-117.
 **
 **
-**  Format:  W = GCtests(data, test [, vnames, pmax, ic, Nboot]);
+**  Format:  W = granger(data, test[, pmax, ic, Nboot, vnames]);
 **
 **
 **  Input:   data	 -  Txk matrix
@@ -48,23 +48,207 @@
 **                      5 = Cumulative Fourier-frequency Toda & Yamamoto
 **                          (Nazlioglu etal., 2019)
 **
-**           vnames  -  Optional, variable names
-**                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable. 
-**                      Default = dataframe names or X1, X2, ...
+**           pmax    -  Maximum number of lags. Default = 8.
 **
-**           pmax    -  Optional, maximum number of lags. Default = 8.
-**
-**           ic      -  Optional, information criterion for optimal lag selection.
-**                      Default = 2.
+**           ic      -  Information Criterion for optimal lag selection
 **                      1 = Akaike
 **                      2 = Schwarz
 **
 **           Nboot   -  Number of bootstrap replications. Default = 1000.
 **
+**           vnames  -  Variable names
+**                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable.
+**                      Default = dataframe variable names OR "X1"$|"X2".
+**
 **           Default settings
 **           kmax    -  Maximum number of Fourier frequency
 **                      Default kmax = 3.
+**           dmax    -  Maximum integration degree of variables
+**                      default dmax = 0 for Granger causality tests
+**                      default dmax = 1 for Toda & Yamamoto causality tests
 **
+**
+**  Output:  GC_out = Wald stat ~ Asymptotic p-value ~ Bootstrap p-value ~ Lags ~ Frequency
+**
+**  Note to users:
+**  VAR model is estimated in first differences for Granger causality tests 0, 2, and 4.
+**  VAR model is estimated in levels for Toda & Yamamoto causality    tests 1, 3, and 5.
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+proc(1)= granger(data, test, ...);
+    local i, j, depvar, indvar, cause, control, y, obs,
+    dmax, kmax, k, p, VARy, ylag, VARx, W, Wboot, 
+    pval_boot, GC_out, n_tests, indx, 
+    vnames_dflt, vnames, pmax, ic, Nboot;
+    
+    // Check for metadata to get column names
+    #ifminkernelversion(21)
+    if hasmetadata(data);
+        vnames_dflt = getcolnames(data);
+    else;
+        vnames_dflt = "X" $+ ntos(seqa(1, 1, cols(data)));
+    endif;
+    #else;
+        vnames_dflt = "X" $+ ntos(seqa(1, 1, cols(data)));
+    #endif;
+    
+    // Set defaults
+    { pmax, ic, Nboot, vnames } = dynargsGet(1|4, 8, 2, 1000, vnames_dflt);
+    
+    n_tests = cols(data)*(cols(data)-1);
+    
+    GC_out = zeros(n_tests, 5);
+    indx = 1;
+    
+    for i(1, cols(data), 1);
+        
+        depvar = data[., i];
+        indvar = delcols(data, i);
+        
+        for j(1, cols(indvar), 1);
+            cause  = indvar[., j];
+            control= delcols(indvar, j);
+            y  = depvar~cause~control;
+            
+            if test==0;
+                dmax=0;
+                kmax=0;
+            endif;
+            if test==1;
+                dmax=1;
+                kmax=0;
+            endif;
+            if test==2;
+                dmax=0;
+                kmax=3;
+            endif;
+            if test==3;
+                dmax=1;
+                kmax=3;
+            endif;
+            if test==4;
+                dmax=0;
+                kmax=3;
+            endif;
+            if test==5;
+                dmax=1;
+                kmax=3;
+            endif;
+            
+            obs = rows(y);
+            {k,p}       = _get_kp(y, pmax, kmax, ic, test);
+            {VARy,ylag} = _get_lagp(y, p+dmax);
+            {VARx}      = _get_VARdata(VARy, ylag, test, k, p, dmax);
+            {W}         = _get_Wald(VARy, VARx, p, dmax);
+            
+            {Wboot} = _get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
+            
+            pval_boot= 1-(sumc(W.>Wboot)/Nboot);
+
+            GC_out[indx,.] = W~(cdfchic(W,p))~pval_boot~p~k;
+            
+            if i==1;
+                vnames[j+1];;
+                "=>";;
+                vnames[i];
+                "         ";;
+                GC_out[indx,.];
+            endif;
+            if i>1 and i==j;
+                vnames[j+1];;
+                "=>";;
+                vnames[i];
+                "         ";;
+                GC_out[indx,.];
+            endif;
+            if i>1 and j<i;
+                vnames[j]  ;;
+                "=>";;
+                vnames[i];
+                "         ";;
+                GC_out[indx,.];
+            endif;
+            if i>1 and j>i;
+                vnames[j+1];;
+                "=>";;
+                vnames[i];
+                "         ";;
+                GC_out[indx,.];
+            endif;
+            indx = indx + 1;
+            
+        endfor;
+    endfor;
+    
+    retp(GC_out);
+endp;
+
+/*
+**> GCtests
+**  References:
+**  Granger, C.W.J., 1969.
+**  Investigating causal relations by econometric models and cross-spectral methods.
+**  Econometrica 37, 424-438.
+
+**  Toda, H.Y.,Yamamoto, T., 1995.
+**  Statistical inference in vector autoregression with possibly integrated processes.
+**  Journal of Econometrics 66,225-250.
+
+**  Enders, W., Jones, P., 2015.
+**  Grain prices, oil prices, and multiple smooth breaks in a VAR.
+**  Studuies on Nonlinear Dynamics and Econometrics.
+**  http://dx.doi.org/10.1515/snde-2014- 0101.
+
+**  Nazlioglu, S. Gormus, A., Soytas, U. (2016)
+**  Oil prices and real estate investment trusts (REITs): gradual-shift causality
+**  and volatility transmission Analysis.
+**  Energy Economics 60(1): 168-175.
+
+**  Gormus, A., Nazlioglu, S., Soytas, U. (2018)
+**  High-Yield Bond and Energy Markets.
+**  Energy Economics 69: 101-110.
+
+**  Nazlioglu, S., Soytas, U., Gormus, A. (2019)
+**  Oil Prices and Monetary Policy in Emerging Markets: Structural Shifts in Causal Linkages.
+**  Emerging Markets Finance and Trade. 55, 105-117.
+**
+**
+**  Format:  W = GCtests(data, vnames, pmax, ic, test, Nboot);
+**
+**
+**  Input:   data	 -  Txk matrix
+**                      k is number of endogenous variables in VAR model
+**           vnames  -  Variable names
+**                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable
+**           pmax    -  Maximum number of lags
+**           ic      -  Information Criterion for optimal lag selection
+**                      1 = Akaike
+**                      2 = Schwarz
+**           test    -  Test option for Granger causality
+**                      0 = Granger Causality
+**                          (Granger, 1969)
+**                      1 = Toda & Yamamoto
+**                          (Toda & Yamamoto, 195)
+**                      2 = Single Fourier-frequency Granger Causality
+**                          (Enders & Jones, 2016)
+**                      3 = Singel Fourier-frequency Toda & Yamamoto
+**                          (Nazlioglu et al.)
+**                      4 = Cumulative Fourier-frequency Granger Causality
+**                          (Enders & Jones, 2019)
+**                      5 = Cumulative Fourier-frequency Toda & Yamamoto
+**                          (Nazlioglu etal., 2019)
+**          Nboot    -  Number of bootstrap replications
+**
+**           Default settings
+**           kmax    -  Maximum number of Fourier frequency
+**                      Default kmax = 3.
 **           dmax    -  Maximum integration degree of variables
 **                      default dmax = 0 for Granger causality tests
 **                      default dmax = 1 for Toda & Yamamoto causality tests
@@ -84,28 +268,15 @@
 */
 
 
-proc(1)= GC_tests(data, test, vnames, pmax, ic, Nboot);
+proc(1)= GC_tests(data, vnames, pmax, ic, test, Nboot);
     local i, j, depvar, indvar, cause, control, y, obs;
     local dmax, kmax, k, p, VARy, ylag, VARx;
-    local W, Wboot, pval_boot, GC_out, n_tests, indx, vnames_dftl, vnames, pmax, ic, Nboot;
+    local W, Wboot, pval_boot, GC_out, n_tests, indx;
     
     n_tests = cols(data)*(cols(data)-1);
     
-    if hasmetadata(data);
-        vnames_dftl = getcolnames(data);
-    else;
-        vnames_dftl = "X" $+ ntos(seqa(1, 1, cols(data)));
-    endif;
-    
-    { vnames, pmax, ic, NBoot } = dynargsGet(1|4, vnames_dftl, 8, 2, 1000);
-    
-    if vnames == "";
-        vnames = vnames_dftl;
-    endif;
-    
     GC_out = zeros(n_tests, 5);
     indx = 1;
-    
     
     for i(1, cols(data), 1);
         
