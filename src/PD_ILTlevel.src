@@ -50,10 +50,8 @@
 */
 
 
-proc(5) = PDLM(y, model, nbreak, pmax, ic, trimm);
-    local n, t, Nlm, Ntb, Np, i;
-    local LMtau, tb1, tb2, p, lambda, cv;
-    local meanp, varp, PDlm;
+proc(5) = PDLM(y, model, ...);
+    local nbreak, pmax, ic, trimm;
     
     // Get defaults
     { nbreak, pmax, ic, trimm } = dynargsGet(1|4, 0, 8, 3, 0.10);
