@@ -25,7 +25,7 @@
 **
 **           _print  -  print option "true" for printing results
 **
-**  Output:  rho(quantil) - the estimated rho parameter for a given quantile
+**  Output:  rho(quantile) - the estimated rho parameter for a given quantile
 **			 rho (OLS)    - the estimated rho parameter for usual OLS estimation
 **           delta2       - see equation (10) at page 778
 **           tn(quantile) - quantile unit root statistic (t-ratio for a given quantile)
