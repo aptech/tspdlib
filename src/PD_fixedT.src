@@ -14,9 +14,9 @@
 **  Format:  {Nlm1,Zlm1,Npval1,Nlm2,Zlm2,Npval2,Zhl,pval_Zhl,Zch,pval_Zch} = fixed_T_panel(y, model);
 **
 **  Input:   Y	     -  TxN matrix, data,
+**
 **           model   - 	1 = Constant
 **                      2 = Constant and trend
-**           N       -  Number of cross-sections
 **
 **  Output:  Hadri and Larsson (2005) 
 **           Nlm1     - LM stationarity statistic for each cross-section
@@ -43,8 +43,10 @@
 proc(10)= fixed_T_panel(y, model);
     local Nlm1, Nlm2, Nzlm1, Nzlm2, Npval1, Npval2;
     local mu_lm1, var_lm1, mu_lm2, var_lm2, lm1, lm2;
-    local lm1_bar, lm2_bar, Zhl, Zch, pval_Zhl, pval_Zch; 
+    local lm1_bar, lm2_bar, Zhl, Zch, pval_Zhl, pval_Zch, N; 
 
+    N = cols(y);
+    
     Nlm1   = zeros(N,1);
     Nlm2   = zeros(N,1);
     Nzlm1  = zeros(N,1);

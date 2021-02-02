@@ -8,15 +8,20 @@
 **
 **  Format:  { tstat, p, cv } = LM(y, pmax, ic);
 **
-**  Input:   Y	     -  Nx1 matrix, data,
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**  Input:   Y	     -  Nx1 matrix, data.
+**
+**           pmax    -  Maximum number of lags for Dy; 0=no lags. Default = 8.
+**
 **           ic      -  Information Criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
+**                      Default = 3.
 **
 **  Output:  tstat   - LM tau-statistic
+**
 **			 p       - number of lags selected by chosen information criterion
+**
 **			 cv      - 1%, 5%, 10% critical values for the break location based on response surfaces
 **
 **
@@ -28,10 +33,13 @@
 */
 
 
-proc(3) = LM(y, pmax, ic);
-    local t, p, j, taup, aicp, sicp, tstatp, dc, dt, z, dy, dz, check;
-    local b0, psi, ylm, ly, lmat, dep, y1, ds, ldy, sbt, trnd, x, n, k, LL, tau;
-    local b, e1, sig2, se, ssr, cv;
+proc(3) = LM(y, ...);
+    local t, p, j, taup, aicp, sicp, tstatp, dc, dt, z, dy, dz, check,
+    b0, psi, ylm, ly, lmat, dep, y1, ds, ldy, sbt, trnd, x, n, k, LL, tau,
+    b, e1, sig2, se, ssr, cv, pmax, ic;
+    
+    // Get defaults
+    { pmax, ic } = dynargsGet(1|2, 8, 3);
     
     t = rows(y);
     taup = zeros(pmax + 1, 1);

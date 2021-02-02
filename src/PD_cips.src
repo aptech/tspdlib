@@ -14,19 +14,28 @@
 **  Format:  { Ncadf, Nmcadf, Nlags, pcadf, pmcadf } = CIPS(y, model, pmax, ic);
 **
 **  Input:   Y	     -  TxN matrix, data
+**
 **           model   - 	0 = none
 **                      1 = model with constant
 **                      2 = model with constant and trend
+**
 **           pmax    -  Maximum number of lags; 0=no lags
+**                      Default = 8.
+**
 **           ic      -  Information Criterion:
 **                      1=Akaike
 **                      2=Schwarz
 **                      3=t-stat significance
+**                      Default = 3;
 **
 **  Output:  Ncadf   - CADF statistics for each cross-section
+**
 **           Nmcadf  - Modified CADF statistics for each cross-section
+**
 **			 Nlags   - number of lags selected by choosen information criterion for each cross-section
+**
 **			 pcadf   - Panel CIPS statistic
+**
 **		     pmcadf  - Panel Modified CIPS statistic with N(0,1)
 **
 **
@@ -38,8 +47,11 @@
 */
 
 
-proc(6) = cips(y, model, pmax, ic);
+proc(6) = cips(y, model, ...);
     local n, Ncadf, Nlm, Nd, Nlags, f, pcadf, pmcadf, q;
+    
+    // Get defaults
+    { pmax, ic } = dynargsGet(1|2, 8, 3);
     
     n     = cols(y);
     Ncadf = zeros(N,1);

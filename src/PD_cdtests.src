@@ -25,8 +25,11 @@
 **  Format:  {LMbp, LM_adj, CDlm, CDlm_adj, CD} = _get_cd_error(y, x, T, N);
 **
 **  Input:   Y	     -  [TxN,1] vector of dependent variable
+**
 **           X	     -  [TxN,k] matrix of independent variales
+**
 **           T       -  Number of time periods
+**
 **           N       -  Number of cross-sections
 **
 **  Output:  LMbp    - LM test of Breusch and Pagan (1980)
