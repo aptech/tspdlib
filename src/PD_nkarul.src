@@ -14,6 +14,7 @@
 **                      2= level and trend shift model
 **
 **           k       -  number of single frequency
+**
 **           varm    -  Long-run consistent variance estimation method
 **                      1 = iid;
 **                      2 = Bartlett
@@ -22,7 +23,9 @@
 **                      5 = SPC with QS;
 **                      6 = Kurozumi with Bartlett
 **                      7 = Kurozumi with QS
+**                      Default = 1;
 **                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**
 **                      See:
 **                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
 **                      A guide to the computation of stationarity tests.
@@ -44,30 +47,7 @@ proc(3) = PDfzk(y, model, k, varm);
     local t, n, ft, Nkpss, i, fpk, mu, var, fzk;
     
     print "Panel stationary test with gradual shifts.";
-    print "LR Variance estimation method";
-    if varm == 1;
-        print "iid";
-    endif;
-    if varm == 2;
-        print "Bartlett";
-    endif;
-    if varm == 3;
-        print "Quadratic Spectral (QS)";
-    endif;
-    if varm == 4;
-        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
-    endif;
-    if varm == 5;
-        print "SPC with QS";
-    endif;
-    if varm == 6;
-        print "Kurozumi with Bartlett";
-    endif;
-    if varm == 7;
-        print "Kurozumi with QS";
-    endif;
-    print;
-    
+
     t = rows(y);
     n = cols(y);
     
