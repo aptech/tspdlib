@@ -39,7 +39,7 @@
 **                      Empirical Economics, 31(2), 433.
 **
 **              q   -   Optional, number of leads and lags for DOLS estimation. 
-**                      Default = 4.
+**                      Default = int(4*(t/100)^(2/9)).
 **                      Required for:
 **                      Shin (1994)
 **                      Carrion-i-Silvestre & Sanso (2006).
@@ -71,7 +71,7 @@ proc(3) = coint_shin(y, x, model, ...);
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
-    { bwl, varm, q } = dynargsGet(1|2, bwl_dftl, 1, 4);
+    { bwl, varm, q } = dynargsGet(1|3, bwl_dftl, 1, int(4*(t/100)^(2/9)));
     
     print;
     if model==0;
