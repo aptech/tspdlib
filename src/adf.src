@@ -229,14 +229,14 @@ proc (1) = _printModel3(model);
     endif;
 endp;
 
-proc (0) = _printIC(ic);
-       // Print IC 
+proc (1) = _printIC(ic);
+    // Print IC 
     if ic == 1;
-        print "AIC lag selection.";
+        retp("AIC lag selection.");
     elseif ic == 2;
-        print "SIC lag selection.";
+        retp("SIC lag selection.");
     elseif ic == 3;
-        print "T-stat lag selection.";
+        retp("T-stat lag selection.");
     endif;
 endp;
 
