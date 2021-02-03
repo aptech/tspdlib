@@ -59,7 +59,7 @@ proc(4) = KPSS_1break(y, model, ...);
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
-    { l, varm, trimm } = dynargsGet(1|3, bwl_dftl, 1, 0.15);
+    { l, varm, trimm } = dynargsGet(1|3, bwl_dftl, 1, 0.10);
     
     ssr_min = 1e6;
     tb1_min = 0;
