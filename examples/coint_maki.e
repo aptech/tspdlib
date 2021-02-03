@@ -19,7 +19,6 @@ datap = loadd(fname, "m + bnd + sp500");
 // Remove all rows with missing values
 datap = packr(datap);
 
-
 // Set the maximum number of breaks
 m = 2;
 
@@ -30,21 +29,8 @@ m = 2;
 **   2: regime shifts 
 **   3: Trend and Regime shifts
 */
-model = 2;
+model = 1;
 
-/*
-** Set the trimming parameter
-**   This should be a percentage between
-**   0 and 1. 0.05 represents 5%
-*/
-trimm = 0.05;
-
-/* 
-** Set lagoption
-**   0: lag=0 
-**   1: t-sig criterion 
-*/
-lagoption = 1;
 
 // Perform test
-call coint_maki(datap, m, model, trimm, lagoption);
+call coint_maki(datap, m, model);

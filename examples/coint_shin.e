@@ -9,25 +9,20 @@ data = loadd(__FILE_DIR $+ "TScoint.dat");
 y = data[., 1];
 x = data[., 2:cols(data)];
 
-// Time variable
-T = rows(data);
-
-// Long-run consistent variance estimation method
-varm = 3;
-
-// Bandwidth for kernel estimator
-bwl = round(4 * (T/100)^(2/9));  
-
-// Leads & Lags for DOLS estimation
-q = int(4*(t/100)^(2/9));
-
+/*
+** Using the defaults 
+** for bandwidth,
+** LR variance computation method,
+** and number of lags
+** and leads in DOLS.
+*/
 model = 0;
-{ CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
+{ CIols, CIdols, cv } = coint_shin(y, x, model);
    
 model = 1;
-{ CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
+{ CIols, CIdols, cv } = coint_shin(y, x, model);
 
 model = 2;
-{ CIols, CIdols, cv } = coint_shin(y, x, model, bwl, varm, q);
+{ CIols, CIdols, cv } = coint_shin(y, x, model);
 
   

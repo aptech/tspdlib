@@ -12,17 +12,17 @@ x = data[., 2:cols(data)];
 // Time variable
 T = rows(data);
 
-// Long-run consistent variance estimation method
-varm = 3;
-
-// Bandwidth for kernel estimator
-bwl = round(4 * (T/100)^(2/9));  
+/*
+** Using the defaults 
+** bandwidth and
+** LR variance computation method.
+*/
 
 model = 0;
-{ Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model, bwl, varm);
+{ Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model);
 
 model = 1;
-{ Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model, bwl, varm);
+{ Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model);
 
 model = 2;
-{ Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model, bwl, varm);
+{ Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model);
