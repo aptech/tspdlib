@@ -79,7 +79,7 @@ proc(7) = coint_tsongetal(y, x, model, ...);
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
-    { bwl, kmax, varm, q } = dynargsGet(1|4, bwl_dftl, 1);
+    { bwl, kmax, varm, q } = dynargsGet(1|4, bwl_dftl, 5, 1, int(4*(t/100)^(2/9)));
     
     ssr1_min = 1e6;
     ssr2_min = 1e6;
@@ -137,9 +137,11 @@ proc(7) = coint_tsongetal(y, x, model, ...);
         zrdols=trimr(zr~dx_leads~dx~dx_lags,q+1,q);
         Fdols[k,1]= _get_Ftest(ydols,zrdols,zdols);
      
+        screen off;
         lrv1 = _get_lrv_type(varm, ssr1, e1, bwl, 1);
         lrv2 = _get_lrv_type(varm, ssr2, e2, bwl, 0);
-         
+        screen on;
+        
         // Global minimization for OLS-based stat
         SC1 = T^(-2) * (St1'St1)/lrv1;
         if  ssr1 < ssr1_min;

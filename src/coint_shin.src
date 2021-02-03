@@ -102,8 +102,10 @@ proc(3) = coint_shin(y, x, model, ...);
     ssr2= e2'e2;
     St2 = cumsumc(e2);
     
+    screen off;
     lrv1 = _get_lrv_type(varm, ssr1, e1, bwl, 1);
     lrv2 = _get_lrv_type(varm, ssr2, e2, bwl, 0);
+    screen on;
     
     // Co-integration test based on OLS
     C1 = T^(-2) * (St1'St1)/lrv1;
