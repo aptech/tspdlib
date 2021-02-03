@@ -43,7 +43,7 @@
 **          trimm   -   Optional, trimming rate. Default [0.10,0.90] as in GH (1996)
 **
 **              q   -   Optional, number of leads and lags for DOLS estimation. 
-**                      Default = 4.
+**                      Default = int(4*(t/100)^(2/9)).
 **
 **  Output:
 **          SCols   -   SC  test based on OLS estimation
@@ -81,7 +81,7 @@ proc(6) = coint_cissanso(y, x, model, ...);
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
-    {bwl, varm, trimm, q} = dynargsGet(1|4, bwl_dftl, 1, 0.10, 4);
+    {bwl, varm, trimm, q} = dynargsGet(1|4, bwl_dftl, 1, 0.10, int(4*(t/100)^(2/9)));
     
     ssr1_min = 1e6;
     ssr2_min = 1e6;
