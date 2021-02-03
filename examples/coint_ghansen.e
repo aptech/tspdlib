@@ -9,40 +9,25 @@ data = loadd(__FILE_DIR $+ "TScoint.dat");
 y = data[., 1];
 x = data[., 2:cols(data)];
 
-T = rows(data);
-
 /*
-** Information Criterion: 
-** 1=Akaike; 
-** 2=Schwarz; 
-** 3=t-stat sign.
+** Using the defaults 
+** for information criterion, bandwidth,
+** LR variance computation method,
+** and trimming rate.
 */
-ic = 2; 
-
-//Maximum number of lags 
-pmax = 12;  
-
-// Trimming rate
-trimm = 0.10;             
-
-// Long-run consistent variance estimation method
-varm = 3;
-
-// Bandwidth for kernel estimator
-bwl = round(4 * (T/100)^(2/9));  
 
 model = 1;
 { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa}=
-    coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
+    coint_ghansen(y, x, model);
 
 model = 2; 
 { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } =
-    coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
+    coint_ghansen(y, x, model);
  
 model = 3;
 { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } =
-    coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
+    coint_ghansen(y, x, model);
 
 model = 4; 
 { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } =
-    coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
+    coint_ghansen(y, x, model);

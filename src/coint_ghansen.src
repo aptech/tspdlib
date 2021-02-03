@@ -88,7 +88,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     n = rows(y);      /*# of observation*/
     bwl_dftl = round(4 * (n/100)^(2/9));
     
-    { bwl, ic, pmax, varm, trimm } = dynargsGet(1|5, bwl_dftl, 1, 8, 0.10, 4);
+    { bwl, ic, pmax, varm, trimm } = dynargsGet(1|5, bwl_dftl, 3, 8, 1, 0.10);
     
     TBadf=0;
     TBZa=0;
