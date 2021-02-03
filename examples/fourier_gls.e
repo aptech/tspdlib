@@ -6,33 +6,17 @@ library tspdlib;
 y = loadd(__FILE_DIR $+ "TSe.dat");
 
 /*
-** Maximum number of lags for ds;
-** 0=no lags
+** Use defaults for 
+** maximum number of lags for ds,
+** information criterion, 
+** and maximum number of Fourier
 */
-pmax = 12;
 
-/*
-** Information Criterion:
-** 1=Akaike;
-** 2=Schwarz;
-** 3=t-stat sign.
-*/
-ic = 3;
 
-// Maximum number of Fourier
-fmax = 3;
-
-/*
-** 1 = With constant
-** 2 = With constant and trend
-*/
+// With constant
 model = 1;
-{ GLSstat, f, p, cv } = Fourier_GLS(y, model, pmax, fmax, ic);
+{ GLSstat, f, p, cv } = Fourier_GLS(y, model);
 
-/*
-** 0 = No deterministic component
-** 1 = With constant
-** 2 = With constant and trend
-*/
+// With constant and trend
 model = 2;
-{ GLSstat, f, p, cv } = Fourier_GLS(y, model, pmax, fmax, ic);
+{ GLSstat, f, p, cv } = Fourier_GLS(y, model);

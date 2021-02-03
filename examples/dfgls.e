@@ -6,16 +6,9 @@ library tspdlib;
 y = loadd(__FILE_DIR $+ "TSe.dat");
 
 /*
-** Maximum number of lags for ds; 
-** 0 = no lags
-*/
-pmax = 12;                 
-
-/*
-** Information Criterion: 
-** 1=Akaike; 
-** 2=Schwarz; 
-** 3=t-stat sign.
+** Use defaults
+** maximum number of lags and
+**information criterion.
 */
 ic = 3;                 
 
@@ -23,10 +16,10 @@ ic = 3;
 ** With constant
 */
 model = 1;                  
-{ GLStau, GLSp, cvGLS } = DFGLS(y, model, pmax, ic);
+{ GLStau, GLSp, cvGLS } = DFGLS(y, model);
 
 /*
 ** With constant and trend
 */
 model = 2;
-{ GLStau, GLSp, cvGLS } = DFGLS(y, model, pmax, ic);
+{ GLStau, GLSp, cvGLS } = DFGLS(y, model);

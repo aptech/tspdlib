@@ -6,24 +6,21 @@ library tspdlib;
 y = loadd(__FILE_DIR $+ "TSe.dat");
 T = rows(y);
 
-// bandwidth lag
-bwl = round(4 * (T/100)^(2/9));
+/*
+** Use defaults
+** bandwidth and
+** LF variance type.
+*/
 
-format /m1 /rd 8,4;
+/*
+** With constant
+*/
+model = 1;
+{  Pt, lrv, cvPt } = ERSpt(y, model);
 
-for i(1, 7, 1);
-    varm = i;
-  
-    /*
-    ** With constant
-    */
-    model = 1;
-    {  Pt, lrv, cvPt } = ERSpt(y, model, bwl, varm);
+/*
+** With constant and trend
+*/
+model = 2;
+{ Pt, lrv, cvPt } = ERSpt(y, model);
 
-    /*
-    ** With constant and trend
-    */
-    model = 2;
-    { Pt, lrv, cvPt } = ERSpt(y, model, bwl, varm);
-
-endfor;
