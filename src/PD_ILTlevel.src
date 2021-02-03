@@ -114,7 +114,7 @@ endp;
 proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     local n, t, Nlm, Ntb, Np, i;
     local LMtau, tb1, tb2, p, lambda, cv;
-    local meanp, varp, PDlm;
+    local meanp, varp, PD_lm;
     
     n  = cols(y);
     t  = rows(y);
@@ -173,7 +173,7 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     endif;
     
     {meanp, varp} = _get_ILTmoments(T, N, Nlm, Np);
-    PDlm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
+    PD_lm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
     
     // Print results
     local top;
@@ -205,13 +205,13 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
 
     "Panel LM test statistic:";
     #ifminkernelversion(20)
-        sprintf("%14s %14.4f", "PDLM"$|"p-val", PDlm|(1 - cdfnc(PDlm)));
+        sprintf("%14s %14.4f", "PDLM"$|"p-val", PD_lm|(1 - cdfnc(PD_lm)));
     #else;
-        ("PDLM"$|"p-val")~ntos(PDlm|(1 - cdfnc(PDlm)), 4);
+        ("PDLM"$|"p-val")~ntos(PD_lm|(1 - cdfnc(PD_lm)), 4);
     #endif;    
     print;
     
-    retp(Nlm, Ntb, Np, PDlm, 1 - cdfnc(PDlm));
+    retp(Nlm, Ntb, Np, PD_lm, 1 - cdfnc(PD_lm));
 endp;
 
 proc(2) = _get_ILTmoments(T, N, Nlm, Np);

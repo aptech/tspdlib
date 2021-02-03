@@ -165,8 +165,9 @@ proc(1) = _get_FKPSS_Ft(y, model, k, varm, ft);
     S = cumsumc(e1);
     
     bwl = round(4 * (T/100)^(2/9));
+    screen off;
     lrv = _get_lrv_type(varm, ssr, e1, bwl, 1);
-    
+    screen on;
     KPSS = sumc(s .* s)/(t^2 * lrv);
     
     retp(KPSS);

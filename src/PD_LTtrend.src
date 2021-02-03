@@ -105,7 +105,7 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
 
     "Panel LM test statistic:";
     #ifminkernelversion(20)
-        sprintf("%14s %14.4f", "PDLM"$|"p-val", PDlm|(1 - cdfnc(PDlm)));
+        sprintf("%14s %14.4f", "PDLM"$|"p-val", PD_lm|(1 - cdfnc(PD_lm)));
     #else;
         ("PDLM"$|"p-val")~ntos(PDlm|(1 - cdfnc(PDlm)), 4);
     #endif;
