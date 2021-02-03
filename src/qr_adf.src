@@ -186,7 +186,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
 endp;
 
 
-proc(1) = bandwidth(p, n, hs, alpha);
+proc(1) = bandwidth(tau, n, hs, alpha);
     local x0, f0, h;
     
     x0 = cdfNi(tau);
