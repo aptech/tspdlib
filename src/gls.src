@@ -179,12 +179,12 @@ proc(3) = DFGLS(y, model, ...);
     print;
     print "Critical Values:";
     sprintf("%10s", "1%"$~"5%"$~"10%");
-    sprintf("%10.2f", cv);
+    sprintf("%10.2f", cv');
     print;
 #else;
     (hd_side$~(ntos(tmp1, 4)));
     print "Critical Values:";
-    ("1%"$~"5%"$~"10%")$|ntos(cv,5);
+    ("1%"$~"5%"$~"10%")$|ntos(cv',5);
     print;
 #endif;
   
