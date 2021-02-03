@@ -114,16 +114,16 @@ proc(2) = coint_egranger(y, x, model, ...);
             cvADF = -5.5849|-5.0282|-4.7311;
         endif;
     endif;
-    
-    // Print results
-    print "Ho: no co-integration (EG, 1987 & P0, 1990)";
-    if model == 0;
-        print "-----------No constant or trend-------------------------";
-    elseif model == 1;
-        print "-----------Constant-------------------------------------";
-    elseif model == 2;
-        print "-----------Constant and Trend---------------------------";
-    endif;
+      
+    // Print model type
+    local clm1, clm2, ic_str, modl_str, fmt;
+    modl_str = _printModel1(model);
+    ic_str = _printIC(ic);
+
+    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
+    clm2 = "Engle-Granger"$|"Cointegration"$|ic_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
     
     // Print results
     local top, stats, dec, colwidth;

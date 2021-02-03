@@ -190,13 +190,16 @@ proc(5) = ADF_2breaks(y, model, ...);
         endif;
     endif;
  
-        
-    print "Two breaks ADF test (Narayan & Popp, 2010)";
-    if model == 1;
-        "--------Model A: Break in level        -----"; 
-    elseif model == 2;
-        "--------Model C: Break in level & trend-----";
-    endif;
+    local clm1, clm2, modl_str, ic_str, fmt;
+    ic_str = _printIC(ic);
+    modl_str = _printModel2(model);
+
+    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
+    clm2 = "Two breaks ADF test"$|"Unit root"$|ic_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+    
+    sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
     
     // Print results & Critical values
     local top, stats, dec, colwidth;

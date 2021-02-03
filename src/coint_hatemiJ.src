@@ -189,6 +189,15 @@ proc(11) = coint_hatemiJ(y, x, model, ...);
     print "Cointegration test with two breaks   (Hatemi-J, 2008)";
     print "Ho: no co-integration";
     
+    // Print model type
+    local clm1, clm2, varm_str, fmt;
+    varm_str = _printVarm(varm);
+
+    clm1 = "Test:"$|"Ho:"$|"LR Variance:";
+    clm2 = "Hatemi-J"$|"Cointegration with two breaks"$|varm_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+    
     // Print results
     local side, top, stats, dec, colwidth;
     side = "ADF"$|"Zt"$|"Za";

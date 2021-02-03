@@ -40,7 +40,7 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**          trimm   -   Optional, trimming rate. Default [0.15,0.85] as in GH (1996)
+**          trimm   -   Optional, trimming rate. Default [0.10,0.90] as in GH (1996)
 **
 **              q   -   Optional, number of leads and lags for DOLS estimation. 
 **                      Default = 4.
@@ -81,7 +81,7 @@ proc(6) = coint_cissanso(y, x, model, ...);
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
-    {bwl, varm, trimm, q} = dynargsGet(1|4, bwl_dftl, 1, 0.15, 4);
+    {bwl, varm, trimm, q} = dynargsGet(1|4, bwl_dftl, 1, 0.10, 4);
     
     ssr1_min = 1e6;
     ssr2_min = 1e6;
@@ -172,20 +172,16 @@ proc(6) = coint_cissanso(y, x, model, ...);
     {cv} = cv_coint_cissanso(model, lambda, k);
     
     // Print model type
-    "Ho: co-integration  (CiS & Sanso, 2006; AK, 2007)";
-    if model == 1;
-        print "-----------Level shift----------------------------------";
-        print;
-    elseif model == 2;
-        print "-----------Level shift with trend-----------------------";
-        print;
-    elseif model == 3;
-        print "-----------Regime shift---------------------------------";
-        print;
-    elseif model == 4;
-        print "-----------Regime and trend shift-----------------------";
-        print;
-    endif;
+    local clm1, clm2, varm_str, modl_str, fmt;
+    modl_str = _printModel3(model);
+    varm_str = _printVarm(varm);
+
+    clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
+    clm2 = "Carrion-i-Silvestre & Sanso"$|"Cointegration with 2 breaks"$|varm_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+    
+    sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
     
     // Print results
     local top, side, stats, tmp1, tmp2, dec, colwidth;

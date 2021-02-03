@@ -200,17 +200,24 @@ proc(6) = ADF_1break_est(y, model, ...);
         tb1 = tb1 + 1;
     endo;
     
-    print "One break ADF test (Zivot & Andrews, 1992)";
     if model == 1;
         cv = -5.34|-4.80|-4.58;
-        print "--------Model A: Break in level        -----";
     endif;
     
     if model == 2;
         cv = -5.57|-5.08|-4.82;
-        print "--------Model C: Break in level & trend-----";
-
     endif;
+    
+    local clm1, clm2, modl_str, ic_str, fmt;
+    ic_str = _printIC(ic);
+    modl_str = _printModel2(model);
+
+    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
+    clm2 = "One break ADF test"$|"Unit root"$|ic_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+    
+    sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
     
     // Print results & Critical values
     local hd, tmp1, tmp2;

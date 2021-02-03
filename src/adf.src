@@ -41,7 +41,7 @@ proc(3) = ADF(y, model, ...);
     local dy, ly, dc, dt, lmat, dep, y1, ldy;
     local sbt, trnd, x, tau, LL, n, k;
     local b, e1, sig2, se, ssr, cv;
-    local model, pmax, ic;
+    local pmax, ic;
     
     { pmax, ic } = dynargsGet(1|2, 8, 3);
     
@@ -113,17 +113,26 @@ proc(3) = ADF(y, model, ...);
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_ADFrsf(model, T-p , p);
     
+    local clm1, clm2, modl_str, ic_str, fmt;
+    ic_str = _printIC(ic);
+    modl_str = _printModel1(model);
+    
+    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
+    clm2 = "ADF unit root"$|"Unit root"$|ic_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+
     // Print results & Critical values
-    local hd, tmp1, tmp2;
+    local hd, tmp1;
     hd = "ADF-stat"$|"Lag";
     tmp1 = tau|p-1;
     
     #ifminkernelversion(20)
-        sprintf("%10s %10.4f", hd, tmp1);
+        sprintf("%-10s %-10.4f", hd, tmp1);
         print;
         print "Critical Values:";
-        sprintf("%10s", "1%"$~"5%"$~"10%");
-        sprintf("%10.2f", cv');
+        sprintf("%-10s", "1%"$~"5%"$~"10%");
+        sprintf("%-10.2f", cv');
         print;
     #else;
         hd$~(ntos(tmp1, 4));
@@ -188,4 +197,64 @@ proc(1) = _get_cv_adf(model, T);
     if 750 < T            ;    cv = crit[7,.]; endif;   
 
 retp(cv);
+endp;
+
+proc (1) = _printModel1(model);
+    if model == 0;
+        retp("No constant or trend");
+    elseif model == 1;
+        retp("Constant");
+    elseif model == 2;
+        retp("Constant and Trend");
+    endif;
+endp;
+
+proc (1) = _printModel2(model);
+    if model == 1;
+        retp("Break in level");
+    elseif model == 2;
+        retp("Break in level & trend");
+    endif;
+endp;
+
+proc (1) = _printModel3(model);
+    if model == 1;
+        retp("Level shift");
+    elseif model == 2;
+        retp("Level shift with trend");
+    elseif model == 3;
+        retp("Regime shift");
+    elseif model == 4;
+        retp("Regime and trend shift");
+    endif;
+endp;
+
+proc (0) = _printIC(ic);
+       // Print IC 
+    if ic == 1;
+        print "AIC lag selection.";
+    elseif ic == 2;
+        print "SIC lag selection.";
+    elseif ic == 3;
+        print "T-stat lag selection.";
+    endif;
+endp;
+
+proc (1) = _printVarm(varm);
+    if varm == 1;
+        retp( "iid");
+    elseif varm == 2;
+        retp("Bartlett");
+    elseif varm == 3;
+        retp("Quadratic Spectral (QS)");
+    elseif varm == 4;
+        retp("SPC with Bartlett");
+    elseif varm == 5;
+        retp("SPC with QS");
+    elseif varm == 6;
+        retp("Kurozumi with Bartlett");
+    elseif varm == 7;
+        retp("Kurozumi with QS");
+    endif;
+
 endp;

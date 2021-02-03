@@ -23,7 +23,7 @@
 **                      2=Schwarz
 **                      3=t-stat significance
 **                      Default = 3.
-**			 trim    - 	Optional, trimming rate. Default = 15%.
+**			 trim    - 	Optional, trimming rate. Default = 10%.
 **                      10% in ZA (1992) and LS (2003).
 **
 **  Output:  tstat   - minimum test statistic
@@ -45,7 +45,7 @@ proc(4)=ADF_1break(y, model, ...);
     e1, br, ze, b, sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, 
     ic, trimm;
     
-    { outlier, pmax, ic, trimm } = dynargsGet(1|4, 1, 8, 3, 0.15);
+    { outlier, pmax, ic, trimm } = dynargsGet(1|4, 1, 8, 3, 0.10);
     
     t = rows(y);
     tb1_min = 0;
@@ -186,17 +186,24 @@ proc(4)=ADF_1break(y, model, ...);
         tb1 = tb1 + 1;
     endo;
     
-    print "One break ADF test (Zivot & Andrews, 1992)";
     if model == 1;
         cv = -5.34|-4.80|-4.58;
-        print "--------Model A: Break in level        -----";
     endif;
     
     if model == 2;
         cv = -5.57|-5.08|-4.82;
-        print "--------Model C: Break in level & trend-----";
-        
     endif;
+    
+    local clm1, clm2, modl_str, ic_str, fmt;
+    ic_str = _printIC(ic);
+    modl_str = _printModel2(model);
+
+    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
+    clm2 = "One break ADF test"$|"Unit root"$|ic_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+    
+    sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
     
     // Print results & Critical values
     local top, stats, dec, colwidth;

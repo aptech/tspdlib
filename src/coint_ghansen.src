@@ -51,7 +51,7 @@
 **                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
 **                      A guide to the computation of stationarity tests.
 **
-**          trimm   -   Trimming rate. Default [0.15,0.85] as in GH (1996)
+**          trimm   -   Trimming rate. Default [0.10,0.90] as in GH (1996)
 **
 **  Output:
 **          ADF_min -   ADF test
@@ -88,7 +88,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     n = rows(y);      /*# of observation*/
     bwl_dftl = round(4 * (n/100)^(2/9));
     
-    { bwl, ic, pmax, varm, trimm } = dynargsGet(1|5, bwl_dftl, 1, 8, 0.15, 4);
+    { bwl, ic, pmax, varm, trimm } = dynargsGet(1|5, bwl_dftl, 1, 8, 0.10, 4);
     
     TBadf=0;
     TBZa=0;
@@ -157,21 +157,15 @@ proc(8) = coint_ghansen(y, x, model, ...);
     k = cols(x);
     { cvADFZt, cvZa } = cv_coint_ghansen(k, model);
     
-    print     "Ho: no co-integration   (GH, 1996)";
-    print;
-    if model == 1;
-        "-----------Level shift----------------------------------";
-        print;
-    elseif model == 2;
-        "-----------Level shift with trend-----------------------";
-        print;
-    elseif model == 3;
-        "-----------Regime shift---------------------------------";
-        print;
-    elseif model == 4;
-        "-----------Regime shift with trend ---------------------";
-        print;
-    endif;
+    // Print model type
+    local clm1, clm2, modl_str, varm_str, fmt;
+    modl_str = _printModel3(model);
+    varm_str = _printVarm(varm);
+
+    clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
+    clm2 = "Gregory-Hansen"$|"Cointegration with break"$|varm_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
     
     // Print results
     local top, side, stats, dec, colwidth;
