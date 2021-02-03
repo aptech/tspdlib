@@ -275,9 +275,9 @@ proc(5) = LM_2breaks(y, model, ...);
     dec = 3;
     colwidth = 10;
     
-    _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
     _printConclusion(LM_min, cv, 0, "unit root");
     
-    retp(LM_min, tb1_min, tb2_min, opt_lag - 1, cv');
+    retp(LM_min, tb1_min, tb2_min, opt_lag - 1, cv);
 endp;
 
