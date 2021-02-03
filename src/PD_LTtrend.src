@@ -38,8 +38,8 @@
 
 proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     local n, t, Nlm, Ntb, Np, i;
-    local LM, tb1, tb2, p;
-    local meanp, varp, PDlm;
+    local tb1, tb2, p, cv;
+    local meanp, varp, PD_lm, LMtau;
     
     n = cols(y);
     t = rows(y);
@@ -48,21 +48,35 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     
     // Run LM test with level and trend shifts
     "Panel LM test with level and trend shifts";
+    if nbreak == 0;
+        Ntb = zeros(N, 1);
+        print "No breaks implemented.";
+        print;
+        
+        for i(1, N, 1);
+            screen off;
+            {LMtau, p, cv} = LM(y[., i], pmax, ic);
+            screen on;
 
+            Nlm[i] = LMtau;
+            Np[i]  = p;
+        endfor;
+        
+    endif;
+    
     if nbreak == 1;
         print "Testing with one break.";
         Ntb = zeros(N, 1);
         
         for i(1, N, 1);
-            {LM, tb1, p} = _get_LMtrend_1break(y[., i], model, pmax, ic, trimm);
+            {LMtau, tb1, p} = _get_LMtrend_1break(y[., i], model, pmax, ic, trimm);
             
             // i~LM~tb1~p;
-            Nlm[i] = LM;
+            Nlm[i] = LMtau;
             Ntb[i] = tb1;
             Np[i] = p;
         endfor;
         
-        {meanp, varp} = _get_LTmoments(T, N, Nlm, Np, nbreak);
     endif;
     
     if nbreak == 2;
@@ -70,20 +84,20 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
         print;
         Ntb = zeros(N, 2);
         for i(1, N, 1);
-            {LM, tb1, tb2, p} = _get_LMtrend_2breaks(y[., i], model, pmax, ic, trimm);
+            {LMtau, tb1, tb2, p} = _get_LMtrend_2breaks(y[., i], model, pmax, ic, trimm);
             //i~LM~tb1~p;
-            Nlm[i] = LM;
+            Nlm[i] = LMtau;
             Ntb[i,1] = tb1;
             Ntb[i,2] = tb2;
             Np[i] = p;
         endfor;
         
-        {meanp, varp} = _get_LTmoments(T, N, Nlm, Np, nbreak);
     endif;
     
-    PDlm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
+    {meanp, varp} = _get_LTmoments(T, N, Nlm, Np, nbreak);
+    PD_lm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
     
-          // Print results
+    // Print results
     local top;
     if nbreak == 1;
         top = "Group"$~"Ind. Test"$~"Break"$~"Lags";
@@ -107,11 +121,11 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     #ifminkernelversion(20)
         sprintf("%14s %14.4f", "PDLM"$|"p-val", PD_lm|(1 - cdfnc(PD_lm)));
     #else;
-        ("PDLM"$|"p-val")~ntos(PDlm|(1 - cdfnc(PDlm)), 4);
+        ("PDLM"$|"p-val")~ntos(PD_lm|(1 - cdfnc(PD_lm)), 4);
     #endif;
     print;
     
-    retp(Nlm, Ntb, Np, PDlm, 1 - cdfnc(PDlm));
+    retp(Nlm, Ntb, Np, PD_lm, 1 - cdfnc(PD_lm));
 endp;
 
 proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
