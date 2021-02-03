@@ -213,7 +213,6 @@ proc(4)=ADF_1break(y, model, ...);
     colwidth = 10;
     
     _printStatsTable("", top, stats, cv, dec, colwidth, 0);
-    
     // Print conclusions
     _printConclusion(ADF_min, cv, 0, "a unit root");
     
@@ -232,6 +231,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
 #ifminkernelversion(20)
     if top $=="";
         sprintf(format1, side, stats);
+        print;
         print "Critical Values:";
         
         if multistat_in_cv;
@@ -241,15 +241,16 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
             sprintf(tmp1, "1%"$~"5%"$~"10%");
             sprintf(tmp3, cv');
         endif;
-    endif;
-    if side $=="";
+    elseif side $=="";
         sprintf(format1, top, stats);
+        print;
         print "Critical Values:";
         sprintf(tmp1, "1%"$~"5%"$~"10%");
         sprintf(tmp2, cv');
     else;
         sprintf(tmp1, top);
         sprintf(format1, side, stats);
+        print;
         print "Critical Values:";
         
         if multistat_in_cv;
@@ -271,6 +272,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
     else;
          top$|(side$~(ntos(stats, 4)));
     endif;
+    print;
     print "Critical Values:";
     ("1%"$~"5%"$~"10%")$|ntos(cv', dec);
 #endif;
