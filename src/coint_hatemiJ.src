@@ -46,7 +46,7 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**           trimm   -  Optional, trimming rate. Default [0.15, 0.85] as in GH (1996)
+**           trimm   -  Optional, trimming rate. Default [0.10, 0.90] 
 **
 **  Output:
 **          ADF_min -   ADF test
@@ -80,16 +80,16 @@
 
 /*Procedures*/
 
-proc(11) = coint_hatemiJ(y, x, model, ...);
+proc(11) = coint_hatemiJ(y, x, ...);
     local n,TB1adf, TB1za, TB1zt, TB2adf, TB2za, TB2zt, ADF_min, Za_min, Zt_min;
     local T1, T2, T3, DF, Za, Zt, lagadf, tb1, tb2, du1, du2, x1, stat1, stat2, stat3;
     local b, e1, sig2, se, ssr, cvADFZt, cvZa, k;
-    local cv0, cv1, cv2, bwl_dftl, bwl, ic, pmax, varm, trimm;
+    local cv0, cv1, cv2, bwl_dftl, bwl, ic, pmax, varm, trimm, model;
     
     n     = rows(y);      /*# of observation*/
     bwl_dftl = round(4 * (n/100)^(2/9));
     
-    { bwl, ic, pmax, varm, trimm } = dynargsGet(1|5, bwl_dftl, 3, 8, 1, 0.15);
+    { model, bwl, ic, pmax, varm, trimm } = dynargsGet(1|6, 3, bwl_dftl, 3, 8, 1, 0.10);
     
     TB1adf= 0;
     TB1zt = 0;
@@ -186,15 +186,12 @@ proc(11) = coint_hatemiJ(y, x, model, ...);
     k = cols(x);
     { cvADFZt, cvZa } = cv_coint_hatemiJ(k);
     
-    print "Cointegration test with two breaks   (Hatemi-J, 2008)";
-    print "Ho: no co-integration";
-    
     // Print model type
     local clm1, clm2, varm_str, fmt;
     varm_str = _printVarm(varm);
 
-    clm1 = "Test:"$|"Ho:"$|"LR Variance:";
-    clm2 = "Hatemi-J"$|"Cointegration with two breaks"$|varm_str;
+    clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
+    clm2 = "Hatemi-J"$|"Cointegration with two breaks"$|varm_str$|"Regime shift";
     fmt = "%-20s %-20s";
     sprintf(fmt, clm1, clm2);
     
