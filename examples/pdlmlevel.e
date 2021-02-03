@@ -2,21 +2,15 @@ new;
 cls;
 library tspdlib;
 
-// Date dimensions
-N = 24;
-T = 112;
-
 // Load date file
 y = loadd(__FILE_DIR $+ "PDe.dat");
 
 // Run panel LM test with level shifts
 "Panel LM test with level shifts";
+model = 1;
 
-/*
-** Set maximum number of lags for ds
-** 0 = no lags
-*/
-pmax = 5;
+// Maximum number of lags
+pmax = 12;
 
 /*
 ** Information Criterion:
@@ -31,13 +25,13 @@ trimm = 0.10;
 
 // One break
 nbreak = 0;
-{ Nlm, Ntb, Np, PDlm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
+{ Nlm, Ntb, Np, PD_lm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
 
 // One break
 nbreak = 1;
-{ Nlm, Ntb, Np, PDlm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
+{ Nlm, Ntb, Np, PD_lm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
 
 // Two breaks
 nbreak = 2;
-{ Nlm, Ntb, Np, PDlm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
+{ Nlm, Ntb, Np, PD_lm, pval } = PDLMlevel(y, 1, pmax, ic, trimm, nbreak);
 

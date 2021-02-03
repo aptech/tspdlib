@@ -2,10 +2,6 @@ new;
 cls;
 library tspdlib;
 
-// Date dimensions
-N = 24;
-T = 112;
-
 // Load date file
 y = loadd(__FILE_DIR $+ "PDe.dat");
 
@@ -26,11 +22,15 @@ ic = 3;
 // Trimming rate
 trimm = 0.10;
 
-// One break
+// One break 
+nbreak = 0;
+{ Nlm, Ntb, Np, PD_lm, pval } = PDLMtrend(y, 2, pmax, ic, trimm, nbreak);
+
+// One break 
 nbreak = 1;
-{ Nlm, Ntb, Np, PDlm, pval } = PDLMtrend(y, 2, pmax, ic, trimm, nbreak);
+{ Nlm, Ntb, Np, PD_lm, pval } = PDLMtrend(y, 2, pmax, ic, trimm, nbreak);
 
 // Two breaks
 nbreak = 2;
-{ Nlm, Ntb, Np, PDlm, pval } = PDLMtrend(y, 2, pmax, ic, trimm, nbreak);
+{ Nlm, Ntb, Np, PD_lm, pval } = PDLMtrend(y, 2, pmax, ic, trimm, nbreak);
 
