@@ -115,8 +115,8 @@ proc(3) = RALSADF(y, model, ...);
     top = "RALS-ADF"$|"Rho^2";
     side = "";
     stats = tauRALS|p2;
-    dec = 4;
-    colwidth = 12;
+    dec = 3;
+    colwidth = 25;
     
     _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
     _printConclusion(tauRALS, cv, 0, "a unit root");  

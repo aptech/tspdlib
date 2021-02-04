@@ -142,8 +142,8 @@ proc(3) = Fourier_KPSS(y, model, ...);
     top = "KPSS"$|"Frequency";
     side = "";   
     stats = KPSS|k;
-    dec = 5;
-    colwidth = 10;
+    dec = 3;
+    colwidth = 25;
                  
     _printStatsTable(top, side, stats, crit[k, .]', dec, colwidth, 0);
     _printConclusion(KPSS, crit[k, .], 1, "stationarity");

@@ -177,8 +177,8 @@ proc(3) = coint_shin(y, x, model, ...);
     side = "OLS"$|"DOLS";
     top = ""$~"Test";
     stats = (C1|C2);
-    dec = 2;
-    colwidth = 14;
+    dec = 3;
+    colwidth = 25;
     
     _printStatsTable(top, side, stats, cv~cv, dec, colwidth, 1);
 

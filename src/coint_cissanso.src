@@ -181,8 +181,8 @@ proc(6) = coint_cissanso(y, x, model, ...);
     tmp2 = SC2_min;
     stats = tmp1|tmp2;
     side = "OLS"$|"DOLS";
-    dec = 2;
-    colwidth = 12;
+    dec = 3;
+    colwidth = 25;
     
     _printStatsTable(top, side, stats, cv, dec, colwidth, 1);
     

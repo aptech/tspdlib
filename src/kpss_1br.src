@@ -157,7 +157,7 @@ proc(4) = KPSS_1break(y, model, ...);
     side = "";
     stats = KPSS_min|tb1_min|tb1_min/rows(y);
     dec = 3;
-    colwidth = 10;
+    colwidth = 25;
     
     _printStatsTable(top, side, stats, rev(crit[TBi, .]'), dec, colwidth, 0);
     _printConclusion(KPSS_min, rev(crit[TBi, .]'), 1, "stationarity");

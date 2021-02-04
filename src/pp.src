@@ -121,8 +121,8 @@ proc(4) = PP(y, model, ...);
     top = ""$~"Stat";
     side = "Zt"$|"Za";
     stats = Zt|Za;
-    dec = 4;
-    colwidth = 10;
+    dec = 3;
+    colwidth = 25;
                              
     _printStatsTable(top, side, stats, (cvZt|cvZa)', dec, colwidth, 1);
     "Zt test conclusion:";

@@ -203,7 +203,7 @@ proc(5) = LM_1break(y, model, ...);
     side = "";
     stats = Lm_min|tb1_min|tb1_min/rows(y)|p-1;
     dec = 3;
-    colwidth = 10;
+    colwidth = 25;
     
     _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
     _printConclusion(LM_min, cv, 0, "unit root");

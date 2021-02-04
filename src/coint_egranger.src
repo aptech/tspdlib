@@ -122,8 +122,8 @@ proc(2) = coint_egranger(y, x, model, ...);
     local top, stats, dec, colwidth;
     top = "Test Statistic:";
     stats = tau;
-    dec = 4;
-    colwidth = 10;
+    dec = 3;
+    colwidth = 25;
     
     _printStatsTable(top, "", stats, cvADF, dec, colwidth, 0);
     _printConclusion(tau, cvADF, 0, "no co-integration");

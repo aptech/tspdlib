@@ -190,8 +190,8 @@ proc(4) = coint_pouliaris(y, x, model, ...);
     side = "Zt"$|"Za";
     top = ""$~"Test";
     stats = (Zt|Za);
-    dec = 2;
-    colwidth = 14;
+    dec = 3;
+    colwidth = 25;
     
     _printStatsTable(top, side, stats, cvZt~cvZa, dec, colwidth, 1);
 

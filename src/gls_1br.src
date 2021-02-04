@@ -168,8 +168,8 @@ proc(16) =  GLS_1break(y, model, ...);
     side = "ADFGLS-stat"$|"PT"$|"MZa"$|"MZt"$|"MSB"$|"MPT";
     stats = ADFGLS_min|PT_min|MZa_min|MZt_min|MSB_min|MPT_min;
     cv = cvDFGLS~cvPT~cvMZa~cvMZt~cvMSB~cvMPT;
-    dec = 4;
-    colwidth = 14;
+    dec = 3;
+    colwidth = 25;
     
     // Print stats 
     _printStatsTable("", side, stats, cv, dec, colwidth, 1);

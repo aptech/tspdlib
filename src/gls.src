@@ -443,7 +443,7 @@ proc(8) = MGLS(y, model, ...);
     stats = MZa|MZt|MSB|MPT;
     cv2 = (cvMZA|cvMZt|cvMSB|cvMPT)';
     dec = 3;
-    colwidth = 14;
+    colwidth = 25;
                          
     _printStatsTable(top, side, stats, cv2, dec, colwidth, 0);
     print;

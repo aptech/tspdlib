@@ -201,8 +201,8 @@ proc(4) = Fourier_ADF(y, model, ...);
     top = "ADF-stat"$|"Frequency"$|"Lag";
     side = "";
     stats = ADF|f|p-1;
-    dec = 4;
-    colwidth = 10;
+    dec = 3;
+    colwidth = 25;
             
     _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0);
     _printConclusion(ADF, crit[f, .], 0, "unit root");

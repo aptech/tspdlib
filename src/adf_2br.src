@@ -207,8 +207,8 @@ proc(5) = ADF_2breaks(y, model, ...);
     local top, stats, dec, colwidth;
     top = "ADF-stat"$|"Chosen Lag";
     stats = ADF_min|opt_lag-1;
-    dec = 2;
-    colwidth = 14;
+    dec = 3;
+    colwidth = 25;
     
     _printStatsTable("", top, stats, cv, dec, colwidth, 0);
        

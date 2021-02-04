@@ -160,7 +160,7 @@ proc(4) = KPSS_2breaks(y, model, ...);
     side = "";
     stats = KPSS_min|tb1_min|tb1_min/rows(y)|tb2_min|tb2_min/rows(y);
     dec = 3;
-    colwidth = 10;
+    colwidth = 25;
     
     _printStatsTable(top, side, stats, rev(cv'), dec, colwidth, 0);
     _printConclusion(KPSS_min, rev(cv'), 1, "stationarity");

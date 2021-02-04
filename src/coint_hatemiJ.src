@@ -198,8 +198,8 @@ proc(11) = coint_hatemiJ(y, x, ...);
     side = "ADF"$|"Zt"$|"Za";
     top = ""$~"Test";
     stats = (ADf_min|Zt_min|Za_min);
-    dec = 2;
-    colwidth = 14;
+    dec = 3;
+    colwidth = 25;
     
     _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, dec, colwidth, 1);
     
