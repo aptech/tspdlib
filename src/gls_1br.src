@@ -62,13 +62,14 @@ proc(16) =  GLS_1break(y, model, ...);
     local t, tb1_min, ssra_min, tb1, dc, dt, du1, dt1, z, cbar, lambda;
     local ygls, y1, SSRa, SSR1, ADF_GLS, p, cv_temp, s2, PT, MZa, MSB, MZt, MPT;
     local ADFGLS_min, PT_min, MZa_min, MSB_min, MZt_min, MPT_min;
-    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa, pmax, ic;
+    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa, pmax, ic, dt_vec, modl_str;
     
     t = rows(y);
     tb1_min = 0; 
     ssra_min = 1000;
     
     { pmax, ic } = dynargsGet(1|2, 8, 3);
+    { dt_vec, y } =_checkfordate(y);
     
     // Loop as in  CiS, Kim & Perron (2009) code       
     tb1 = 3;             
@@ -88,16 +89,19 @@ proc(16) =  GLS_1break(y, model, ...);
         
         // Level shift (crash): change in mean
         if model == 0;   
+           modl_str = "Level shift";
            z   = dc ~ dt ~ du1;
         endif;
 
         // Slope (trend) shift : change in trend
-        if model == 1;   
+        if model == 1;  
+           modl_str = "Trend shift";
            z   = dc ~ dt ~ dt1;
         endif;
         
         // Level and trend shift : change in mean and trend
         if model == 2;   
+           modl_str = "Level and trend shift";
            z   = dc ~ dt ~ du1 ~ dt1;
         endif;
         
@@ -121,7 +125,9 @@ proc(16) =  GLS_1break(y, model, ...);
         {ygls, SSRa, SSR1} = _get_ygls(y, z, cbar); 
  
         // ADF-GLS test
+        screen off;
         {ADF_GLS, p, cv_temp} = ADF(ygls, 0, pmax, ic);
+        screen on;
         
         // Autoregressive estimate of the long-run variance
         s2 = _get_s2ar(ygls, p); 
@@ -154,6 +160,45 @@ proc(16) =  GLS_1break(y, model, ...);
     
     lambda = tb1_min / t;
     {cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa} = _get_cv_gls_1break(model,lambda);
+    
+    local clm1, clm2, ic_str, fmt;
+    ic_str = _printIC(ic);
+    
+    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
+    clm2 = "One break GLS tests"$|"Unit root"$|ic_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+    print "======================================";
+    
+    // Print results & Critical values
+    local top, stats, dec, colwidth, cv;
+    side = "ADFGLS-stat"$|"PT"$|"MZa"$|"MZt"$|"MSB"$|"MPT";
+    top = ""$~"Test";
+    stats = ADFGLS_min|PT_min|MZa_min|MZt_min|MSB_min|MPT_min;
+    cv = cvDFGLS~cvPT~cvMZa~cvMZt~cvMSB~cvMPT;
+    dec = 4;
+    colwidth = 14;
+    
+    // Print stats 
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 1);
+    
+    print "ADF test results:";
+    _printConclusion(ADFGLS_min, cvDFGLS, 0, "a unit root");
+    print "===================================";
+    print "PT test results:";
+     _printConclusion(PT_min, cvPT, 0, "a unit root");
+    print "===================================";
+    print "MZt test results:";
+     _printConclusion(MZt_min, cvMZt, 0, "a unit root");
+    print "===================================";
+    print "MZt test results:";
+     _printConclusion(MZt_min, cvMZt, 0, "a unit root");
+    print "===================================";
+    print "MSB test results:";
+     _printConclusion(MSB_min, cvMSB, 0, "a unit root");
+    print "===================================";
+    print "MPT test results:";
+     _printConclusion(MPT_min, cvMPT, 0, "a unit root");
     
  retp(ADFGLS_min, p, PT_min, MZa_min, MZt_min, MSB_min, MPT_min, s2, tb1_min, lambda, cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa);                
 endp;
