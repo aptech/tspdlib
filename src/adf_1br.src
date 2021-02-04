@@ -47,7 +47,7 @@ proc(4) = ADF_1break(y, model, ...);
     
     { outlier, pmax, ic, trimm } = dynargsGet(1|4, 1, 8, 3, 0.10);
     
-    { dt_vec, y } =_checkfordate(y);
+    { dt_vec, y } = _checkfordate(y);
     
     t = rows(y);
     tb1_min = 0;
