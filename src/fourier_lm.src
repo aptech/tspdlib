@@ -160,7 +160,8 @@ proc(4) = Fourier_LM(y, ...);
     "Fourier LM test (Enders & Lee, 2012)";
     // Print results & Critical values
     local top, stats, side, dec, colwidth;
-    top = "LM test"$|"Frequency"$|"Lag";
+    side = "LM test:"$|"Frequency:"$|"Lag:";
+    top = "";
     stats = LM|f|p-1;
     side = "";
     dec = 3;

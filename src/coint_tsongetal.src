@@ -167,7 +167,7 @@ proc(7) = coint_tsongetal(y, x, model, ...);
 
     // Print results
     local side, top, stats, dec, colwidth;
-    side = "OLS"$|"DOLS";
+    side = "OLS:"$|"DOLS:";
     top = ""$~"F-Stat"$~"Freq."$~"CIf";
     stats = (Fols[k1_min]|Fdols[k2_min])~(k1_min|k2_min)~(SC1_min|SC2_min);
     dec = 3;

@@ -162,7 +162,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     if _print == "true";
         local top, side, stats, dec;
         top = "";
-        side = "quantil"$|"rho(quantile)"$|"rho (OLS)"$|"delta^2"$|"ADF(quantile)";
+        side = "quantile:"$|"rho(quantile):"$|"rho (OLS):"$|"delta^2:"$|"ADF(quantile):";
         stats = tau|rho_tau|rho_ols|delta2|QURadf;
 
         #ifminkernelversion(20)

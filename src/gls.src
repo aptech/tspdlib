@@ -439,7 +439,7 @@ proc(8) = MGLS(y, model, ...);
     // Print results
     local top, side, stats, dec, colwidth, cv2;
     top = ""$~"Stat";
-    side = "MZa"$|"MZt"$|"MSB"$|"MPT";
+    side = "MZa:"$|"MZt:"$|"MSB:"$|"MPT:";
     stats = MZa|MZt|MSB|MPT;
     cv2 = (cvMZA|cvMZt|cvMSB|cvMPT)';
     dec = 3;

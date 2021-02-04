@@ -180,7 +180,7 @@ proc(6) = coint_cissanso(y, x, model, ...);
     tmp1 = SC1_min;
     tmp2 = SC2_min;
     stats = tmp1|tmp2;
-    side = "OLS"$|"DOLS";
+    side = "OLS:"$|"DOLS:";
     dec = 3;
     colwidth = 25;
     
