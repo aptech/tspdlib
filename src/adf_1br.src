@@ -207,7 +207,7 @@ proc(4) = ADF_1break(y, model, ...);
     
     sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
     print;
-    
+    print "======================================";
     frac = tb1_min/rows(y);
     
     if ismiss(dt_vec) != 1;

@@ -90,15 +90,12 @@ proc(3) = DFGLS(y, model, ...);
     sicp = zeros(pmax + 1, 1);
     tstatp = zeros(pmax + 1, 1);
     
-    "ERS tests      ";
     if model == 1;
-        "-----------Constant Only----------------------------------";
         c = -7.00;
         z = ones(t, 1);
     endif;
     
     if model == 2;
-        "-----------Constant and Trend --------------------------";
         c = -13.50;
         z = ones(t, 1)~seqa(1, 1, t);
     endif;
@@ -168,6 +165,16 @@ proc(3) = DFGLS(y, model, ...);
 
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_DFGLSrsf(model, T, p);
+    
+    // Print model type
+    local clm1, clm2, ic_str, modl_str, fmt;
+    ic_str = _printIC(ic);
+    modl_str = _printModel1(model);
+    
+    clm1 = "Test:"$|"Ho:"$|"Information Criterion:"$|"Model:";
+    clm2 = "GLS-ADF"$|"Unit Root"$|ic_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
     
     // Print results
     local hd_side, tmp1;
@@ -331,14 +338,15 @@ proc(3) = ERSpt(y, model, ...);
     PT = (SSRa - (1 + c/t) * SSR1)/lrv;
     cv = _get_cv_erspt(model, T);
     
-    "ERS tests      ";
-    if model == 0;
-        "---------No deterministic component---------";
-    elseif model == 1;
-        "----------------With constant---------------";
-    elseif model == 2;
-        "------------With constant and trend---------";
-    endif;
+    // Print model type
+    local clm1, clm2, varm_str, modl_str, fmt;
+    varm_str = _printVarm(varm);
+    modl_str = _printModel1(model);
+    
+    clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
+    clm2 = "ERS"$|"Unit Root"$|varm_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
     
     // Print results
     local hd_side, tmp1;
@@ -418,32 +426,11 @@ proc(8) = MGLS(y, model, ...);
     l_dftl = round(4 * (T/100)^(2/9));
     
     { l, varm } = dynargsGet(1|2, l_dftl, 1);
-    
-     print "LR Variance estimation method";
-    if varm == 1;
-        print "iid";
-    elseif varm == 2;
-        print "Bartlett";
-    elseif varm == 3;
-        print "Quadratic Spectral (QS)";
-    elseif varm == 4;
-        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
-    elseif varm == 5;
-        print "SPC with QS";
-    elseif varm == 6;
-        print "Kurozumi with Bartlett";
-    elseif varm == 7;
-        print "Kurozumi with QS";
-    endif;
-    
-    if model == 0;
-        "---------No deterministic component---------";
-    elseif model == 1;
-        "----------------With constant---------------";
+        
+    if model == 1;
         c = -7.00;
         z = ones(t, 1);
     elseif model == 2;
-        "------------With constant and trend---------";
         c = -13.50;
         z = ones(t, 1)~seqa(1, 1, t);
     endif;
@@ -456,7 +443,9 @@ proc(8) = MGLS(y, model, ...);
     ya[2:t, 1] = y[2:t, 1] - a * y[1:t-1, 1];
     za[2:t, .] = z[2:t, .] - a * z[1:t-1, .];
     
+    screen off;
     {PT, fo, cv} = ERSpt(y, model, l, varm);
+    screen on;
     
     // constructing GLS detrended series
     bhat = inv(za'za) * za'ya;
@@ -494,6 +483,16 @@ proc(8) = MGLS(y, model, ...);
         cvMPT =  4.030 ~  5.480  ~ 6.670;
     endif;
     
+    // Print model type
+    local clm1, clm2, varm_str, modl_str, fmt;
+    varm_str = _printVarm(varm);
+    modl_str = _printModel1(model);
+    
+    clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
+    clm2 = "ERS"$|"Unit Root"$|varm_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+    print "===================================";
     // Print results
     local top, side, stats, dec, colwidth, cv2;
     top = ""$~"Stat";
@@ -504,14 +503,20 @@ proc(8) = MGLS(y, model, ...);
     colwidth = 14;
                          
     _printStatsTable(top, side, stats, cv2, dec, colwidth, 0);
+    print;
+    
     "Conclusion from MZA test:";
     _printConclusion(MZa, cvMZA, 0, "unit root");
+    print "===================================";
     "Conclusion from MZt test:";
     _printConclusion(MZt, cvMZt, 0, "unit root");
+    print "===================================";
     "Conclusion from MSB test:";
     _printConclusion(MSB, cvMSB, 0, "unit root");
+    print "===================================";
     "Conclusion from MPT test:";
     _printConclusion(MPT, cvMPT, 0, "unit root");
+    print "===================================";
     
     retp(Mza, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT);
 endp;

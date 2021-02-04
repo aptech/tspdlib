@@ -179,7 +179,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     dec = 2;
     colwidth = 14;
     
-    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, 4, 12, 1);
+    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, 4, colwidth, 1);
 
     // Print breaks
     fracZa = TBza/rows(y);
