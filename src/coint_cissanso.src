@@ -187,9 +187,9 @@ proc(6) = coint_cissanso(y, x, model, ...);
     
     // Print results
     local top, side, stats, tmp1, tmp2, dec, colwidth;
-    top = ""$~"SC"$~"Break";
-    tmp1 = SC1_min~Tb1_min;
-    tmp2 = SC2_min~Tb2_min;
+    top = ""$~"SC";
+    tmp1 = SC1_min;
+    tmp2 = SC2_min;
     stats = tmp1|tmp2;
     side = "OLS"$|"DOLS";
     dec = 2;
