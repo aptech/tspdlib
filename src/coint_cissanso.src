@@ -75,13 +75,15 @@ proc(6) = coint_cissanso(y, x, model, ...);
     local b1, e1, ssr1, St1, lrv1, SC1;
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
     local b2, e2, ssr2, St2, lrv2, SC2;
-    local k, lambda, cv, bwl_dftl, bwl, varm, trimm, q;
-    
+    local k, lambda, cv, bwl_dftl, bwl, varm, trimm, q, frac1, frac2, dt_vec;
     
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
     {bwl, varm, trimm, q} = dynargsGet(1|4, bwl_dftl, 1, 0.10, int(4*(t/100)^(2/9)));
+    
+    // Check for dates
+    { dt_vec, x } =_checkfordate(x);
     
     ssr1_min = 1e6;
     ssr2_min = 1e6;
@@ -125,7 +127,6 @@ proc(6) = coint_cissanso(y, x, model, ...);
         if model==4;
             z=dc~du1~x~du1.*x~dt~dt1;
         endif;
-        
         
         // OLS estimation
         b1  = y/z;
@@ -182,6 +183,7 @@ proc(6) = coint_cissanso(y, x, model, ...);
     sprintf(fmt, clm1, clm2);
     
     sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
+    print;
     
     // Print results
     local top, side, stats, tmp1, tmp2, dec, colwidth;
@@ -194,6 +196,25 @@ proc(6) = coint_cissanso(y, x, model, ...);
     colwidth = 12;
     
     _printStatsTable(top, side, stats, cv, dec, colwidth, 1);
+    
+    // Print breaks
+    frac1 = (tb1_min/rows(y));
+    frac2 = (tb2_min/rows(y));
+    
+    if ismiss(dt_vec) != 1;
+        tb1_min = dt_vec[tb1_min];
+        tb2_min = dt_vec[tb2_min];
+    endif;
+    
+    sprintf("%s", "OLS estimated break dates:");
+    print "===================================";
+    _printBreaks(dt_vec, tb1_min, frac1);
+    print;
+    
+    sprintf("%s", "DOLS estimated break dates:");
+    print "====================================";
+    _printBreaks(dt_vec, tb2_min, frac2);
+    print;
     
     print "OLS cointegration conclusion:";
     _printConclusion(SC1_min, cv, 1, "co-integration");

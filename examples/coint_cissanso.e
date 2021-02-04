@@ -4,11 +4,13 @@ library tspdlib;
 
 
 // Load dataset
-data = loadd(__FILE_DIR $+ "TScoint.dat");
+data = loadd(__FILE_DIR $+ "tscoint_full.dat");
+data = setcoldateformats(data, "%m/%Y", "Date");
 
 // Define y and x matrix
 y = data[., 1];
 x = data[., 2:cols(data)];
+
 
 /*
 ** Using the defaults 

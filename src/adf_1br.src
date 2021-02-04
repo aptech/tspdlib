@@ -47,7 +47,7 @@ proc(4) = ADF_1break(y, model, ...);
     
     { outlier, pmax, ic, trimm } = dynargsGet(1|4, 1, 8, 3, 0.10);
     
-    { dt_vec, y } = _checkfordate(y);
+    { dt_vec, y } =_checkfordate(y);
     
     t = rows(y);
     tb1_min = 0;
@@ -206,6 +206,8 @@ proc(4) = ADF_1break(y, model, ...);
     sprintf(fmt, clm1, clm2);
     
     sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
+    print;
+    
     frac = tb1_min/rows(y);
     
     if ismiss(dt_vec) != 1;
@@ -223,6 +225,9 @@ proc(4) = ADF_1break(y, model, ...);
     _printStatsTable("", top, stats, cv, dec, colwidth, 0);
     
     // Print break dates
+    print "Estimated break dates at minimum ADF:";
+    print "======================================";
+    // Print break dates
     _printBreaks(dt_vec, tb1_min, frac);
     
     // Print conclusions
@@ -236,19 +241,17 @@ proc (0) = _printBreaks(dt_vec, brks, frac);
     
     break_num = "First"$|"Second"$|"Third"$|"Fourth"$|"Five";
     
-    // Print break dates
-    print "Estimated break dates at minimum ADF:";
-    print "======================================";
+    
     for i(1, rows(brks), 1);
         _brk = break_num[i] $+ " break";
         if ismiss(dt_vec);
-            brk_str = _brk $+ ": " $+ ntos(brks, 2);
+            brk_str = _brk $+ ": " $+ ntos(brks[i], 2);
         else;
-            brk_str = _brk $+ ": " $+ posixtostrc(brks, getcoldateformats(dt_vec));
+            brk_str = _brk $+ ": " $+ posixtostrc(brks[i], getcoldateformats(dt_vec));
         endif;
         sprintf("%s", brk_str);
         frac_str = _brk $+ " fraction: %0.4f";
-        sprintf(frac_str, frac);
+        sprintf(frac_str, frac[i]);
     endfor;
     
 endp;
