@@ -315,7 +315,7 @@ proc(3) = ERSpt(y, model, ...);
      _printHeaderTSPDLIB(0, varm, 1, 0, 0, "ERS", "Unit root");
 
     // Print results
-    local side, stats;
+    local side, stats, dec, colwidth;
     side = "ERS:";
     stats = PT;
     dec = 3;
