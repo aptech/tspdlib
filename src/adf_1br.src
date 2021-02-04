@@ -39,13 +39,15 @@
 */
 
 
-proc(4)=ADF_1break(y, model, ...);
+proc(4) = ADF_1break(y, model, ...);
     local t, tb1_min, ADF_min, T1, T2, tb1, dc, dt, du1, dt1, br1, 
     taup, aicp, sicp, tstatp, p,  dy, y1, dep, z, x, stat, de, brlag, 
-    e1, br, ze, b, sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, 
-    ic, trimm;
+    e1, br, ze, b, sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, dt_vec, 
+    ic, trimm, frac;
     
     { outlier, pmax, ic, trimm } = dynargsGet(1|4, 1, 8, 3, 0.10);
+    
+    { dt_vec, y } =_checkfordate(y);
     
     t = rows(y);
     tb1_min = 0;
@@ -204,27 +206,59 @@ proc(4)=ADF_1break(y, model, ...);
     sprintf(fmt, clm1, clm2);
     
     sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
+    frac = tb1_min/rows(y);
     
+    if ismiss(dt_vec) != 1;
+        tb1_min = dt_vec[tb1_min];
+    endif;
+
     // Print results & Critical values
     local top, stats, dec, colwidth;
-    top = "ADF-stat"$|"Break date"$|"Fraction"$|"Lag";
-    stats = ADF_min|tb1_min|tb1_min/rows(y)|opt_lag-1;
+    top = "ADF-stat"$|"Chosen Lag";
+    stats = ADF_min|opt_lag-1;
     dec = 2;
     colwidth = 10;
     
+    // Print stats 
     _printStatsTable("", top, stats, cv, dec, colwidth, 0);
+    
+    // Print break dates
+    _printBreaks(dt_vec, tb1_min, frac);
+    
     // Print conclusions
     _printConclusion(ADF_min, cv, 0, "a unit root");
     
     retp(ADF_min, tb1_min, opt_lag-1, cv);
 endp;
 
+proc (0) = _printBreaks(dt_vec, brks, frac);
+    local brk_str, break_num, _brk, frac_str;
+    
+    break_num = "First"$|"Second"$|"Third"$|"Fourth"$|"Five";
+    
+    // Print break dates
+    print "Estimated break dates at minimum ADF:";
+    print "======================================";
+    for i(1, rows(brks), 1);
+        _brk = break_num[i] $+ " break";
+        if ismiss(dt_vec);
+            brk_str = _brk $+ ": " $+ ntos(brks, 2);
+        else;
+            brk_str = _brk $+ ": " $+ posixtostrc(brks, getcoldateformats(dt_vec));
+        endif;
+        sprintf("%s", brk_str);
+        frac_str = _brk $+ " fraction: %0.4f";
+        sprintf(frac_str, frac);
+    endfor;
+    
+endp;
+
 proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv);
     local tmp1, tmp2, tmp3, format1, format2;
     
-    tmp1 = "%" $+ ntos(colwidth) $+ "s";
-    tmp2 = "%" $+ ntos(colwidth) $+ "." $+ ntos(dec) $+ "f";
-    tmp3 = "%" $+ ntos(colwidth) $+ ".3f";
+    tmp1 = "%-" $+ ntos(colwidth) $+ "s";
+    tmp2 = "%-" $+ ntos(colwidth) $+ "." $+ ntos(dec) $+ "f";
+    tmp3 = "%-" $+ ntos(colwidth) $+ ".3f";
     format1 = tmp1 $+ " " $+ tmp2;
     format2 = tmp1 $+ " " $+  tmp3;
     
@@ -317,3 +351,39 @@ proc (0) = _printConclusion(stat, cv, test_type, null_hypothesis);
     endif;
 endp;
 
+proc (2) = _checkfordate(data);
+    local df_type, date_chk, dt_col, data_new, type_chk, date_indices;
+    
+    // Check for metadata
+    if hasmetadata(data);
+        // Get column dates
+        df_type = getcoltypes(data);
+        
+        // Check type
+        type_chk = (df_type .== 3);
+        
+        // Check for dates
+        date_chk = sumc((type_chk));
+         
+        if date_chk > 0;
+            // Get date columns
+            date_indices = indexcat(df_type, 3);
+            
+            // Get date column
+            dt_col = data[., date_indices];
+        
+            // Get new data
+            data_new = delcols(data, date_indices);           
+        else;
+            retp(error(30), data);
+        endif;
+        
+        if cols(dt_col) > 1;
+            dt_col = dt_col[., 1];
+        endif;
+    else;
+        retp(error(30), error(30));
+    endif;
+    
+    retp(dt_col, data_new);
+endp;
