@@ -208,15 +208,12 @@ proc(4) = ADF_1break(y, model, ...);
     local side, stats, dec, colwidth;
     side = "ADF-stat:"$|"Chosen Lag:";
     stats = ADF_min|opt_lag-1;
-    dec = 2;
-    colwidth = 20;
+    dec = 3;
+    colwidth = 25;
     
     // Print stats 
     _printStatsTable("", side, stats, cv, dec, colwidth, 0);
-    
-    // Print break dates
-    print "Estimated break dates at minimum ADF:";
-    print "======================================";
+
     // Print break dates
     _printBreaks(dt_vec, tb1_min, frac);
     
@@ -227,22 +224,33 @@ proc(4) = ADF_1break(y, model, ...);
 endp;
 
 proc (0) = _printBreaks(dt_vec, brks, frac);
-    local brk_str, break_num, _brk, frac_str;
+    local side, top, brk_str, break_num, fmt1, fmt2;
+    
     
     break_num = "First"$|"Second"$|"Third"$|"Fourth"$|"Five";
     
+    // Header column and row of table
+    side = break_num[1:rows(brks)] $+ " break: ";
+    top = "   "$~" Date"$~" Fraction";
     
-    for i(1, rows(brks), 1);
-        _brk = break_num[i] $+ " break";
-        if ismiss(dt_vec);
-            brk_str = _brk $+ ": " $+ ntos(brks[i], 2);
-        else;
-            brk_str = _brk $+ ": " $+ posixtostrc(brks[i], getcoldateformats(dt_vec));
-        endif;
-        sprintf("%s", brk_str);
-        frac_str = _brk $+ " fraction: %0.4f";
-        sprintf(frac_str, frac[i]);
-    endfor;
+    // Set up formats
+    fmt1 = "%-25s";
+    fmt2 = "%-25s %-25s%-25.3f";
+    
+    // Convert breaks to strings depending
+    // on type of dt_vec
+    if ismiss(dt_vec);
+        brk_str = ntos(brks, 2);
+    else;
+        brk_str = posixtostrc(brks, getcoldateformats(dt_vec));
+    endif;
+    
+    // Print break dates
+    print "Estimated break dates:";
+  
+    sprintf(fmt1, top);
+    sprintf(fmt2, side, brk_str, frac);
+    print "=============================================================";
     
 endp;
 
@@ -252,12 +260,12 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
     tmp1 = "%-" $+ ntos(colwidth) $+ "s";
     tmp2 = "%-" $+ ntos(colwidth) $+ "." $+ ntos(dec) $+ "f";
     tmp3 = "%-" $+ ntos(colwidth) $+ ".3f";
-    format1 = tmp1 $+ " " $+ tmp2;
-    format2 = tmp1 $+ " " $+  tmp3;
+    format1 = tmp1 $+  tmp1 $+ tmp2;
+    format2 = tmp1 $+  tmp3;
     
 #ifminkernelversion(20)
     if top $=="";
-        sprintf(format1, side, stats);
+        sprintf(format1, side, "", stats);
         print;
         print "Critical Values:";
         
@@ -276,7 +284,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         sprintf(tmp2, cv');
     else;
         sprintf(tmp1, top);
-        sprintf(format1, side, stats);
+        sprintf(format1, side, "", stats);
         print;
         print "Critical Values:";
         
@@ -290,7 +298,6 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
     endif;
     print;
 
-    print;
 #else;
     if top $== "";
         side$~(ntos(stats, dec));
@@ -303,7 +310,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
     print "Critical Values:";
     ("1%"$~"5%"$~"10%")$|ntos(cv', dec);
 #endif;
-    
+   print "=============================================================";   
 endp;
 
 proc (0) = _printConclusion(stat, cv, test_type, null_hypothesis);

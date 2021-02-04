@@ -160,15 +160,8 @@ proc(16) =  GLS_1break(y, model, ...);
     
     lambda = tb1_min / t;
     {cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa} = _get_cv_gls_1break(model,lambda);
-    
-    local clm1, clm2, ic_str, fmt;
-    ic_str = _printIC(ic);
-    
-    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
-    clm2 = "One break GLS tests"$|"Unit root"$|ic_str$|modl_str;
-    fmt = "%-20s %-20s";
-    sprintf(fmt, clm1, clm2);
-    print "============================================";
+     
+    _printHeaderTSPDLIB(ic, 0, modl_str, 1, 0, "GLS", "Unit root");
     
     // Print results & Critical values
     local stats, dec, colwidth, cv, side;

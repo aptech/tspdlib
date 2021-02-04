@@ -74,7 +74,6 @@ proc(3) = Fourier_KPSS(y, model, ...);
     // Partial sum of residuals
     S = cumsumc(e1);
     
-    "Fourier KPSS test (Becker, Enders & Lee, 2006)";  
     lrv = _get_lrv_type(varm, ssr, e1, l, 1);
     print;
     
@@ -84,7 +83,6 @@ proc(3) = Fourier_KPSS(y, model, ...);
     crit = zeros(5, 3);
    
     if model == 1;
-        "--------Model A: Break in level        -----";
         if T <= 250;
             crit = {0.2699 0.1720 0.1318,
                 0.6671 0.4152 0.3150,
@@ -111,7 +109,6 @@ proc(3) = Fourier_KPSS(y, model, ...);
     endif;
     
     if model == 2;
-        "--------Model C: Break in level & trend-----";
         if T <= 250;
             crit = {0.0716 0.0546 0.0471,
                 0.2022 0.1321 0.1034,
@@ -137,6 +134,8 @@ proc(3) = Fourier_KPSS(y, model, ...);
         endif;
     endif;
     print;
+  
+    _printHeaderTSPDLIB(0, varm, 2, "Unknown", 0, "Fourier KPSS", "Stationarity");
 
     // Print results & Critical values
     local top, side, stats, dec, colwidth;

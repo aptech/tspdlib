@@ -19,6 +19,7 @@ model = 1;
 
 // Implement test
 { ADF_min, tb1, p, cv } = ADF_1break(y, model);
+end;
 
 // Run model with additive outlier
 outlier = 2;

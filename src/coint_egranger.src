@@ -115,16 +115,9 @@ proc(2) = coint_egranger(y, x, model, ...);
         endif;
     endif;
       
-    // Print model type
-    local clm1, clm2, ic_str, modl_str, fmt;
-    modl_str = _printModel1(model);
-    ic_str = _printIC(ic);
+    // Printing   
+    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "Engle-Granger", "No cointegration");
 
-    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
-    clm2 = "Engle-Granger"$|"Cointegration"$|ic_str$|modl_str;
-    fmt = "%-20s %-20s";
-    sprintf(fmt, clm1, clm2);
-    
     // Print results
     local top, stats, dec, colwidth;
     top = "Test Statistic:";

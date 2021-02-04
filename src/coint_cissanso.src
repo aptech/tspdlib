@@ -172,18 +172,7 @@ proc(6) = coint_cissanso(y, x, model, ...);
     lambda= tb2_min/rows(y);
     {cv} = cv_coint_cissanso(model, lambda, k);
     
-    // Print model type
-    local clm1, clm2, varm_str, modl_str, fmt;
-    modl_str = _printModel3(model);
-    varm_str = _printVarm(varm);
-
-    clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
-    clm2 = "Carrion-i-Silvestre & Sanso"$|"Cointegration with 2 breaks"$|varm_str$|modl_str;
-    fmt = "%-20s %-20s";
-    sprintf(fmt, clm1, clm2);
-    
-    sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
-    print;
+     _printHeaderTSPDLIB(0, varm, 3, 2, trimm, "Carrion-i-Silvestre & Sanso", "Cointegration");
     
     // Print results
     local top, side, stats, tmp1, tmp2, dec, colwidth;
@@ -206,12 +195,12 @@ proc(6) = coint_cissanso(y, x, model, ...);
         tb2_min = dt_vec[tb2_min];
     endif;
     
-    sprintf("%s", "OLS estimated break dates:");
+    sprintf("%s", "OLS break dates:");
     print "===================================";
     _printBreaks(dt_vec, tb1_min, frac1);
     print;
     
-    sprintf("%s", "DOLS estimated break dates:");
+    sprintf("%s", "DOLS break dates:");
     print "====================================";
     _printBreaks(dt_vec, tb2_min, frac2);
     print;

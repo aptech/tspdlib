@@ -192,17 +192,9 @@ proc(5) = ADF_2breaks(y, model, ...);
         endif;
     endif;
  
-    local clm1, clm2, modl_str, ic_str, fmt;
-    ic_str = _printIC(ic);
-    modl_str = _printModel2(model);
-
-    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
-    clm2 = "Two breaks ADF test"$|"Unit root"$|ic_str$|modl_str;
-    fmt = "%-20s %-20s";
-    sprintf(fmt, clm1, clm2);
-    
-    sprintf("Trimmage is equal to %.2f", 100*trimm) "%";
-    
+        
+    _printHeaderTSPDLIB(ic, 0, 2, 2, trimm, "ADF", "Unit root");
+   
     // Print break dates
     frac = (tb1_min/rows(y))|(tb2_min/rows(y));
     
@@ -219,8 +211,7 @@ proc(5) = ADF_2breaks(y, model, ...);
     colwidth = 14;
     
     _printStatsTable("", top, stats, cv, dec, colwidth, 0);
-    
-    
+       
     _printBreaks(dt_vec, tb1_min|tb2_min, frac);
     
     // Print conclusion

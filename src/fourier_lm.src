@@ -154,7 +154,9 @@ proc(4) = Fourier_LM(y, ...);
             -3.80 -3.19 -2.88,
             -3.74 -3.13 -2.83};
     endif;
-    
+             
+    _printHeaderTSPDLIB(ic, 0, 0, "Unknown", 0, "Fourier LM", "Unit root");
+
     "Fourier LM test (Enders & Lee, 2012)";
     // Print results & Critical values
     local top, stats, side, dec, colwidth;

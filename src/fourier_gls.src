@@ -218,11 +218,8 @@ proc(4) = Fourier_GLS(y, model, ...);
     
     // Critical Values (see,  Rodrigues & Taylor,  2012,  Table 2)
     crit = zeros(5, 3);
-    
-    "Fourier GLS test (Rodrigues & Taylor, 2012)";
 
     if model == 1;
-         "--------Model A: Break in level        -----";
         if T <= 150;
         crit = {-3.911 -3.294 -2.328, 
                 -3.298 -2.601 -2.187, 
@@ -249,7 +246,6 @@ proc(4) = Fourier_GLS(y, model, ...);
     endif;
     
     if model == 2;
-        "--------Model C: Break in level & trend-----";
         if T <= 150;
         crit = {-4.771 -4.175 -3.879, 
                 -4.278 -3.647 -3.316, 
@@ -275,6 +271,9 @@ proc(4) = Fourier_GLS(y, model, ...);
         endif;
     endif;
     print;
+    
+        
+    _printHeaderTSPDLIB(ic, 0, 2, "Unknown", 0, "Fourier GLS", "Unit root");
 
     // Print results & Critical values
     local top, side, stats, dec, colwidth;

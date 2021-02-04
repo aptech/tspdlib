@@ -166,47 +166,21 @@ proc(3) = DFGLS(y, model, ...);
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_DFGLSrsf(model, T, p);
     
-    // Print model type
-    local clm1, clm2, ic_str, modl_str, fmt;
-    ic_str = _printIC(ic);
-    modl_str = _printModel1(model);
-    
-    clm1 = "Test:"$|"Ho:"$|"Information Criterion:"$|"Model:";
-    clm2 = "GLS-ADF"$|"Unit Root"$|ic_str$|modl_str;
-    fmt = "%-20s %-20s";
-    sprintf(fmt, clm1, clm2);
-    
+     _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "GLS-ADF", "Unit root");
+ 
     // Print results
-    local hd_side, tmp1;
-    hd_side = "DFGLS"$|"Lags";
-    tmp1 = tau|p-1;
+    local side, stats;
+    side = "DFGLS:"$|"Chosen Lags:";
+    stats = tau|p-1;
+    dec = 3;
+    colwidth = 25;
     
-#ifminkernelversion(20)
-    sprintf("%14s %14.2f", hd_side, tmp1);
-    print;
-    print "Critical Values:";
-    sprintf("%10s", "1%"$~"5%"$~"10%");
-    sprintf("%10.2f", cv');
-    print;
-#else;
-    (hd_side$~(ntos(tmp1, 4)));
-    print "Critical Values:";
-    ("1%"$~"5%"$~"10%")$|ntos(cv',5);
-    print;
-#endif;
-  
-    // Print conclusion
-    if tau < cv[1];
-        print "Reject the null hypothesis of a unit root at the 1% level.";
-    elseif tau < cv[2];
-           print "Reject the null hypothesis of a unit root at the 5% level.";
-    elseif tau < cv[3];  
-           print "Reject the null hypothesis of a unit root at the 10% level.";
-    else;  
-           print "Cannot reject the null hypothesis of a unit root.";
-    endif;
-    print;
-    
+     // Print stats 
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0);
+
+     // Print conclusions
+    _printConclusion(tau, cv, 0, "a unit root");
+       
     retp(tau, p - 1, cv');
 endp;
 
@@ -338,46 +312,22 @@ proc(3) = ERSpt(y, model, ...);
     PT = (SSRa - (1 + c/t) * SSR1)/lrv;
     cv = _get_cv_erspt(model, T);
     
-    // Print model type
-    local clm1, clm2, varm_str, modl_str, fmt;
-    varm_str = _printVarm(varm);
-    modl_str = _printModel1(model);
-    
-    clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
-    clm2 = "ERS"$|"Unit Root"$|varm_str$|modl_str;
-    fmt = "%-20s %-20s";
-    sprintf(fmt, clm1, clm2);
-    
+     _printHeaderTSPDLIB(0, varm, 1, 0, 0, "ERS", "Unit root");
+
     // Print results
-    local hd_side, tmp1;
-    hd_side = "ERS";
-    tmp1 = PT;
+    local side, stats;
+    side = "ERS:";
+    stats = PT;
+    dec = 3;
+    colwidth = 25;
     
-#ifminkernelversion(20)
-    sprintf("%14s %14.2f", hd_side, tmp1);
-    print;
-    print "Critical Values:";
-    sprintf("%10s", "1%"$~"5%"$~"10%");
-    sprintf("%10.2f", cv);
-    print;
-#else;
-    (hd_side$~(ntos(tmp1, 4)));
-    print "Critical Values:";
-    ("1%"$~"5%"$~"10%")$|ntos(cv,5);
-    print;
-#endif;
-    
-    // Print conclusion
-    if PT < cv[1];
-        print "Reject the null hypothesis of a unit root at the 1% level.";
-    elseif PT < cv[2];
-        print "Reject the null hypothesis of a unit root at the 5% level.";
-    elseif PT < cv[3];
-        print "Reject the null hypothesis of a unit root at the 10% level.";
-    else;
-        print "Cannot reject the null hypothesis of a unit root.";
-    endif;
-    print;
+     // Print stats 
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0);
+
+
+     // Print conclusions
+    _printConclusion(PT, cv, 0, "a unit root");
+       
     retp(PT, lrv, cv);
 endp;
 
@@ -483,16 +433,9 @@ proc(8) = MGLS(y, model, ...);
         cvMPT =  4.030 ~  5.480  ~ 6.670;
     endif;
     
-    // Print model type
-    local clm1, clm2, varm_str, modl_str, fmt;
-    varm_str = _printVarm(varm);
-    modl_str = _printModel1(model);
-    
-    clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
-    clm2 = "ERS"$|"Unit Root"$|varm_str$|modl_str;
-    fmt = "%-20s %-20s";
-    sprintf(fmt, clm1, clm2);
-    print "===================================";
+       
+    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "MGLS", "Unit root");
+
     // Print results
     local top, side, stats, dec, colwidth, cv2;
     top = ""$~"Stat";

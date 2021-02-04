@@ -183,16 +183,8 @@ proc(4) = coint_pouliaris(y, x, model, ...);
         endif;
     endif;
     
-    // Print model type
-    local clm1, clm2, varm_str, modl_str, fmt;
-    modl_str = _printModel1(model);
-    varm_str = _printVarm(varm);
+    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "Phillips-Ouliaris", "No cointegration");
 
-    clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
-    clm2 = "Phillips-Ouliaris"$|"No cointegration"$|varm_str$|modl_str;
-    fmt = "%-20s %-20s";
-    sprintf(fmt, clm1, clm2);
-    
     // Print results
     local side, top, stats, dec, colwidth;
     side = "Zt"$|"Za";

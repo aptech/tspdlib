@@ -169,7 +169,11 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp
     
     if breaks;
         clm1 = clm1$|"Number of breaks:";
-        clm2 = clm2$|ntos(breaks, 1);
+        if breaks<3;
+            clm2 = clm2$|ntos(breaks, 1);
+        else;
+            clm2 = clm2$|"Unknown";
+        endif;
     endif;
     
     if ic;
@@ -195,9 +199,9 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp
     endif;
     
     // Print table
-    fmt = "%-20s %-20s";
+    fmt = "%-25s %-25s";
     sprintf(fmt, clm1, clm2);
-    print "=============================================";
+        print "=============================================================";
  
 endp;
 

@@ -194,14 +194,8 @@ proc(4) = Fourier_ADF(y, model, ...);
         endif;
     endif;
     
-    "Fourier ADF test (Enders & Lee, 2012)";
-    if model == 1;
-        "--------Model A: Break in level        -----";
-    endif;
-    if model == 2;
-        "--------Model C: Break in level & trend-----";
-    endif;
-    
+    _printHeaderTSPDLIB(ic, 0, 2, "Unknown", 0, "Fourier ADF", "Unit root");
+
     // Print results & Critical values
     local top, side, stats, dec, colwidth;
     top = "ADF-stat"$|"Frequency"$|"Lag";
