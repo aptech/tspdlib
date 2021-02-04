@@ -3,7 +3,8 @@ cls;
 library tspdlib;
 
 // Load date file
-y = loadd(__FILE_DIR $+ "TSe.dat");
+y = loadd("D:/development/GitHub/tspdlib/examples/ts_full.dat");
+y = setcoldateformats(y, "%m/%Y", "Date");
 
 /*
 ** Using the defaults 
@@ -24,10 +25,10 @@ outlier = 2;
 
 // Implement test
 { ADF_min, tb1, p, cv } = ADF_1break(y, model, outlier);
-end;
+
 // Include break in level and trend
 model = 2;    
-
+ 
 // Call test
 { ADF_min, tb1, p, cv } = ADF_1break(y, model);
 

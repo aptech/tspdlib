@@ -203,13 +203,18 @@ proc(5) = ADF_2breaks(y, model, ...);
     
     // Print results & Critical values
     local top, stats, dec, colwidth;
-    top = "ADF-stat"$|"Break Date One"$|"Fraction One"$|"Break Date Two"$|"Fraction Two"$|"Lag";
-    stats = ADF_min|tb1_min|tb1_min/rows(y)|tb2_min|tb2_min/rows(y)|opt_lag-1;
+    top = "ADF-stat"$|"Chosen Lag";
+    stats = ADF_min|opt_lag-1;
     dec = 2;
     colwidth = 14;
     
     _printStatsTable("", top, stats, cv, dec, colwidth, 0);
-      
+    
+    // Print break dates
+    local fracs;
+    fracs = (tb1_min/rows(y))|(tb2_min/rows(y));
+    _printBreaks(dt_vec, tb1_min|tb2_min, fracs);
+    
     // Print conclusion
     _printConclusion(ADF_min, cv, 0, "a unit root");
     
