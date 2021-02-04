@@ -44,13 +44,13 @@ data = loadd(__FILE_DIR $+ "pdcause.dat");
 // Variable names
 vnames = "y"$|"x";
 
-" Emirmahmutoğlu & Kose (2011) Panel Causality Test ";
+"Emirmahmutoglu & Kose (2011) Panel Causality Test ";
 Fisher = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, N);
 "";
 
-" Dumitrescu & Hurlin (2012) Panel Causality Test  ";
+"Dumitrescu & Hurlin (2012) Panel Causality Test  ";
 {Znt, Zn} = Panel_Zhnc(data, vnames, pmax, ic, Nboot, N);
 "";
 
-" Konya (2006) Bootstrap Panel Causality Test  ";
+"Konya (2006) Bootstrap Panel Causality Test  ";
 SURwald = Panel_SURwald(data, vnames, pmax, ic, Nboot, N);
