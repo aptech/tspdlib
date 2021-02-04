@@ -62,9 +62,10 @@ proc(18) =  GLS_2breaks(y, model, ...);
     local t, tb1_min, tb2_min, ssra_min, tb1, tb2, dc, dt, du1, dt1, du2, dt2,  lambda1, lambda2;
     local z, cbar, ygls, y1, SSRa, SSR1, ADF_GLS, p, cv_temp, s2, PT, MZa, MSB, MZt, MPT;
     local ADFGLS_min, PT_min, MZa_min, MSB_min, MZt_min, MPT_min;
-    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa, pmax, ic;
+    local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa, pmax, ic, dt_vec, modl_str, frac;
    
     { pmax, ic } = dynargsGet(1|2, 8, 3);
+    { dt_vec, y } =_checkfordate(y);
     
     t = rows(y);
     tb1_min = 0;
@@ -95,17 +96,20 @@ proc(18) =  GLS_2breaks(y, model, ...);
         
         // Level shift (crash): change in mean
         if model == 0;   
+           modl_str = "Level shift";
            z   = dc ~ dt ~ du1 ~ du2;
         endif;
 
         // Slope (trend) shift : change in trend
         if model == 1;   
+           modl_str = "Trend shift";
            z   = dc ~ dt ~ dt1 ~ dt2;
         endif;
         
         // Level and trend shift : change in mean and trend
         if model == 2;   
-           z   = dc ~ dt ~ du1 ~ du2 ~ dt1 ~ dt2;
+            modl_str = "Level and trend shift";
+            z   = dc ~ dt ~ du1 ~ du2 ~ dt1 ~ dt2;
         endif;
         
         if model == 0; 
@@ -118,7 +122,9 @@ proc(18) =  GLS_2breaks(y, model, ...);
         {ygls, SSRa, SSR1} = _get_ygls(y, z, cbar); 
  
         // ADF-GLS test
+        screen off;
         {ADF_GLS, p, cv_temp} = ADF(ygls, 0, pmax, ic);
+        screen on;
         
         // Autoregressive estimate of the long-run variance
         s2 = _get_s2ar(ygls, p); 
@@ -157,6 +163,55 @@ proc(18) =  GLS_2breaks(y, model, ...);
     
     {cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa} = _get_cv_gls_2breaks(model,lambda1, lambda2);
     
+    local clm1, clm2, ic_str, fmt;
+    ic_str = _printIC(ic);
+    
+    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
+    clm2 = "Two break GLS tests"$|"Unit root"$|ic_str$|modl_str;
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+    print "======================================";
+    
+    // Print results & Critical values
+    local stats, dec, colwidth, cv, side;
+    side = "ADFGLS-stat"$|"PT"$|"MZa"$|"MZt"$|"MSB"$|"MPT";
+    stats = ADFGLS_min|PT_min|MZa_min|MZt_min|MSB_min|MPT_min;
+    cv = cvDFGLS|cvPT|cvMZa|cvMZt|cvMSB|cvMPT;
+    dec = 4;
+    colwidth = 14;
+    
+    // Print stats 
+    _printStatsTable("", side, stats, cv', dec, colwidth, 1);
+    
+    // Print breaks
+    frac = (tb1_min/rows(y))|(tb2_min/rows(y));
+    
+    if ismiss(dt_vec) != 1;
+        tb1_min = dt_vec[tb1_min];
+        tb2_min = dt_vec[tb2_min];
+    endif;
+    
+    sprintf("%s", "Estimated break dates:");
+    _printBreaks(dt_vec, tb1_min|tb2_min, frac);
+    
+    print "ADF test results:";
+    _printConclusion(ADFGLS_min, cvDFGLS, 0, "a unit root");
+    print "===========================================================";
+    print "PT test results:";
+     _printConclusion(PT_min, cvPT, 0, "a unit root");
+    print "===========================================================";
+    print "MZt test results:";
+     _printConclusion(MZt_min, cvMZt, 0, "a unit root");
+    print "===========================================================";
+    print "MZt test results:";
+     _printConclusion(MZt_min, cvMZt, 0, "a unit root");
+    print "===========================================================";
+    print "MSB test results:";
+     _printConclusion(MSB_min, cvMSB, 0, "a unit root");
+    print "===========================================================";
+    print "MPT test results:";
+     _printConclusion(MPT_min, cvMPT, 0, "a unit root");
+     
 retp(ADFGLS_min,p,PT_min,MZa_min,MZt_min,MSB_min,MPT_min,s2,tb1_min,tb2_min,lambda1,lambda2,cvPT,cvMPT,cvMZt,cvDFGLS,cvMSB,cvMZa);    
 endp;
 
