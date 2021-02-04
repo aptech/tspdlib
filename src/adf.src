@@ -113,33 +113,16 @@ proc(3) = ADF(y, model, ...);
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_ADFrsf(model, T-p , p);
     
-    local clm1, clm2, modl_str, ic_str, fmt;
-    ic_str = _printIC(ic);
-    modl_str = _printModel1(model);
+    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "ADF", "Unit root");
     
-    clm1 = "Test:"$|"Ho:"$|"Lag Selection:"$|"Model:";
-    clm2 = "ADF unit root"$|"Unit root"$|ic_str$|modl_str;
-    fmt = "%-20s %-20s";
-    sprintf(fmt, clm1, clm2);
+    local side, stats, dec, colwidth;
+    side = "ADF-stat:"$|"Chosen Lag:";
+    stats = tau|p-1;
+    dec = 3;
+    colwidth = 20;
+    
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0);
 
-    // Print results & Critical values
-    local hd, tmp1;
-    hd = "ADF-stat"$|"Lag";
-    tmp1 = tau|p-1;
-    
-    #ifminkernelversion(20)
-        sprintf("%-10s %-10.4f", hd, tmp1);
-        print;
-        print "Critical Values:";
-        sprintf("%-10s", "1%"$~"5%"$~"10%");
-        sprintf("%-10.2f", cv');
-        print;
-    #else;
-        hd$~(ntos(tmp1, 4));
-        print "Critical Values:";
-        ("1%"$~"5%"$~"10%")$|ntos(cv',5);
-    #endif;
-    
     // Print conclusion
     if tau < cv[1];
         print "Reject the null hypothesis of a unit root at the 1% level.";
@@ -152,6 +135,70 @@ proc(3) = ADF(y, model, ...);
     endif;
     
     retp(tau, p - 1, cv');
+endp;
+
+proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp);
+    local ic_str, varm_str, modl_str, fmt, clm1, clm2;
+    
+    // Get information criterion
+    if ic;
+        ic_str = _printIC(ic);
+    endif;
+    
+    // Get LR variance type
+    if varm;
+        varm_str = _printVarm(varm);
+    endif;
+    
+    // Get model specification
+    if type(model) != 13 and type(model) != 15;
+        if model == 1;
+            modl_str = _printModel1(model);
+        elseif model == 2;
+            modl_str = _printModel2(model);
+        elseif model == 3;
+            modl_str = _printModel3(model);
+        endif;
+    elseif type(model) == 13 or type(model) == 15;
+        modl_str = model;
+    endif;
+    
+    // Set up table columns
+    clm1 = "Test:"$|"Ho:";
+    clm2 = test$|null_hyp;
+    
+    if breaks;
+        clm1 = clm1$|"Number of breaks:";
+        clm2 = clm2$|ntos(breaks, 1);
+    endif;
+    
+    if ic;
+        clm1 = clm1$|"Lag selection:";
+        clm2 = clm2$|ic_str;
+    endif;
+    
+    if varm;
+        clm1 = clm1$|"LR variance:";
+        clm2 = clm2$|varm_str;
+    endif;
+    
+    if trimmage;
+        trimmage = trimmage*100;
+        trimmage = ntos(trimmage, 2);
+        clm1 = clm1$|"Trimming rate (%):";
+        clm2 = clm2$|trimmage;
+    endif;
+    
+    if model;
+        clm1 = clm1$|"Model:";
+        clm2 = clm2$|modl_str;
+    endif;
+    
+    // Print table
+    fmt = "%-20s %-20s";
+    sprintf(fmt, clm1, clm2);
+    print "=============================================";
+ 
 endp;
 
 // Critical Values (see Fuller, 1976, Table 5.3)
@@ -232,11 +279,11 @@ endp;
 proc (1) = _printIC(ic);
     // Print IC 
     if ic == 1;
-        retp("AIC lag selection.");
+        retp("AIC lag selection");
     elseif ic == 2;
-        retp("SIC lag selection.");
+        retp("SIC lag selection");
     elseif ic == 3;
-        retp("T-stat lag selection.");
+        retp("T-stat lag selection");
     endif;
 endp;
 
