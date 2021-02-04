@@ -169,7 +169,7 @@ proc(3) = DFGLS(y, model, ...);
      _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "GLS-ADF", "Unit root");
  
     // Print results
-    local side, stats;
+    local side, stats, dec, colwidth;
     side = "DFGLS:"$|"Chosen Lags:";
     stats = tau|p-1;
     dec = 3;
