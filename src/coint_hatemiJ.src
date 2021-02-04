@@ -191,7 +191,7 @@ proc(11) = coint_hatemiJ(y, x, ...);
     { cvADFZt, cvZa } = cv_coint_hatemiJ(k);
         
     // Printing   
-    _printHeaderTSPDLIB(0, varm, "Regime shift", 0, 2, "Hatemi-J", "No cointegration");
+    _printHeaderTSPDLIB(0, varm, "Regime shift", 0, 2, "Hatemi-J", "No cointegration", 1);
 
     // Print results
     local side, top, stats, dec, colwidth;

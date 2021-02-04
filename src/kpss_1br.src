@@ -128,7 +128,7 @@ proc(4) = KPSS_1break(y, model, ...);
         TBi = 10 - TBi;
     endif;
 
-    _printHeaderTSPDLIB(0, varm, 2, 1, trimm, "KPSS", "Stationarity");
+    _printHeaderTSPDLIB(0, varm, 2, 1, trimm, "KPSS", "Stationarity", 0);
       
     frac = tb1_min/rows(y);
     

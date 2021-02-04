@@ -163,7 +163,7 @@ proc(18) =  GLS_2breaks(y, model, ...);
     
     {cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa} = _get_cv_gls_2breaks(model,lambda1, lambda2);
          
-    _printHeaderTSPDLIB(ic, 0, modl_str, 2, 0, "GLS", "Unit root");
+    _printHeaderTSPDLIB(ic, 0, modl_str, 2, 0, "GLS", "Unit root", 0);
 
     // Print results & Critical values
     local stats, dec, colwidth, cv, side;

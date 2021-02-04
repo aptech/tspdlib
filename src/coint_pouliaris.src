@@ -183,7 +183,7 @@ proc(4) = coint_pouliaris(y, x, model, ...);
         endif;
     endif;
     
-    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "Phillips-Ouliaris", "No cointegration");
+    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "Phillips-Ouliaris", "No cointegration", 1);
 
     // Print results
     local side, top, stats, dec, colwidth;

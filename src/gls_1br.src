@@ -161,7 +161,7 @@ proc(16) =  GLS_1break(y, model, ...);
     lambda = tb1_min / t;
     {cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa} = _get_cv_gls_1break(model,lambda);
      
-    _printHeaderTSPDLIB(ic, 0, modl_str, 1, 0, "GLS", "Unit root");
+    _printHeaderTSPDLIB(ic, 0, modl_str, 1, 0, "GLS", "Unit root", 0);
     
     // Print results & Critical values
     local stats, dec, colwidth, cv, side;

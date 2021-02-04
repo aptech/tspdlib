@@ -18,6 +18,7 @@
 **                      2=Schwarz
 **                      3=t-stat significance
 **                      Default = 3;
+**
 **  Output:  tauRALS - tau statistic based on RALS procedure
 **			 p2      - the estimated rho square (see, page 322)
 **			 cv      - 1%, 5%, 10% critical values for the estimated p2
@@ -88,13 +89,15 @@ proc (3) = RALSLM(y, ...);
     p2 = sig2A/sig2;
     
     cv = crit_RALSlm(p2);
+        
+    _printHeaderTSPDLIB(ic, 0, 0, 0, 0, "RALS-LM", "Unit root", 0);
     
     local top, side, stats, dec, colwidth;
-    top = "RALS-LM"$|"Rho^2";
-    side = "";
+    side = "RALS-LM:"$|"Rho^2:";
+    top = "";
     stats = tauRALS|p2;
-    dec = 4;
-    colwidth = 12;
+    dec = 3;
+    colwidth = 25;
    
     _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
     _printConclusion(tauRALS, cv, 0, "a unit root");  

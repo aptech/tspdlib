@@ -166,7 +166,7 @@ proc(3) = DFGLS(y, model, ...);
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_DFGLSrsf(model, T, p);
     
-     _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "GLS-ADF", "Unit root");
+     _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "GLS-ADF", "Unit root", 0);
  
     // Print results
     local side, stats, dec, colwidth;
@@ -312,7 +312,7 @@ proc(3) = ERSpt(y, model, ...);
     PT = (SSRa - (1 + c/t) * SSR1)/lrv;
     cv = _get_cv_erspt(model, T);
     
-     _printHeaderTSPDLIB(0, varm, 1, 0, 0, "ERS", "Unit root");
+     _printHeaderTSPDLIB(0, varm, 1, 0, 0, "ERS", "Unit root", 0);
 
     // Print results
     local side, stats, dec, colwidth;
@@ -434,7 +434,7 @@ proc(8) = MGLS(y, model, ...);
     endif;
     
        
-    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "MGLS", "Unit root");
+    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "MGLS", "Unit root", 0);
 
     // Print results
     local top, side, stats, dec, colwidth, cv2;

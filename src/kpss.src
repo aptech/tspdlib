@@ -71,7 +71,7 @@ proc(2) = LMkpss(y, model, ...);
     // T adjusted critical values based on response surfaces
     cv = _get_cv_KPSSrsf(model, T);
 
-    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "KPSS", "Stationarity");
+    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "KPSS", "Stationarity", 0);
     
     // Print results
     local top, side, stats, dec, colwidth;

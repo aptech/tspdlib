@@ -98,14 +98,14 @@ proc(3) = ADF(y, model, ...);
         k = cols(x);
         
         // Log-likelihood
-        LL = -n/2 * (1 + ln(2*pi) + ln(e1'e1/n));     
+        LL = -n/2 * (1 + ln(2*pi) + ln(e1'e1/n));
         
         aicp[p+1] = (2 * k-2 * LL)/n;
         sicp[p+1] = (k * ln(n) - 2 * LL)/n;
         tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
         p = p + 1;
     endo;
- 
+    
     p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
     tau = taup[p];
     //cv  = _get_cv_adf(model, t);
@@ -113,7 +113,7 @@ proc(3) = ADF(y, model, ...);
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_ADFrsf(model, T-p , p);
     
-    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "ADF", "Unit root");
+    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "ADF", "Unit root", 0);
     
     local side, stats, dec, colwidth;
     side = "ADF-stat:"$|"Chosen Lag:";
@@ -123,11 +123,11 @@ proc(3) = ADF(y, model, ...);
     
     _printStatsTable("", side, stats, cv, dec, colwidth, 0);
     _printConclusion(tau, cv, 0, " a unit root");
-
+    
     retp(tau, p - 1, cv');
 endp;
 
-proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp);
+proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp, long);
     local ic_str, varm_str, modl_str, fmt, clm1, clm2;
     
     // Get information criterion
@@ -191,8 +191,11 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp
     // Print table
     fmt = "%-25s %-25s";
     sprintf(fmt, clm1, clm2);
+    if long;
+        print "================================================================================";
+    else;
         print "=============================================================";
- 
+    endif;
 endp;
 
 // Critical Values (see Fuller, 1976, Table 5.3)
@@ -201,43 +204,57 @@ proc(1) = _get_cv_adf(model, T);
     
     if model == 0;
         crit = {-2.66 -1.95 -1.60,      @ T = 25  @
-                -2.62 -1.95 -1.61,      @ T = 50  @
-                -2.60 -1.95 -1.61,      @ T = 100 @
-                -2.58 -1.95 -1.62,      @ T = 250 @        
-                -2.58 -1.95 -1.62,      @ T = 500 @   
-                -2.58 -1.95 -1.62,      @ T = 750 @   
-                -2.58 -1.95 -1.62};     @ T = inf @   
-    endif;
-
-    if model == 1;
-        crit = {-3.75 -2.99 -2.64,      @ T = 25  @
-                -3.59 -2.93 -2.60,      @ T = 50  @
-                -3.50 -2.90 -2.59,      @ T = 100 @
-                -3.46 -2.88 -2.58,      @ T = 250 @        
-                -3.44 -2.87 -2.57,      @ T = 500 @   
-                -3.43 -2.87 -2.57,      @ T = 750 @   
-                -3.42 -2.86 -2.57};     @ T = inf @   
-    endif;
-
-    if model == 2;
-        crit = {-4.38 -3.60 -3.24,      @ T = 25  @
-                -4.15 -3.50 -3.18,      @ T = 50  @
-                -4.04 -3.45 -3.15,      @ T = 100 @
-                -3.98 -3.42 -3.13,      @ T = 250 @        
-                -3.97 -3.42 -3.13,      @ T = 500 @   
-                -3.96 -3.41 -3.13,      @ T = 750 @   
-                -3.96 -3.41 -3.13};     @ T = inf @   
+            -2.62 -1.95 -1.61,      @ T = 50  @
+            -2.60 -1.95 -1.61,      @ T = 100 @
+            -2.58 -1.95 -1.62,      @ T = 250 @
+            -2.58 -1.95 -1.62,      @ T = 500 @
+            -2.58 -1.95 -1.62,      @ T = 750 @
+            -2.58 -1.95 -1.62};     @ T = inf @
     endif;
     
-    if            T <= 25;     cv = crit[1,.]; endif;
-    if 25 < T and T <= 50;     cv = crit[2,.]; endif;
-    if 50 < T and T <= 100;    cv = crit[3,.]; endif;    
-    if 100< T and T <= 250;    cv = crit[4,.]; endif;    
-    if 250< T and T <= 500;    cv = crit[5,.]; endif;   
-    if 500< T and T <= 750;    cv = crit[6,.]; endif;   
-    if 750 < T            ;    cv = crit[7,.]; endif;   
-
-retp(cv);
+    if model == 1;
+        crit = {-3.75 -2.99 -2.64,      @ T = 25  @
+            -3.59 -2.93 -2.60,      @ T = 50  @
+            -3.50 -2.90 -2.59,      @ T = 100 @
+            -3.46 -2.88 -2.58,      @ T = 250 @
+            -3.44 -2.87 -2.57,      @ T = 500 @
+            -3.43 -2.87 -2.57,      @ T = 750 @
+            -3.42 -2.86 -2.57};     @ T = inf @
+    endif;
+    
+    if model == 2;
+        crit = {-4.38 -3.60 -3.24,      @ T = 25  @
+            -4.15 -3.50 -3.18,      @ T = 50  @
+            -4.04 -3.45 -3.15,      @ T = 100 @
+            -3.98 -3.42 -3.13,      @ T = 250 @
+            -3.97 -3.42 -3.13,      @ T = 500 @
+            -3.96 -3.41 -3.13,      @ T = 750 @
+            -3.96 -3.41 -3.13};     @ T = inf @
+    endif;
+    
+    if            T <= 25;
+        cv = crit[1,.];
+    endif;
+    if 25 < T and T <= 50;
+        cv = crit[2,.];
+    endif;
+    if 50 < T and T <= 100;
+        cv = crit[3,.];
+    endif;
+    if 100< T and T <= 250;
+        cv = crit[4,.];
+    endif;
+    if 250< T and T <= 500;
+        cv = crit[5,.];
+    endif;
+    if 500< T and T <= 750;
+        cv = crit[6,.];
+    endif;
+    if 750 < T            ;
+        cv = crit[7,.];
+    endif;
+    
+    retp(cv);
 endp;
 
 proc (1) = _printModel1(model);
@@ -271,7 +288,7 @@ proc (1) = _printModel3(model);
 endp;
 
 proc (1) = _printIC(ic);
-    // Print IC 
+    // Print IC
     if ic == 1;
         retp("AIC lag selection");
     elseif ic == 2;
@@ -297,5 +314,5 @@ proc (1) = _printVarm(varm);
     elseif varm == 7;
         retp("Kurozumi with QS");
     endif;
-
+    
 endp;

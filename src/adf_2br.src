@@ -192,7 +192,7 @@ proc(5) = ADF_2breaks(y, model, ...);
     endif;
  
         
-    _printHeaderTSPDLIB(ic, 0, 2, 2, trimm, "ADF", "Unit root");
+    _printHeaderTSPDLIB(ic, 0, 2, 2, trimm, "ADF", "Unit root", 0);
    
     // Print break dates
     frac = (tb1_min/rows(y))|(tb2_min/rows(y));

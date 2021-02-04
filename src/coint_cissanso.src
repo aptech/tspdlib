@@ -172,7 +172,7 @@ proc(6) = coint_cissanso(y, x, model, ...);
     lambda= tb2_min/rows(y);
     {cv} = cv_coint_cissanso(model, lambda, k);
     
-     _printHeaderTSPDLIB(0, varm, 3, 2, trimm, "Carrion-i-Silvestre & Sanso", "Cointegration");
+     _printHeaderTSPDLIB(0, varm, 3, 2, trimm, "Carrion-i-Silvestre & Sanso", "Cointegration", 1);
     
     // Print results
     local top, side, stats, tmp1, tmp2, dec, colwidth;
@@ -196,13 +196,13 @@ proc(6) = coint_cissanso(y, x, model, ...);
     endif;
     
     sprintf("%s", "OLS break dates:");
-      print "==============================================================";
-    _printBreaks(dt_vec, tb1_min, frac1, 1);
+    print "================================================================================";
+
     print;
     
     sprintf("%s", "DOLS break dates:");
-      print "==============================================================";
-    _printBreaks(dt_vec, tb2_min, frac2, 1);
+    print "================================================================================";
+
     print;
     
     print "OLS cointegration conclusion:";

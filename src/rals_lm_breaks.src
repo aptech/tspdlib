@@ -256,7 +256,7 @@ proc(7) = RALSLM_breaks(y, model, nbr, ...);
     // Critical values for RALS-LM stat.   
     cv_ralslm = _get_cv_RALSLM_breaks(model, nbr, rho2);
     
-    _printHeaderTSPDLIB(ic, 0, nbr, 2, trimm, "RALS-LM", "Unit root");
+    _printHeaderTSPDLIB(ic, 0, nbr, 2, trimm, "RALS-LM", "Unit root", 0);
 
     // Print break dates   
     if nbr > 0;

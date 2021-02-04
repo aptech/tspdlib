@@ -194,12 +194,12 @@ proc(4) = Fourier_ADF(y, model, ...);
         endif;
     endif;
     
-    _printHeaderTSPDLIB(ic, 0, 2, "Unknown", 0, "Fourier ADF", "Unit root");
+    _printHeaderTSPDLIB(ic, 0, 2, "Unknown", 0, "Fourier ADF", "Unit root", 0);
 
     // Print results & Critical values
     local top, side, stats, dec, colwidth;
-    top = "ADF-stat"$|"Frequency"$|"Lag";
-    side = "";
+    side = "ADF-stat:"$|"Frequency:"$|"Lag:";
+    top = "";
     stats = ADF|f|p-1;
     dec = 3;
     colwidth = 25;

@@ -261,7 +261,7 @@ proc(5) = LM_2breaks(y, model, ...);
     if model == 1; cv  = _get_cv_LMrsf(0, T-p , p); endif;
     if model == 2; cv  = _get_cv_LMrsf(2, T-p , p); endif;
   
-    _printHeaderTSPDLIB(ic, 0, 2, 2, trimm, "LM", "Unit root");
+    _printHeaderTSPDLIB(ic, 0, 2, 2, trimm, "LM", "Unit root", 0);
 
     // Print break dates
     frac = (tb1_min/rows(y))|(tb2_min/rows(y));

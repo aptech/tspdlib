@@ -196,7 +196,7 @@ proc(4) = ADF_1break(y, model, ...);
         cv = -5.57|-5.08|-4.82;
     endif;
     
-    _printHeaderTSPDLIB(ic, 0, 2, 1, trimm, "ADF", "Unit root");
+    _printHeaderTSPDLIB(ic, 0, 2, 1, trimm, "ADF", "Unit root", 0);
     
     frac = tb1_min/rows(y);
     
@@ -223,7 +223,7 @@ proc(4) = ADF_1break(y, model, ...);
     retp(ADF_min, tb1_min, opt_lag-1, cv);
 endp;
 
-proc (0) = _printBreaks(dt_vec, brks, frac);
+proc (0) = _printBreaks(dt_vec, brks, frac, long);
     local side, top, brk_str, break_num, fmt1, fmt2;
     
     
@@ -250,8 +250,11 @@ proc (0) = _printBreaks(dt_vec, brks, frac);
   
     sprintf(fmt1, top);
     sprintf(fmt2, side, brk_str, frac);
-    print "=============================================================";
-    
+    if long;
+        print "================================================================================";
+    else;
+        print "=============================================================";
+    endif;
 endp;
 
 proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv);
@@ -276,12 +279,14 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
             sprintf(tmp1, "  1%"$~"  5%"$~"  10%");
             sprintf(tmp3, cv');
         endif;
+        print "=============================================================";
     elseif side $=="";
         sprintf(format1, top, stats);
         print;
         print "Critical Values:";
         sprintf(tmp1, "  1%"$~"  5%"$~"  10%");
         sprintf(tmp2, cv');
+        print "=============================================================";
     else;
         sprintf(tmp1, top);
         sprintf(format1, side, "", stats);
@@ -295,6 +300,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
             sprintf(tmp1, "  1%"$~"  5%"$~"  10%");
             sprintf(tmp3, cv');
         endif;
+        print "================================================================================";
     endif;
     print;
 
@@ -310,7 +316,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
     print "Critical Values:";
     ("1%"$~"5%"$~"10%")$|ntos(cv', dec);
 #endif;
-   print "=============================================================";   
+
 endp;
 
 proc (0) = _printConclusion(stat, cv, test_type, null_hypothesis);

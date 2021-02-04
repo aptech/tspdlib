@@ -161,7 +161,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     { cvADFZt, cvZa } = cv_coint_ghansen(k, model);
     
     // Printing   
-    _printHeaderTSPDLIB(0, varm, 3, 0, 1, "Gregory-Hansen", "No cointegration");
+    _printHeaderTSPDLIB(0, varm, 3, 0, 1, "Gregory-Hansen", "No cointegration", 1);
 
     // Print results
     local top, side, stats, dec, colwidth;
