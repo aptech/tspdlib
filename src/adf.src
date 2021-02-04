@@ -122,7 +122,7 @@ proc(3) = ADF(y, model, ...);
     colwidth = 20;
     
     _printStatsTable("", side, stats, cv, dec, colwidth, 0);
-    _printConclusion(tau, cv, 1, " a unit root");
+    _printConclusion(tau, cv, 0, " a unit root");
 
     retp(tau, p - 1, cv');
 endp;

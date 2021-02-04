@@ -287,9 +287,9 @@ proc(7) = RALSLM_breaks(y, model, nbr, ...);
         
     // Print break dates
     if nbr == 1;
-        _printBreaks(dt_vec, tb1_min, frac);
+        _printBreaks(dt_vec, tb1_min, frac, 0);
     elseif nbr == 2;
-        _printBreaks(dt_vec, tb1_min|tb2_min, frac);
+        _printBreaks(dt_vec, tb1_min|tb2_min, frac, 0);
     endif;
     
     _printConclusion(rals_lm, cv_ralslm, 0, "a unit root");

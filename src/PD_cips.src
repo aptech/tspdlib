@@ -68,15 +68,12 @@ proc(6) = cips(y, model, ...);
     
     pcadf = meanc(Ncadf);
     if model==0;
-        "No constant or trend.";
     endif;
     if model==1;
         q=2;
-        "Model with constant.";
     endif;
     if model==2;
         q=3;
-        "Model with constant and trend.";
     endif;
     pmcadf= sqrt(n)*(meanc(Nd)-q)/sqrt(2*q);
     
@@ -87,28 +84,29 @@ proc(6) = cips(y, model, ...);
     hd_side = "CIPS"$|"M-CIPS";
     hd_top = ""$~"Test Stat"$~"pval";
     tmp1 = (pcadf~error(30))|(pmcadf~cdfn(pmcadf));
+
     hd_top2 = "id"$~"CADF"$~"LM"$~"M-CADF"$~"pval"$~"lags";
     tmp2 = seqa(1, 1, N)~Ncadf~Nlm~Nd~cdfchic(abs(Nd), q)~Nlags;
     tmp3 = cdfchii(0.99, q)~cdfchii(0.95, q)~cdfchii(0.90, q);  
     hd_top3 = "1%"$~"5%"$~"10%";
     
 #ifminkernelversion(20)
-    sprintf("%25s", hd_top);
-    sprintf("%25s %25.2f", hd_side, tmp1);
+    sprintf("%-25s", hd_top);
+    sprintf("%-25s %-25.3f", hd_side, tmp1);
     print;
-    
+ print "=============================================================";    
     "M-CADF Critical Values:"; 
-    sprintf("%25s", hd_top3);
-    sprintf("%25.3f", tmp3);
+    sprintf("%-25s", hd_top3);
+    sprintf("%-25.3f", tmp3);
     print;
     
-    sprintf("%25s", hd_top2);
-    sprintf("%25.3f", tmp2);
+    sprintf("%-25s", hd_top2);
+    sprintf("%-25.3f", tmp2);
     
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));
     print;
-    
+  print "=============================================================";   
     "M-CADF Critical Values:"; 
     hd_top3$|(ntos(tmp3, 4));
     print;

@@ -220,17 +220,17 @@ proc(11) = coint_hatemiJ(y, x, ...);
     
     sprintf("%s", "ADF estimated break dates:");
     print "===================================";
-    _printBreaks(dt_vec, TBadf, fracADF);
+    _printBreaks(dt_vec, TBadf, fracADF, 1);
     print;
     
     print "Zt test results:";
     print "===================================";
-    _printBreaks(dt_vec, TBzt, fracZt);
+    _printBreaks(dt_vec, TBzt, fracZt, 1);
     print;
     
     print "Za test results:";
     print "===================================";
-    _printBreaks(dt_vec, TBza, fracZa);
+    _printBreaks(dt_vec, TBza, fracZa, 1);
     print;
     
     print "ADF test results:";

@@ -185,7 +185,7 @@ proc(18) =  GLS_2breaks(y, model, ...);
     endif;
     
     sprintf("%s", "Estimated break dates:");
-    _printBreaks(dt_vec, tb1_min|tb2_min, frac);
+    _printBreaks(dt_vec, tb1_min|tb2_min, frac, 1);
     
     print "ADF test results:";
     _printConclusion(ADFGLS_min, cvDFGLS, 0, "a unit root");

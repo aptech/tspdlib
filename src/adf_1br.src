@@ -215,7 +215,7 @@ proc(4) = ADF_1break(y, model, ...);
     _printStatsTable("", side, stats, cv, dec, colwidth, 0);
 
     // Print break dates
-    _printBreaks(dt_vec, tb1_min, frac);
+    _printBreaks(dt_vec, tb1_min, frac, 0);
     
     // Print conclusions
     _printConclusion(ADF_min, cv, 0, "a unit root");
