@@ -46,7 +46,7 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**           trimm   -  Optional, trimming rate. Default [0.10, 0.90] 
+**           trimm   -  Optional, trimming rate. Default [0.10, 0.90]
 **
 **  Output:
 **          ADF_min -   ADF test
@@ -84,12 +84,16 @@ proc(11) = coint_hatemiJ(y, x, ...);
     local n,TB1adf, TB1za, TB1zt, TB2adf, TB2za, TB2zt, ADF_min, Za_min, Zt_min;
     local T1, T2, T3, DF, Za, Zt, lagadf, tb1, tb2, du1, du2, x1, stat1, stat2, stat3;
     local b, e1, sig2, se, ssr, cvADFZt, cvZa, k;
-    local cv0, cv1, cv2, bwl_dftl, bwl, ic, pmax, varm, trimm, model;
+    local cv0, cv1, cv2, bwl_dftl, bwl, ic, pmax, varm, trimm, model, dt_vec,
+        fracADF, fracZa, fracZt, TBadf, TBzt, TBza, dt_vec;
     
     n     = rows(y);      /*# of observation*/
     bwl_dftl = round(4 * (n/100)^(2/9));
     
     { model, bwl, ic, pmax, varm, trimm } = dynargsGet(1|6, 3, bwl_dftl, 3, 8, 1, 0.10);
+    
+    // Check for dates
+    { dt_vec, x } =_checkfordate(x);
     
     TB1adf= 0;
     TB1zt = 0;
@@ -189,7 +193,7 @@ proc(11) = coint_hatemiJ(y, x, ...);
     // Print model type
     local clm1, clm2, varm_str, fmt;
     varm_str = _printVarm(varm);
-
+    
     clm1 = "Test:"$|"Ho:"$|"LR Variance:"$|"Model:";
     clm2 = "Hatemi-J"$|"Cointegration with two breaks"$|varm_str$|"Regime shift";
     fmt = "%-20s %-20s";
@@ -198,20 +202,53 @@ proc(11) = coint_hatemiJ(y, x, ...);
     // Print results
     local side, top, stats, dec, colwidth;
     side = "ADF"$|"Zt"$|"Za";
-    top = ""$~"Test"$~"Break 1"$~"Break 2";
-    stats = (ADf_min|Zt_min|Za_min)~(TB1adf|TB1zt|TB1za)~(TB2adf|TB2zt|TB2za);
+    top = ""$~"Test";
+    stats = (ADf_min|Zt_min|Za_min);
     dec = 2;
     colwidth = 14;
     
     _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, dec, colwidth, 1);
-
+    
+    // Print breaks
+    fracZa = (TB1za/rows(y))|(TB2za/rows(y));
+    fracZt = (TB1zt/rows(y))|(TB2zt/rows(y));
+    fracADF = (TB1adf/rows(y))|(TB2adf/rows(y));
+    
+    if ismiss(dt_vec) != 1;
+        TBza = dt_vec[TB1za]~dt_vec[TB2za];
+        TBzt = dt_vec[TB1zt]~dt_vec[TB2zt];
+        TBadf = dt_vec[TB1adf]~dt_vec[TB2adf];
+    else;
+        TBza = TB1za~TB2za;
+        TBzt = TB1zt~TB2zt;
+        TBadf = TB1adf~TB2adf;
+    endif;
+    
+    sprintf("%s", "ADF estimated break dates:");
+    print "===================================";
+    _printBreaks(dt_vec, TBadf, fracADF);
+    print;
+    
+    print "Zt test results:";
+    print "===================================";
+    _printBreaks(dt_vec, TBzt, fracZt);
+    print;
+    
+    print "Za test results:";
+    print "===================================";
+    _printBreaks(dt_vec, TBza, fracZa);
+    print;
+    
     print "ADF test results:";
     _printConclusion(ADF_min, cvADFZt, 0, "no co-integration");
+    print "======================================================";
     print "Zt test results:";
     _printConclusion(Zt_min, cvADFZt, 0, "no co-integration");
+    print "======================================================";
     print "Za test results:";
     _printConclusion(Za_min, cvZa, 0, "no co-integration");
-
+    print "======================================================";
+    
     retp(ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa);
 endp;
 
