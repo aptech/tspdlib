@@ -50,10 +50,12 @@
 proc(5) = LM_1break(y, model, ...);
     local t, tb1, tb1_min, LM_min, T1, T2, dc, dt, du1, dt1, z;
     local dy, dz, b0, s0, st, ls, dst, ds, lmat, x, tau, lmt, j, p, aicp, sicp, tstatp;
-    local lm_k, b, e1, sig2, se, ssr, cv, crit, lambda, opt_lag, pmax, ic, trimm;
+    local lm_k, b, e1, sig2, se, ssr, cv, crit, lambda, opt_lag, pmax, ic, trimm, dt_vec, frac;
     
     // Get defaults for optional arguments
     { pmax, ic, trimm } = dynargsGet(1|3, 8, 3, 0.10);
+        
+    { dt_vec, y } =_checkfordate(y);
     
     t = rows(y);
     tb1_min = 0;
@@ -61,14 +63,6 @@ proc(5) = LM_1break(y, model, ...);
     
     T1 = round(trimm * rows(y));
     T2 = round((1 - trimm) * rows(y));
-    
-    "One break LM test (Lee & Strazicich, 2013)";
-    if model == 1;
-        "--------Model A: Break in level        -----";
-    endif;
-    if model == 2;
-        "--------Model C: Break in level & trend-----";
-    endif;
     
     if T1 < (pmax + 2);
         T1 = pmax + 3;
@@ -197,16 +191,29 @@ proc(5) = LM_1break(y, model, ...);
     if model == 1; cv  = _get_cv_LMrsf(0, T-p , p); endif;
     if model == 2; cv  = _get_cv_LMrsf(1, T-p , p); endif;
 
-        // Print results
+        
+    _printHeaderTSPDLIB(ic, 0, 2, 1, trimm, "LM", "Unit root");
+    
+    frac = tb1_min/rows(y);
+    
+    if ismiss(dt_vec) != 1;
+        tb1_min = dt_vec[tb1_min];
+    endif;
+
+    // Print results
     local top, side, stats, dec, colwidth;
-    top = "LM Stat"$|"Break 1"$|"Fraction"$|"Lags";
-    side = "";
-    stats = Lm_min|tb1_min|tb1_min/rows(y)|p-1;
+    side = "LM:"$|"Chosen Lag:";
+    top = "";
+    stats = Lm_min|opt_lag-1;
     dec = 3;
     colwidth = 25;
     
     _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
-    _printConclusion(LM_min, cv, 0, "unit root");
+    
+    // Print break dates
+    _printBreaks(dt_vec, tb1_min, frac);
+    
+    _printConclusion(LM_min, cv, 0, "a unit root");
     
     
     retp(LM_min, tb1_min, opt_lag - 1, tb1_min/rows(y), cv);

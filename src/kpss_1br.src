@@ -54,12 +54,14 @@
 proc(4) = KPSS_1break(y, model, ...);
     local t, ssr_min, tb1_min, KPSS_min;
     local t1, t2, tb1, dc, dt, du1, dt1, z;
-    local ssr, KPSS, crit, TBi, bwl_dftl, l, varm, trimm;
+    local ssr, KPSS, crit, TBi, bwl_dftl, l, varm, trimm, dt_vec, frac;
     
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
     { l, varm, trimm } = dynargsGet(1|3, bwl_dftl, 1, 0.10);
+       
+    { dt_vec, y } =_checkfordate(y);
     
     ssr_min = 1e6;
     tb1_min = 0;
@@ -67,24 +69,7 @@ proc(4) = KPSS_1break(y, model, ...);
     
     T1 = round(trimm * rows(y));
     T2 = round((1 - trimm) * rows(y));
-    
-    "One break KPSS test (Kurozumi, 2002)";
-    if varm == 1;
-        print "iid";
-    elseif varm == 2;
-        print "Bartlett";
-    elseif varm == 3;
-        print "Quadratic Spectral (QS)";
-    elseif varm == 4;
-        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
-    elseif varm == 5;
-        print "SPC with QS";
-    elseif varm == 6;
-        print "Kurozumi with Bartlett";
-    elseif varm == 7;
-        print "Kurozumi with QS";
-    endif;
-    
+
     // First break
     tb1 = t1;
     do until tb1 > t2;
@@ -142,27 +127,31 @@ proc(4) = KPSS_1break(y, model, ...);
     if TBi > 5;
         TBi = 10 - TBi;
     endif;
-    
 
-    if model == 1;
-        "--------Model A: Break in level        -----";
-    endif;
-    if model == 2;
-        "--------Model C: Break in level & trend-----";
-    endif;
+    _printHeaderTSPDLIB(0, varm, 2, 1, trimm, "KPSS", "Stationarity");
+      
+    frac = tb1_min/rows(y);
     
+    if ismiss(dt_vec) != 1;
+        tb1_min = dt_vec[tb1_min];
+    endif;
+
     // Print results
     local top, side, stats, dec, colwidth;
-    top = "KPSS Stat"$|"Break 1"$|"Fraction";
+    top = "KPSS Stat:";
     side = "";
-    stats = KPSS_min|tb1_min|tb1_min/rows(y);
+    stats = KPSS_min;
     dec = 3;
     colwidth = 25;
     
     _printStatsTable(top, side, stats, rev(crit[TBi, .]'), dec, colwidth, 0);
+    
+    // Print break dates
+    _printBreaks(dt_vec, tb1_min, frac);
+    
     _printConclusion(KPSS_min, rev(crit[TBi, .]'), 1, "stationarity");
     
-    retp(KPSS_min, tb1_min, tb1_min/rows(y), rev(crit[TBi, .]'));
+    retp(KPSS_min, tb1_min, frac, rev(crit[TBi, .]'));
 endp;
 
 proc(2) = STps(y, model, varm, tb);

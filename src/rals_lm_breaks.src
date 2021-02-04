@@ -63,10 +63,13 @@ proc(7) = RALSLM_breaks(y, model, nbr, ...);
     local taup, aicp, sicp, tstatp, j, p, laglm, stat;
     local b, e, sig2, se, ssr, opt_lag, cv_lm, cv_ralslm;
     local nobs, pos, pos1, pos2, s, st;
-    local e2, e3, m2, m3, w, tau_rals, sig2A, p2, rals_lm, rho2, pmax, ic, trimm;
+    local e2, e3, m2, m3, w, tau_rals, sig2A, p2, rals_lm, rho2, 
+    pmax, ic, trimm, dt_vec, frac;
     
     // Get optional arguments
     { pmax, ic, trimm } = dynargsGet(1|3, 8, 3, 0.10);
+            
+    { dt_vec, y } =_checkfordate(y);
     
     t = rows(y);
     tb1_min = 0;
@@ -252,7 +255,45 @@ proc(7) = RALSLM_breaks(y, model, nbr, ...);
 
     // Critical values for RALS-LM stat.   
     cv_ralslm = _get_cv_RALSLM_breaks(model, nbr, rho2);
+    
+    _printHeaderTSPDLIB(ic, 0, nbr, 2, trimm, "RALS-LM", "Unit root");
+
+    // Print break dates   
+    if nbr > 0;
+        frac = (tb1_min/rows(y));
+    endif;
+    if nbr > 1;
+        frac = frac|(tb2_min/rows(y));
+    endif;
+    
+    if ismiss(dt_vec) != 1;
+        if nbr > 0;
+        tb1_min = dt_vec[tb1_min];
+        endif;
+        if nbr > 1;
+        tb2_min = dt_vec[tb2_min];
+        endif;
+    endif;
+    
+      // Print results
+    local top, side, stats, dec, colwidth;
+    top = "RALS-LM:"$|"Rho^2:";
+    top = "";
+    stats = rals_lm|rho2;
+    dec = 3;
+    colwidth = 25;
+    
+    _printStatsTable(top, side, stats, cv_ralslm, dec, colwidth, 0);
         
+    // Print break dates
+    if nbr == 1;
+        _printBreaks(dt_vec, tb1_min, frac);
+    elseif nbr == 2;
+        _printBreaks(dt_vec, tb1_min|tb2_min, frac);
+    endif;
+    
+    _printConclusion(rals_lm, cv_ralslm, 0, "a unit root");
+    
     if nbr == 1;
         retp(LM_min, tb1_min, opt_lag - 1, cv_lm, rals_lm, rho2, cv_ralslm);
     elseif nbr == 2;

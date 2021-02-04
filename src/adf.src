@@ -122,18 +122,8 @@ proc(3) = ADF(y, model, ...);
     colwidth = 20;
     
     _printStatsTable("", side, stats, cv, dec, colwidth, 0);
+    _printConclusion(tau, cv, 1, " a unit root");
 
-    // Print conclusion
-    if tau < cv[1];
-        print "Reject the null hypothesis of a unit root at the 1% level.";
-    elseif tau < cv[2];
-           print "Reject the null hypothesis of a unit root at the 5% level.";
-    elseif tau < cv[3];  
-           print "Reject the null hypothesis of a unit root at the 10% level.";
-    else;  
-           print "Cannot reject the null hypothesis of a unit root.";
-    endif;
-    
     retp(tau, p - 1, cv');
 endp;
 

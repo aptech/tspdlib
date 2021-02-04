@@ -39,14 +39,7 @@ proc(3) = RALSADF(y, model, ...);
     local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cvADF, cv, pmax, ic;
     
     {pmax, ic} = dynargsGet(1|2, 8, 3);
-    
-    "RALS-ADF ";
-    if model == 1;
-        "--------Model A: Break in level        -----";
-    elseif model == 2;
-        "--------Model C: Break in level & trend-----";
-    endif;
-    
+
     T = rows(y);
     screen off;
         { tauADF, lag_var, cvADF } = ADF(y, model, pmax, ic);
@@ -111,9 +104,11 @@ proc(3) = RALSADF(y, model, ...);
     
     cv = crit_RALSadf(p2, model);
     
+    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "RALS-ADF", "Unit root");
+    
     local top, side, stats, dec, colwidth;
-    top = "RALS-ADF"$|"Rho^2";
-    side = "";
+    side = "RALS-ADF:"$|"Rho^2:";
+    top = "";
     stats = tauRALS|p2;
     dec = 3;
     colwidth = 25;

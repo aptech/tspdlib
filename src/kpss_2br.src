@@ -54,35 +54,20 @@
 proc(4) = KPSS_2breaks(y, model, ...);
     local t, ssr_min, tb1_min, tb2_min, KPSS_min;
     local tb1, tb2, dc, dt, du1, du2, dt1, dt2, z;
-    local ssr, KPSS, cv, bwl_dftl, l, varm;
+    local ssr, KPSS, cv, bwl_dftl, l, varm, frac, dt_vec;
     
     t = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
     { l, varm } = dynargsGet(1|2, bwl_dftl, 1);
+             
+    { dt_vec, y } = _checkfordate(y);
     
     ssr_min = 1e6;
     tb1_min = 0;
     tb2_min = 0;
     KPSS_min = 0;
-    
-    "Two breaks KPSS test (CiS & Sanso, 2007)";
-    if varm == 1;
-        print "iid";
-    elseif varm == 2;
-        print "Bartlett";
-    elseif varm == 3;
-        print "Quadratic Spectral (QS)";
-    elseif varm == 4;
-        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
-    elseif varm == 5;
-        print "SPC with QS";
-    elseif varm == 6;
-        print "Kurozumi with Bartlett";
-    elseif varm == 7;
-        print "Kurozumi with QS";
-    endif;
-    
+     
     // First break
     tb1 = 2;
     do until tb1 > t-4;
@@ -146,19 +131,22 @@ proc(4) = KPSS_2breaks(y, model, ...);
         tb1 = tb1 + 1;
     endo;
     cv = cv_kpss2(model, rows(y), tb1_min, tb2_min);
+       
+    _printHeaderTSPDLIB(0, varm, 2, 2, trimm, "KPSS", "Stationarity");
+   
+    // Print break dates
+    frac = (tb1_min/rows(y))|(tb2_min/rows(y));
     
-    if model == 1;
-        "--------Model A: Break in level        -----";
-    endif;
-    if model == 2;
-        "--------Model C: Break in level & trend-----";
+    if ismiss(dt_vec) != 1;
+        tb1_min = dt_vec[tb1_min];
+        tb2_min = dt_vec[tb2_min];
     endif;
     
     // Print results
     local top, side, stats, dec, colwidth;
-    top = "KPSS Stat"$|"Break 1"$|"Fraction"$|"Break 2"$|"Fraction";
+    top = "KPSS Stat:";
     side = "";
-    stats = KPSS_min|tb1_min|tb1_min/rows(y)|tb2_min|tb2_min/rows(y);
+    stats = KPSS_min;
     dec = 3;
     colwidth = 25;
     

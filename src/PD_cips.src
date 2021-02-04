@@ -80,6 +80,8 @@ proc(6) = cips(y, model, ...);
     endif;
     pmcadf= sqrt(n)*(meanc(Nd)-q)/sqrt(2*q);
     
+    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "CIPS", "Unit Root");
+    
  // Print results
     local hd_side, hd_top, tmp1, tmp2, tmp3, hd_top2, hd_top3;
     hd_side = "CIPS"$|"M-CIPS";
@@ -91,17 +93,17 @@ proc(6) = cips(y, model, ...);
     hd_top3 = "1%"$~"5%"$~"10%";
     
 #ifminkernelversion(20)
-    sprintf("%14s", hd_top);
-    sprintf("%14s %14.2f", hd_side, tmp1);
+    sprintf("%25s", hd_top);
+    sprintf("%25s %25.2f", hd_side, tmp1);
     print;
     
     "M-CADF Critical Values:"; 
-    sprintf("%14s", hd_top3);
-    sprintf("%14.3f", tmp3);
+    sprintf("%25s", hd_top3);
+    sprintf("%25.3f", tmp3);
     print;
     
-    sprintf("%14s", hd_top2);
-    sprintf("%14.3f", tmp2);
+    sprintf("%25s", hd_top2);
+    sprintf("%25.3f", tmp2);
     
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));

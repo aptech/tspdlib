@@ -52,12 +52,12 @@ proc(2) = LMkpss(y, model, ...);
     
     "KPSS tests for stationarity:";
     if model == 1;
-        "-----------Constant Only----------------------------------";
         z = ones(t,1);
-    endif;
-    if model == 2;
-        "-----------Constant and Trend --------------------------";
+    elseif model == 2;
         z = ones(t,1)~seqa(1,1,t);
+    else;
+        errorlog "'lmkpss' : Invalid model option.";
+        end;
     endif;
     
     { lm_KPSS, ssr } = _get_kpss(y, z, varm, l, T, 1);
@@ -71,19 +71,18 @@ proc(2) = LMkpss(y, model, ...);
     // T adjusted critical values based on response surfaces
     cv = _get_cv_KPSSrsf(model, T);
 
-
-
+    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "KPSS", "Stationarity");
     
     // Print results
     local top, side, stats, dec, colwidth;
-    top = "KPSS Stat";
+    top = "KPSS Stat:";
     side = "";
     stats = lm_kpss;
     dec = 3;
     colwidth = 25;
     
     _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
-    _printConclusion(lm_KPSS, cv, 1, "stationarity");
+    _printConclusion(lm_KPSS, cv, 1, " stationarity");
     
     retp(lm_kpss, cv);
 endp;

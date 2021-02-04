@@ -107,16 +107,19 @@ proc(3) = LM(y, ...);
     // cv  = _get_cv_lm(t);
     cv  = _get_cv_LMrsf(0, T-p , p);
     
+    
+    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "LM", "Unit root");
+    
       // Print results
     local top, side, stats, dec, colwidth;
-    top = "LM Stat"$|"Lags";
+    top = "LM Stat:"$|"Chosen Lags:";
     side = "";
     stats = tau|p-1;
     dec = 3;
     colwidth = 25;
     
     _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
-    _printConclusion(tau, cv, 0, "unit root");
+    _printConclusion(tau, cv, 0, "a unit root");
     
     retp(tau, p - 1, cv');
 endp;
