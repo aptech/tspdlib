@@ -6,21 +6,12 @@ new;
 cls; 
 library tspdlib;
 
-// Set fname to name of dataset
-fname = "nelsonplosser.dta";
-
-// Add the full path to this code file
-// to the front of 'fname'
-fname = __FILE_DIR $+ fname;
-
-// Load three variables from the dataset
-datap = loadd(fname, "m + bnd + sp500");
-
-// Remove all rows with missing values
-datap = packr(datap);
+// Load dataset
+data = loadd(__FILE_DIR $+ "tscoint_full.dat");
+data = setcoldateformats(data, "%m/%Y", "Date");
 
 // Set the maximum number of breaks
-m = 2;
+m = 3;
 
 /*
 ** Set the model
@@ -33,4 +24,4 @@ model = 1;
 
 
 // Perform test
-call coint_maki(datap, m, model);
+call coint_maki(data, m, model);

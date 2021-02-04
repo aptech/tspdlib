@@ -28,11 +28,14 @@
 **                       1: t-sig criterion
 */
 proc (1) = coint_maki(y, m, model, ...);
-    local d0, d1, trimm, lagoption;
+    local d0, d1, trimm, lagoption, dt_vec, frac;
     
     { trimm, lagoption } = dynargsGet(1|2, 0.10, 1);
     
-    #ifminkernelversion(20);
+    // Check for dates
+    { dt_vec, Y } = _checkfordate(Y);
+    
+#ifminkernelversion(20);
     local hd_side, tmp1;
     tmp1 = rows(y)|trimm|m;
     hd_side = "Sample Size:"$|"Trimming parameter:"$|"Max. # Breaks:";
@@ -59,19 +62,30 @@ proc (1) = coint_maki(y, m, model, ...);
     elseif model==3;
         print /lz "Trend and Regime shifts";
     endif;
+    print "==========================================================";
     
- #ifminkernelversion(20);
-    hd_side = "Test statistic:"$|"Break One:"$|"Break Two:";
-    tmp1 = d0|d1;
-    sprintf("%20s %18.2f", hd_side, tmp1);
+    // Print breaks
+    frac = d1/rows(y);
+    if ismiss(dt_vec) != 1;
+        d1 = dt_vec[d1];
+    endif;
+    
+#ifminkernelversion(21);
+    hd_side = "Test statistic:";
+    tmp1 = d0;
+    sprintf("%-20s %18.2f", hd_side, tmp1);
+    
+    
+    _printBreaks(dt_vec, d1, frac);
+    
 #elseif;
-
+    
     print /lz "Test statistic:"  d0;
     print /lz "Break points:" d1;
 #endif;
     
     print "==========================================================";
-  retp(d0);
+    retp(d0);
 endp;
 
 
