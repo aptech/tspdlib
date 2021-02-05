@@ -8,7 +8,7 @@ Engle-Granger cointegration test.
 
 Format
 ----------------
-.. function:: { tau, cvADF } = coint_egranger(y, x, model, pmax, ic)
+.. function:: { tau, cvADF } = coint_egranger(y, x, model[, pmax, ic])
 
 
     :param y: Dependent variable.
@@ -27,14 +27,14 @@ Format
 
     :type model: Scalar
 
-    :param pmax: Maximum number of lags for Dy in ADF test.
+    :param pmax: Optional, maximum number of lags for Dy in ADF test. Default = 8.
     :rtype pmax: Scalar
 
-    :param ic: Optional, the information criterion used for choosing lags. Default = 3.
+    :param ic: Optional, the information criterion used for choosing lags. Default = 2.
 
          =========== ==============
          1           Akaike.
-         1           Schwarz.
+         2           Schwarz.
          =========== ==============
 
     :type ic: Scalar
@@ -61,20 +61,9 @@ Examples
   y = data[., 1];
   x = data[., 2:cols(data)];
 
-  /*
-  ** Information Criterion:
-  ** 1=Akaike;
-  ** 2=Schwarz;
-  ** 3=t-stat sign.
-  */
-  ic = 2;
-
-  // Maximum number of lags
-  pmax = 12;
-
   // No constant or trend
   model = 0;
-  { tau, cvADF } = coint_egranger(y, x, model, pmax, ic);
+  { tau, cvADF } = coint_egranger(y, x, model);
 
 
 Source

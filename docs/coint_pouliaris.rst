@@ -9,7 +9,7 @@ Asymptotic critical values for residual based tests for cointegration.
 
 Format
 ----------------
-.. function:: { Zt, Za, cvZt, cvZa }  = coint_pouliaris(y, x, model, bwl, varm)
+.. function:: { Zt, Za, cvZt, cvZa }  = coint_pouliaris(y, x, model[, bwl, varm])
 
 
     :param y: Dependent variable.
@@ -31,7 +31,7 @@ Format
     :param bwl: Optional, bandwidth length for long-run variance computation. Default = round(4 * (T/100)^(2/9)).
     :type bwl:  Scalar
 
-    :param varm: Long-run consistent variance estimation method
+    :param varm: Optional, long-run consistent variance estimation method. Default = 1.
 
              =========== ======================================================
              1           iid.
@@ -67,32 +67,19 @@ Examples
   cls;
   library tspdlib;
 
-  // Load the data
-  data = loadd(__FILE_DIR $+ "TScoint.dat");
+  // Load data
+  data = loadd(__FILE_DIR $+ "tscoint_full.dat");
+  data = setcoldateformats(data, "%m/%Y", "Date");
 
   // Define y and x matrix
   y = data[., 1];
   x = data[., 2:cols(data)];
 
-  // Time variable
-  T = rows(data);
-
-  // Long-run consistent variance estimation method
-  varm = 3;
-
-  // Bandwidth for kernel estimator
-  bwl = round(4 * (T/100)^(2/9));
-
   // No constant or trend
   model = 0;
 
-      { Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model, bwl, varm);
+  { Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model);
 
-      "    Test         Statistic  CV(1%, 5%, 10%)";
-      "Ho: no co-integration (EG, 1987 & P0, 1990)";
-      "   PO_Zt         ";;Zt    ;; cvZt';
-      "   PO_Za         ";;Za    ;; cvZa';
-      "";
 
 
 Source

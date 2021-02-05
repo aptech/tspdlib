@@ -8,7 +8,7 @@ KPSS stationarity test with Flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { KPSSk, k, cv } = fourier_gls(y, model, fmax, bwl, varm)
+.. function:: { KPSSk, k, cv } = fourier_gls(y, model[, fmax, bwl, varm])
 
 
     :param y: Dependent variable.
@@ -23,13 +23,13 @@ Format
 
     :type model: Scalar
 
-    :param fmax: Maximum number of single Fourier frequency (upper bound is 5).
+    :param fmax: Optional, maximum number of single Fourier frequency (upper bound is 5). Default = 5.
     :type fmax: Scalar
 
-    :param bwl: Bandwidth for spectral window.
+    :param bwl: Optional, bandwidth for spectral window. Default = round(4 * (T/100)^(2/9)).
     :type bwl: Scalar
 
-    :param varm: Bandwidth for spectral window.
+    :param varm: Optional, long-run consistent variance estimation method. Default = 1.
     =========== ==========================
     1           iid
     2           Bartlett
@@ -54,44 +54,19 @@ Examples
 --------
 
 ::
-
+  new;
+  cls;
   library tspdlib;
 
   // Load date file
-  y = loadd(__FILE_DIR $+ "TSe.dat");
-  T = rows(y);
+  y = loadd(__FILE_DIR $+ "ts_full.dat");
+  y = setcoldateformats(y, "%m/%Y", "Date");
 
-  // bandwidth lag
-  bwl = round(4 * (T/100)^(2/9));
-
-  /*
-  ** Information Criterion:
-  ** 1=Akaike;
-  ** 2=Schwarz;
-  ** 3=t-stat sign.
-  */
-  ic = 3;
-
-  // Maximum number of Fourier
-  fmax = 3;
-
-  format /m1 /rd 8,4;
-
-  // Set long run variance method
-  varm = 1;
-
-  /*
-  ** 1 = With constant
-  ** 2 = With constant and trend
-  */
+  // With constant
   model = 1;
 
   "Fourier KPSS test (Becker, Enders & Lee, 2006)";
-  { KPSS, k, cv } = Fourier_KPSS(y, model, fmax, bwl, varm);
-  "       KPSS-stat       ";;KPSS;
-  "       Fourier         ";;k;
-  "       CV (10%, 5%, 1%)";;cv;
-  "";
+  { KPSS, k, cv } = Fourier_KPSS(y, model);
 
 Source
 ------

@@ -9,7 +9,7 @@ Computes the KPSS stationary test with two structural breaks.
 
 Format
 ----------------
-.. function:: {  kpss_stat, tb, lambda, cv } = KPSS_2break(y, model, bwl, varm, trimm)
+.. function:: {  kpss_stat, tb, lambda, cv } = KPSS_2break(y, model)
 
 
     :param y: Time series data to be test.
@@ -24,10 +24,10 @@ Format
 
     :type model: Scalar
 
-    :param bwl: Bandwidth for the spectral window.
+    :param bwl: Optional, bandwidth for the spectral window. Default = round(4 * (T/100)^(2/9)).
     :type  bwl: Scalar
 
-    :param varm: Long-run consistent variance estimation method
+    :param varm: Optional, long-run consistent variance estimation method. Default = 1.
 
           =========== =====================================================
           1           iid.
@@ -66,32 +66,16 @@ Examples
   library tspdlib;
 
   // Load date file
-  y = loadd(__FILE_DIR $+ "TSe.dat");
-  T = rows(y);
+  y = loadd(__FILE_DIR $+ "ts_full.dat");
+  y = setcoldateformats(y, "%m/%Y", "Date");
 
-  // bandwidth lag
-  bwl = round(4 * (T/100)^(2/9));
-
-  // Trimming rate
-  trimm = 0.10;
-
-  /*
-  ** 1 = Break in level
-  ** 2 = Break in level and trend
-  */
+  // Break in level
   model = 1;
+  { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model);
 
-  // Set long-run variance computation type
-  // 1           iid.
-  // 2           Bartlett.
-  // 3           Quadratic Spectral (QS).
-  // 4           SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
-  // 5           SPC with QS
-  // 6           Kurozumi with Bartlett
-  // 7           Kurozumi with QS
-  varm = 1;
-
- { KPSS, tb1, tb2, cv } = KPSS_2break(y, model, bwl, varm, trimm);
+  // Break in level and trend
+  model = 2;
+  { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model);
 
 Source
 ------

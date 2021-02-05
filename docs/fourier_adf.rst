@@ -8,7 +8,7 @@ Dickey-Fuller unit root test with Flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { ADFk, k, p, cv } = Fourier_ADF(y, model, pmax, fmax, ic)
+.. function:: { ADFk, k, p, cv } = Fourier_ADF(y, model[, pmax, fmax, ic])
 
 
     :param y: Dependent variable.
@@ -23,10 +23,10 @@ Format
 
     :type model: Scalar
 
-    :param pmax: Maximum number of lags for Dy; 0=no lag.
+    :param pmax: Optional, maximum number of lags for Dy; 0=no lag. Default = 8.
     :type pmax: Scalar
 
-    :param fmax: Maximum number of single Fourier frequency (upper bound is 5).
+    :param fmax: Optional, maximum number of single Fourier frequency (upper bound is 5). Default = 5.
     :type fmax: Scalar
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
@@ -57,45 +57,14 @@ Examples
   library tspdlib;
 
   // Load date file
-  y = loadd(__FILE_DIR $+ "TSe.dat");
+  y = loadd(__FILE_DIR $+ "ts_full.dat");
+  y = setcoldateformats(y, "%m/%Y", "Date");
 
-  /*
-  ** Maximum number of lags for ds;
-  ** 0=no lags
-  */
-  pmax = 12;
-
-  /*
-  ** Information Criterion:
-  ** 1=Akaike;
-  ** 2=Schwarz;
-  ** 3=t-stat sign.
-  */
-  ic = 3;
-
-  // Maximum number of Fourier
-  fmax = 3;
-
-  format /m1 /rd 8,4;
-
-  /*
-  ** 1 = With constant
-  ** 2 = With constant and trend
-  */
+  // With constant
   model = 1;
 
   "Fourier ADF test (Enders & Lee, 2012)";
-  { ADFstat, f, p, cv } = Fourier_ADF(y, model, pmax, fmax, ic);
-  "       ADF-stat        ";;
-  ADFstat;
-  "       Fourier         ";;
-  f;
-  "       Lag             ";;
-  p;
-  "       CV (1%, 5%, 10%)";;
-  cv;
-  "";
-
+  { ADFstat, f, p, cv } = Fourier_ADF(y, model);
 
 Source
 ------

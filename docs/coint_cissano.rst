@@ -8,7 +8,7 @@ Lagrange Multiplier‐type statistic to test the null hypothesis of cointegratio
 
 Format
 ----------------
-.. function:: { SCols, TBols, SCdols, TBdols, lambda, cv } = coint_cissano(y, x, model, bwl, varm, trimm, q)
+.. function:: { SCols, TBols, SCdols, TBdols, lambda, cv } = coint_cissano(y, x, model [, bwl, varm, trimm, q])
 
 
     :param y: Dependent variable.
@@ -31,7 +31,7 @@ Format
     :param bwl: Optional, bandwidth length for long-run variance computation. Default = round(4 * (T/100)^(2/9)).
     :type bwl: Scalar
 
-    :param varm: Long-run consistent variance estimation method
+    :param varm: Optional, long-run consistent variance estimation method. Default = 1.
 
          =========== ==============
          1           iid.
@@ -48,7 +48,7 @@ Format
     :param trimm: Optional, trimming rate. Default = 0.10.
     :type trimm: Scalar
 
-    :param q: Number of leads and lags for DOLS estimation. Default = int(4*(t/100)^(2/9)).
+    :param q: Optional, number of leads and lags for DOLS estimation. Default = int(4 * (t/100)^(2/9)).
     :type q: Scalar
 
     :return SCols: SC test based on OLS estimation
@@ -75,35 +75,17 @@ Examples
 
   library tspdlib;
 
-  // Load date file
-  y = loadd(__FILE_DIR $+ "ts_full.dat");
-  y = setcoldateformats(y, "%m/%Y", "Date");
+  // Load dataset
+  data = loadd(__FILE_DIR $+ "tscoint_full.dat");
+  data = setcoldateformats(data, "%m/%Y", "Date");
 
   // Define y and x matrix
   y = data[., 1];
   x = data[., 2:cols(data)];
 
-  T = rows(data);
-
-  // Maximum number of lags
-  pmax = 12;
-
-  // Trimming rate
-  trimm = 0.10;
-
-  // Long-run consistent variance estimation method
-  varm = 3;
-
-  // Bandwidth for kernel estimator
-  bwl = round(4 * (T/100)^(2/9));
-
-  // Leads & Lags for DOLS estimation
-  q = int(4*(T/100)^(2/9));
-
   // Level shifts
   model = 1;
-  { SCols, TBols, SCdols, TBdols, lambda, cv } =
-      coint_cissanso(y, x, model, bwl, varm, trimm, q);
+  { SCols, TBols, SCdols, TBdols, lambda, cv } = coint_cissanso(y, x, model);
 
 
 Source

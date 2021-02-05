@@ -9,7 +9,7 @@ Test of the null of cointegration allowing for structural breaks of unknown form
 
 Format
 ----------------
-.. function:: {CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols} =  coint_tsongetal(y, x, model, bwl, kmax, varm, q);
+.. function:: {CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols} =  coint_tsongetal(y, x, model[, bwl, kmax, varm, q]);
 
 
     :param y: Dependent variable.
@@ -30,10 +30,10 @@ Format
     :param bwl: Optional, bandwidth length for long-run variance computation. Default = round(4 * (T/100)^(2/9)).
     :type bwl:  Scalar
 
-    :param kmax: Maximum number of Fourier frequency
+    :param kmax: Optional, maximum number of Fourier frequency. Default = 5.
     :type kmax: Scalar
 
-    :param varm: Long-run consistent variance estimation method
+    :param varm: Optional, long-run consistent variance estimation method. Default = 1.
 
              =========== ======================================================
              1           iid.
@@ -47,7 +47,7 @@ Format
 
     :type varm: Scalar
 
-    :param q: Number of leads and lags for DOLS estimation. Default = int(4*(t/100)^(2/9)).
+    :param q: Optional, number of leads and lags for DOLS estimation. Default = int(4 * (t/100)^(2/9)).
     :type q: Scalar
 
     :return CIols: CI test based on OLS estimation.
@@ -88,34 +88,10 @@ Examples
   y = data[., 1];
   x = data[., 2:cols(data)];
 
-  T = rows(data);
-
-  // Long-run consistent variance estimation method
-  varm = 3;
-
-  // Bandwidth for kernel estimator
-  bwl = round(4 * (T/100)^(2/9));
-
-  // Leads & Lags for DOLS estimation
-  q = int(4*(t/100)^(2/9));
-
-  // Maximum number of Fourier frequency
-  kmax = 3;
-
-  format/m1/rd 8,3;
-
   // Level shift
   model = 1;
   { CIfols, FFols, CIfdols, FFdols, cv_fourier, Fols, Fdols } =
-                      coint_tsongetal(y, x, model, bwl, kmax, varm, q);
-      "Ho: co-integration   (Tsong et al., 2016)";
-      "   Fourier CIols ";; CIfols;;  cv_fourier';
-      "   Freq. (Fols)  ";; FFols;
-      "   F-stat (Fols) ";; Fols[FFols];
-      "   Fourier CIdols";; CIfdols;;cv_fourier';
-      "   Freq. (Fdols) ";; FFdols;
-      "   F-stat(Fdols) ";; Fdols[FFdols];
-      "";
+                      coint_tsongetal(y, x, model);
 
 Source
 ------

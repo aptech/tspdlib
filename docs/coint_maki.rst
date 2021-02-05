@@ -9,7 +9,7 @@ Tests for cointegration with an unknown number of breaks.
 
 Format
 ----------------
-.. function:: tst = coint_maki(y, m, model, trimm, lagoption)
+.. function:: tst = coint_maki(y, m, model[, trimm, lagoption])
 
 
     :param y: Data to be tested.
@@ -38,7 +38,7 @@ Format
     1           T-stat criterion
     =========== ==============
 
-    :type lagoption: Scalar
+    :type lagoption: Optional, scalar. Default = 1.
 
     :return tst: Test statistic
     :rtype tst: Scalar
@@ -56,22 +56,12 @@ Examples
   cls;
   library tspdlib;
 
-  // Set fname to name of dataset
-  fname = "nelsonplosser.dta";
-
-  // Add the full path to this code file
-  // to the front of 'fname'
-  fname = __FILE_DIR $+ fname;
-
-  // Load three variables from the dataset
-  datap = loadd(fname, "m + bnd + sp500");
-
-  // Remove all rows with missing values
-  datap = packr(datap);
-
+  // Load dataset
+  data = loadd(__FILE_DIR $+ "tscoint_full.dat");
+  data = setcoldateformats(data, "%m/%Y", "Date");
 
   // Set the maximum number of breaks
-  m = 2;
+  m = 3;
 
   /*
   ** Set the model
@@ -82,22 +72,8 @@ Examples
   */
   model = 2;
 
-  /*
-  ** Set the trimming parameter
-  **   This should be a percentage between
-  **   0 and 1. 0.05 represents 5%
-  */
-  trimm = 0.05;
-
-  /*
-  ** Set lagoption
-  **   0: lag=0
-  **   1: t-sig criterion
-  */
-  lagoption = 1;
-
   // Perform test
-  call coint_maki(datap, m, model, trimm, lagoption);
+  call coint_maki(datap, m, model);
 
 
 Source

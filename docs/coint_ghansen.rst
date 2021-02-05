@@ -8,7 +8,7 @@ Tests for the null of no cointegration against the alternative of cointegration 
 
 Format
 ----------------
-.. function:: { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } = coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
+.. function:: { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } = coint_ghansen(y, x, model[, bwl, ic, pmax, varm, trimm]);
 
 
     :param y: Dependent variable.
@@ -41,10 +41,10 @@ Format
 
     :type ic: Scalar
 
-    :param pmax: Maximum number of lags for Dy in ADF test.
+    :param pmax: Optional, maximum number of lags for Dy in ADF test. Default = 8.
     :type pmax: Scalar
 
-    :param varm: Long-run consistent variance estimation method
+    :param varm: Optional, long-run consistent variance estimation method. Default = 1.
 
              =========== ======================================================
              1           iid.
@@ -95,40 +95,18 @@ Examples
   cls;
   library tspdlib;
 
-  // Load the data
-  data = loadd(__FILE_DIR $+ "TScoint.dat");
+  // Load dataset
+  data = loadd(__FILE_DIR $+ "tscoint_full.dat");
+  data = setcoldateformats(data, "%m/%Y", "Date");
 
   // Define y and x matrix
   y = data[., 1];
   x = data[., 2:cols(data)];
 
-  T = rows(data);
-
-  /*
-  ** Information Criterion:
-  ** 1=Akaike;
-  ** 2=Schwarz;
-  ** 3=t-stat sign.
-  */
-  ic = 2;
-
-  //Maximum number of lags
-  pmax = 12;
-
-  // Trimming rate
-  trimm= 0.10;
-
-  // Long-run consistent variance estimation method
-  varm = 3;
-
-  // Bandwidth for kernel estimator
-  bwl = round(4 * (T/100)^(2/9));
-
   // Level shift
   model = 1;
 
-  { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } =
-      coint_ghansen(y, x, model, bwl, ic, pmax, varm, trimm);
+  { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } = coint_ghansen(y, x, model);
 
 
 Source

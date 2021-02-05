@@ -59,45 +59,14 @@ Examples
   library tspdlib;
 
   // Load date file
-  y = loadd(__FILE_DIR $+ "TSe.dat");
+  y = loadd(__FILE_DIR $+ "ts_full.dat");
+  y = setcoldateformats(y, "%m/%Y", "Date");
 
-  /*
-  ** Maximum number of lags for ds;
-  ** 0=no lags
-  */
-  pmax = 12;
-
-  /*
-  ** Information Criterion:
-  ** 1=Akaike;
-  ** 2=Schwarz;
-  ** 3=t-stat sign.
-  */
-  ic = 3;
-
-  // Maximum number of Fourier
-  fmax = 3;
-
-  format /m1 /rd 8,4;
-
-  /*
-  ** 1 = With constant
-  ** 2 = With constant and trend
-  */
+  // With constant
   model = 1;
 
   "Fourier GLS test (Rodrigues & Taylor, 2012)";
-  { GLSstat, f, p, cv } = Fourier_GLS(y, model, pmax, fmax, ic);
-  "       GLS-stat        ";;
-  GLSstat;
-  "       Fourier         ";;
-  f;
-  "       Lag             ";;
-  p;
-  "       CV (1%, 5%, 10%)";;
-  cv;
-  "";
-
+  { GLSstat, f, p, cv } = Fourier_GLS(y, model);
 
 
 Source

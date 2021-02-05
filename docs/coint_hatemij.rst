@@ -9,7 +9,7 @@ Tests for cointegration with two regime shifts.
 
 Format
 ----------------
-.. function:: { ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa } = coint_hatemiJ(y, x, model, bwl, ic, pmax, varm, trimm)
+.. function:: { ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa } = coint_hatemiJ(y, x[, model, bwl, ic, pmax, varm, trimm])
 
 
     :param y: Dependent variable.
@@ -18,7 +18,7 @@ Format
     :param x: Independent variable.
     :type x: NxK matrix
 
-    :param model: Model to be implemented.
+    :param model: Optional, model to be implemented. Default = 3.
 
           =========== ====================
           3           C/S (regime shift)
@@ -39,10 +39,10 @@ Format
 
     :type ic: Scalar
 
-    :param pmax: Maximum number of lags for Dy in ADF test.
+    :param pmax: Optional, maximum number of lags for Dy in ADF test. Default = 8.
     :type pmax: Scalar
 
-    :param varm: Long-run consistent variance estimation method
+    :param varm: Optional, long-run consistent variance estimation method. Default = 1.
 
              =========== ==============
              1           iid.
@@ -102,8 +102,10 @@ Examples
   cls;
   library tspdlib;
 
-  // Load the data
-  data = loadd(__FILE_DIR $+ "TScoint.dat");
+  // Load dataset
+  data = loadd(__FILE_DIR $+ "tscoint_full.dat");
+  data = setcoldateformats(data, "%m/%Y", "Date");
+
 
   // Define y and x matrix
   y = data[., 1];
@@ -111,34 +113,9 @@ Examples
 
   T = rows(data);
 
-  /*
-  ** Information Criterion:
-  ** 1=Akaike;
-  ** 2=Schwarz;
-  ** 3=t-stat sign.
-  */
-  ic = 2;
-
-  //Maximum number of lags
-  pmax = 12;
-
-  // Trimming rate
-  trimm= 0.10;
-
-  // Long-run consistent variance estimation method
-  varm = 3;
-
-  // Bandwidth for kernel estimator
-  bwl = round(4 * (T/100)^(2/9));
-
-  // Leads & Lags for DOLS estimation
-  q = int(4*(t/100)^(2/9));
-
-  model = 3;
-
   // Two breaks
   {ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa } =
-      coint_hatemiJ(y, x, model, bwl, ic, pmax, varm, trimm);
+      coint_hatemiJ(y, x);
 
 
 Source

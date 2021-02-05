@@ -4,7 +4,6 @@ library tspdlib;
 
 // Load date file
 y = loadd(__FILE_DIR $+ "TSe.dat");
-T = rows(y);
 
 /*
 ** Use defaults

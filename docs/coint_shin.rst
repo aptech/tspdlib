@@ -7,7 +7,7 @@ Purpose
 A residual-based test for the null of cointegration using a structural single equation model.
 Format
 ----------------
-.. function:: { CIols, CIdols, cv }  = coint_shin(y, x, model, bwl, varm, q)
+.. function:: { CIols, CIdols, cv }  = coint_shin(y, x, model[, bwl, varm, q])
 
 
     :param y: Dependent variable.
@@ -29,7 +29,7 @@ Format
     :param bwl: Optional, bandwidth length for long-run variance computation. Default = round(4 * (T/100)^(2/9)).
     :type bwl:  Scalar
 
-    :param varm: Long-run consistent variance estimation method
+    :param varm: Optional, long-run consistent variance estimation method. Default = 1.
 
              =========== =====================================================
              1           iid.
@@ -43,7 +43,7 @@ Format
 
     :type varm: Scalar
 
-    :param q: Number of leads and lags for DOLS estimation. Default = int(4*(t/100)^(2/9)).
+    :param q: Optional, number of leads and lags for DOLS estimation. Default = int(4 * (t/100)^(2/9)).
     :type q: Scalar
 
     :return CIols: CI test based on OLS estimation
@@ -65,45 +65,21 @@ Examples
   cls;
   library tspdlib;
 
-  // Load data
-  data = loadd(__FILE_DIR $+ "TScoint.dat");
+  // Load dataset
+  data = loadd(__FILE_DIR $+ "tscoint_full.dat");
+  data = setcoldateformats(data, "%m/%Y", "Date");
 
   // Define y and x matrix
   y = data[., 1];
   x = data[., 2:cols(data)];
 
-  // Time variable
-  T = rows(data);
-
-  // Long-run consistent variance estimation method
-  varm = 3;
-
-  // Bandwidth for kernel estimator
-  bwl = round(4 * (T/100)^(2/9));
-
-  // Leads & Lags for DOLS estimation
-  q = int(4*(t/100)^(2/9));
-
   // No constant
   model = 0;
-     { CIols, CIdols, cv} = coint_shin(y, x, model, bwl, varm, q);
-
-      "    Test         Statistic  CV(1%, 5%, 10%)";
-      "Ho: co-integration   (Shin, 1994)";
-      "   CIols         ";;CIols ;; cv';
-      "   CIdols        ";;CIdols;; cv';
-      "";
+     { CIols, CIdols, cv} = coint_shin(y, x, model);
 
   // Constant only
   model = 1;
-     { CIols, CIdols, cv} = coint_shin(y, x, model, bwl, varm, q);
-
-      "    Test         Statistic  CV(1%, 5%, 10%)";
-      "Ho: co-integration   (Shin, 1994)";
-      "   CIols         ";;CIols ;; cv';
-      "   CIdols        ";;CIdols;; cv';
-      "";
-
+     { CIols, CIdols, cv} = coint_shin(y, x, model);
 
 
 Source
