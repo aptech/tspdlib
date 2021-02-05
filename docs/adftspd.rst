@@ -9,7 +9,7 @@ Computes the Augmented Dickey Fuller unit root test.
 
 Format
 ----------------
-.. function:: { tstat, lags, cv } = adf(y, model, pmax, ic)
+.. function:: { tstat, lags, cv } = adf(y, model[, pmax, ic])
 
 
     :param y: Time series data to be test.
@@ -59,28 +59,10 @@ Examples
   // Load date file
   y = loadd(__FILE_DIR $+ "TSe.dat");
 
-  /*
-  ** Maximum number of lags for ds;
-  ** 0=no lags
-  */
-  pmax = 12;
-
-  /*
-  ** Information Criterion:
-  ** 1=Akaike;
-  ** 2=Schwarz;
-  ** 3=t-stat sign.
-  */
-  ic = 3;
-
-  /*
-  ** 0 = No deterministic component
-  ** 1 = With constant
-  ** 2 = With constant and trend
-  */
+  // No deterministic component
   model = 0;
 
-  { ADFtau, ADFp, cvADF }  = ADF(y, model, pmax, ic);
+  { ADFtau, ADFp, cvADF }  = ADF(y, model);
 
 Source
 ------
