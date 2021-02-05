@@ -263,12 +263,12 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
     tmp1 = "%-" $+ ntos(colwidth) $+ "s";
     tmp2 = "%-" $+ ntos(colwidth) $+ "." $+ ntos(dec) $+ "f";
     tmp3 = "%-" $+ ntos(colwidth) $+ ".3f";
-    format1 = tmp1 $+  tmp1 $+ tmp2;
+    format1 = tmp1 $+ tmp2;
     format2 = tmp1 $+  tmp3;
     
 #ifminkernelversion(20)
     if top $=="";
-        sprintf(format1, side, "", stats);
+        sprintf(tmp1$+format1, side, "", stats);
         print;
         print "Critical Values:";
         
@@ -288,8 +288,8 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         sprintf(tmp2, cv');
         print "=============================================================";
     else;
-        sprintf(tmp1, top);
-        sprintf(format1, side, "", stats);
+        sprintf(tmp1$+tmp1$+tmp1, "", "",top);
+        sprintf(tmp1 $+tmp1$+format1, side, "", "", stats);
         print;
         print "Critical Values:";
         

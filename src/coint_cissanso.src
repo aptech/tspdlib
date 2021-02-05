@@ -197,12 +197,14 @@ proc(6) = coint_cissanso(y, x, model, ...);
     
     sprintf("%s", "OLS break dates:");
     print "================================================================================";
-
+    // Print break dates
+    _printBreaks(dt_vec, tb1_min, frac1, 1);
     print;
     
     sprintf("%s", "DOLS break dates:");
     print "================================================================================";
-
+    // Print break dates
+    _printBreaks(dt_vec, tb2_min, frac2, 1);
     print;
     
     print "OLS cointegration conclusion:";
