@@ -132,7 +132,7 @@ proc(4) = KPSS_2breaks(y, model, ...);
     endo;
     cv = cv_kpss2(model, rows(y), tb1_min, tb2_min);
        
-    _printHeaderTSPDLIB(0, varm, 2, 2, trimm, "KPSS", "Stationarity", 0);
+    _printHeaderTSPDLIB(0, varm, 2, 2, 0, "KPSS", "Stationarity", 0);
    
     // Print break dates
     frac = (tb1_min/rows(y))|(tb2_min/rows(y));

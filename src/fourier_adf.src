@@ -194,7 +194,7 @@ proc(4) = Fourier_ADF(y, model, ...);
         endif;
     endif;
     
-    _printHeaderTSPDLIB(ic, 0, 2, "Unknown", 0, "Fourier ADF", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 2, 4, 0, "Fourier ADF", "Unit root", 0);
 
     // Print results & Critical values
     local top, side, stats, dec, colwidth;

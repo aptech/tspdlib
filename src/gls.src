@@ -322,7 +322,7 @@ proc(3) = ERSpt(y, model, ...);
     colwidth = 25;
     
      // Print stats 
-    _printStatsTable("", side, stats, cv, dec, colwidth, 0);
+    _printStatsTable("", side, stats, cv', dec, colwidth, 0);
 
 
      // Print conclusions
@@ -434,7 +434,7 @@ proc(8) = MGLS(y, model, ...);
     endif;
     
        
-    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "MGLS", "Unit root", 0);
+    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "MGLS", "Unit root", 1);
 
     // Print results
     local top, side, stats, dec, colwidth, cv2;
@@ -445,18 +445,18 @@ proc(8) = MGLS(y, model, ...);
     dec = 3;
     colwidth = 25;
                          
-    _printStatsTable(top, side, stats, cv2, dec, colwidth, 0);
+    _printStatsTable(top, side, stats, cv2, dec, colwidth, 1);
     print;
     
     "Conclusion from MZA test:";
     _printConclusion(MZa, cvMZA, 0, "unit root");
-    print "===================================";
+    print "================================================================================";
     "Conclusion from MZt test:";
     _printConclusion(MZt, cvMZt, 0, "unit root");
-    print "===================================";
+    print "================================================================================";
     "Conclusion from MSB test:";
     _printConclusion(MSB, cvMSB, 0, "unit root");
-    print "===================================";
+    print "================================================================================";
     "Conclusion from MPT test:";
     _printConclusion(MPT, cvMPT, 0, "unit root");
     print "===================================";

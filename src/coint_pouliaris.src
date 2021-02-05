@@ -197,10 +197,10 @@ proc(4) = coint_pouliaris(y, x, model, ...);
 
     print "Zt test results:";
     _printConclusion(Zt, cvZt, 0, "no co-integration");
-    print "=============================================";
+    print "================================================================================";
     print "Za test results:";
     _printConclusion(Za, cvZa, 0, "no co-integration");
-    print "=============================================";
+    print "================================================================================";
 
     if k<6;
         retp(Zt, Za, cvZt, cvZa);

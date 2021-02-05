@@ -273,7 +273,7 @@ proc(4) = Fourier_GLS(y, model, ...);
     print;
     
         
-    _printHeaderTSPDLIB(ic, 0, 2, "Unknown", 0, "Fourier GLS", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 2, 4, 0, "Fourier GLS", "Unit root", 0);
 
     // Print results & Critical values
     local top, side, stats, dec, colwidth;
