@@ -151,6 +151,7 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp
         endif;
     elseif type(model) == 13 or type(model) == 15;
         modl_str = model;
+        model = 4;
     endif;
     
     // Set up table columns
@@ -192,7 +193,7 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp
     fmt = "%-25s %-25s";
     sprintf(fmt, clm1, clm2);
     if long;
-        print "================================================================================";
+        print "=====================================================================================";
     else;
         print "=============================================================";
     endif;

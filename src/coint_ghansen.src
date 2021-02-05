@@ -184,30 +184,30 @@ proc(8) = coint_ghansen(y, x, model, ...);
     endif;
     
     sprintf("%s", "ADF estimated break dates:");
-     print "================================================================================";
+     print "=====================================================================================";
     // Print break dates
     _printBreaks(dt_vec, TBadf, fracADF, 1);
     print;
     
     print "Zt test results:";
-    print "================================================================================";
+    print "=====================================================================================";
     // Print break dates
     _printBreaks(dt_vec, TBzt, fracZt, 1);
     print;
     
     print "Za test results:";
-     print "================================================================================";
+    print "=====================================================================================";
     // Print break dates
     _printBreaks(dt_vec, TBza, fracZa, 1);
     print;
     
     print "ADF test results:";
     _printConclusion(ADF_min, cvADFZt, 0, "no co-integration");
-     print "================================================================================";
+     print "=====================================================================================";
     // Print break dates
     print "Zt test results:";
      _printConclusion(Zt_min, cvADFZt, 0, "no co-integration");
-     print "================================================================================";
+     print "=====================================================================================";
     // Print break dates
     print "Za test results:";
      _printConclusion(Za_min, cvZa, 0, "no co-integration");

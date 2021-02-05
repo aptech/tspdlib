@@ -36,9 +36,10 @@ proc(6) = ADF_1break_est(y, model, ...);
     dt1, br1, taup, aicp, sicp, tstatp, p, dy, y1, dep, z, x, 
     stat, de, brlag, e1, br, ze, b, sig2, se, ssr, resid, e, 
     opt_lag, cv, se_mat, se_keep, b_mat, b_keep,
-    outlier, pmax, ic, trimm, frac;
+    outlier, pmax, ic, trimm, frac, dt_vec;
     
     { outlier, pmax, ic, trimm } = dynargsGet(1|4, 1, 8, 3, 0.15);
+    { dt_vec, y } =_checkfordate(y);
     
     t = rows(y);
     tb1_min = 0;
