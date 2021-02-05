@@ -2,8 +2,9 @@ new;
 cls;
 library tspdlib;
 
-// Load the dataset
-data = loadd(__FILE_DIR $+ "TScoint.dat");
+// Load dataset
+data = loadd(__FILE_DIR $+ "tscoint_full.dat");
+data = setcoldateformats(data, "%m/%Y", "Date");
 
 // Define y and x matrix
 y = data[., 1];

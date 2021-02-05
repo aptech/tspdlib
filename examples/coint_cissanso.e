@@ -2,7 +2,6 @@ new;
 cls;
 library tspdlib;
 
-
 // Load dataset
 data = loadd(__FILE_DIR $+ "tscoint_full.dat");
 data = setcoldateformats(data, "%m/%Y", "Date");
