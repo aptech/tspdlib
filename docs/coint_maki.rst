@@ -29,7 +29,7 @@ Format
 
     :type model: Scalar
 
-    :param trimm: Trimming rate.
+    :param trimm: Optional, trimming rate. Default = 0.10.
     :type trimm: Scalar
 
     :param lagoption: Trimming rate.

@@ -41,7 +41,7 @@ Format
 
     :type varm: Scalar
 
-    :param trimm: Trimming rate.
+    :param trimm: Optional, trimming rate. Default = 0.10.
     :type trimm: Scalar
 
     :return kpss_stat: The KPSS test statistic with two breaks.

@@ -24,10 +24,10 @@ Format
 
     :type model: Scalar
 
-    :param pmax: The maximum number of lags for Dy.
+    :param pmax: Optional, the maximum number of lags for Dy. Default = 8.
     :type pmax: Scalar
 
-    :param ic: The information criterion used for choosing lags.
+    :param ic: Optional, the information criterion used for choosing lags. Default = 3.
     =========== ======================
     1           Akaike.
     2           Schwarz.
@@ -35,7 +35,7 @@ Format
     =========== ======================
     :type ic: Scalar
 
-    :param trimm: Trimming rate.
+    :param trimm: Optional, trimming rate. Default = 0.10.
     :type trimm: Scalar
 
     :return lm_tstat: Minimum test statistic with two breaks.

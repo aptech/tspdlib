@@ -15,10 +15,10 @@ Format
     :param y: Time series data to be test.
     :type y: Nx1 matrix
 
-    :param pmax: The maximum number of lags for Dy.
+    :param pmax: Optional, the maximum number of lags for Dy. Default = 8.
     :type pmax: Scalar
 
-    :param ic: The information criterion used for choosing lags.
+    :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
              =========== ==============
              1           Akaike.

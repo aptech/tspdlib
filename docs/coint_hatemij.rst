@@ -26,10 +26,10 @@ Format
 
     :type model: Scalar
 
-    :param bwl: Bandwidth length for long-run variance computation.
+    :param bwl: Optional, bandwidth length for long-run variance computation. Default = round(4 * (T/100)^(2/9)).
     :type bwl:  Scalar
 
-    :param ic: The information criterion used for choosing lags.
+    :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
          =========== =====================
          1           Akaike.
@@ -56,7 +56,7 @@ Format
 
     :type varm: Scalar
 
-    :param trimm: Trimming rate.
+    :param trimm: Optional, trimming rate. Default = 0.10.
     :type trimm: Scalar
 
     :return ADFmin: ADF test statistic

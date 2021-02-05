@@ -19,7 +19,7 @@ Format
     :param pmax: Maximum number of lags.
     :type pmax: Scalar
 
-    :param ic: The information criterion used for choosing lags.
+    :param ic: Optional, the information criterion used for choosing lags. Default = 3.
     =========== =====================
     1           Akaike.
     2           Schwarz.

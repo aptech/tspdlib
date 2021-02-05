@@ -3,7 +3,7 @@ cls;
 library tspdlib;
 
 // Load date file
-y = loadd("D:/development/GitHub/tspdlib/examples/ts_full.dat");
+y = loadd(__FILE_DIR $+ "ts_full.dat");
 y = setcoldateformats(y, "%m/%Y", "Date");
 
 // Break in level  

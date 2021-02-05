@@ -28,7 +28,7 @@ Format
 
     :type model: Scalar
 
-    :param bwl: Bandwidth length for long-run variance computation.
+    :param bwl: Optional, bandwidth length for long-run variance computation. Default = round(4 * (T/100)^(2/9)).
     :type bwl:  Scalar
 
     :param varm: Long-run consistent variance estimation method

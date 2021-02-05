@@ -25,10 +25,10 @@ Format
 
     :type model: Scalar
 
-    :param pmax: The maximum number of lags for Dy.
+    :param pmax: Optional, the maximum number of lags for Dy. Default = 8.
     :type pmax: Scalar
 
-    :param ic: The information criterion used for choosing lags.
+    :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
              =========== ==============
              1           Akaike.
@@ -69,33 +69,7 @@ Examples
   // Load date file
   y = loadd(__FILE_DIR $+ "PDe.dat");
 
-  // Set up model
-  // 0 = None
-  // 1 = constant
-  // 2 = linear trend
-  model= 1;
-
-  // Max lags for ADF regression
-  pmax = 4;
-
-  // Information Criterion:
-  // 1=Akaike
-  // 2=Schwarz
-  // 3=t-stat significance
-  ic   = 3;
-
-  { Ncadf, Nlm, Nmcadf, Nlags, pcadf, pmcadf } = cips(y, model, pmax, ic);
-
-  "Test            Stat.   p-value";
-  "CIPS         ";;
-  pcadf;;
-  "    NA  ";
-  "Modified CIPS";;
-  pmcadf;;
-  cdfn(pmcadf);
-  "";
-  "    id      CADF     LM       M-CADF   pval    Lags ";
-  seqa(1, 1, N)~Ncadf~Nlm~Nmcadf~cdfchic(abs(Nmcadf), q)~Nlags;
+  { Ncadf, Nlm, Nmcadf, Nlags, pcadf, pmcadf } = cips(y, model);
 
 
 Source

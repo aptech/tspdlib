@@ -29,7 +29,7 @@ Format
     :param fmax: Maximum number of single Fourier frequency (upper bound is 5).
     :type fmax: Scalar
 
-    :param ic: The information criterion used for choosing lags.
+    :param ic: Optional, the information criterion used for choosing lags. Default = 3.
     =========== ========================
     1           Akaike.
     2           Schwarz.

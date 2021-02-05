@@ -27,7 +27,7 @@ Format
 
     :type model: Scalar
 
-    :param bwl: Bandwidth length for long-run variance computation.
+    :param bwl: Optional, bandwidth length for long-run variance computation. Default = round(4 * (T/100)^(2/9)).
     :type bwl:  Scalar
 
     :param kmax: Maximum number of Fourier frequency
@@ -47,7 +47,7 @@ Format
 
     :type varm: Scalar
 
-    :param q: Number of leads and lags for DOLS estimation.
+    :param q: Number of leads and lags for DOLS estimation. Default = int(4*(t/100)^(2/9)).
     :type q: Scalar
 
     :return CIols: CI test based on OLS estimation.
