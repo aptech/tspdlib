@@ -231,11 +231,11 @@ proc (0) = _printBreaks(dt_vec, brks, frac, long);
     
     // Header column and row of table
     side = break_num[1:rows(brks)] $+ " break: ";
-    top = "   "$~" Date"$~" Fraction";
+    top = ""$~"Date"$~"Fraction";
     
     // Set up formats
-    fmt1 = "%-25s";
-    fmt2 = "%-25s %-25s%-25.3f";
+    fmt1 = "%-15s %15s%15s%15s";
+    fmt2 = "%-15s %15s%15s%15.3f";
     
     // Convert breaks to strings depending
     // on type of dt_vec
@@ -248,59 +248,60 @@ proc (0) = _printBreaks(dt_vec, brks, frac, long);
     // Print break dates
     print "Estimated break dates:";
   
-    sprintf(fmt1, top);
-    sprintf(fmt2, side, brk_str, frac);
+    sprintf(fmt1, "", "", "Date", "Fraction");
+    sprintf(fmt2, side, "", brk_str, frac);
     if long;
-        print "=====================================================================================";
+        print "============================================================================================";
     else;
-        print "=============================================================";
+        print "==============================================================";
     endif;
 endp;
 
 proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv);
-    local tmp1, tmp2, tmp3, format1, format2;
+    local tmp1a, tmp1b, tmp2, tmp3, format1, format2;
     
-    tmp1 = "%-" $+ ntos(colwidth) $+ "s";
-    tmp2 = "%-" $+ ntos(colwidth) $+ "." $+ ntos(dec) $+ "f";
-    tmp3 = "%-" $+ ntos(colwidth) $+ ".3f";
-    format1 = tmp1 $+ tmp2;
-    format2 = tmp1 $+  tmp3;
+    tmp1a = "%" $+ ntos(colwidth) $+ "s";
+    tmp1b = "%-" $+ ntos(colwidth) $+ "s";
+    tmp2 = "%" $+ ntos(colwidth) $+ "." $+ ntos(dec) $+ "f";
+    tmp3 = "%" $+ ntos(colwidth) $+ ".3f";
+    format1 = tmp1b $+ tmp2;
+    format2 = tmp1a $+  tmp3;
     
 #ifminkernelversion(20)
     if top $=="";
-        sprintf(tmp1$+format1, side, "", stats);
+        sprintf(tmp1b$+tmp1a$+format1, side, "", "", stats);
         print;
         print "Critical Values:";
         
         if multistat_in_cv;
-            sprintf(tmp1, ""$~"  1%"$~"  5%"$~"  10%");
+            sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
             sprintf(format2, side, cv');
         else;
-            sprintf(tmp1, "  1%"$~"  5%"$~"  10%");
-            sprintf(tmp3, cv');
+            sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
+            sprintf(tmp1a$+tmp3, "", cv');
         endif;
-        print "=============================================================";
+        print "==============================================================";
     elseif side $=="";
-        sprintf(format1, top, stats);
+        sprintf(tmp1b$+tmp1a$+format1, top, "", "", stats);
         print;
         print "Critical Values:";
-        sprintf(tmp1, "  1%"$~"  5%"$~"  10%");
-        sprintf(tmp2, cv');
-        print "=============================================================";
+        sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
+        sprintf(tmp1a$+tmp2, "", cv');
+        print "==============================================================";
     else;
-        sprintf(tmp1$+tmp1$+tmp1, "", "",top);
-        sprintf(tmp1 $+tmp1$+format1, side, "", "", stats);
+        sprintf(tmp1a, top);
+        sprintf(format1, side, stats);
         print;
         print "Critical Values:";
         
         if multistat_in_cv;
-            sprintf(tmp1, "" $~"  1%"$~"  5%"$~"  10%");
+            sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
             sprintf(format2, side, cv');
         else;
-            sprintf(tmp1, "  1%"$~"  5%"$~"  10%");
-            sprintf(tmp3, cv');
+            sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
+            sprintf(tmp1a$+tmp3, "", cv');
         endif;
-        print "=====================================================================================";
+        print "==============================================================";
     endif;
     print;
 

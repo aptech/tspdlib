@@ -161,7 +161,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     { cvADFZt, cvZa } = cv_coint_ghansen(k, model);
     
     // Printing   
-    _printHeaderTSPDLIB(0, varm, 3, 0, 1, "Gregory-Hansen", "No cointegration", 1);
+    _printHeaderTSPDLIB(0, varm, 3, 0, 1, "Gregory-Hansen", "No cointegration", 0);
 
     // Print results
     local top, side, stats, dec, colwidth;
@@ -171,7 +171,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     dec = 3;
     colwidth = 15;
     
-    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, 4, colwidth, 1);
+    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, 4, colwidth, 0);
 
     // Print breaks
     fracZa = TBza/rows(y);
@@ -184,30 +184,30 @@ proc(8) = coint_ghansen(y, x, model, ...);
     endif;
     
     sprintf("%s", "ADF estimated break dates:");
-     print "=====================================================================================";
+     print "==============================================================";
     // Print break dates
-    _printBreaks(dt_vec, TBadf, fracADF, 1);
+    _printBreaks(dt_vec, TBadf, fracADF, 0);
     print;
     
     print "Zt test results:";
-    print "=====================================================================================";
+    print "==============================================================";
     // Print break dates
-    _printBreaks(dt_vec, TBzt, fracZt, 1);
+    _printBreaks(dt_vec, TBzt, fracZt, 0);
     print;
     
     print "Za test results:";
-    print "=====================================================================================";
+    print "==============================================================";
     // Print break dates
-    _printBreaks(dt_vec, TBza, fracZa, 1);
+    _printBreaks(dt_vec, TBza, fracZa, 0);
     print;
     
     print "ADF test results:";
     _printConclusion(ADF_min, cvADFZt, 0, "no co-integration");
-     print "=====================================================================================";
+     print "==============================================================";
     // Print break dates
     print "Zt test results:";
      _printConclusion(Zt_min, cvADFZt, 0, "no co-integration");
-     print "=====================================================================================";
+    print "==============================================================";
     // Print break dates
     print "Za test results:";
      _printConclusion(Za_min, cvZa, 0, "no co-integration");

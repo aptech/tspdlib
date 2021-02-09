@@ -170,7 +170,7 @@ proc(3) = coint_shin(y, x, model, ...);
     endif;
     
         
-    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "Shin", "Cointegration", 1);
+    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "Shin", "Cointegration", 0);
 
     // Print results
     local side, top, stats, dec, colwidth;
@@ -180,16 +180,16 @@ proc(3) = coint_shin(y, x, model, ...);
     dec = 3;
     colwidth = 15;
     
-    _printStatsTable(top, side, stats, cv~cv, dec, colwidth, 1);
+    _printStatsTable(top, side, stats, cv~cv, dec, colwidth, 0);
 
     // Print conclusion
     print "OLS test results:";
-     print "=====================================================================================";
+    print "==============================================================";
     _printConclusion(C1, cv, 1, "cointegration");
     
     // Print conclusion
     print "DOLS test results:";
-     print "=====================================================================================";
+    print "==============================================================";
     _printConclusion(C2, cv, 1, "cointegration");
 
      if k<6;
