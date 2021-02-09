@@ -280,13 +280,13 @@ proc(4) = Fourier_GLS(y, model, ...);
 
     // Print results & Critical values
     local top, side, stats, dec, colwidth;
-    side = "ADF-stat:"$|"Frequency:"$|"Lag:";
+    side = "ADF-stat:";
     top = "";
-    stats = GLS|f|p-1;
+    stats = GLS;
     dec = 3;
     colwidth = 15;
              
-    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0);
+    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0, p-1, f);
     _printConclusion(GLS, crit[f, .], 0, "unit root");
 
     retp(GLS, f, opt_lag - 1, crit[f, .]);
