@@ -198,7 +198,7 @@ proc(6) = coint_cissanso(y, x, model, ...);
     sprintf("%s", "OLS break dates:");
     print "==============================================================";
     // Print break dates
-    _printBreaks(dt_vec, tb1_min, frac);
+    _printBreaks(dt_vec, tb1_min, frac1);
     print;
     
     sprintf("%s", "DOLS break dates:");

@@ -81,8 +81,8 @@ proc(2) = LMkpss(y, model, ...);
     dec = 3;
     colwidth = 15;
     
-    _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
-    _printConclusion(lm_KPSS, cv, 1, " stationarity");
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
+    _printConclusion(lm_KPSS, cv, 1, "stationarity");
     
     retp(lm_kpss, cv);
 endp;

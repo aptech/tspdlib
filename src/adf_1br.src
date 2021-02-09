@@ -234,8 +234,8 @@ proc (0) = _printBreaks(dt_vec, brks, frac);
     top = ""$~"Date"$~"Fraction";
     
     // Set up formats
-    fmt1 = "%-15s %15s%15s%15s";
-    fmt2 = "%-15s %15s%15s%15.3f";
+    fmt1 = "%-15s%15s%15s%15s";
+    fmt2 = "%-15s%15s%15s%15.3f";
     
     // Convert breaks to strings depending
     // on type of dt_vec
@@ -250,11 +250,7 @@ proc (0) = _printBreaks(dt_vec, brks, frac);
   
     sprintf(fmt1, "", "", "Date", "Fraction");
     sprintf(fmt2, side, "", brk_str, frac);
-    if long;
-        print "============================================================================================";
-    else;
-        print "==============================================================";
-    endif;
+     print "==============================================================";
 endp;
 
 proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv);
@@ -265,7 +261,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
     tmp2 = "%" $+ ntos(colwidth) $+ "." $+ ntos(dec) $+ "f";
     tmp3 = "%" $+ ntos(colwidth) $+ ".3f";
     format1 = tmp1b$+tmp1a$+tmp1b$+tmp2;
-    format2 = tmp1a $+tmp3;
+    format2 = tmp1b $+tmp3;
     
 #ifminkernelversion(20)
     if top $=="";
@@ -289,8 +285,14 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         sprintf(tmp1a$+tmp2, "", cv');
         print "==============================================================";
     else;
-        sprintf(tmp1b$+tmp1a$+tmp1a, "", "", top);
-        sprintf(format1, side, "", "", stats);
+        if cols(stats)<3;
+            sprintf(tmp1b$+tmp1a$+tmp1a, "", "", top);
+            sprintf(format1, side, "", "", stats);
+        else;
+            sprintf(tmp1b$+tmp1a, "", top);
+            sprintf(tmp1b$+tmp3, side, stats);
+        endif;
+        
         print;
         print "Critical Values:";
         

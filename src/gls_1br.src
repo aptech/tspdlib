@@ -161,7 +161,7 @@ proc(16) =  GLS_1break(y, model, ...);
     lambda = tb1_min / t;
     {cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa} = _get_cv_gls_1break(model,lambda);
      
-    _printHeaderTSPDLIB(ic, 0, modl_str, 1, 0, "GLS", "Unit root", 1);
+    _printHeaderTSPDLIB(ic, 0, modl_str, 1, 0, "GLS", "Unit root", 0);
     
     // Print results & Critical values
     local stats, dec, colwidth, cv, side, top;
@@ -186,19 +186,19 @@ proc(16) =  GLS_1break(y, model, ...);
     
     print "ADF test results:";
     _printConclusion(ADFGLS_min, cvDFGLS, 0, "a unit root");
-    print "=====================================================================================";
+    print "==============================================================";
     print "PT test results:";
      _printConclusion(PT_min, cvPT, 0, "a unit root");
-    print "=====================================================================================";
+    print "==============================================================";
     print "MZt test results:";
      _printConclusion(MZt_min, cvMZt, 0, "a unit root");
-    print "=====================================================================================";
+    print "==============================================================";
     print "MZt test results:";
      _printConclusion(MZt_min, cvMZt, 0, "a unit root");
-    print "=====================================================================================";
+    print "==============================================================";
     print "MSB test results:";
      _printConclusion(MSB_min, cvMSB, 0, "a unit root");
-    print "=====================================================================================";
+    print "==============================================================";
     print "MPT test results:";
      _printConclusion(MPT_min, cvMPT, 0, "a unit root");
     
