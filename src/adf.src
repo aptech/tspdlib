@@ -119,9 +119,8 @@ proc(3) = ADF(y, model, ...);
     side = "ADF-stat:"$|"Chosen Lag:";
     stats = tau|p-1;
     dec = 3;
-    colwidth = 13;
-    
-    _printStatsTable("", side, stats, cv, dec, colwidth, 0);
+    colwidth = 15;
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0);    
     _printConclusion(tau, cv, 0, "a unit root");
     
     retp(tau, p - 1, cv');
@@ -192,11 +191,11 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp
     // Print table
 
     if long;
-        fmt = "%-25s%25s%25s";
+        fmt = "%-30s%30s%30s";
         sprintf(fmt, clm1, "",clm2);
         print "=======================================================================================================";
     else;
-        fmt = "%-25s%25s";
+        fmt = "%-30s%30s";
         sprintf(fmt, clm1, clm2);
         print "==============================================================";
     endif;

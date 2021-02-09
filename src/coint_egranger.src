@@ -58,7 +58,9 @@ proc(2) = coint_egranger(y, x, model, ...);
         x1=ones(n, 1)~seqa(1, 1, n)~x;
     endif;
     { b, e1, sig2, se, ssr } = myols(y, x1);
+    screen off;
     { tau, lageg, cv } = adf(e1, 0, pmax, ic);
+    screen on;
     
     k=cols(x);
     if model==0;
