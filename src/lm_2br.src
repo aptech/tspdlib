@@ -273,13 +273,13 @@ proc(5) = LM_2breaks(y, model, ...);
     
     // Print results
     local top, side, stats, dec, colwidth;
-    side = "LM:"$|"Chosen Lag:";
+    side = "LM:";
     top = "";
-    stats = Lm_min|opt_lag-1;
+    stats = Lm_min;
     dec = 3;
     colwidth = 15;
     
-    _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0, opt_lag-1);
         
     // Print break dates
     _printBreaks(dt_vec, tb1_min|tb2_min, frac);

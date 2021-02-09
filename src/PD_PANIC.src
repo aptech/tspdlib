@@ -142,27 +142,30 @@ proc(5) = BNG_PANIC(y, model, ...);
     
      // Print results & Critical values
     local hd1, hd2, tmp1, tmp2;
-    hd1 = "PANIC-stat"$~"P-value";
-    tmp1 = Pe~(1-cdfn(Pe));
-    hd2 = "CS"$~"ADF"$~"p-val"$~"lags";
+    hd1 = "PANIC-stat:"$|"P-value:";
+    tmp1 = Pe|(1-cdfn(Pe));
+    hd2 = "ID"$~"ADF"$~"p-val"$~"lags";
     tmp2 = seqa(1, 1, N)~ADFe~pval~lags;
     
 #ifminkernelversion(20)
-    sprintf("%12s", hd1);
-    sprintf("%12.4f", tmp1);
+    sprintf("%12s%12.3f", hd1, tmp1);
+    sprintf("%12s%12d", "# Factors:", nf[2]);
+
     print;
     sprintf("%12s", hd2);
-    sprintf("%12.4f", tmp2);
+    sprintf("%12d%12.3f%12.3f%12d", seqa(1, 1, N), ADFe, pval, lags);
     print;
-    
+
 #else;
     hd1$~(ntos(tmp1, 4));
     hd2$~(ntos(tmp2, 4));
-#endif;
     
     print "Number of factors";
     "ICp2";;
-    nf[2];
+    ntos(nf[2], 1);
+#endif;
+    
+   
     
     retp(ADFe, pval, lags, Pe, nf);
 endp;
