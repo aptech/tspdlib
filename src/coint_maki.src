@@ -76,7 +76,7 @@ proc (1) = coint_maki(y, m, model, ...);
     sprintf("%-20s %18.2f", hd_side, tmp1);
     
     
-    _printBreaks(dt_vec, d1, frac, 0);
+    _printBreaks(dt_vec, d1, frac);
     
 #elseif;
     

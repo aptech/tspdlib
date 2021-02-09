@@ -182,7 +182,7 @@ proc(16) =  GLS_1break(y, model, ...);
         tb1_min = dt_vec[tb1_min];
     endif;
 
-    _printBreaks(dt_vec, tb1_min, frac, 1);
+    _printBreaks(dt_vec, tb1_min, frac);
     
     print "ADF test results:";
     _printConclusion(ADFGLS_min, cvDFGLS, 0, "a unit root");

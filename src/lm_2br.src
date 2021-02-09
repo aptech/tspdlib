@@ -282,7 +282,7 @@ proc(5) = LM_2breaks(y, model, ...);
     _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
         
     // Print break dates
-    _printBreaks(dt_vec, tb1_min|tb2_min, frac, 0);
+    _printBreaks(dt_vec, tb1_min|tb2_min, frac);
     
     _printConclusion(LM_min, cv, 0, "a unit root");
     

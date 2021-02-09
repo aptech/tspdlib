@@ -147,7 +147,7 @@ proc(4) = KPSS_1break(y, model, ...);
     _printStatsTable(top, side, stats, rev(crit[TBi, .]'), dec, colwidth, 0);
     
     // Print break dates
-    _printBreaks(dt_vec, tb1_min, frac, 0);
+    _printBreaks(dt_vec, tb1_min, frac);
     
     _printConclusion(KPSS_min, rev(crit[TBi, .]'), 1, "stationarity");
     
