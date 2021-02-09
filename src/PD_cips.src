@@ -101,7 +101,7 @@ proc(6) = cips(y, model, ...);
     print;
     
     sprintf("%-10s%10s", "id", "CADF"$~"LM"$~"M-CADF"$~"pval"$~"lags");
-    sprintf("%-10g%10.3f%10.3f%10.3f%10.3f%10g", seqa(1, 1, N), Ncadf, Nlm, Nd, cdfchic(abs(Nd), q), Nlags);
+    sprintf("%-10g%10.3f%10.3f%10.3f%10.3f%10.0f", seqa(1, 1, N), Ncadf, Nlm, Nd, cdfchic(abs(Nd), q), Nlags);
     
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));

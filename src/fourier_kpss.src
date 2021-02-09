@@ -52,11 +52,14 @@
 proc(3) = Fourier_KPSS(y, model, ...);
     local t, sink, cosk, z, s, lrv, kpss;
     local b, e1, sig2, se, ssr, k;
-    local crit, l_dftl, kmax, l, varm;
+    local crit, l_dftl, kmax, l, varm,  dt_vec;
     
     t = rows(y);
     l_dftl = round(4 * (T/100)^(2/9));
     { kmax, l, varm } = dynargsGet(1|3, 5, l_dftl, 1);
+      
+    // Check for dates
+    { dt_vec, y } =_checkfordate(y);
     
     k = _get_fourier(y, model, kmax);
     sink = sin(2 * pi * k * seqa(1, 1, t)/t);
