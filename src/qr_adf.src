@@ -166,11 +166,11 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
         stats = tau|rho_tau|rho_ols|delta2|QURadf;
 
         #ifminkernelversion(20)
-            sprintf("%14s %14.4f", side, stats);
+            sprintf("%14s %14.3f", side, stats);
             print;
             print "Critical Values:";
             sprintf("%14s", "1%"$~"5%"$~"10%");
-            sprintf("%14.4f", cv);
+            sprintf("%14.3f", cv);
             print;
         #else;
             side$~(ntos(stats, dec));
