@@ -206,7 +206,7 @@ proc(5) = LM_1break(y, model, ...);
     top = "";
     stats = Lm_min|opt_lag-1;
     dec = 3;
-    colwidth = 25;
+    colwidth = 15;
     
     _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
     

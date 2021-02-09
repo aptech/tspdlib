@@ -173,7 +173,7 @@ proc(3) = DFGLS(y, model, ...);
     side = "DFGLS:"$|"Chosen Lags:";
     stats = tau|p-1;
     dec = 3;
-    colwidth = 25;
+    colwidth = 15;
     
      // Print stats 
     _printStatsTable("", side, stats, cv, dec, colwidth, 0);
@@ -319,7 +319,7 @@ proc(3) = ERSpt(y, model, ...);
     side = "ERS:";
     stats = PT;
     dec = 3;
-    colwidth = 25;
+    colwidth = 15;
     
      // Print stats 
     _printStatsTable("", side, stats, cv', dec, colwidth, 0);
@@ -443,7 +443,7 @@ proc(8) = MGLS(y, model, ...);
     stats = MZa|MZt|MSB|MPT;
     cv2 = (cvMZA|cvMZt|cvMSB|cvMPT)';
     dec = 3;
-    colwidth = 25;
+    colwidth = 15;
                          
     _printStatsTable(top, side, stats, cv2, dec, colwidth, 1);
     print;

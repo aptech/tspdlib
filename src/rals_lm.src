@@ -97,7 +97,7 @@ proc (3) = RALSLM(y, ...);
     top = "";
     stats = tauRALS|p2;
     dec = 3;
-    colwidth = 25;
+    colwidth = 15;
    
     _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
     _printConclusion(tauRALS, cv, 0, "a unit root");  

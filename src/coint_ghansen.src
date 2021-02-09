@@ -169,7 +169,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     top = ""$~"Test";
     stats = (ADf_min|Zt_min|Za_min);
     dec = 3;
-    colwidth = 25;
+    colwidth = 15;
     
     _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, 4, colwidth, 1);
 

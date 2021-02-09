@@ -116,7 +116,7 @@ proc(3) = LM(y, ...);
     side = "";
     stats = tau|p-1;
     dec = 3;
-    colwidth = 25;
+    colwidth = 15;
     
     _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
     _printConclusion(tau, cv, 0, "a unit root");
