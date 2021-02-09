@@ -91,17 +91,17 @@ proc(6) = cips(y, model, ...);
     hd_top3 = ""~"1%"$~"5%"$~"10%";
     
 #ifminkernelversion(20)
-    sprintf("%15s", hd_top);
-    sprintf("%-15s %15.3f", hd_side, tmp1);
+    sprintf("%15s", ""$~hd_top);
+    sprintf("%-15s %15s%15.3f", hd_side, "", tmp1);
     print;
  print "=============================================================";    
     "M-CADF Critical Values:"; 
     sprintf("%15s", hd_top3);
-    sprintf("%15s %15.3f", "", tmp3);
+    sprintf("%15s%15.3f", "", tmp3);
     print;
     
-    sprintf("%15s", hd_top2);
-    sprintf("%15g%15.3f%15.3f%15.3f%15.3f%15g", seqa(1, 1, N), Ncadf, Nlm, Nd, cdfchic(abs(Nd), q), Nlags);
+    sprintf("%-10s%10s", "id", "CADF"$~"LM"$~"M-CADF"$~"pval"$~"lags");
+    sprintf("%-10g%10.3f%10.3f%10.3f%10.3f%10g", seqa(1, 1, N), Ncadf, Nlm, Nd, cdfchic(abs(Nd), q), Nlags);
     
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));
