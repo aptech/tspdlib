@@ -82,9 +82,10 @@ proc (1) = coint_maki(y, m, model, ...);
     
     print /lz "Test statistic:"  d0;
     print /lz "Break points:" d1;
+    print "==========================================================";
 #endif;
     
-    print "==========================================================";
+ 
     retp(d0);
 endp;
 
