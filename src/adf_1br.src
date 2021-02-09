@@ -253,9 +253,10 @@ proc (0) = _printBreaks(dt_vec, brks, frac);
      print "==============================================================";
 endp;
 
-proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv);
-    local tmp1a, tmp1b, tmp2, tmp3, format1, format2;
+proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv, ...);
+    local tmp1a, tmp1b, tmp2, tmp3, format1, format2, lags, fopt;
     
+    { lags, fopt } = dynargsGet(1|2);
     tmp1a = "%" $+ ntos(colwidth) $+ "s";
     tmp1b = "%-" $+ ntos(colwidth) $+ "s";
     tmp2 = "%" $+ ntos(colwidth) $+ "." $+ ntos(dec) $+ "f";
@@ -266,6 +267,12 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
 #ifminkernelversion(20)
     if top $=="";
         sprintf(format1, side, "", "", stats);
+        if not ismiss(lags);
+            sprintf(tmp1b$+tmp1a$+tmp1b$+"%15d", "Chosen Lags:", "", "", lags);
+        endif;
+        if not ismiss(fopt);
+            sprintf(tmp1b$+tmp1a$+tmp1b$+"%15d", "Frequency:", "", "", fopt);
+        endif;
         print;
         print "Critical Values:";
         

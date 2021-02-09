@@ -204,7 +204,7 @@ proc(5) = ADF_2breaks(y, model, ...);
     
     // Print results & Critical values
     local top, stats, dec, colwidth;
-    top = "ADF-stat"$;
+    top = "ADF-stat";
     stats = ADF_min;
     dec = 3;
     colwidth = 15;
