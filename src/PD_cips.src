@@ -88,20 +88,20 @@ proc(6) = cips(y, model, ...);
     hd_top2 = "id"$~"CADF"$~"LM"$~"M-CADF"$~"pval"$~"lags";
     tmp2 = seqa(1, 1, N)~Ncadf~Nlm~Nd~cdfchic(abs(Nd), q)~Nlags;
     tmp3 = cdfchii(0.99, q)~cdfchii(0.95, q)~cdfchii(0.90, q);  
-    hd_top3 = "1%"$~"5%"$~"10%";
+    hd_top3 = ""~"1%"$~"5%"$~"10%";
     
 #ifminkernelversion(20)
-    sprintf("%-25s", hd_top);
-    sprintf("%-25s %-25.3f", hd_side, tmp1);
+    sprintf("%15s", hd_top);
+    sprintf("%-15s %15.3f", hd_side, tmp1);
     print;
  print "=============================================================";    
     "M-CADF Critical Values:"; 
-    sprintf("%-25s", hd_top3);
-    sprintf("%-25.3f", tmp3);
+    sprintf("%15s", hd_top3);
+    sprintf("%15s %15.3f", "", tmp3);
     print;
     
-    sprintf("%-25s", hd_top2);
-    sprintf("%-25.3f", tmp2);
+    sprintf("%15s", hd_top2);
+    sprintf("%15g%15.3f%15.3f%15.3f%15.3f%15g", seqa(1, 1, N), Ncadf, Nlm, Nd, cdfchic(abs(Nd), q), Nlags);
     
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));
