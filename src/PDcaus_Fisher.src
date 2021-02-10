@@ -47,8 +47,7 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
     local obs, k, p, VARy, ylag, VARx, W, Nwald, Npval, Nlag;
     local e0, z0, NeH0, NzH0, Fisher;
     local Fisher_b, boot_cv10, boot_cv5, boot_cv1;
-    
-    "Emirmahmutoglu & Kose (2011) Panel Causality Test ";
+
     n = Ncross;
     t = rows(data)/n;
     
@@ -122,22 +121,23 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
             boot_cv5  = Fisher_b[Ceil(Nboot*.95)];
             boot_cv1  = Fisher_b[Ceil(Nboot*.99)];
             
-            "     i       Lag     Wald     p-val";
-            "-----------------------------------";;
-            seqa(1,1,N)~Nlag~Nwald~Npval;
-            "-----------------------------------";
-            "Panel Fisher       ";;
-            Fisher;
-            "Asymptotic p-value ";;
-            cdfchic(Fisher,2*N);
-            "Bootstrap cv (10%) ";;
-            boot_cv10;
-            "Bootstrap cv (5%)  ";;
-            boot_cv5;
-            "Bootstrap cv (1%)  ";;
-            boot_cv1;
-            "";
+             // Print header
+            _printHeaderTSPDLIB(0, 0, 0, 0, 0, "Panel Fisher", "Panel Causality", 0);
             
+            // Print statistics
+            sprintf("%15s", "id"~"Lag"~"Wald"$~"p-val");
+            sprintf("%15g%15g%15.3f", seqa(1,1,N), Nlag, Nwald~Npval);
+            print;
+            
+             local top, side, stats, dec, colwidth, cv;
+            top = "";
+            side  = "Test"$|"p-val";
+            stats =  Fisher|cdfchic(Fisher,2*N);
+            cv =  boot_cv1|boot_cv5|boot_cv10;
+            dec = 3;
+            colwidth = 15;
+            _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
+
             j = j + 1;
         endo;
         m = m + 1;
