@@ -103,7 +103,7 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
         top = "Group"$~"Ind. Test"$~"Break"$~"Lags";
         #ifminkernelversion(20)
             sprintf("%15s", top);
-            sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+            sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
         #else
             top$|(ntos(seqa(1, 1, cols(y))~Nlm~Ntb~Np, 4));
         #endif;
@@ -111,7 +111,7 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
         top = "Group"$~"Ind. Test"$~"Break 1"$~"Break 2"$~"Lags";
         #ifminkernelversion(20)
             sprintf("%15s", top);
-            sprintf("%14.0f %14.4f %14.0f %14.0f", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+            sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
         #else
             top$|(ntos(seqa(1, 1, cols(y))~Nlm~Ntb~Np, 4));
         #endif;
@@ -119,7 +119,7 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
 
     "Panel LM test statistic:";
     #ifminkernelversion(20)
-        sprintf("%14s %14.4f", "PDLM"$|"p-val", PD_lm|(1 - cdfnc(PD_lm)));
+        sprintf("%15s%15.3f", "PDLM"$|"p-val", PD_lm|(1 - cdfnc(PD_lm)));
     #else;
         ("PDLM"$|"p-val")~ntos(PD_lm|(1 - cdfnc(PD_lm)), 4);
     #endif;
