@@ -84,110 +84,26 @@
 
 proc(1)= granger(data, test, ...);
     local i, j, depvar, indvar, cause, control, y, obs,
-    dmax, kmax, k, p, VARy, ylag, VARx, W, Wboot, 
-    pval_boot, GC_out, n_tests, indx, 
-    vnames_dflt, vnames, pmax, ic, Nboot;
+        dmax, kmax, k, p, VARy, ylag, VARx, W, Wboot,
+        pval_boot, GC_out, n_tests, indx,
+        vnames_dflt, vnames, pmax, ic, Nboot;
     
     // Check for metadata to get column names
-    #ifminkernelversion(21)
+#ifminkernelversion(21)
     if hasmetadata(data);
         vnames_dflt = getcolnames(data);
     else;
         vnames_dflt = "X" $+ ntos(seqa(1, 1, cols(data)));
     endif;
-    #else;
-        vnames_dflt = "X" $+ ntos(seqa(1, 1, cols(data)));
-    #endif;
+#else;
+    vnames_dflt = "X" $+ ntos(seqa(1, 1, cols(data)));
+#endif;
     
     // Set defaults
     { pmax, ic, Nboot, vnames } = dynargsGet(1|4, 8, 2, 1000, vnames_dflt);
     
-    n_tests = cols(data)*(cols(data)-1);
+    retp(GC_tests(data, vnames, pmax, ic, test, Nboot));
     
-    GC_out = zeros(n_tests, 5);
-    indx = 1;
-    
-    for i(1, cols(data), 1);
-        
-        depvar = data[., i];
-        indvar = delcols(data, i);
-        
-        for j(1, cols(indvar), 1);
-            cause  = indvar[., j];
-            control= delcols(indvar, j);
-            y  = depvar~cause~control;
-            
-            if test==0;
-                dmax=0;
-                kmax=0;
-            endif;
-            if test==1;
-                dmax=1;
-                kmax=0;
-            endif;
-            if test==2;
-                dmax=0;
-                kmax=3;
-            endif;
-            if test==3;
-                dmax=1;
-                kmax=3;
-            endif;
-            if test==4;
-                dmax=0;
-                kmax=3;
-            endif;
-            if test==5;
-                dmax=1;
-                kmax=3;
-            endif;
-            
-            obs = rows(y);
-            {k,p}       = _get_kp(y, pmax, kmax, ic, test);
-            {VARy,ylag} = _get_lagp(y, p+dmax);
-            {VARx}      = _get_VARdata(VARy, ylag, test, k, p, dmax);
-            {W}         = _get_Wald(VARy, VARx, p, dmax);
-            
-            {Wboot} = _get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
-            
-            pval_boot= 1-(sumc(W.>Wboot)/Nboot);
-
-            GC_out[indx,.] = W~(cdfchic(W,p))~pval_boot~p~k;
-            
-            if i==1;
-                vnames[j+1];;
-                "=>";;
-                vnames[i];
-                "         ";;
-                GC_out[indx,.];
-            endif;
-            if i>1 and i==j;
-                vnames[j+1];;
-                "=>";;
-                vnames[i];
-                "         ";;
-                GC_out[indx,.];
-            endif;
-            if i>1 and j<i;
-                vnames[j]  ;;
-                "=>";;
-                vnames[i];
-                "         ";;
-                GC_out[indx,.];
-            endif;
-            if i>1 and j>i;
-                vnames[j+1];;
-                "=>";;
-                vnames[i];
-                "         ";;
-                GC_out[indx,.];
-            endif;
-            indx = indx + 1;
-            
-        endfor;
-    endfor;
-    
-    retp(GC_out);
 endp;
 
 /*
@@ -268,15 +184,38 @@ endp;
 */
 
 
-proc(1)= GC_tests(data, vnames, pmax, ic, test, Nboot);
+proc(1) = GC_tests(data, vnames, pmax, ic, test, Nboot);
     local i, j, depvar, indvar, cause, control, y, obs;
     local dmax, kmax, k, p, VARy, ylag, VARx;
     local W, Wboot, pval_boot, GC_out, n_tests, indx;
     
     n_tests = cols(data)*(cols(data)-1);
+    if test == 0;     
+            "       Standard Granger Causality Test                      ";
+            "------------------------------------------------------------";    
+    elseif test == 1;
+            "      Toda & Yamamoto Granger Causality Test                ";
+            "-------------------------------------------------------------";     
+    elseif test == 2; 
+            "  Single Fourier-frequency Granger Causality Test            ";
+            "-------------------------------------------------------------";     
+    elseif test == 3;
+            " Single Fourier-frequency Toda & Yamamoto Causality Test     ";
+            "-------------------------------------------------------------";     
+    elseif test == 4;
+            "   Cumulative Fourier-frequency Granger Causality Test       ";
+            "-------------------------------------------------------------";      
+    elseif test == 5;
+            " Cumulative Fourier-frequency Toda & Yamamoto Causality Test ";
+            "-------------------------------------------------------------";      
+    endif;
     
     GC_out = zeros(n_tests, 5);
     indx = 1;
+    local top, top2,  comp;
+    top = "Direction"$~"Wald"$~"Asym. p-val"$~"Bootstrap p-val";
+    top2 = "Lag"$~"Frequency";
+    sprintf("%20s%15s", top, top2);
     
     for i(1, cols(data), 1);
         
@@ -322,36 +261,25 @@ proc(1)= GC_tests(data, vnames, pmax, ic, test, Nboot);
             {Wboot} = _get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
             
             pval_boot= 1-(sumc(W.>Wboot)/Nboot);
-
+            
             GC_out[indx,.] = W~(cdfchic(W,p))~pval_boot~p~k;
             
+            
             if i==1;
-                vnames[j+1];;
-                "=>";;
-                vnames[i];
-                "         ";;
-                GC_out[indx,.];
+                comp = vnames[j+1]$+"=>"$+vnames[i];
+                sprintf("%20s%20.3f%15d", comp, GC_out[indx, 1:3], GC_out[indx, 4:5]);
             endif;
             if i>1 and i==j;
-                vnames[j+1];;
-                "=>";;
-                vnames[i];
-                "         ";;
-                GC_out[indx,.];
+               comp = vnames[j+1]$+"=>"$+vnames[i];
+               sprintf("%20s%20.3f%15d", comp, GC_out[indx, 1:3], GC_out[indx, 4:5]);
             endif;
             if i>1 and j<i;
-                vnames[j]  ;;
-                "=>";;
-                vnames[i];
-                "         ";;
-                GC_out[indx,.];
+                comp = vnames[j]$+"=>"$+vnames[i];
+                sprintf("%20s%20.3f%15d", comp, GC_out[indx, 1:3], GC_out[indx, 4:5]);
             endif;
             if i>1 and j>i;
-                vnames[j+1];;
-                "=>";;
-                vnames[i];
-                "         ";;
-                GC_out[indx,.];
+                comp = vnames[j+1]$+"=>"$+vnames[i];
+                sprintf("%20s%20.3f%15d", comp, GC_out[indx, 1:3], GC_out[indx, 4:5]);
             endif;
             indx = indx + 1;
             
@@ -362,8 +290,8 @@ proc(1)= GC_tests(data, vnames, pmax, ic, test, Nboot);
 endp;
 
 //Wald test for causality
-
-proc (1) =_get_Wald(VARy, VARx, p, dmax);
+    
+    proc (1) =_get_Wald(VARy, VARx, p, dmax);
     local y, z, t, b, u, su, zr, br, ur, sr;
     local rssr, rssur, df, f, w, lr;
     
@@ -375,7 +303,7 @@ proc (1) =_get_Wald(VARy, VARx, p, dmax);
     Su = u'u;
     
     //Restricted model
-    if dmax == 0;
+        if dmax == 0;
         zr  = z[.,1:p]~z[.,2*p+1:cols(z)];
     endif;
     
@@ -389,7 +317,7 @@ proc (1) =_get_Wald(VARy, VARx, p, dmax);
     Sr = ur'ur;
     
     //Test statistics
-    rssr = sr[1,1];
+        rssr = sr[1,1];
     rssur= su[1,1];
     df   = T-cols(z)-p-dmax;
     F    = ((rssr-rssur)/p)/(rssur/df);
@@ -400,8 +328,8 @@ endp;
 
 
 // bootstrap distribution of Wald stats
-
-proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
+    
+    proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
     local y, z, t, b, u, zr, br, ur, zhat;
     local nk, tp, Wboot, ystar, simerr, adje;
     local s, ti, rnd, index, varindx;
@@ -414,7 +342,7 @@ proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
     //zhat  = z.*b[.,1]';
     
     // Residuals under the null hypothesis
-    if dmax == 0;
+        if dmax == 0;
         zr  = z[.,1:p]~z[.,2*p+1:cols(z)];
     endif;
     
@@ -441,7 +369,7 @@ proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
     
     for s(1,Nboot,1);
         // Generate bootstrap residuals
-        ti=1;
+            ti=1;
         do while ti<=Tp;
             rnd  = rndu(1,nk);
             index= 1 + trunc(Tp*rnd);
@@ -456,14 +384,14 @@ proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
         endo;
         
         // Generate mean adjusted residuals
-        varindx = 1;
+            varindx = 1;
         do until varindx>nk;
             simerr[.,varindx]=simerr[.,varindx]-(meanc(simerr[.,varindx]));
             varindx = varindx + 1;
         endo;
         
         // Generate bootsrap sample
-        varindx=1;
+            varindx=1;
         do while varindx<=nk;
             ti=1;
             do while ti<=Tp;
@@ -478,15 +406,15 @@ proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
     endfor;
     
     // Bootstrap Wald stats
-    Wboot = sortc(Wboot,1);
+        Wboot = sortc(Wboot,1);
     
     retp(Wboot);
 endp;
 
 
 // Generate data for VAR estimation
-
-proc(1)=_get_VARdata(y,ylag,test,k,p,dmax);
+    
+    proc(1)=_get_VARdata(y,ylag,test,k,p,dmax);
     local t, d, cf, VARdata;
     
     t = rows(y) + p + dmax;
@@ -539,8 +467,8 @@ proc(1)=_get_VARdata(y,ylag,test,k,p,dmax);
 endp;
 
 //optimal frequency and lag selection
-
-proc(2) = _get_kp(y,pmax,kmax,ic,test);
+    
+    proc(2) = _get_kp(y,pmax,kmax,ic,test);
     local aic, sbc, aickp, sbckp, k, p, dep, xlag, t, d, z, cf;
     
     if test==0 or test==1;
@@ -697,8 +625,8 @@ proc(2) = _get_kp(y,pmax,kmax,ic,test);
 endp;
 
 //information criterion estimation
-
-proc(2) = _get_icvalue(dep,z,p);
+    
+    proc(2) = _get_icvalue(dep,z,p);
     local t, b, e, varcov, nk, aic, sbc;
     t=rows(dep);
     b=(dep/z);
@@ -711,8 +639,8 @@ proc(2) = _get_icvalue(dep,z,p);
 endp;
 
 //generating y and ylags adjusted for lags
-
-proc(2) = _get_lagp(y, pmax);
+    
+    proc(2) = _get_lagp(y, pmax);
     local nk, p, ylag, i, j, ya, yl;
     
     nk=cols(y);
