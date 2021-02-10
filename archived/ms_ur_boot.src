@@ -1,0 +1,447 @@
+#include tspdlib.sdf;
+proc (1) = msur(y, dy, pphi, startval, startval0, struct msurControl msurCtl);
+    local nth0, nth, captst, capt, nk,
+    skif, skis, dye, dys, x0, ff, gg, hh, thn0, thn1, er, ks, he, hi, stdor, gr, Hfin, 
+    std1, tstat1, t, pvbt_ro, it, yn, skif0, skis0, dye0, dys0;
+    
+    ks = 0;
+    
+    // Sample size
+    capt = rows(y);
+    
+    // Effective sample size
+    captst = capt-pphi;
+    
+    // First observation for evaluating likelihood
+    nk = pphi + 1;
+
+    t = seqa(1, 0.1, captst);
+    
+    nth0 = rows(startval0);
+    nth = rows(startval);
+    
+    // Optimization
+    yn = {};
+    it = 1;
+    do while it <= pphi;
+        yn = yn~dy[nk-it:capt-it, 1];
+        it = it + 1;
+    endo;
+    
+    // Estimate under the null hypothesis
+    struct optmtResults optOut0;
+    optOut0 =  optprt(optmt(&ofn_null, startval0, y, dy, yn, capt, captst, pphi, nk, nth0, t));  
+    thn0 = trans_null(optOut0.par, pphi);
+    { dys0, dye0, skif0, skis0 } = ofn_fn(optOut0.par, y, dy, yn, capt, captst, pphi, nk, nth0, t, msurCtl.smooth);
+    er = dy[nk:capt] - dye;
+    
+    // Estimate with no restrictions
+    struct optmtResults optOut;
+    optOut =  optprt(optmt(&ofn, startval, y, dy, yn, capt, captst, pphi, nk, nth, t, ks));  
+    { dys, dye, skif, skis } = ofn_fn(optOut.par, y, dy, yn, capt, captst, pphi, nk, nth, t, msurCtl.smooth);
+    thn1 = trans(optOut.par, pphi);
+    
+    // Compute hessians
+    if msurCtl.je ne 0;
+        { Hfin, std1, tstat1 } = msurHessian(optOut.par, thn1, y, dy, capt, captst, pphi, nk, nth, t, msurCtl.smooth);
+    endif;
+    
+    // Compute simulations
+    pvbt_ro = msurSimulation(tstat1, thn, nth, er, y, dy, capt, captst, pphi, nk, nth, t, mCtl);
+    
+    struct msurOut mOut;
+    
+    // Filtered probabilities
+    mOut.skif = skif;   
+    
+    // Smoothed probabilities
+    mOut.skis = skis;   
+    
+    // Fitted endogenous variable
+    mOut.dye = dye;   
+    
+    // Within regime fitted endogenous variable
+    mOut.dys = dys;    
+
+    // Bootstrap pvalues
+    mOut.pvalues = pvbt_ro;
+    
+    retp(mOut);
+    
+endp;
+
+// Runs bootstrap for computing the p-values   
+proc (1) = msurSimulation(tstat1, thn0, nth0, er, y, dy, capt, captst, pphi, nk, nth, t, struct msurControl mCtl);
+    local pp, qq, ff, x2, i, tstatsim, seed,
+    index, et, mu0, mu1, mu, at, ap, dyg, yg, Hfin, std, tstat, thnSim, sim, tsort, tnece, pvbt_ro;
+    
+    seed = mCtl.seed;
+    tstatsim = {};
+    
+    pp = thn0[nth0-1];
+    qq = thn0[nth0];
+    
+    sim = 1;
+    
+      do while sim <= mCtl.maxsim;
+        seed = seed + 1;
+          
+        // MS trend
+        x2 = rndus(capt, 1, seed);
+          
+        /*
+        ** ff = 0 in expansions
+        ** ff = 1 in recessions
+        */
+        ff = zeros(capt, 1); 
+          
+        i = 2;
+        do while i <= capt;
+            // Expansion case
+            if ff[i-1] < 0.5;
+                
+                if x2[i] < pp;
+                    ff[i] = 0;
+                else;
+                    ff[i] = 1;
+                endif;
+                
+            // Recession case
+            else;         
+                
+                if x2[i] < qq;
+                    ff[i] = 1;
+                else;
+                    ff[i] = 0;
+                endif;
+                
+            endif;
+            
+            i = i + 1;
+        endo;
+
+        index = ceil(rndus(rows(er), 1, seed)*rows(er));
+        et = 0|er[index, .];
+        mu0 = thn0[1];
+        mu1 = thn0[2];
+        mu = mu0*(1 - ff) +  mu1*ff;
+        at = thn0[3];
+        ap = thn0[4];
+        dyg = 0;
+        yg = 0;
+        
+        i = 2;
+        do while i<=capt;
+            dyg = dyg|(mu[i] + at*t[i-1]+ ap*dyg[i-1]) + et[i];
+            yg = yg|(yg[i-1] + dyg[i]);
+            i = i + 1;
+        endo;
+        y = yg;
+        dy = dyg;
+        
+        struct optmtResults optSim;
+        optSim = optmtprt(optmt(&ofn, startval_sim, y, dy, capt, captst, pphi, nk, nth, t, mCtl.smooth, 0));  @estimate under the alternative@
+        
+        if maxc(optSim.par) > 50;
+            goto labb2;
+        endif;
+        
+        thnSim = trans(optSim.par);
+        
+        { Hfin, std, tstat } =  msurHessian(optSim.par, thnSim, y, dy, capt, captst, pphi, nk, nth, t, smooth, seed);
+        tstatsim = tstatsim|tstat;
+
+        labb2:
+            sim=sim+1;
+    endo;
+    tsort = sortc(tstatsim, 1);  @ this is to compute the p-value @
+    tnece = tsort.<tstat1;
+    pvbt_ro = sumc(tnece)/rows(tnece);
+    
+    retp(pvbt_ro);
+endp;
+        
+    
+proc (3) = msurHessian(th, thn, y, dy, capt, captst, pphi, nk, nth, t, smooth, seed);
+        local he, hi, stdor, gr, Hfin, std1, tstat1;
+    
+        he = gradfd(&ofn, y, dy, capt, captst, pphi, nk, nth, t, smooth, 1)'gradfd(&ofn, y, dy, capt, captst, pphi, nk, nth, t, smooth, 1);
+        hi = invpd(he);
+        stdor = diag(hi)^.5;
+        gr = gradfd(&trans, th, pphi);
+        Hfin = gr*hi*gr';
+        std1 = diag(Hfin)^.5;
+        tstat1 = thn[1]/std1[1];
+    
+    retp(Hfin, std1, tstat1);
+endp;
+    
+proc (1) = msurControlCreate();
+    
+    struct msurControl msurCtl;
+    
+    msurCtl.seed = 1;
+    msurCtl.simula = 1;
+    msurCtl.maxsim = 1000;
+    msurCtl.smooth = 1;
+    msurCtl.graphs = 1;
+    msurCtl.je = 1;
+
+    msurCtl.fun = 0;
+    
+    msurCtl.oCtl = optmtControlCreate();
+    
+    retp(msurCtl);
+endp;
+
+// This proc evaluates filter probabilities and likelihoods
+proc (1) = ofn_null(th, y, dy, yn, capt, captst, pphi, nk, nth0, t, ind);  @ this proc evaluates filter probs and likelihood @
+    local th2, sig, pm, eta, chsi, it, f, fit, fx, aa, dye, skif;
+    
+    // Declare 'mm' to be a modelResults struct
+    // to hold the function value
+    struct modelResults mm;
+    
+    // Create storage matrices
+    skif = zeros(captst, 2);   @ skif is the matrix of filtered probs @
+    
+    th2 = trans_null(th, pphi);
+
+    // Fit endogenous variable
+    dye = (0*y[nk-1:capt-1]+th2[1]+th2[3]*t+yn*th2[3+1:3+pphi])~
+        (0*y[nk-1:capt-1]+th2[2]+th2[3]*t+yn*th2[3+1:3+pphi]);
+    
+    // Residuals
+    eta = dy[nk:capt]-dye;
+    
+    // Sigma
+    sig = th2[nth0-2].*ones(captst, 2);
+    
+    // Standard errors
+    eta = ((eta)^2)./sig;
+    eta = (1./sqrt(sig)).*exp(-eta/2);
+    
+    // Check for convergence
+    aa = minc(eta);
+    if aa<1e-20;
+        f = -100000;
+        goto labb;
+    endif;
+    
+    // Subset of parameters
+    pm = (th2[nth0-1]~(1-th2[nth0]))|((1-th2[nth0-1])~th2[nth0]);
+    chsi = 0.5|0.5;
+    
+    // Filter iteration
+    f = 0;
+    it = 1;
+    do until it > captst;
+        fx = chsi.*eta[it,.]';
+        fit = sumc(fx);
+        skif[it,.] = fx'/fit;
+        f = f + ln(fit);
+        chsi = pm*fx/fit;
+        it = it+1;
+    endo;
+
+    labb:
+    
+    // If the first element of the indicator
+    // vector is nonzero, compute the objective function
+    if ind[1];
+        mm.function = -f;
+    endif; 
+    
+    retp(mm);
+endp;
+
+// This proc evaluates filter probabilities and likelihoods
+// at the final parameter estimates
+proc (4) = ofn_fn(th, y, dy, yn, capt, captst, pphi, nk, nth0, t, smooth);  @ this proc evaluates filter probs and likelihood @
+    local th2, pm, eta, chsi, it, f, fit, fx, aa, dye, sig, skif, skis, dys;
+    
+    // Create storage matrices
+    skif = zeros(captst, 2);   @ skif is the matrix of filtered probs @
+    
+    th2 = trans_null(th, pphi);
+
+    dye = (0*y[nk-1:capt-1]+th2[1]+th2[3]*t+yn*th2[3+1:3+pphi])~
+        (0*y[nk-1:capt-1]+th2[2]+th2[3]*t+yn*th2[3+1:3+pphi]);
+    
+    eta = dy[nk:capt]-dye;
+    
+    sig = th2[nth0-2].*ones(captst, 2);
+    eta = ((eta)^2)./sig;
+    
+    eta = (1./sqrt(sig)).*exp(-eta/2);
+    
+    pm = (th2[nth0-1]~(1-th2[nth0]))|((1-th2[nth0-1])~th2[nth0]);
+    chsi = 0.5|0.5;
+    
+    // Filter iteration
+    f = 0;
+    it = 1;
+    do until it > captst;
+        fx = chsi.*eta[it,.]';
+        fit = sumc(fx);
+        skif[it, .] = fx'/fit;
+        f = f + ln(fit);
+        chsi = pm*fx/fit;
+        it = it+1;
+    endo;
+    
+    dys = dye;
+    dye = sumc((dys.*skif)');
+    
+    // Smoothed probabilities
+    if smooth ne 0;  @ Smoothed probabilities if desired @
+        skis = fsmooth(skif, pm);
+    endif;
+    
+    retp(dys, dye, skif, skis);
+endp;
+
+proc (1) = trans_null(ja, pphi);
+    local ja2, ncont;
+    
+    ja2 = ja;
+    ncont = 2 + 1 + pphi;
+    ja2[ncont+1] = ja2[ncont+1]^2;
+    ncont = ncont + 1;
+    ja2[ncont+1] = ja[ncont+1]^2/(1 + ja[ncont+1]^2);
+    ja2[ncont+2] = ja[ncont+2]^2/(1 + ja[ncont+2]^2);
+    
+    retp(ja2);
+endp;
+
+// This proc evaluates filter probs and likelihood
+proc (1) = ofn(th, y, dy, yn, capt, captst, pphi, nk, nth, t, ks, ind);
+    local th2, sig, pm, eta, chsi, it, f, fit, fx, aa, dye, fun, skif;
+    
+    // Declare 'mm' to be a modelResults struct
+    // to hold the function value
+    struct modelResults mm;
+    
+    th2 = trans(th, pphi);
+
+    dye = (th2[1]*y[nk-1:capt-1]+th2[2]+th2[4]*t+yn*th2[4+1:4+pphi])~
+        (th2[1]*y[nk-1:capt-1]+th2[3]+th2[4]*t+yn*th2[4+1:4+pphi]);
+    eta = dy[nk:capt] - dye;
+    
+    sig = th2[nth-2].*ones(captst, 2);
+    eta = ((eta)^2)./sig;
+    
+    eta = (1./sqrt(sig)).*exp(-eta/2);
+    
+    aa = minc(eta);
+    if aa<1e-20;
+        f = -100000;
+        goto labb;
+    endif;
+    
+    pm = (th2[nth-1]~(1-th2[nth]))|((1-th2[nth-1])~th2[nth]);
+    chsi = 0.5|0.5;
+    
+    fun = {};
+    
+    // Filter Iteration
+    f = 0;
+    it = 1;
+    do until it > captst;
+        fx = chsi.*eta[it, .]';
+        fit = sumc(fx);
+        skif[it, .] = fx'/fit;
+        f = f + ln(fit);
+        fun = fun|ln(fit);
+        chsi = pm*fx/fit;
+        it = it + 1;
+    endo;
+    
+    labb:
+    if ks == 1;
+        // If the first element of the indicator
+        // vector is nonzero, compute the objective function
+        if ind[1];
+            mm.function = fun;
+        endif; 
+
+    else;
+        // If the first element of the indicator
+        // vector is nonzero, compute the objective function
+        if ind[1];
+            mm.function = -f;
+        endif;
+    endif;
+    
+    retp(mm);
+    
+endp;
+
+proc (1) = trans(ja, pphi);
+    local ja2, ncont;
+    
+    ja2 = ja;
+    ncont = 1 + 2 + 1 + pphi;
+    ja2[ncont+1] = ja2[ncont+1]^2;
+    ncont = ncont + 1;
+    ja2[ncont+1] = ja[ncont+1]^2/(1 + ja[ncont+1]^2);
+    ja2[ncont+2] = ja[ncont+2]^2/(1 + ja[ncont+2]^2);
+    
+    retp(ja2);
+endp;
+
+proc (1) = stdfun(x, pphi);
+    local h, va, hu, stdor, gr, hi, Hfin, std2;
+    
+    h = hessp(&ofn, x);
+    va = eigrs(h);
+    @if minc(eigrs(h))<=0;
+    cls;
+    "Negative Hessian is not positive definite";
+    end;
+    endif;@
+    
+    hi = invpd(h);
+    stdor = diag(hi)^.5;
+    gr = gradfd(&trans, x, pphi);
+    Hfin = gr*hi*gr';
+    std2 = diag(Hfin)^.5;
+    
+    retp(std2);
+endp;
+
+proc (1) = fsmooth(skifn, pmn, captst);
+    local skisn, it, ihk, hk, ns, n;
+    
+    ns = 2;
+    n = 2;
+    skisn = zeros(captst, ns);
+    skisn[captst, .] = skifn[captst, .];
+    
+    it = 1;
+    do until it == captst;
+        if minc(skifn[captst-it,.]') > 1.e-150;
+            
+            skisn[captst-it, .] = skifn[captst-it,.].*
+                ((skisn[captst-it+1, .]./(skifn[captst-it, .]*pmn'))*pmn);
+        else;   @ adjust code so as not to divide by zero @
+            hk = skifn[captst-it, .]*pmn';
+            ihk = 1;
+            do until ihk > n;
+                if hk[1, ihk] > 1.e-150;
+                    hk[1, ihk] = skisn[captst-it+1, ihk]/hk[1, ihk];
+                else;
+                    hk[1, ihk] = 0;
+                endif;
+                ihk = ihk + 1;
+            endo;
+            skisn[captst-it, .] = skifn[captst-it, .].*(hk*pmn);
+        endif;
+        
+        it = it + 1;
+    endo;
+    
+    retp(skisn);
+endp;
+
+end;
