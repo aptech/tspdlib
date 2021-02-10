@@ -57,12 +57,13 @@
 
 proc(4) = coint_pouliaris(y, x, model, ...);
     local n, x1, b, e1, sig2, se, ssr, Zt, Za, cvZt, cvZa, k, cv1, cv2,
-    bwl_dftl, bwl, varm;
+    bwl_dftl, bwl, varm, dt_vec;
     
     n = rows(y);
     bwl_dftl = round(4 * (n/100)^(2/9));
     
     { bwl, varm } = dynargsGet(1|2, bwl_dftl, 1);
+    { dt_vec, y } =_checkfordate(y);
     
     if model == 0;
         x1 = x;

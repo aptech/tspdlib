@@ -43,9 +43,10 @@
 proc(10)= fixed_T_panel(y, model);
     local Nlm1, Nlm2, Nzlm1, Nzlm2, Npval1, Npval2;
     local mu_lm1, var_lm1, mu_lm2, var_lm2, lm1, lm2;
-    local lm1_bar, lm2_bar, Zhl, Zch, pval_Zhl, pval_Zch, N; 
+    local lm1_bar, lm2_bar, Zhl, Zch, pval_Zhl, pval_Zch, N, dt_vec; 
 
     N = cols(y);
+    { dt_vec, y } =_checkfordate(y);
     
     Nlm1   = zeros(N,1);
     Nlm2   = zeros(N,1);

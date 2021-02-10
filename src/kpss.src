@@ -43,12 +43,13 @@
 */
 
 proc(2) = LMkpss(y, model, ...);
-    local t, z, lm_KPSS, ssr, cv, bwl_dftl, l, varm;
+    local t, z, lm_KPSS, ssr, cv, bwl_dftl, l, varm, dt_vec;
     
     t = rows(y);
     bwl_dftl = round(4 * (t/100)^(2/9));
     
     { l, varm } = dynargsGet(1|2, bwl_dftl, 1);
+    { dt_vec, data } =_checkfordate(data);
     
     "KPSS tests for stationarity:";
     if model == 1;

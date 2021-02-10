@@ -74,12 +74,13 @@ proc(7) = coint_tsongetal(y, x, model, ...);
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
     local b2, e2, ssr2, St2, lrv2, SC2;
     local p , cv;
-    local Fols , Fdols, zr, zrdols, bwl_dftl, bwl, kmax, varm, q;
+    local Fols , Fdols, zr, zrdols, bwl_dftl, bwl, kmax, varm, q, dt_vec;
     
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
     { bwl, kmax, varm, q } = dynargsGet(1|4, bwl_dftl, 5, 1, int(4*(t/100)^(2/9)));
+    { dt_vec, y } =_checkfordate(y);
     
     ssr1_min = 1e6;
     ssr2_min = 1e6;

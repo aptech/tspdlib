@@ -8,6 +8,7 @@ y = loadd(__FILE_DIR $+ "PDe.dat");
 // Run panel LM test with level shifts
 // No breaks
 model = 1;
+
 // No breaks
 { Nlm, Ntb, Np, PD_lm, pval } = PDLM(y, model);
 

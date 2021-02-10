@@ -66,12 +66,13 @@ proc(3) = coint_shin(y, x, model, ...);
     local z, b1, e1, ssr1, St1, lrv1, C1;
     local dx, dx_leads, dx_lags, xdols, ydols, zdols;
     local b2, e2, ssr2, St2, lrv2, C2, k, cv, T, 
-    bwl_dftl, bwl, varm, q;
+    bwl_dftl, bwl, varm, q, dt_vec;
     
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
     { bwl, varm, q } = dynargsGet(1|3, bwl_dftl, 1, int(4*(t/100)^(2/9)));
+    { dt_vec, y } =_checkfordate(y);
     
     print;
     if model==0;

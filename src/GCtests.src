@@ -83,11 +83,9 @@
 
 
 proc(1)= granger(data, test, ...);
-    local i, j, depvar, indvar, cause, control, y, obs,
-        dmax, kmax, k, p, VARy, ylag, VARx, W, Wboot,
-        pval_boot, GC_out, n_tests, indx,
-        vnames_dflt, vnames, pmax, ic, Nboot;
+    local vnames_dflt, vnames, pmax, ic, Nboot, dt_vec;
     
+    { dt_vec, data } =_checkfordate(data);
     // Check for metadata to get column names
 #ifminkernelversion(21)
     if hasmetadata(data);
@@ -190,6 +188,8 @@ proc(1) = GC_tests(data, vnames, pmax, ic, test, Nboot);
     local W, Wboot, pval_boot, GC_out, n_tests, indx;
     
     n_tests = cols(data)*(cols(data)-1);
+    { dt_vec, data } =_checkfordate(data);
+    
     if test == 0;     
             "       Standard Granger Causality Test                      ";
             "------------------------------------------------------------";    

@@ -41,9 +41,10 @@ proc(3) = ADF(y, model, ...);
     local dy, ly, dc, dt, lmat, dep, y1, ldy;
     local sbt, trnd, x, tau, LL, n, k;
     local b, e1, sig2, se, ssr, cv;
-    local pmax, ic;
+    local pmax, ic, dt_vec;
     
     { pmax, ic } = dynargsGet(1|2, 8, 3);
+    { dt_vec, y } =_checkfordate(y);
     
     t    = rows(y);
     taup = zeros(pmax + 1, 1);

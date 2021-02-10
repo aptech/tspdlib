@@ -43,9 +43,11 @@
 /*Procedures*/
 
 proc(2) = coint_egranger(y, x, model, ...);
-    local n, x1, b, e1, sig2, se, ssr, tau, lageg, k, cv, cvADF, pmax, ic;
+    local n, x1, b, e1, sig2, se, ssr, tau, lageg, k, 
+    cv, cvADF, pmax, ic, dt_vec;
     
     { pmax, ic } = dynargsGet(1|2, 8, 2);
+    { dt_vec, y } =_checkfordate(y);
     
     n=rows(y);
     if model==0;
