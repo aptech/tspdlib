@@ -155,6 +155,7 @@ proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot, Ncross);
             // Print statistics
             sprintf("%15s%15s", "id", "Lag"$~"Wald"$~"p-val");
             sprintf("%15g%15g%15.3f", seqa(1,1,N), Nlag, Nwald~Npval);
+            print;
             
             local top, side, stats, dec, colwidth, cv;
             side = "Panel W_bar:"$|"Panel Z_NT:";

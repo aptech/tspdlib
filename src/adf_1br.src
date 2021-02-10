@@ -292,10 +292,13 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         sprintf(tmp1a$+tmp2, "", cv');
         print "==============================================================";
     else;
-        if cols(stats)<3;
+        if cols(stats)==1;
             sprintf(tmp1b$+tmp1a$+tmp1a, "", "", top);
             sprintf(format1, side, "", "", stats);
-        else;
+        elseif cols(stats)==2;
+            sprintf(tmp1b$+tmp1a$+tmp1a, "", "", top);
+            sprintf(tmp1b$+tmp1a$+tmp3, side, "", stats);
+        elseif cols(stats)==3;
             sprintf(tmp1b$+tmp1a, "", top);
             sprintf(tmp1b$+tmp3, side, stats);
         endif;
