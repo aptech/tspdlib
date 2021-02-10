@@ -3,7 +3,8 @@ cls;
 library tspdlib;
 
 // Load date file
-y = loadd(__FILE_DIR $+ "PDe.dat");
+y = loadd(__FILE_DIR $+ "pd_full.dat");
+y = setcoldateformats(y, "%m/%Y", "Date");
 
 // Run panel LM test with level shifts
 "Panel LM test with level shifts";
