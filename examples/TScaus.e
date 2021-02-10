@@ -40,5 +40,6 @@ for test(1, 5, 1);
     endif;
     
     GC_out = GC_tests(data, vnames, pmax, ic, test, Nboot);
+    print;
     
 endfor;
