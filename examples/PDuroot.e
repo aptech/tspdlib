@@ -37,7 +37,8 @@ nbreak=2;
 // Panel stationarity test with level shifts
 "Panel stationarity test with level shifts";
 model = 1;
-{ Nkpss, FZk, pval } = PDfzk(y, model);
+k = 4;
+{ Nkpss, FZk, pval } = PDfzk(y, model, k);
 
 // Panic tests with constant only
 "PANIC tests";
