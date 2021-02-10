@@ -18,8 +18,6 @@ new;
 cls;
 library tspdlib;
 
-format/m1/rd 8,3;   
-
 // Number of bootstrap replications
 Nboot= 1000;    
 
@@ -44,13 +42,8 @@ data = loadd(__FILE_DIR $+ "pdcause.dat");
 // Variable names
 vnames = "y"$|"x";
 
-"Emirmahmutoglu & Kose (2011) Panel Causality Test ";
 Fisher = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, N);
-"";
 
-"Dumitrescu & Hurlin (2012) Panel Causality Test  ";
-{Znt, Zn} = Panel_Zhnc(data, vnames, pmax, ic, Nboot, N);
-"";
+{ Znt, Zn } = Panel_Zhnc(data, vnames, pmax, ic, Nboot, N);
 
-"Konya (2006) Bootstrap Panel Causality Test  ";
 SURwald = Panel_SURwald(data, vnames, pmax, ic, Nboot, N);

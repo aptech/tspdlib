@@ -95,23 +95,14 @@ proc(1) = Panel_SURwald(data, vnames, pmax, ic, Nboot, Ncross);
             {SURWald,sur_out,aic,sbc}  = _get_sur_wald(y, yl, n, p);
             
             {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
+        
+            // Print header
+            _printHeaderTSPDLIB(0, 0, 0, 0, 0, "Konya Bootstrap", "Panel Causality", 0);
             
-            format /rd 8,3;
-            
-            
-            "N   " ;;
-            N;
-            "T   " ;;
-            T;
-            "Lag " ;;
-            p;
-            
-            "     i        Wald   Bootstrap CVs (1% 5% 10%)";
-            "---------------------------------------------";;
-            seqa(1,1,N)~SURwald~cvboot;
-            "---------------------------------------------";
-            
-            "";
+            // Print statistics
+            sprintf("%12s%12s", "id", "Wald"$~"1% CV"$~"5% CV"$~"10% CV");
+            sprintf("%12g%12.3f%12.3f", seqa(1,1,N), SURwald, cvboot);
+          
             
             j = j + 1;
         endo;
@@ -422,22 +413,12 @@ proc(2) = Panel_SURwald_mod(data, vnames, pmax, ic, Nboot, Ncross);
             
             {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
             
-            format /rd 8,3;
+            // Print header
+            _printHeaderTSPDLIB(0, 0, 0, 0, 0, "Konya Bootstrap", "Panel Causality", 0);
             
-            
-            "N   " ;;
-            N;
-            "T   " ;;
-            T;
-            "Lag " ;;
-            p;
-            
-            "     i        Wald   Bootstrap CVs (1% 5% 10%)";
-            "---------------------------------------------";;
-            seqa(1,1,N)~SURwald~cvboot;
-            "---------------------------------------------";
-            
-            "";
+            // Print statistics
+            sprintf("%12s%12s", "id", "Wald"$~"1% CV"$~"5% CV"$~"10% CV");
+            sprintf("%12g%12.3f%12.3f", seqa(1,1,N), SURwald, cvboot);
             
             j = j + 1;
         endo;

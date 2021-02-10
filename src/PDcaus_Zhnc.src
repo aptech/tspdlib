@@ -149,39 +149,31 @@ proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot, Ncross);
             Z_n_cv5  = Zn_b[Ceil(Nboot*.95)];
             Z_n_cv1  = Zn_b[Ceil(Nboot*.99)];
             
-            "     i       Lag     Wald     p-val";
-            "-----------------------------------";;
-            seqa(1,1,N)~Nlag~Nwald~Npval;
-            "-----------------------------------";
-            "Panel W_bar  ";;
-            Wbar;
-            "*** Asymptotic Distribution ***";
-            "Panel Z_NT   ";;
-            Z_nt;
-            "p-value(Z_NT)";;
-            2*(1-cdfn(abs(Z_nt)));
-            "Bootstrap cv (10%) ";;
-            Z_nt_cv10;
-            "Bootstrap cv (5%)  ";;
-            Z_nt_cv5;
-            "Bootstrap cv (1%)  ";;
-            Z_nt_cv1;
+            // Print header
+            _printHeaderTSPDLIB(0, 0, 0, 0, 0, "Dumitrescu & Hurlin", "Panel Causality", 0);
             
-            "*** Semi-asymptotic Distribution ***";
-            "Panel Z_N    ";;
-            Z_n;
-            "p-value(Z_N) ";;
-            2*(1-cdfn(abs(Z_n)));
-            "Bootstrap cv (10%) ";;
-            Z_n_cv10;
-            "Bootstrap cv (5%)  ";;
-            Z_n_cv5;
-            "Bootstrap cv (1%)  ";;
-            Z_n_cv1;
-            //           "Asymptotic p-value ";; cdfchic(Fisher,2*N);
+            // Print statistics
+            sprintf("%15s%15s", "id", "Lag"$~"Wald"$~"p-val");
+            sprintf("%15g%15g%15.3f", seqa(1,1,N), Nlag, Nwald~Npval);
             
-            "";
-            
+            local top, side, stats, dec, colwidth, cv;
+            side = "Panel W_bar:"$|"Panel Z_NT:";
+            top  = "Test"$~"p-val";
+            stats =  (Wbar|Z_nt)~(error(30)|2*(1-cdfn(abs(Z_nt))));
+            cv =  Z_nt_cv1|Z_nt_cv5|Z_nt_cv10;
+            dec = 3;
+            colwidth = 15;
+            _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
+          
+            local side2, stats2;
+            side2 = "Panel Z_N:"$|"p-val:";
+            stats2 = Z_n|2*(1-cdfn(abs(Z_n)));
+
+            cv =  Z_n_cv1|Z_n_cv5|Z_n_cv10;
+
+            _printStatsTable("", side2, stats2, cv, dec, colwidth, 0);
+          
+          
             j = j + 1;
         endo;
         m = m + 1;

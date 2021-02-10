@@ -108,7 +108,6 @@ proc(3) = ADF(y, model, ...);
     
     p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
     tau = taup[p];
-    //cv  = _get_cv_adf(model, t);
     
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_ADFrsf(model, T-p , p);
@@ -116,11 +115,11 @@ proc(3) = ADF(y, model, ...);
     _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "ADF", "Unit root", 0);
     
     local side, stats, dec, colwidth;
-    side = "ADF-stat:"$|"Chosen Lag:";
-    stats = tau|p-1;
+    side = "ADF-stat:";
+    stats = tau;
     dec = 3;
     colwidth = 15;
-    _printStatsTable("", side, stats, cv, dec, colwidth, 0);    
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0, p-1);    
     _printConclusion(tau, cv, 0, "a unit root");
     
     retp(tau, p - 1, cv');
