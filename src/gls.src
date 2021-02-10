@@ -434,7 +434,7 @@ proc(8) = MGLS(y, model, ...);
     endif;
     
        
-    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "MGLS", "Unit root", 1);
+    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "MGLS", "Unit root", 0);
 
     // Print results
     local top, side, stats, dec, colwidth, cv2;
