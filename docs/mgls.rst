@@ -74,7 +74,8 @@ Examples
   cls;
   library tspdlib;
 
-  y = loadd(__FILE_DIR $+ "TSe.dat");
+  // Load date file
+  y = loadd(__FILE_DIR $+ "ts_examples.csv", "Y + date($Date, '%b-%y')");
 
   // With constant
   model = 1;

@@ -56,7 +56,7 @@ Examples
   library tspdlib;
 
   // Load date file
-  y = loadd(__FILE_DIR $+ "TSe.dat");
+  y = loadd(__FILE_DIR $+ "ts_examples.csv", "Y");
 
   // With constant
   model = 1;

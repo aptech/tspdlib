@@ -19,7 +19,7 @@ Format
     :param pmax: Maximum number of lags.
     :type pmax: Scalar
 
-    :param ic: The information criterion used for choosing lags. 
+    :param ic: The information criterion used for choosing lags.
     =========== =====================
     1           Akaike.
     2           Schwarz.
@@ -73,12 +73,15 @@ Examples
 
   // Load data matrix
   GCdata = loadd(__FILE_DIR $+ "TScaus.dat");
+  data   = ln(GCdata);
 
-  "Direction           Asym.   Bootstrap                   ";
-  "           Wald     p-val.   pval.     Lag     Frequency";
-      GC_out = GC_tests(data, vnames, pmax, ic, test, Nboot);
-      " ";
-      "";
+  // Variable names
+  vnames = "y1"$|"y2"$|"y3"$|"y4";
+
+  // Toda & Yamamoto test
+  test = 1;
+
+  GC_out = GC_tests(data, vnames, pmax, ic, test, Nboot);
 
 Source
 ------

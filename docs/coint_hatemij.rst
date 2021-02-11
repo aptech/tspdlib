@@ -103,8 +103,9 @@ Examples
   library tspdlib;
 
   // Load dataset
-  data = loadd(__FILE_DIR $+ "tscoint_full.dat");
-  data = setcoldateformats(data, "%m/%Y", "Date");
+  data = loadd(__FILE_DIR $+ "ts_coint.csv", 
+                            "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
+
 
 
   // Define y and x matrix

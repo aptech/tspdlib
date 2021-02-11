@@ -63,8 +63,7 @@ Examples
   library tspdlib;
 
   // Load date file
-  y = loadd(__FILE_DIR $+ "ts_full.dat");
-  y = setcoldateformats(y, "%m/%Y", "Date");
+  y = loadd(__FILE_DIR $+ "ts_examples.csv", "Y + date($Date, '%b-%y')");
 
   // Break in level
   model = 1;
