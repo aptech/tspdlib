@@ -10,7 +10,7 @@ Computes the Augmented Dickey Fuller unit root test with two structural breaks.
 Format
 ----------------
 .. function:: { tstat, tb1, tb2, lags, cv } = adf_2br((y, model[, pmax, ic, trimm])
-
+    :noindexentry:
 
     :param y: Time series data to be test.
 
@@ -18,10 +18,10 @@ Format
 
     :param model: Model to be implemented.
 
-          =========== ==============
-          1           Break in level.
-          2           Break in level and trend.
-          =========== ==============
+        =========== ==============
+        1           Break in level.
+        2           Break in level and trend.
+        =========== ==============
 
     :type model: Scalar
 
@@ -30,12 +30,11 @@ Format
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
-             =========== ==============
-             1           Akaike.
-             2          Schwarz.
-             3          t-stat significance.
-             =========== ==============
-             Default = 3;
+        =========== ==============
+        1           Akaike.
+        2          Schwarz.
+        3          t-stat significance.
+        =========== ==============
 
     :type ic: Scalar
 
@@ -71,7 +70,7 @@ Examples
   // Break in level
   model = 1;
 
-  { ADF_min, tb1, tb2, lags, cv } = adf_2break(y, model);
+  { ADF_min, tb1, tb2, lags, cv } = adf_2br(y, model);
 
 Source
 ------
@@ -79,3 +78,4 @@ Source
 adf_2br.src
 
 .. seealso:: Functions :func:`adf`, :func:`adf_1br`
+

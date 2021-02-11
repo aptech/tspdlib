@@ -8,8 +8,8 @@ Tests for the null of no cointegration against the alternative of cointegration 
 
 Format
 ----------------
-.. function:: { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } = coint_ghansen(y, x, model[, bwl, ic, pmax, varm, trimm]);
-
+.. function:: { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } = coint_ghansen(y, x, model[, bwl, ic, pmax, varm, trimm])
+    :noindexentry:
 
     :param y: Dependent variable.
     :type y: Nx1 matrix
@@ -19,12 +19,12 @@ Format
 
     :param model: Model to be implemented.
 
-          =========== ==============
-          1           C   (level shift)
-          2           C/T (level shift with trend)
-          3           C/S (regime shift)
-          4           Regime and trend shift
-          =========== ==============
+        =========== ==============
+        1           C   (level shift)
+        2           C/T (level shift with trend)
+        3           C/S (regime shift)
+        4           Regime and trend shift
+        =========== ==============
 
     :type model: Scalar
 
@@ -33,11 +33,11 @@ Format
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
-         =========== ======================
-         1           Akaike.
-         2           Schwarz.
-         3           t-stat significance
-         =========== ======================
+        =========== ======================
+        1           Akaike.
+        2           Schwarz.
+        3           t-stat significance
+        =========== ======================
 
     :type ic: Scalar
 
@@ -46,15 +46,15 @@ Format
 
     :param varm: Optional, long-run consistent variance estimation method. Default = 1.
 
-             =========== ======================================================
-             1           iid.
-             2           Bartlett.
-             3           Quadratic Spectral (QS).
-             4           SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
-             5           SPC with QS
-             6           Kurozumi with Bartlett
-             7           Kurozumi with QS
-             =========== ======================================================
+        =========== ======================================================
+        1           iid.
+        2           Bartlett.
+        3           Quadratic Spectral (QS).
+        4           SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+        5           SPC with QS
+        6           Kurozumi with Bartlett
+        7           Kurozumi with QS
+        =========== ======================================================
 
     :type varm: Scalar
 
@@ -115,4 +115,3 @@ Source
 
 coint_ghansen.src
 
-.. seealso::

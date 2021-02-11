@@ -8,7 +8,8 @@ LM unit root test with Flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { LMk, k, p, cv } = Fourier_LM(y[, pmax, fmax, ic]);
+.. function:: { LMk, k, p, cv } = Fourier_LM(y[, pmax, fmax, ic])
+    :noindexentry:
 
     :param y: Dependent variable.
     :type y: Nx1 matrix
@@ -43,6 +44,7 @@ Examples
 --------
 
 ::
+
   new;
   cls;
   library tspdlib;
@@ -53,10 +55,10 @@ Examples
 
   { LMstat, f, p, cv} = Fourier_LM(y);
 
-
 Source
 ------
 
 fourier_lm.src
 
 .. seealso:: Functions :func:`fourier_adf, `fourier_gls`, `fourier_kpss`
+

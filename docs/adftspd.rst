@@ -10,19 +10,18 @@ Computes the Augmented Dickey Fuller unit root test.
 Format
 ----------------
 .. function:: { tstat, lags, cv } = adf(y, model[, pmax, ic])
-
+    :noindexentry:
 
     :param y: Time series data to be test.
-
     :type y: Nx1 matrix
 
     :param model: Model to be implemented.
 
-          =========== ==============
-          0           No constant or trend.
-          1           Constant.
-          2           Constant and trend.
-          =========== ==============
+        =========== ==============
+        0           No constant or trend.
+        1           Constant.
+        2           Constant and trend.
+        =========== ==============
 
     :type model: Scalar
 
@@ -31,11 +30,11 @@ Format
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
-             =========== ==============
-             1           Akaike.
-             1           Schwarz.
-             2           t-stat significance.
-             =========== ==============
+        =========== ==============
+        1           Akaike.
+        1           Schwarz.
+        2           t-stat significance.
+        =========== ==============
 
     :type ic: Scalar
 
@@ -62,7 +61,7 @@ Examples
   // No deterministic component
   model = 0;
 
-  { ADFtau, ADFp, cvADF }  = ADF(y, model);
+  { ADFtau, ADFp, cvADF } = ADF(y, model);
 
 Source
 ------
@@ -70,3 +69,4 @@ Source
 adf.src
 
 .. seealso:: Functions :func:`adf_1br`, :func:`adf_2br`
+

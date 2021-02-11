@@ -9,8 +9,8 @@ Test of the null of cointegration allowing for structural breaks of unknown form
 
 Format
 ----------------
-.. function:: {CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols} =  coint_tsongetal(y, x, model[, bwl, kmax, varm, q]);
-
+.. function:: { CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols } = coint_tsongetal(y, x, model[, bwl, kmax, varm, q])
+    :noindexentry:
 
     :param y: Dependent variable.
     :type y: Nx1 matrix
@@ -20,10 +20,10 @@ Format
 
     :param model: Model to be implemented.
 
-          =========== ========================================
-          1           Level shift model with Fourier
-          2           Level & trend shift model with Fourier
-          =========== ========================================
+        =========== ========================================
+        1           Level shift model with Fourier
+        2           Level & trend shift model with Fourier
+        =========== ========================================
 
     :type model: Scalar
 
@@ -35,15 +35,15 @@ Format
 
     :param varm: Optional, long-run consistent variance estimation method. Default = 1.
 
-             =========== ======================================================
-             1           iid.
-             2           Bartlett.
-             3           Quadratic Spectral (QS).
-             4           SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
-             5           SPC with QS
-             6           Kurozumi with Bartlett
-             7           Kurozumi with QS
-             =========== ======================================================
+        =========== ======================================================
+        1           iid.
+        2           Bartlett.
+        3           Quadratic Spectral (QS).
+        4           SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+        5           SPC with QS
+        6           Kurozumi with Bartlett
+        7           Kurozumi with QS
+        =========== ======================================================
 
     :type varm: Scalar
 
@@ -51,22 +51,22 @@ Format
     :type q: Scalar
 
     :return CIols: CI test based on OLS estimation.
-    :rtype CIols:  Scalar
+    :rtype CIols: Scalar
 
     :return FFols: Optimal Fourier frequency based on OLS estimation.
-    :rtype FFols:  Scalar
+    :rtype FFols: Scalar
 
     :return CIDols: CI test based on DOLS estimation
-    :rtype CIDols:  Scalar
+    :rtype CIDols: Scalar
 
     :return FFdols: Optimal Fourier frequency based on DOLS estimation.
-    :rtype FFdols:  Scalar
+    :rtype FFdols: Scalar
 
     :return Fols: F-stat for Fourier terms significance based on OLS.
-    :rtype Fols:  Scalar
+    :rtype Fols: Scalar
 
     :return Fdols: F-stat for Fourier terms significance based on DOLS.
-    :rtype Fdols:  Scalar
+    :rtype Fdols: Scalar
 
     :return cv: 1%, 5%, 10% critical values for the model chosen.
     :rtype cv: Scalar
@@ -92,10 +92,10 @@ Examples
 
   // Level shift
   model = 1;
-  { CIfols, FFols, CIfdols, FFdols, cv_fourier, Fols, Fdols } =
-                      coint_tsongetal(y, x, model);
+  { CIfols, FFols, CIfdols, FFdols, cv_fourier, Fols, Fdols } = coint_tsongetal(y, x, model);
 
 Source
 ------
 
 coint_tsongetal.src
+

@@ -7,8 +7,8 @@ Purpose
 A residual-based test for the null of cointegration using a structural single equation model.
 Format
 ----------------
-.. function:: { CIols, CIdols, cv }  = coint_shin(y, x, model[, bwl, varm, q])
-
+.. function:: { CIols, CIdols, cv } = coint_shin(y, x, model[, bwl, varm, q])
+    :noindexentry:
 
     :param y: Dependent variable.
     :type y: Nx1 matrix

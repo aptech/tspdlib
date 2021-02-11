@@ -9,8 +9,8 @@ Computes ERS point optimal unit root test.
 
 Format
 ----------------
-.. function:: { Pt, lrv,  cvPT } = ERSpt(y, model[, bwl, varm]);
-
+.. function:: { Pt, lrv,  cvPT } = ERSpt(y, model[, bwl, varm])
+    :noindexentry:
 
     :param y: Time series data to be test.
     :type y: Nx1 matrix

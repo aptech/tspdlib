@@ -9,7 +9,7 @@ Engle-Granger cointegration test.
 Format
 ----------------
 .. function:: { tau, cvADF } = coint_egranger(y, x, model[, pmax, ic])
-
+    :noindexentry:
 
     :param y: Dependent variable.
     :type y: Nx1 matrix

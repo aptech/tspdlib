@@ -9,7 +9,7 @@ Dickey-Fuller unit root test with Flexible Fourier form structural breaks.
 Format
 ----------------
 .. function:: { ADFk, k, p, cv } = Fourier_ADF(y, model[, pmax, fmax, ic])
-
+    :noindexentry:
 
     :param y: Dependent variable.
     :type y: Nx1 matrix

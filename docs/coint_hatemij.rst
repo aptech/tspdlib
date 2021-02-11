@@ -10,7 +10,7 @@ Tests for cointegration with two regime shifts.
 Format
 ----------------
 .. function:: { ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa } = coint_hatemiJ(y, x[, model, bwl, ic, pmax, varm, trimm])
-
+    :noindexentry:
 
     :param y: Dependent variable.
     :type y: Nx1 matrix

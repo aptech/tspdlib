@@ -1,5 +1,5 @@
 
-kpss_1break
+kpss_2break
 ==============================================
 
 Purpose
@@ -9,8 +9,8 @@ Computes the KPSS stationary test with two structural breaks.
 
 Format
 ----------------
-.. function:: {  kpss_stat, tb, lambda, cv } = KPSS_2break(y, model)
-
+.. function:: { kpss_stat, tb, lambda, cv } = KPSS_2break(y, model)
+    :noindexentry:
 
     :param y: Time series data to be test.
     :type y: Nx1 matrix

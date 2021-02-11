@@ -8,7 +8,8 @@ LM unit root test with Flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: GC_out = GC_tests(data, vnames, pmax, ic, test, Nboot);
+.. function:: GC_out = GC_tests(data, vnames, pmax, ic, test, Nboot)
+    :noindexentry:
 
     :param data: Data to be tested with k individual variables each in a separate column.
     :type data: Txk matrix

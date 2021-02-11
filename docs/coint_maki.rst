@@ -10,7 +10,7 @@ Tests for cointegration with an unknown number of breaks.
 Format
 ----------------
 .. function:: tst = coint_maki(y, m, model[, trimm, lagoption])
-
+    :noindexentry:
 
     :param y: Data to be tested.
     :type y: Nxk matrix

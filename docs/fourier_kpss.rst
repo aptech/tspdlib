@@ -8,8 +8,8 @@ KPSS stationarity test with Flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { KPSSk, k, cv } = fourier_gls(y, model[, fmax, bwl, varm])
-
+.. function:: { KPSSk, k, cv } = fourier_kpss(y, model[, fmax, bwl, varm])
+    :noindexentry:
 
     :param y: Dependent variable.
     :type y: Nx1 matrix
@@ -54,6 +54,7 @@ Examples
 --------
 
 ::
+
   new;
   cls;
   library tspdlib;
@@ -73,3 +74,4 @@ Source
 fourier_kpss.src
 
 .. seealso:: Functions :func:`fourier_adf, `fourier_gls`, `fourier_lm`
+
