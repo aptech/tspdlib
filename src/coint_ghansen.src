@@ -161,7 +161,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     { cvADFZt, cvZa } = cv_coint_ghansen(k, model);
     
     // Printing   
-    _printHeaderTSPDLIB(0, varm, 3, 0, 1, "Gregory-Hansen", "No cointegration", 0);
+    _printHeaderTSPDLIB(0, varm, 3, 0, trimm, "Gregory-Hansen", "No cointegration", 0);
 
     // Print results
     local top, side, stats, dec, colwidth;
@@ -171,7 +171,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     dec = 3;
     colwidth = 15;
     
-    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, 4, colwidth, 0);
+    _printStatsTable(top, side, stats, cvADFZt~cvADFZt~cvZa, dec, colwidth, 0);
 
     // Print breaks
     fracZa = TBza/rows(y);

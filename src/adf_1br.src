@@ -206,13 +206,13 @@ proc(4) = ADF_1break(y, model, ...);
 
     // Print results & Critical values
     local side, stats, dec, colwidth;
-    side = "ADF-stat:"$|"Chosen Lag:";
-    stats = ADF_min|opt_lag-1;
+    side = "ADF-stat:";
+    stats = ADF_min;
     dec = 3;
     colwidth = 15;
     
     // Print stats 
-    _printStatsTable("", side, stats, cv, dec, colwidth, 0);
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0, opt_lag-1);
 
     // Print break dates
     _printBreaks(dt_vec, tb1_min, frac);

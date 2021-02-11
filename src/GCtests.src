@@ -185,7 +185,7 @@ endp;
 proc(1) = GC_tests(data, vnames, pmax, ic, test, Nboot);
     local i, j, depvar, indvar, cause, control, y, obs;
     local dmax, kmax, k, p, VARy, ylag, VARx;
-    local W, Wboot, pval_boot, GC_out, n_tests, indx;
+    local W, Wboot, pval_boot, GC_out, n_tests, indx, dt_vec;
     
     n_tests = cols(data)*(cols(data)-1);
     { dt_vec, data } =_checkfordate(data);
