@@ -51,7 +51,9 @@
 proc(4) = PP(y, model, ...);
     local t, dy, ly, dc, dt, dep, y1, sbt, trnd, x;
     local tau, g0, lrv, Zt, lambda, mbaryy, Za;
-    local b, e, e1, s2, se, ssr, cvZt, cvZa, l_dftl, l, varm;
+    local b, e, e1, s2, se, ssr, cvZt, cvZa, l_dftl, l, varm, dt_vec;
+    
+    { dt_vec, y } =_checkfordate(y);
     
     t = rows(y);
     l_dftl = round(4 * (T/100)^(2/9)); 
