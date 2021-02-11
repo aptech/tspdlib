@@ -38,15 +38,16 @@ Change log 2.0.0:
 3. Bug Fix: Optimal lag selection in adf_1br, adf_2br, lm_1br, fourier_adf, fourier_lm, and fourier_gls.
 4. Add standardized output printing.
 5. New procedures:
-i.    gls_1br - GLS unit root test with one break.
-ii.   gls_2br - GLS unit root tests with two breaks.
-iii.  RALSLM_breaks - RALS-LM unit root tests with one and two breaks.
-iv.   fixed_T_panel - Fixed T unit root tests.
-v.    _get_cd_error - Error-cross section dependence tests.
-vi.   ADF_1break_est - ADF break with 1 break unit root tests with regression coefficients returned.
-vii.  ADF_2break_est - ADF break with 2 break unit root tests with regression coefficients returned.
-viii. granger - Granger causality function with optional arguments.
-ix.   pdlm - PD level and trend break test with optional arguments.
+      - gls_1br - GLS unit root test with one break.
+      - gls_2br - GLS unit root tests with two breaks.
+      - RALSLM_breaks - RALS-LM unit root tests with one and two breaks.
+      - fixed_T_panel - Fixed T unit root tests.
+      -  _get_cd_error - Error-cross section dependence tests.
+      - ADF_1break_est - ADF break with 1 break unit root tests with regression coefficients returned.
+      - ADF_2break_est - ADF break with 2 break unit root tests with regression coefficients returned.
+      - granger - Granger causality function with optional arguments.
+      - pdlm - PD level and trend break test with optional arguments.
+      - quantileADF - quantile ADF procedure with option arguments. 
 6. Update ADF_1br.e to accommodate new outlier model input.
 7. Update all procedure to use optional arguments for parameters and set defaults for all optional arguments.
 8. Add new dataframe datasets with date types.
@@ -55,6 +56,8 @@ ix.   pdlm - PD level and trend break test with optional arguments.
 11. Add printing of test details.
 12. Add printing of test conclusions.
 13. New examples:
-i. gls_1br.e
-ii. gls_2br.e
-iii. pdlm.e
+      - gls_1br.e
+      - gls_2br.e
+      - pdlm.e
+      - granger.e 
+      - quantileADF.e
