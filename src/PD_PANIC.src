@@ -208,8 +208,8 @@ proc(3) = BNG_PANICnew(y, model, ...);
     tmp1 = (Pa~cdfn(Pa))|(Pb~cdfn(Pb))|(PMSB~cdfn(PMSB));
     
 #ifminkernelversion(20)
-    sprintf("%14s", hd_top);
-    sprintf("%14s %14.2f", hd_side, tmp1);
+    sprintf("%15s", hd_top);
+    sprintf("%15s%15.3f", hd_side, tmp1);
     print;
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));
@@ -277,11 +277,7 @@ proc(2) = JWL_PANICadj(y, model, ...);
             52.384 * (j/t)^3 + 131.95 * (j/t)^4 - 317.697 * (j/t)^5;
         djwj = djwj + (rho^j) * wj;
     endfor;
-    /*
-    "i~lhat~AN~ty";;seqa(1,1,N)~lambda~an~ADFe;
-    "GM";;   gm;
-    "arhat";; arhat;
-    */
+
     EB = -0.431;
     varB = 0.929;
     Ze = sqrt(N) * (meanc(ADFe) -EB)/sqrt(varB);
@@ -294,8 +290,8 @@ proc(2) = JWL_PANICadj(y, model, ...);
     tmp1 = (Ze~cdfn(Ze))|(Ze_ba~cdfn(Ze_ba));
     
 #ifminkernelversion(20)
-    sprintf("%14s", hd_top);
-    sprintf("%14s %14.2f", hd_side, tmp1);
+    sprintf("%15s", hd_top);
+    sprintf("%15s%15.3f", hd_side, tmp1);
     print;
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));
@@ -347,8 +343,8 @@ proc(3) = JWR_PANICCA(y, model);
     tmp1 = (Pa~cdfn(Pa))|(Pb~cdfn(Pb))|(PMSB~cdfn(PMSB));
     
 #ifminkernelversion(20)
-    sprintf("%14s", hd_top);
-    sprintf("%14s %14.2f", hd_side, tmp1);
+    sprintf("%15s", hd_top);
+    sprintf("%15s%15.3f", hd_side, tmp1);
     print;
 #else;
     hd_top$|(hd_side$~(ntos(tmp1, 4)));

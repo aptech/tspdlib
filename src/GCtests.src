@@ -190,29 +190,29 @@ proc(1) = GC_tests(data, vnames, pmax, ic, test, Nboot);
     n_tests = cols(data)*(cols(data)-1);
     { dt_vec, data } =_checkfordate(data);
     
-    if test == 0;     
-            "       Standard Granger Causality Test                      ";
-            "------------------------------------------------------------";    
+    if test == 0;
+        "       Standard Granger Causality Test                      ";
+        "------------------------------------------------------------";
     elseif test == 1;
-            "      Toda & Yamamoto Granger Causality Test                ";
-            "-------------------------------------------------------------";     
-    elseif test == 2; 
-            "  Single Fourier-frequency Granger Causality Test            ";
-            "-------------------------------------------------------------";     
+        "      Toda & Yamamoto Granger Causality Test                ";
+        "-------------------------------------------------------------";
+    elseif test == 2;
+        "  Single Fourier-frequency Granger Causality Test            ";
+        "-------------------------------------------------------------";
     elseif test == 3;
-            " Single Fourier-frequency Toda & Yamamoto Causality Test     ";
-            "-------------------------------------------------------------";     
+        " Single Fourier-frequency Toda & Yamamoto Causality Test     ";
+        "-------------------------------------------------------------";
     elseif test == 4;
-            "   Cumulative Fourier-frequency Granger Causality Test       ";
-            "-------------------------------------------------------------";      
+        "   Cumulative Fourier-frequency Granger Causality Test       ";
+        "-------------------------------------------------------------";
     elseif test == 5;
-            " Cumulative Fourier-frequency Toda & Yamamoto Causality Test ";
-            "-------------------------------------------------------------";      
+        " Cumulative Fourier-frequency Toda & Yamamoto Causality Test ";
+        "-------------------------------------------------------------";
     endif;
     
     GC_out = zeros(n_tests, 5);
     indx = 1;
-    local top, top2,  comp;
+    local top, top2, comp;
     top = "Direction"$~"Wald"$~"Asym. p-val"$~"Bootstrap p-val";
     top2 = "Lag"$~"Frequency";
     sprintf("%20s%15s", top, top2);
@@ -270,8 +270,8 @@ proc(1) = GC_tests(data, vnames, pmax, ic, test, Nboot);
                 sprintf("%20s%20.3f%15d", comp, GC_out[indx, 1:3], GC_out[indx, 4:5]);
             endif;
             if i>1 and i==j;
-               comp = vnames[j+1]$+"=>"$+vnames[i];
-               sprintf("%20s%20.3f%15d", comp, GC_out[indx, 1:3], GC_out[indx, 4:5]);
+                comp = vnames[j+1]$+"=>"$+vnames[i];
+                sprintf("%20s%20.3f%15d", comp, GC_out[indx, 1:3], GC_out[indx, 4:5]);
             endif;
             if i>1 and j<i;
                 comp = vnames[j]$+"=>"$+vnames[i];
@@ -289,9 +289,10 @@ proc(1) = GC_tests(data, vnames, pmax, ic, test, Nboot);
     retp(GC_out);
 endp;
 
+
 //Wald test for causality
-    
-    proc (1) =_get_Wald(VARy, VARx, p, dmax);
+
+proc (1) =_get_Wald(VARy, VARx, p, dmax);
     local y, z, t, b, u, su, zr, br, ur, sr;
     local rssr, rssur, df, f, w, lr;
     
@@ -303,7 +304,7 @@ endp;
     Su = u'u;
     
     //Restricted model
-        if dmax == 0;
+    if dmax == 0;
         zr  = z[.,1:p]~z[.,2*p+1:cols(z)];
     endif;
     
@@ -317,7 +318,7 @@ endp;
     Sr = ur'ur;
     
     //Test statistics
-        rssr = sr[1,1];
+    rssr = sr[1,1];
     rssur= su[1,1];
     df   = T-cols(z)-p-dmax;
     F    = ((rssr-rssur)/p)/(rssur/df);
@@ -328,8 +329,7 @@ endp;
 
 
 // bootstrap distribution of Wald stats
-    
-    proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
+proc (1) =_get_Wald_bootstrap(VARy, VARx, p, dmax, Nboot);
     local y, z, t, b, u, zr, br, ur, zhat;
     local nk, tp, Wboot, ystar, simerr, adje;
     local s, ti, rnd, index, varindx;
@@ -342,7 +342,7 @@ endp;
     //zhat  = z.*b[.,1]';
     
     // Residuals under the null hypothesis
-        if dmax == 0;
+    if dmax == 0;
         zr  = z[.,1:p]~z[.,2*p+1:cols(z)];
     endif;
     
@@ -369,7 +369,7 @@ endp;
     
     for s(1,Nboot,1);
         // Generate bootstrap residuals
-            ti=1;
+        ti=1;
         do while ti<=Tp;
             rnd  = rndu(1,nk);
             index= 1 + trunc(Tp*rnd);
@@ -384,14 +384,14 @@ endp;
         endo;
         
         // Generate mean adjusted residuals
-            varindx = 1;
+        varindx = 1;
         do until varindx>nk;
             simerr[.,varindx]=simerr[.,varindx]-(meanc(simerr[.,varindx]));
             varindx = varindx + 1;
         endo;
         
         // Generate bootsrap sample
-            varindx=1;
+        varindx=1;
         do while varindx<=nk;
             ti=1;
             do while ti<=Tp;
@@ -406,15 +406,14 @@ endp;
     endfor;
     
     // Bootstrap Wald stats
-        Wboot = sortc(Wboot,1);
+    Wboot = sortc(Wboot,1);
     
     retp(Wboot);
 endp;
 
 
 // Generate data for VAR estimation
-    
-    proc(1)=_get_VARdata(y,ylag,test,k,p,dmax);
+proc(1)=_get_VARdata(y,ylag,test,k,p,dmax);
     local t, d, cf, VARdata;
     
     t = rows(y) + p + dmax;
@@ -467,8 +466,7 @@ endp;
 endp;
 
 //optimal frequency and lag selection
-    
-    proc(2) = _get_kp(y,pmax,kmax,ic,test);
+proc(2) = _get_kp(y,pmax,kmax,ic,test);
     local aic, sbc, aickp, sbckp, k, p, dep, xlag, t, d, z, cf;
     
     if test==0 or test==1;
@@ -625,8 +623,7 @@ endp;
 endp;
 
 //information criterion estimation
-    
-    proc(2) = _get_icvalue(dep,z,p);
+proc(2) = _get_icvalue(dep,z,p);
     local t, b, e, varcov, nk, aic, sbc;
     t=rows(dep);
     b=(dep/z);
@@ -639,8 +636,8 @@ endp;
 endp;
 
 //generating y and ylags adjusted for lags
-    
-    proc(2) = _get_lagp(y, pmax);
+
+proc(2) = _get_lagp(y, pmax);
     local nk, p, ylag, i, j, ya, yl;
     
     nk=cols(y);

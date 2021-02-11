@@ -130,7 +130,7 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
             sprintf("%15g%15g%15.3f", seqa(1,1,N), Nlag, Nwald~Npval);
             print;
             
-             local top, side, stats, dec, colwidth, cv;
+            local top, side, stats, dec, colwidth, cv;
             top = "";
             side  = "Test"$|"p-val";
             stats =  Fisher|cdfchic(Fisher,2*N);
