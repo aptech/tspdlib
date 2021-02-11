@@ -114,14 +114,15 @@ endp;
 proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     local n, t, Nlm, Ntb, Np, i;
     local LMtau, tb1, tb2, p, lambda, cv;
-    local meanp, varp, PD_lm, y;
+    local meanp, varp, PD_lm, dt_vec;
+    
+    
+    { dt_vec, y } =_checkfordate(y);
     
     n  = cols(y);
     t  = rows(y);
     Nlm = zeros(N, 1);
     Np = zeros(N, 1);
-    
-    { dt_vec, y } =_checkfordate(y);
     
     // Run panel LM test with level shifts
     "Panel LM test with level shifts";
@@ -184,9 +185,7 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
                     Ntb[i, 2] = tb2;    
                 
             endif;
-            
-            Ntb[i, 1] = tb1;
-            Ntb[i, 2] = tb2;
+   
             Np[i] = p;
         endfor;
         
@@ -197,8 +196,18 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
     
     // Convert breaks to strings depending
     // on type of dt_vec
-    if not ismiss(dt_vec);
-        Ntb = posixtostrc(Ntb, getcoldateformats(dt_vec));
+    if not ismiss(dt_vec) and nbreak>0;
+        local brk1, brk2;
+        
+        brk1 = posixtostrc(Ntb[., 1], getcoldateformats(dt_vec));
+        if nbreak == 2;
+            brk2 = posixtostrc(Ntb[., 2], getcoldateformats(dt_vec));
+        endif;
+    else;
+        brk1 = Ntb[., 1];
+        if nbreak == 2;
+            brk2 = Ntb[., 2];
+        endif;
     endif;
     
     // Print results
@@ -216,9 +225,9 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
         #ifminkernelversion(20)
             sprintf("%15s", top);
             if ismiss(dt_vec);
-                sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+                sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, brk1, Np);
             else;
-                sprintf("%15d%15.3f%15s%15d", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+                sprintf("%15d%15.3f%15s%15d", seqa(1, 1, cols(y)), Nlm, brk1, Np);
             endif;
         #else
             top$|(ntos(seqa(1, 1, cols(y))~Nlm~Ntb~Np, 4));
@@ -228,9 +237,9 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
         #ifminkernelversion(20)
             sprintf("%15s", top);
             if ismiss(dt_vec);
-                sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+                sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, brk1$~brk2, Np);
             else;
-                sprintf("%15d%15.3f%15s%15d", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+                sprintf("%15d%15.3f%15s%15d", seqa(1, 1, cols(y)), Nlm, brk1$~brk2, Np);
             endif;
         #else
             top$|(ntos(seqa(1, 1, cols(y))~Nlm~Ntb~Np, 4));
@@ -239,7 +248,7 @@ proc(5) = PDLMlevel(y, model, pmax, ic, trimm, nbreak);
 
     "Panel LM test statistic:";
     #ifminkernelversion(20)
-        sprintf("%14s %14.4f", "PDLM"$|"p-val", PD_lm|(1 - cdfnc(PD_lm)));
+        sprintf("%15s%15.3f", "PDLM"$|"p-val", PD_lm|(1 - cdfnc(PD_lm)));
     #else;
         ("PDLM"$|"p-val")~ntos(PD_lm|(1 - cdfnc(PD_lm)), 4);
     #endif;    
