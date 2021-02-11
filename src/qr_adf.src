@@ -49,7 +49,7 @@ proc (1) = quantileADF(y, model, tau, ...);
     { dt_vec, y } =_checkfordate(y);
     
     // Get defaults
-    { pmax, ic, _print } = dynargsGet(1|3, 8, 3, 0.10);
+    { pmax, ic, _print } = dynargsGet(1|3, 8, 3, "true");
     
     retp(QRADF(y, model, pmax, ic, tau, _print));
 endp;
@@ -107,7 +107,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     
     screen off;
     { ADFt, p, cvADF} = ADF(y, 1, pmax, ic);
-    screen on;
+  
     
     if p > 0;
         dyl = zeros(rows(y), p);
@@ -213,7 +213,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     QURadf = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau -1);
     
     cv = crit_QRadf(delta2, model);
-    
+    screen on;
     if _print == "true";
         local top, side, stats, dec;
         top = "";
