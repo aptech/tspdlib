@@ -49,7 +49,7 @@ proc(2) = LMkpss(y, model, ...);
     bwl_dftl = round(4 * (t/100)^(2/9));
     
     { l, varm } = dynargsGet(1|2, bwl_dftl, 1);
-    { dt_vec, data } =_checkfordate(data);
+    { dt_vec, y } =_checkfordate(y);
     
     "KPSS tests for stationarity:";
     if model == 1;

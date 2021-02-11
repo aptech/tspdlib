@@ -33,7 +33,7 @@ proc (1) = coint_maki(y, m, model, ...);
     { trimm, lagoption } = dynargsGet(1|2, 0.10, 1);
     
     // Check for dates
-    { dt_vec, Y } = _checkfordate(Y);
+    { dt_vec, y } = _checkfordate(y);
     
 #ifminkernelversion(20);
     local hd_side, tmp1;

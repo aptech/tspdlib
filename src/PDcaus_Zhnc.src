@@ -52,8 +52,9 @@ proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot, Ncross);
     local Nwald, Npval, Nlag, Ne_Znt, Nv_Znt, Ne_Zn, Nv_Zn;
     local e0, z0, NeH0, NzH0, Wbar, Z_nt, Z_n, temp1, temp2;
     local Znt_b, Zn_b, Z_nt_cv10, Z_nt_cv5, Z_nt_cv1;
-    local Z_n_cv10, Z_n_cv5, Z_n_cv1;
+    local Z_n_cv10, Z_n_cv5, Z_n_cv1, dt_vec;
     
+    { dt_vec, data } =_checkfordate(data);
     m = 1;
     N = Ncross;
     t = rows(data)/N;

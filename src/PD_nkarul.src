@@ -45,10 +45,11 @@
 
 
 proc(3) = PDfzk(y, model, k, ...);
-    local t, n, ft, Nkpss, i, fpk, mu, var, fzk, varm;
+    local t, n, ft, Nkpss, i, fpk, mu, var, fzk, varm, dt_vec;
     
     // Get option arguments
     varm = dynargsGet(1, 1);
+    { dt_vec, y } =_checkfordate(y);
     
     print "Panel stationary test with gradual shifts.";
 

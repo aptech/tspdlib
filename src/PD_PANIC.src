@@ -86,10 +86,11 @@
 /*Pe test on ADF p-values in Bai & Ng (2004)*/
 proc(5) = BNG_PANIC(y, model, ...);
     local dx, x, e, t, n, nf, Fhat, lambda, ehat;
-    local ADFe, lags, cv0, pval, par, qval, j, Pe, pmax, icp, kmax, ick;
+    local ADFe, lags, cv0, pval, par, qval, j, Pe, pmax, icp, kmax, ick, dt_vec;
     
     // Get optional arguments
     { pmax, icp, kmax, ick } = dynargsGet(1|4, 8, 3, 5, 1);
+    { dt_vec, y } =_checkfordate(y);
     
     dx = diff(y, 1);
     x = dx[2:rows(y), .];

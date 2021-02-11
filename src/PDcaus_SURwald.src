@@ -51,8 +51,9 @@
 proc(1) = Panel_SURwald(data, vnames, pmax, ic, Nboot, Ncross);
     local m, j, y1, indvar, y2, p, y, yl, t, n;
     local SURwald, sur_out, aic, sbc;
-    local SURwald_boot, cvboot;
+    local SURwald_boot, cvboot, dt_vec;
     
+    { dt_vec, data } =_checkfordate(data);
     t = rows(data)/Ncross;
     n = Ncross;
     

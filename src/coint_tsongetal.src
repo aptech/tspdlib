@@ -80,7 +80,7 @@ proc(7) = coint_tsongetal(y, x, model, ...);
     bwl_dftl = round(4 * (T/100)^(2/9));
     
     { bwl, kmax, varm, q } = dynargsGet(1|4, bwl_dftl, 5, 1, int(4*(t/100)^(2/9)));
-    { dt_vec, y } =_checkfordate(y);
+    { dt_vec, x } =_checkfordate(x);
     
     ssr1_min = 1e6;
     ssr2_min = 1e6;

@@ -46,8 +46,9 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
     local m, j, i, depvar, indvar, cause, control, y_tn, y_i, t, N;
     local obs, k, p, VARy, ylag, VARx, W, Nwald, Npval, Nlag;
     local e0, z0, NeH0, NzH0, Fisher;
-    local Fisher_b, boot_cv10, boot_cv5, boot_cv1;
+    local Fisher_b, boot_cv10, boot_cv5, boot_cv1, dt_vec;
 
+    { dt_vec, data } =_checkfordate(data);
     n = Ncross;
     t = rows(data)/n;
     

@@ -44,7 +44,7 @@
 /* 10 February 2021 */
 
 proc (1) = quantileADF(y, model, tau, ...);
-    local dt_vec, pmax, ic, _print;
+    local dt_vec, pmax, ic, _print, dt_vec;
     
     { dt_vec, y } =_checkfordate(y);
     
@@ -96,7 +96,7 @@ endp;
 proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     local n, y1, dy, dyl, x, ADFt, p, cv;
     local qr_beta, rho_tau, beta_ols, rho_ols, res, ind, phi, cvADF;
-    local w, cov, delta2, crv, h, x1, rq1, rq2, z, mz, q1, q2, fz, xx, px, QURadf, d_vec;
+    local w, cov, delta2, crv, h, x1, rq1, rq2, z, mz, q1, q2, fz, xx, px, QURadf, dt_vec;
     
     { dt_vec, y } =_checkfordate(y);
     
