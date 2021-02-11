@@ -39,7 +39,9 @@
 proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     local n, t, Nlm, Ntb, Np, i;
     local tb1, tb2, p, cv;
-    local meanp, varp, PD_lm, LMtau;
+    local meanp, varp, PD_lm, LMtau, dt_vec, brk1, brk2;
+    
+    { dt_vec, y } =_checkfordate(y);
     
     n = cols(y);
     t = rows(y);
@@ -73,7 +75,13 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
             
             // i~LM~tb1~p;
             Nlm[i] = LMtau;
-            Ntb[i] = tb1;
+            // Get break
+            if not ismiss(dt_vec);
+                    Ntb[i] = dt_vec[tb1];
+            else;
+                    Ntb[i] = tb1;
+                
+            endif;
             Np[i] = p;
         endfor;
         
@@ -87,8 +95,15 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
             {LMtau, tb1, tb2, p} = _get_LMtrend_2breaks(y[., i], model, pmax, ic, trimm);
             //i~LM~tb1~p;
             Nlm[i] = LMtau;
-            Ntb[i,1] = tb1;
-            Ntb[i,2] = tb2;
+            // Get break
+            if not ismiss(dt_vec);
+                    Ntb[i, 1] = dt_vec[tb1];
+                    Ntb[i, 2] = dt_vec[tb2];
+            else;
+                    Ntb[i, 1] = tb1;
+                    Ntb[i, 2] = tb2;    
+                
+            endif;
             Np[i] = p;
         endfor;
         
@@ -97,13 +112,33 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     {meanp, varp} = _get_LTmoments(T, N, Nlm, Np, nbreak);
     PD_lm = sqrt(n) * (meanc(Nlm) - meanp)/sqrt(varp);
     
+    // Convert breaks to strings depending
+    // on type of dt_vec
+    if not ismiss(dt_vec) and nbreak>0;
+        local brk1, brk2;
+        
+        brk1 = posixtostrc(Ntb[., 1], getcoldateformats(dt_vec));
+        if nbreak == 2;
+            brk2 = posixtostrc(Ntb[., 2], getcoldateformats(dt_vec));
+        endif;
+    else;
+        brk1 = Ntb[., 1];
+        if nbreak == 2;
+            brk2 = Ntb[., 2];
+        endif;
+    endif;
+    
     // Print results
     local top;
     if nbreak == 1;
         top = "Group"$~"Ind. Test"$~"Break"$~"Lags";
         #ifminkernelversion(20)
             sprintf("%15s", top);
-            sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+            if ismiss(dt_vec);
+                sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, brk1, Np);
+            else;
+                sprintf("%15d%15.3f%15s%15d", seqa(1, 1, cols(y)), Nlm, brk1, Np);
+            endif;
         #else
             top$|(ntos(seqa(1, 1, cols(y))~Nlm~Ntb~Np, 4));
         #endif;
@@ -111,7 +146,11 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
         top = "Group"$~"Ind. Test"$~"Break 1"$~"Break 2"$~"Lags";
         #ifminkernelversion(20)
             sprintf("%15s", top);
-            sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, Ntb, Np);
+            if ismiss(dt_vec);
+                sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, brk1$~brk2, Np);
+            else;
+                sprintf("%15d%15.3f%15s%15d", seqa(1, 1, cols(y)), Nlm, brk1$~brk2, Np);
+            endif;
         #else
             top$|(ntos(seqa(1, 1, cols(y))~Nlm~Ntb~Np, 4));
         #endif;
