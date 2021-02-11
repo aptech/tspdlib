@@ -2,8 +2,9 @@ new;
 cls;
 library tspdlib;
 
-// Load the dataset
-data = loadd(__FILE_DIR $+ "TScoint.dat");
+// Load dataset
+data = loadd(__FILE_DIR $+ "ts_coint.csv", 
+                            "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
 
 // Define y and x matrix
 y = data[., 1];

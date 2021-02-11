@@ -401,7 +401,7 @@ proc (2) = _checkfordate(data);
             dt_col = dt_col[., 1];
         endif;
     else;
-        retp(error(30), error(30));
+        retp(error(30), data);
     endif;
     
     retp(dt_col, data_new);

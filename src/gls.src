@@ -227,12 +227,13 @@ endp;
 proc(3) = ERSpt(y, model, ...);
     local t, dy, ly, dc, dt, dep, y1, x, tau, g0, lrv;
     local c, a, ya, za, ba, u, SSRa, SSR1, PT;
-    local b, e1, s2, se, ssr, z, cv, l_dftl, l, varm;
+    local b, e1, s2, se, ssr, z, cv, l_dftl, l, varm, dt_vec;
     
     t = rows(y);
     l_dftl = round(4 * (T/100)^(2/9));
     
     { l, varm } = dynargsGet(1|2, l_dftl, 1);
+    { dt_vec, y } =_checkfordate(y);
     
     dy = diff(y, 1);
     ly = lagn(y, 1);
@@ -373,13 +374,14 @@ endp;
 proc(8) = MGLS(y, model, ...);
     local t, c, a, ya, za, pt, fo, bhat, z;
     local ygls, yd, tt, k, mza, msb, mzt, mpt;
-    local cv, cvMZA, cvMZt, cvMSB, cvMPT, l_dftl, l, varm;
+    local cv, cvMZA, cvMZt, cvMSB, cvMPT, l_dftl, l, varm, dt_vec;
     
     t = rows(y);
     l_dftl = round(4 * (T/100)^(2/9));
     
     { l, varm } = dynargsGet(1|2, l_dftl, 1);
-        
+    { dt_vec, y } =_checkfordate(y);
+    
     if model == 1;
         c = -7.00;
         z = ones(t, 1);

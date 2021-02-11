@@ -3,7 +3,7 @@ cls;
 library tspdlib;
 
 // Load date file
-y = loadd(__FILE_DIR $+ "TSe.dat");
+y = loadd(__FILE_DIR $+ "ts_examples.csv", "Y");
 
 // Constant
 model = 1;

@@ -15,5 +15,5 @@ y = loadd(__FILE_DIR $+ "PDe.dat");
 /*
 ** Model with constant
 */
-model = 0;
+model = 1;
 { ADFe, pval, lags, Pe, nf } = BNG_PANIC(y, model);
