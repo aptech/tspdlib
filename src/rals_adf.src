@@ -36,14 +36,17 @@
 
 proc(3) = RALSADF(y, model, ...);
     local tauADF, lag_var, t, dy, ly, dc, dt, dep, y1, ldy, sbt, trnd, lmat, x;
-    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cvADF, cv, pmax, ic;
+    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cvADF, cv, pmax, ic, dt_vec;
     
     {pmax, ic} = dynargsGet(1|2, 8, 3);
-
+    { dt_vec, y } =_checkfordate(y);
+    
     T = rows(y);
+    
     screen off;
         { tauADF, lag_var, cvADF } = ADF(y, model, pmax, ic);
     screen on;
+    
     dy = diff(y, 1);
     ly = lagn(y, 1);
     

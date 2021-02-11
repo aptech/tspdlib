@@ -108,7 +108,9 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     dy = diff(y, 1);
     x = y1;
     
+    screen off;
     { ADFt, p, cvADF} = ADF(y, 1, pmax, ic);
+    screen on;
     
     if p > 0;
         dyl = zeros(rows(y), p);

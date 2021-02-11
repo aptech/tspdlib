@@ -115,8 +115,7 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     // Convert breaks to strings depending
     // on type of dt_vec
     if not ismiss(dt_vec) and nbreak>0;
-        local brk1, brk2;
-        
+   
         brk1 = posixtostrc(Ntb[., 1], getcoldateformats(dt_vec));
         if nbreak == 2;
             brk2 = posixtostrc(Ntb[., 2], getcoldateformats(dt_vec));

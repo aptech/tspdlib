@@ -33,13 +33,18 @@
 
 proc (3) = RALSLM(y, ...);
     local tauLM, lag_var, cvLM, t, dc, dt, z, dy, dz, b0, psi, ylm, ds, ly, dep, y1, ldy, lmat, x;
-    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cv, pmax, ic;
+    local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cv, pmax, ic, dt_vec;
     
-    {pmax, ic} = dynargsGet(1|2, 8, 3);
+    { pmax, ic } = dynargsGet(1|2, 8, 3);
+    { dt_vec, y } =_checkfordate(y);
        
     "RALS-LM";
     T = rows(y);
+    
+    screen off;
     { tauLM, lag_var, cvLM } = LM(y, pmax, ic);
+    screen on;
+    
     dc = ones(t, 1);
     dt = seqa(1, 1, t);
     z = dt;
