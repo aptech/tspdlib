@@ -51,7 +51,7 @@ proc (1) = coint_maki(y, m, model, ...);
     
     { d0, d1 } = pf(y, m, model, trimm, lagoption);
     
-    print "==========================================================";
+    print "==============================================================";
     print /lz "Cointegration tests with multiple breaks:";
     if model==0;
         print /lz "Level shifts" ;
@@ -62,7 +62,7 @@ proc (1) = coint_maki(y, m, model, ...);
     elseif model==3;
         print /lz "Trend and Regime shifts";
     endif;
-    print "==========================================================";
+    print "==============================================================";
     
     // Print breaks
     frac = d1/rows(y);
