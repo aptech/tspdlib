@@ -152,6 +152,9 @@ proc(4) = KPSS_2breaks(y, model, ...);
     
     _printStatsTable(top, side, stats, rev(cv'), dec, colwidth, 0);
     _printConclusion(KPSS_min, rev(cv'), 1, "stationarity");
+
+
+    _printBreaks(dt_vec, tb1_min|tb2_min, frac);
     
     retp(KPSS_min, tb1_min, tb2_min, rev(cv'));
 endp;
