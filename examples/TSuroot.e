@@ -15,7 +15,7 @@ y = setcoldateformats(y, "%m/%Y", "Date");
 ** Model with constant and trend
 */
 model = 2;
-screen off;
+
 { ADFtau, ADFp, cvADF } = ADF(y, model);
 { Zt, Za, cvZt, cvZa }  = PP(y, model);
 { GLStau, GLSp, cvGLS } = DFGLS(y, model);
@@ -23,25 +23,7 @@ screen off;
 { MZa, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT}  
                         = MGLS(y, model);
 { LMtau, LMp, cvLM }    = LM(y);
-{ KPSS, cvKPSS }          = LMkpss(y, model);
-screen on;
-
-"Test      Stat.   cv(1%)   cv(5%)   cv(10%)   Lag  ";
-"--------------------------------------------------";
-"ADF   " ;; ADFtau ;; cvADF ;; ADFp ; 
-"Zt    " ;; Zt     ;; cvZt; 
-"Za    " ;; Za     ;; cvZa;
-"DFGLS " ;; GLStau ;; cvGLS ;; GLSP ;
-"PT    " ;; PT     ;; cvPt;
-//"HAC variance "   ;; lrv;
-"MZa   " ;; MZa    ;; cvMZA;
-"MZt   " ;; MZt    ;; cvMZt;
-"MSB   " ;; MSB    ;; cvMSB;
-"MPT   " ;; MPT    ;; cvMPT;
-"LM    " ;; LMtau  ;; cvLM ;; LMp ; 
-"KPSS  " ;; KPSS   ;; cvKPSS; 
-
-"";
+{ KPSS, cvKPSS }        = LMkpss(y, model);
 
 /*
 ** Tests with breaks
