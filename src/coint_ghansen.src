@@ -166,7 +166,7 @@ proc(8) = coint_ghansen(y, x, model, ...);
     // Print results
     local top, side, stats, dec, colwidth;
     side = "ADF:"$|"Zt:"$|"Za:";
-    top = ""$~"Test";
+    top = ""$~"Test Stat.";
     stats = (ADf_min|Zt_min|Za_min);
     dec = 3;
     colwidth = 15;

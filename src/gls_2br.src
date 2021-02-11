@@ -167,7 +167,7 @@ proc(18) =  GLS_2breaks(y, model, ...);
 
     // Print results & Critical values
     local stats, dec, colwidth, cv, side, top;
-    top = ""$~"Test";
+    top = ""$~"Test Stat.";
     side = "ADF-GLS:"$|"PT:"$|"MZa:"$|"MZt:"$|"MSB:"$|"MPT:";
     stats = ADFGLS_min|PT_min|MZa_min|MZt_min|MSB_min|MPT_min;
     cv = cvDFGLS|cvPT|cvMZa|cvMZt|cvMSB|cvMPT;

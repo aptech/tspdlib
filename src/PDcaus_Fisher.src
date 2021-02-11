@@ -132,7 +132,7 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
             
             local top, side, stats, dec, colwidth, cv;
             top = "";
-            side  = "Test"$|"p-val";
+            side  = "Test Stat."$|"p-val";
             stats =  Fisher|cdfchic(Fisher,2*N);
             cv =  boot_cv1|boot_cv5|boot_cv10;
             dec = 3;

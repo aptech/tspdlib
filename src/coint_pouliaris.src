@@ -189,7 +189,7 @@ proc(4) = coint_pouliaris(y, x, model, ...);
     // Print results
     local side, top, stats, dec, colwidth;
     side = "Zt:"$|"Za:";
-    top = ""$~"Test";
+    top = ""$~"Test Stat.";
     stats = (Zt|Za);
     dec = 3;
     colwidth = 15;

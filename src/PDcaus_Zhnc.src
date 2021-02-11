@@ -160,7 +160,7 @@ proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot, Ncross);
             
             local top, side, stats, dec, colwidth, cv;
             side = "Panel W_bar:"$|"Panel Z_NT:";
-            top  = "Test"$~"p-val";
+            top  = "Test Stat."$~"p-val";
             stats =  (Wbar|Z_nt)~(error(30)|2*(1-cdfn(abs(Z_nt))));
             cv =  Z_nt_cv1|Z_nt_cv5|Z_nt_cv10;
             dec = 3;

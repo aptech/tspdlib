@@ -176,7 +176,7 @@ proc(3) = coint_shin(y, x, model, ...);
     // Print results
     local side, top, stats, dec, colwidth;
     side = "OLS:"$|"DOLS:";
-    top = ""$~"Test";
+    top = ""$~"Test Stat.";
     stats = (C1|C2);
     dec = 3;
     colwidth = 15;
