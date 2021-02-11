@@ -271,8 +271,10 @@ proc(3) = ERSpt(y, model, ...);
     g0 = (t - cols(x)) * s2 * 1/t;
     
     // Long-run variance with Barlett
+    screen off;
     lrv = _get_lrv_type(varm, ssr, e1, l, 1);
-  
+    screen on;
+    
     t = rows(y);
     
     if model == 1;
