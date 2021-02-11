@@ -7,7 +7,62 @@
 **  Journal of the American Statistical Association 99, 775-787.
 **
 **
-**  Format:  {QURadf} = QRADF(y, model[, pmax, ic, tau, _print]);
+**  Format:  {QURadf} = quantileADF(y, model, tau [, pmax, ic, _print]);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**
+**           model   - 	1 = Constant (Default in Koenker & Xiao (2004)
+**                      2 = Constant and trend
+**
+**           tau    -   quantile (0.1,...,1)
+**
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags
+**                      Default = 8;
+**
+**           ic      -  Information Criterion:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**                      Default = 3;
+**
+**           _print  -  Optional, print option "true" for printing results
+**                      Default = "true";
+**
+**  Output:  rho(quantile) - the estimated rho parameter for a given quantile
+**			 rho (OLS)    - the estimated rho parameter for usual OLS estimation
+**           delta2       - see equation (10) at page 778
+**           tn(quantile) - quantile unit root statistic (t-ratio for a given quantile)
+**			 cv           - 1%, 5%, 10% critical values for the estimated delta2
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/* 10 February 2021 */
+
+proc (1) = quantileADF(y, model, tau, ...);
+    local dt_vec, pmax, ic, _print;
+    
+    { dt_vec, y } =_checkfordate(y);
+    
+    // Get defaults
+    { pmax, ic, _print } = dynargsGet(1|3, 8, 3, 0.10);
+    
+    retp(QRADF(y, model, pmax, ic, tau, _print));
+endp;
+
+/*
+**> qr_adf
+**  Reference:
+**  Koenker, R., Xiao, Z., 2004.
+**  Unit root quantile autoregression inference.
+**  Journal of the American Statistical Association 99, 775-787.
+**
+**
+**  Format:  {QURadf} = QRADF(y, model, pmax, ic, tau, _print);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -38,14 +93,15 @@
 **
 */
 
-/* 18 August 2018 */
-
-
-/*Procedures*/
 proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     local n, y1, dy, dyl, x, ADFt, p, cv;
     local qr_beta, rho_tau, beta_ols, rho_ols, res, ind, phi, cvADF;
-    local w, cov, delta2, crv, h, x1, rq1, rq2, z, mz, q1, q2, fz, xx, px, QURadf;
+    local w, cov, delta2, crv, h, x1, rq1, rq2, z, mz, q1, q2, fz, xx, px, QURadf, d_vec;
+    
+    { dt_vec, y } =_checkfordate(y);
+    
+    // Get defaults
+    { pmax, ic, tau, trimm } = dynargsGet(1|4, 0, 8, 3, 0.10);
     
     n = rows(y);
     y1 = lagn(y, 1);
