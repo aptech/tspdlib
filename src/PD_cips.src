@@ -84,10 +84,10 @@ proc(6) = cips(y, model, ...);
  // Print results
     local hd_side, hd_top, tmp1, tmp2, tmp3, hd_top2, hd_top3;
     hd_side = "CIPS"$|"M-CIPS";
-    hd_top = ""$~"Test Stat"$~"pval";
+    hd_top = ""$~"Test Stat"$~"p-val";
     tmp1 = (pcadf~error(30))|(pmcadf~cdfn(pmcadf));
 
-    hd_top2 = "id"$~"CADF"$~"LM"$~"M-CADF"$~"pval"$~"lags";
+    hd_top2 = "id"$~"CADF"$~"LM"$~"M-CADF"$~"p-val"$~"lags";
     tmp2 = seqa(1, 1, N)~Ncadf~Nlm~Nd~cdfchic(abs(Nd), q)~Nlags;
     tmp3 = cdfchii(0.99, q)~cdfchii(0.95, q)~cdfchii(0.90, q);  
     hd_top3 = ""~"1%"$~"5%"$~"10%";
