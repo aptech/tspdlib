@@ -1,23 +1,39 @@
-.. GAUSS documentation master file, created by
-   sphinx-quickstart on Wed Jan 30 17:30:22 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+tspdlib
+=========
 
-Welcome to GAUSS's documentation!
-=================================
+GAUSS Time Series and Panel data tests
+--------------------------------------
+
+Econometric package for Time Series and Panel Data Methods covering unit root, co-integration & causality tests. Extensive coverage of testing in the presence of structural breaks.
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Contents:
+    :maxdepth: 1
+    :caption: Contents:
 
-   test
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-.. * :ref:`modindex`
-* :ref:`search`
-
-Reference to `ols` here and :func:`ols` <-- there
+    adf_1br
+    adf_2br
+    adftspd
+    changelog
+    cips
+    coint_cissano
+    coint_egranger
+    coint_ghansen
+    coint_hatemij
+    coint_maki
+    coint_pouliaris
+    coint_shin
+    coint_tsongetal
+    erspt
+    fourier_adf
+    fourier_gls
+    fourier_kpss
+    fourier_lm
+    gc_tests
+    glstspd
+    kpss_1break
+    kpss_2break
+    lm_1break
+    lm_2break
+    lmkpss
+    mgls
 
