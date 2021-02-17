@@ -13,9 +13,7 @@
     "src": [
         "adf.src",
         "adf_1br.src",
-        "adf_1br_est.src",
         "adf_2br.src",
-        "adf_2br_est.src",
         "coint_cissanso.src",
         "coint_egranger.src",
         "coint_ghansen.src",
@@ -63,5 +61,5 @@
         "rals_lm_breaks.src",
         "coint_maki.src"
     ],
-    "version": "2.0.0"
+    "version": "2.0.1"
 }
