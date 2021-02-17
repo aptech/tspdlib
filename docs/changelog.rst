@@ -3,6 +3,11 @@ Change Log
 ==========
 
 The following is a list of changes from the previous version of tspdlib.
+2.0.1
+-----
+#. Bug Fix: Fixed printing of model type.
+#. Add critical values for coint_maki.
+#. Update printing style for coint_maki
 
 2.0.0
 -----

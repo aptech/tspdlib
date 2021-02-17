@@ -28,64 +28,40 @@
 **                       1: t-sig criterion
 */
 proc (1) = coint_maki(y, m, model, ...);
-    local d0, d1, trimm, lagoption, dt_vec, frac;
+    local cv, d0, d1, trimm, lagoption, dt_vec, frac;
     
     { trimm, lagoption } = dynargsGet(1|2, 0.10, 1);
     
     // Check for dates
     { dt_vec, y } = _checkfordate(y);
-    
-#ifminkernelversion(20);
-    local hd_side, tmp1;
-    tmp1 = rows(y)|trimm|m;
-    hd_side = "Sample Size:"$|"Trimming parameter:"$|"Max. # Breaks:";
-    
-    sprintf("%20s %18.2f", hd_side, tmp1);
-    
-#else;
-    print /lz "Sample Size T=:" rows(y);
-    print /lz "The trimming parameter:" trimm;
-    print /lz "Maximum number of breaks:" m;
-#endif;
-    
-    
+
     { d0, d1 } = pf(y, m, model, trimm, lagoption);
-    
-    print "==============================================================";
-    print /lz "Cointegration tests with multiple breaks:";
-    if model==0;
-        print /lz "Level shifts" ;
-    elseif model==1;
-        print /lz "Level shifts with trend" ;
-    elseif model==2;
-        print /lz "Regime shifts";
-    elseif model==3;
-        print /lz "Trend and Regime shifts";
-    endif;
-    print "==============================================================";
-    
+
+    // Printing   
+    _printHeaderTSPDLIB(0, 0, 3, model, 3, trimm, "Maki", "No cointegration", 0);
+
     // Print breaks
     frac = d1/rows(y);
     if ismiss(dt_vec) != 1;
         d1 = dt_vec[d1];
     endif;
+   
+    cv = cv_coint_maki(cols(y)-1, m, model);
     
-#ifminkernelversion(21);
-    hd_side = "Test statistic:";
-    tmp1 = d0;
-    sprintf("%-20s %18.2f", hd_side, tmp1);
+     // Print results
+    local side, top, stats, dec, colwidth;
+    side = "Maki:";
+    top = "";
+    stats = d0;
+    dec = 3;
+    colwidth = 15;
     
+    _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
     
     _printBreaks(dt_vec, d1, frac);
+   
+    _printConclusion(stats, cv, 0, "no co-integration");
     
-#elseif;
-    
-    print /lz "Test statistic:"  d0;
-    print /lz "Break points:" d1;
-    print "==========================================================";
-#endif;
-    
- 
     retp(d0);
 endp;
 
@@ -2121,4 +2097,127 @@ proc (1) = opttlag(e);
     endo;
     lag=p;
     retp(lag);
+endp;
+
+proc(1) = cv_coint_maki(k, m, model);
+    local cv_mat;
+    
+    if model == 0;
+        if k == 1;
+            cv_mat = { -5.709 -4.602 -4.354,
+                -5.416 -4.892 -4.610,
+                -5.563 -5.083 -4.784,
+                -5.776 -5.230 -4.982,
+                -5.959 -5.426 -5.131};
+        elseif k == 2;
+            cv_mat = { -5.541 -5.004 -4.733,
+                -5.717 -5.211 -4.957,
+                -5.943 -5.392 -5.125,
+                -6.075 -5.550 -5.297,
+                -6.296 -5.760 -5.491};
+        elseif k == 3;
+            cv_mat = { -5.820 -5.341 -5.101,
+                -5.984 -5.517 -5.272,
+                -6.229 -5.704 -5.427,
+                -6.406 -5.871 -5.603,
+                -6.555 -6.038 -5.773};
+        elseif k == 4;
+            cv_mat = { -6.139 -5.650 -5.386,
+                -6.303 -5.839 -5.575,
+                -6.501 -5.992 -5.714,
+                -6.640 -6.132 -5.892,
+                -6.856 -6.306 -6.039};
+        elseif k>4;
+            print "Critical values not provided for k > 4.";
+            retp(error(30)~error(30)~error(30));
+        endif;
+    elseif model == 1;
+        if k == 1;
+            cv_mat = { -5.524 -5.038 -4.784,
+                -5.708 -5.196 -4.938,
+                -5.833 -5.373 -5.106,
+                -6.059 -5.508 -5.245,
+                -6.193 -5.699 -5.449};
+        elseif k == 2;
+            cv_mat = { -5.840 -5.359 -5.117,
+                -6.011 -5.518 -5.247,
+                -6.169 -5.691 -5.408,
+                -6.329 -5.831 -5.558,
+                -6.530 -5.993 -5.722};
+        elseif k == 3;
+            cv_mat = { -6.144 -5.645 -5.398,
+                -6.271 -5.796 -5.538,
+                -6.472 -5.957 -5.682,
+                -6.575 -6.086 -5.820,
+                -6.784 -6.250 -5.976};
+        elseif k == 4;
+            cv_mat = { -6.361 -5.913 -5.686,
+                -6.556 -6.055 -5.805,
+                -6.741 -6.214 -5.974,
+                -6.845 -6.373 -6.096,
+                -7.053 -6.494 -6.220};
+        elseif k>4;
+            print "Critical values not provided for k > 4.";
+            retp(error(30)~error(30)~error(30));
+        endif;
+    elseif model == 2;
+        if k == 1;
+            cv_mat = { -5.457 -4.895 -4.626,
+                -5.863 -5.363 -5.070,
+                -6.251 -5.703 -5.402,
+                -6.596 -6.011 -5.723,
+                -6.915 -6.357 -6.057};
+        elseif k == 2;
+            cv_mat = { -6.020 -5.558 -5.287,
+                -6.628 -6.093 -5.833,
+                -7.031 -6.516 -6.210,
+                -7.470 -6.872 -6.563,
+                -7.839 -7.288 -6.976};
+        elseif k == 3;
+            cv_mat = { -6.565 -6.035 -5.773,
+                -7.232 -6.702 -6.411,
+                -7.767 -7.155 -6.868,
+                -8.236 -7.625 -7.329,
+                -8.673 -8.110 -7.796};
+        elseif k == 4;
+            cv_mat = { -7.021 -6.520 -6.242,
+                -7.756 -7.244 -6.964,
+                -8.336 -7.803 -7.481,
+                -8.895 -8.292 -8.004,
+                -9.441 -8.869 -8.541};
+        elseif k>4;
+            print "Critical values not provided for k > 4.";
+            retp(error(30)~error(30)~error(30));
+        endif;
+    elseif model == 3;
+        if k == 1;
+            cv_mat = { -6.048 -5.541 -5.281,
+                -6.620 -6.100 -5.845,
+                -7.082 -6.524 -6.267,
+                -7.553 -7.009 -6.712,
+                -8.004 -7.414 -7.110};
+        elseif k == 2;
+            cv_mat = { -6.523 -6.055 -5.795,
+                -7.153 -6.657 -6.397,
+                -7.673 -7.145 -6.873,
+                -8.217 -7.636 -7.341,
+                -8.713 -8.129 -7.811};
+        elseif k == 3;
+            cv_mat = { -6.964 -6.464 -6.220,
+                -7.737 -7.201 -6.926,
+                -8.331 -7.743 -7.449,
+                -8.851 -8.269 -7.960,
+                -9.428 -8.800 -8.508};
+        elseif k == 4;
+            cv_mat = { -7.400 -6.911 -6.649,
+                -8.167 -7.638 -7.381,
+                -8.865 -8.254 -7.977,
+                -9.433 -8.871 -8.574,
+                -10.08 -9.482 -9.151};
+        elseif k>4;
+            print "Critical values not provided for k > 4.";
+            retp(error(30)~error(30)~error(30));
+        endif;
+    endif;
+    retp(cv_mat[m, .]);
 endp;
