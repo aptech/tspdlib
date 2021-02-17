@@ -116,7 +116,7 @@ proc(4) = PP(y, model, ...);
     retp(Zt, Za, MZt, MZa, MSB);
     @
            
-    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "PP", "Unit root", 0);
+    _printHeaderTSPDLIB(0, varm, 1, model, 0, 0, "PP", "Unit root", 0);
    
     // Print results
     local top, side, stats, dec, colwidth;

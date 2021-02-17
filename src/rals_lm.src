@@ -95,7 +95,7 @@ proc (3) = RALSLM(y, ...);
     
     cv = crit_RALSlm(p2);
         
-    _printHeaderTSPDLIB(ic, 0, 0, 0, 0, "RALS-LM", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 0, 0, 0, 0, "RALS-LM", "Unit root", 0);
     
     local top, side, stats, dec, colwidth;
     side = "RALS-LM:"$|"Rho^2:";

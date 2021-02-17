@@ -196,7 +196,7 @@ proc(4) = ADF_1break(y, model, ...);
         cv = -5.57|-5.08|-4.82;
     endif;
     
-    _printHeaderTSPDLIB(ic, 0, 2, 1, trimm, "ADF", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 2, model, 1, trimm, "ADF", "Unit root", 0);
     
     frac = tb1_min/rows(y);
     

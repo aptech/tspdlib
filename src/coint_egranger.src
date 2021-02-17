@@ -120,7 +120,7 @@ proc(2) = coint_egranger(y, x, model, ...);
     endif;
       
     // Printing   
-    _printHeaderTSPDLIB(ic, 0, model, 0, 0, "Engle-Granger", "No cointegration", 0);
+    _printHeaderTSPDLIB(ic, 0, 1, model, 0, 0, "Engle-Granger", "No cointegration", 0);
 
     // Print results
     local top, stats, dec, colwidth;

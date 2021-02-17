@@ -164,7 +164,7 @@ proc(7) = coint_tsongetal(y, x, model, ...);
     p    = cols(x);
     {cv} = cv_coint_tsongetal(model, k2_min, p);
         
-    _printHeaderTSPDLIB(0, varm, 2, 0, 0, "Tsong et al.", "Cointegration", 0);
+    _printHeaderTSPDLIB(0, varm, 2, model, 0, 0, "Tsong et al.", "Cointegration", 0);
 
     // Print results
     local side, top, stats, dec, colwidth;

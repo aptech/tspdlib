@@ -171,7 +171,7 @@ proc(3) = coint_shin(y, x, model, ...);
     endif;
     
         
-    _printHeaderTSPDLIB(0, varm, 1, 0, 0, "Shin", "Cointegration", 0);
+    _printHeaderTSPDLIB(0, varm, 1, model, 0, 0, "Shin", "Cointegration", 0);
 
     // Print results
     local side, top, stats, dec, colwidth;

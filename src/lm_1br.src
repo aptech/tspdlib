@@ -192,7 +192,7 @@ proc(5) = LM_1break(y, model, ...);
     if model == 2; cv  = _get_cv_LMrsf(1, T-p , p); endif;
 
         
-    _printHeaderTSPDLIB(ic, 0, 2, 1, trimm, "LM", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 2, model, 1, trimm, "LM", "Unit root", 0);
     
     frac = tb1_min/rows(y);
     

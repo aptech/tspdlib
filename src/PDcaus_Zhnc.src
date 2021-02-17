@@ -151,7 +151,7 @@ proc(2) = Panel_Zhnc(data, vnames, pmax, ic, Nboot, Ncross);
             Z_n_cv1  = Zn_b[Ceil(Nboot*.99)];
             
             // Print header
-            _printHeaderTSPDLIB(0, 0, 0, 0, 0, "Dumitrescu & Hurlin", "Panel Causality", 0);
+            _printHeaderTSPDLIB(0, 0, 0, 0, 0, 0, "Dumitrescu & Hurlin", "Panel Causality", 0);
             
             // Print statistics
             sprintf("%15s%15s", "id", "Lag"$~"Wald"$~"p-val");

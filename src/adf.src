@@ -113,7 +113,7 @@ proc(3) = ADF(y, model, ...);
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_ADFrsf(model, T-p , p);
     
-    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "ADF", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 1, model, 0, 0, "ADF", "Unit root", 0);
     
     local side, stats, dec, colwidth;
     side = "ADF-stat:";
@@ -126,7 +126,7 @@ proc(3) = ADF(y, model, ...);
     retp(tau, p - 1, cv');
 endp;
 
-proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp, long);
+proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, test, null_hyp, long);
     local ic_str, varm_str, modl_str, fmt, clm1, clm2;
     
     // Get information criterion
@@ -141,11 +141,11 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model, breaks, trimmage, test, null_hyp
     
     // Get model specification
     if type(model) != 13 and type(model) != 15;
-        if model == 1;
+        if model_type == 1;
             modl_str = _printModel1(model);
-        elseif model == 2;
+        elseif model_type == 2;
             modl_str = _printModel2(model);
-        elseif model == 3;
+        elseif model_type == 3;
             modl_str = _printModel3(model);
         endif;
     elseif type(model) == 13 or type(model) == 15;

@@ -138,7 +138,7 @@ proc(3) = Fourier_KPSS(y, model, ...);
     endif;
     print;
   
-    _printHeaderTSPDLIB(0, varm, 2, 4, 0, "Fourier KPSS", "Stationarity", 0);
+    _printHeaderTSPDLIB(0, varm, 2, model, 4, 0, "Fourier KPSS", "Stationarity", 0);
 
     // Print results & Critical values
     local top, side, stats, dec, colwidth;

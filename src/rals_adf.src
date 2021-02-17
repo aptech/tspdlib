@@ -107,7 +107,7 @@ proc(3) = RALSADF(y, model, ...);
     
     cv = crit_RALSadf(p2, model);
     
-    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "RALS-ADF", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 1, model, 0, 0, "RALS-ADF", "Unit root", 0);
     
     local top, side, stats, dec, colwidth;
     side = "RALS-ADF:"$|"Rho^2:";

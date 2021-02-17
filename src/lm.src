@@ -109,7 +109,7 @@ proc(3) = LM(y, ...);
     cv  = _get_cv_LMrsf(0, T-p , p);
     
     
-    _printHeaderTSPDLIB(ic, 0, 1, 0, 0, "LM", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 1, model, 0, 0, "LM", "Unit root", 0);
     
       // Print results
     local top, side, stats, dec, colwidth;

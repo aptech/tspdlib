@@ -123,7 +123,7 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
             boot_cv1  = Fisher_b[Ceil(Nboot*.99)];
             
              // Print header
-            _printHeaderTSPDLIB(0, 0, 0, 0, 0, "Panel Fisher", "Panel Causality", 0);
+            _printHeaderTSPDLIB(0, 0, 0, 0, 0, 0, "Panel Fisher", "Panel Causality", 0);
             
             // Print statistics
             sprintf("%15s", "id"~"Lag"~"Wald"$~"p-val");
