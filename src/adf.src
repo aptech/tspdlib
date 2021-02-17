@@ -183,7 +183,7 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, te
         clm2 = clm2$|trimmage;
     endif;
     
-    if model;
+    if model_type;
         clm1 = clm1$|"Model:";
         clm2 = clm2$|modl_str;
     endif;
