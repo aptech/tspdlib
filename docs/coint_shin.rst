@@ -5,6 +5,7 @@ Purpose
 ----------------
 
 A residual-based test for the null of cointegration using a structural single equation model.
+
 Format
 ----------------
 .. function:: { CIols, CIdols, cv } = coint_shin(y, x, model[, bwl, varm, q])
