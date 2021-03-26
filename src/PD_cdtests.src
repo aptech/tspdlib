@@ -4,11 +4,11 @@
 **  References:
 **  Breusch, T., Pagan, A. (1980).
 **  The Lagrange multiplier test and its application to model specifications in econometrics, 
-**  Reviews of Economics Studies, 47(1), pp. 239–253.
+**  Reviews of Economics Studies, 47(1), pp. 239-253.
 **
 **  Pesaran, M. H., Ullah, A., Yamagata, T. (2008). 
 **  A bias-adjusted LM test of error cross-section independence, 
-**  Econometrics Journal, 11(1), pp.  105–127.
+**  Econometrics Journal, 11(1), pp.  105-127.
 **
 **  Pesaran, M.H. (2004).
 **  General diagnostic tests for cross section dependence in panels. 
@@ -45,15 +45,21 @@
 ** August 16, 2020
 */
 
-proc(5) = _get_cd_error(y, x, T, N);
-    local k, m, e, y_i, x_i, Hx, It;
+proc(5) = pd_getCDError(y, x, N);
+    local k, m, e, y_i, x_i, Hx, It, T;
     local lmbp, lmadj, cdlm, cdlmadj, cd;
     local m_i, m_j, TR, mu, a2, a1, v2, rho, pij;
    
     k = cols(x);
+    T = rows(y)/N;
+    if rows(y) != rows(x);
+        errorlog "'pd_getCDError': Y and X must have same number of rows";
+        end;
+    endif;
+    
     m = {};
     e = {};
-    for i(1,N,1);
+    for i(1, N, 1);
         y_i = y[1+(i-1)*T:i*T];
         x_i = x[1+(i-1)*T:i*T,.];
         Hx  = x_i*inv(x_i'x_i)*x_i';
