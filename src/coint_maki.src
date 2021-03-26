@@ -38,7 +38,7 @@ proc (1) = coint_maki(y, m, model, ...);
     { d0, d1 } = pf(y, m, model, trimm, lagoption);
 
     // Printing   
-    _printHeaderTSPDLIB(0, 0, 3, model, 3, trimm, "Maki", "No cointegration", 0);
+    _printHeaderTSPDLIB(0, 0, 3, model+1, 3, trimm, "Maki", "No cointegration", 0);
 
     // Print breaks
     frac = d1/rows(y);
