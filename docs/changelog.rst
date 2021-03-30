@@ -3,12 +3,23 @@ Change Log
 ==========
 
 The following is a list of changes from the previous version of tspdlib.
+2.1.0
+-----
+#. Bug Fix: Fixed incorrect printing of model type for coint_maki.
+#  Bug Fix: Fix critical values printing bug in rals_lm_break. 
+#. Bug Fix: Fix printing error for pd_lttrend and pd_iltlevel for case with no date vector.
+#. Added examples:
+    - pd_getCDError.e 
+    - rals_lm_breaks.e
+#. Added function:
+    - pd_getCDError 
+
 2.0.1
 -----
 #. Bug Fix: Fixed printing of model type.
 #. Add critical values for coint_maki.
 #. Update printing style for coint_maki
-
+   - 
 2.0.0
 -----
 #. Added response surface critical values in ADF, GLS, LM, and KPSS tests.
