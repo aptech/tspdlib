@@ -32,13 +32,14 @@ Format
     :param trimm: Optional, trimming rate. Default = 0.10.
     :type trimm: Scalar
 
-    :param lagoption: Trimming rate.
-    =========== ==============
-    0           No lags
-    1           T-stat criterion
-    =========== ==============
+    :param lagoption: Optional, lag selection criteria. Default = 1.
 
-    :type lagoption: Optional, scalar. Default = 1.
+          =========== ==================
+          0           No lags
+          1           T-stat criterion
+          =========== ==================
+
+    :type lagoption: Scalar.
 
     :return tst: Test statistic
     :rtype tst: Scalar
@@ -57,7 +58,7 @@ Examples
   library tspdlib;
 
   // Load dataset
-  data = loadd(__FILE_DIR $+ "ts_coint.csv", 
+  data = loadd(__FILE_DIR $+ "ts_coint.csv",
                             "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
 
 
