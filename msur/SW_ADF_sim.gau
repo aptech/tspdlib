@@ -1,0 +1,359 @@
+@ Maximo Camacho 
+  www.um.es/econometria/Maximo
+  April, 21th 2010  @
+
+@ This GAUSS file computes MS-ADF test
+        dYt = ro*Yt-1 + C(st) + B*t + A(L)*dYt-1 + Et
+              Et ~ N(0,V)         @
+new;
+format/rd 1,4;
+library optmum,pgraph;
+graphset;optset;
+#include optmum.ext;
+_opalgr=2;_opmiter=500;__output=2;_oprteps=0;
+_pcolor=4|3;_pltype=6;_opgtol=1e-3;
+_pmcolor=0|0|1|1|1|0|0|0|15;
+pqgwin many; 
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                 LOADING DATA (in levels)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+load yy[252,2]=gdp.txt;
+yy=yy[.,2];
+dy=(ln(yy[2:rows(yy)])-ln(yy[1:rows(yy)-1]));
+dy=100*dy;
+y=100*ln(yy[2:rows(yy)]);
+capt=rows(y);
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+           ADJUST CONTROL SPECIFICATIONS
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+seed=1;
+simula=1;      @ simula=0 to skip simulations @ 
+maxsim=5000;   @ total number of simulations @
+smooth=1;      @ smooth=1 to calculate smoothed probs @
+graphs=0;      @ graphs=0 to skip graphs of probs @
+pphi=1;        @ ps is the number of lags in autoregression for y @
+je=1;          @ je=0 to skip hessian calculations @
+nk=pphi+1;     @ nk is the first observation for which the
+                 likelihood will be evaluated @
+captst=capt-pphi;       @ captst is the effective sample size @
+skif=zeros(captst,2);   @ skif is the matrix of filtered probs @
+skis=zeros(captst,2);   @ skis is the matrix of smoothed probs @
+dye=zeros(captst,1);    @ fitted endogenous variable @
+dys=zeros(captst,2);    @ within regime fitted endogenous variable @
+erro=zeros(captst,2);   @ in-sample errors conditional to the state @
+mse=zeros(captst,1);    @ in-sample errors @
+t=seqa(1,0.1,captst);
+ks=0;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                 INITIAL PARAMS' VALUES
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+c1=1.47;c2=-0.02;
+be=-0.03;
+phi1=0.15;
+sig1=0.75;
+p11=4;p22=2;
+startval0=c1|c2|be|phi1*ones(pphi,1)|sig1|p11|p22;
+nth0=rows(startval0);
+
+ro=-0.0520;
+c1=40.1358;c2=38.3426;
+be=0.3929;
+phi1=0.2206;
+sig1=0.7371;
+p11=4.1116;p22=1.1610;
+startval=ro|c1|c2|be|phi1*ones(pphi,1)|sig1|p11|p22;
+nth=rows(startval);     @ number of params to be estimated @
+
+startval_sim=-0.0041|1.7770|0.2395|-0.0043|0.0735|0.7495|4|2;
+
+
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+             OPTIMIZATION PROCEDURES
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+{x0,ff,gg,hh}=optprt(optmum(&ofn_null,startval0));  @estimate under the null@
+thn0=trans_null(x0);
+{x1,ff,gg,hh}=optprt(optmum(&ofn,startval)); @ estimate with no restrictions @
+thn1=trans(x1);
+if je ne 0;
+   ks=1;
+   he=gradfd(&ofn,x1)'gradfd(&ofn,x1);
+   ks=0;
+   hi=invpd(he);
+   stdor=diag(hi)^.5;
+   gr=gradfd(&trans,x1);
+   Hfin=gr*hi*gr';
+   std1=diag(Hfin)^.5;
+   tstat1=thn1[1]/std1[1];
+endif;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    Simulations
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+tstatsim={};
+if simula==1;
+pp=thn0[nth0-1];
+qq=thn0[nth0];
+sim=1;
+do while sim<=maxsim;
+   seed=seed+1;
+   x2=rndus(capt,1,seed);@ MS trend @ 
+   ff=zeros(capt,1);  @ ff=0 in expansions and ff=1 in recessions @
+   i=2;
+   do while i<=capt;
+      if ff[i-1]<0.5;  @ we are in exp @
+         if x2[i]<pp;
+            ff[i]=0;
+         else;
+            ff[i]=1;
+         endif;
+      else;           @ we are in rec @
+         if x2[i]<qq;
+            ff[i]=1;
+         else;
+            ff[i]=0;
+         endif;
+      endif;
+   i=i+1;
+   endo;
+   et=sqrt(thn0[nth0-2])*rndns(capt,1,seed);
+
+   mu0=thn0[1];mu1=thn0[2];
+   mu=mu0*(1-ff)+mu1*ff;
+   at=thn0[3];ap=thn0[4];
+   dyg=0;
+   yg=0;
+   i=2;
+   do while i<=capt;
+      dyg=dyg|(mu[i]+at*t[i-1]+ap*dyg[i-1])+et[i];  
+      yg=yg|(yg[i-1]+dyg[i]);
+      i=i+1;
+   endo;
+   y=yg;dy=dyg;
+   {x,ff,gg,hh}=optprt(optmum(&ofn,startval_sim));  @estimate under the alternative@
+   if maxc(x)>50;goto labb2;endif;
+   thn=trans(x);
+   if je ne 0;
+      ks=1;
+      he=gradfd(&ofn,x)'gradfd(&ofn,x);
+      ks=0;
+      hi=invpd(he);
+      stdor=diag(hi)^.5;
+      gr=gradfd(&trans,x);
+      Hfin=gr*hi*gr';
+      std=diag(Hfin)^.5;
+      tstat=thn[1]/std[1];
+      tstatsim=tstatsim|tstat;
+   endif;
+   labb2:
+sim=sim+1;
+endo;
+tsort=sortc(tstatsim,1);  @ this is to compute the p-value @
+tnece=tsort.<tstat1;
+pvbt_ro=sumc(tnece)/rows(tnece);
+endif;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                    GRAHPS
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+if graphs ne 0;
+  @ title("log-level");
+   xy(seqa(1,1,rows(dyg)),dyg);   
+   title("log-differences");
+   xy(seqa(1,1,rows(dy)),dy);@
+   title("Filtered probabilities of state 2");   
+   xy(seqa(1,1,rows(skif)),skif[.,2]);
+   if smooth ne 0;
+      title("Smoothed probabilities of state 2");
+      xy(seqa(1,1,rows(skis)),skis[.,2]);
+   endif;
+endif;
+
+cls;
+"Model: dYt = ro*Yt-1 + C(st) + B*t + A(L)*dYt-1 + Et";
+"ro: ";;thn1[1];;"std(ro): ";;std1[1];
+"Number of replications: ";;maxsim;
+"t-stat(ro): ";;tstat1;
+"Ho: ro=0 (unit root). Pval: ";;pvbt_ro;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+                  SOME PROCEDURES HERE
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+proc ofn_null(th);  @ this proc evaluates filter probs and likelihood @
+   local th2,yn,sig,pm,eta,chsi,it,f,fit,fx,aa;
+
+   th2=trans_null(th);
+   yn={};
+   it=1;
+   do while it<=pphi;
+      yn=yn~dy[nk-it:capt-it,1];
+      it=it+1;
+   endo;
+   dye=(0*y[nk-1:capt-1]+th2[1]+th2[3]*t+yn*th2[3+1:3+pphi])~
+       (0*y[nk-1:capt-1]+th2[2]+th2[3]*t+yn*th2[3+1:3+pphi]); 
+   eta=dy[nk:capt]-dye;
+
+   sig=th2[nth0-2].*ones(captst,2);   
+   eta=((eta)^2)./sig;
+
+   eta=(1./sqrt(sig)).*exp(-eta/2);
+
+   aa=minc(eta);
+   if aa<1e-20;
+     f=-100000;
+     goto labb;
+   endif;
+
+   pm=(th2[nth0-1]~(1-th2[nth0]))|((1-th2[nth0-1])~th2[nth0]);
+   chsi=0.5|0.5;
+
+   f=0;  @ filter iteration @
+   it=1;
+   do until it>captst;
+     fx=chsi.*eta[it,.]';
+     fit=sumc(fx);
+     skif[it,.]=fx'/fit;
+     f=f+ln(fit);
+     chsi=pm*fx/fit;
+   it=it+1;
+   endo;
+   dys=dye;
+   dye=sumc((dys.*skif)');
+
+
+ if smooth ne 0;  @ Smmothed probabilities if desired @
+    skis=fsmooth(skif,pm);
+ endif;
+
+ labb:
+
+ retp(-f);
+endp;
+
+proc trans_null(ja);
+ local ja2,ncont;
+   ja2=ja;
+   ncont=2+1+pphi;
+   ja2[ncont+1]=ja2[ncont+1]^2;
+   ncont=ncont+1;
+   ja2[ncont+1]=ja[ncont+1]^2/(1+ja[ncont+1]^2);
+   ja2[ncont+2]=ja[ncont+2]^2/(1+ja[ncont+2]^2);
+ retp(ja2);
+endp;
+
+proc ofn(th);  @ this proc evaluates filter probs and likelihood @
+   local th2,yn,sig,pm,eta,chsi,it,f,fit,fx,aa,fun;
+
+   th2=trans(th);
+   yn={};
+   it=1;
+   do while it<=pphi;
+      yn=yn~dy[nk-it:capt-it,1];
+      it=it+1;
+   endo;
+   dye=(th2[1]*y[nk-1:capt-1]+th2[2]+th2[4]*t+yn*th2[4+1:4+pphi])~
+       (th2[1]*y[nk-1:capt-1]+th2[3]+th2[4]*t+yn*th2[4+1:4+pphi]); 
+   eta=dy[nk:capt]-dye;
+
+   sig=th2[nth-2].*ones(captst,2);   
+   eta=((eta)^2)./sig;
+
+   eta=(1./sqrt(sig)).*exp(-eta/2);
+
+   aa=minc(eta);
+   if aa<1e-20;
+     f=-100000;
+     goto labb;
+   endif;
+
+   pm=(th2[nth-1]~(1-th2[nth]))|((1-th2[nth-1])~th2[nth]);
+   chsi=0.5|0.5;
+
+   fun={};
+   f=0;  @ filter iteration @
+   it=1;
+   do until it>captst;
+     fx=chsi.*eta[it,.]';
+     fit=sumc(fx);
+     skif[it,.]=fx'/fit;
+     f=f+ln(fit);
+     fun=fun|ln(fit);
+     chsi=pm*fx/fit;
+   it=it+1;
+   endo;
+   dys=dye;
+   dye=sumc((dys.*skif)');
+
+
+ if smooth ne 0;  @ Smmothed probabilities if desired @
+    skis=fsmooth(skif,pm);
+ endif;
+
+ labb:
+ if ks==1;
+    retp(fun);
+ else;
+    retp(-f);
+ endif;
+endp;
+
+proc trans(ja);
+ local ja2,ncont;
+   ja2=ja;
+   ncont=1+2+1+pphi;
+   ja2[ncont+1]=ja2[ncont+1]^2;
+   ncont=ncont+1;
+   ja2[ncont+1]=ja[ncont+1]^2/(1+ja[ncont+1]^2);
+   ja2[ncont+2]=ja[ncont+2]^2/(1+ja[ncont+2]^2);
+ retp(ja2);
+endp;
+
+proc stdfun(x);
+   local h,va,hu,stdor,gr,hi,Hfin,std2;
+   h=hessp(&ofn,x);
+   va=eigrs(h);
+   @if minc(eigrs(h))<=0;
+      cls;
+      "Negative Hessian is not positive definite";
+      end;
+    endif;@
+   hi=invpd(h);
+   stdor=diag(hi)^.5;
+   gr=gradfd(&trans,x);
+   Hfin=gr*hi*gr';
+   std2=diag(Hfin)^.5;
+   retp(std2);
+endp;
+
+proc fsmooth(skifn,pmn);
+   local skisn,it,ihk,hk,ns,n;
+   ns=2;n=2;
+   skisn=zeros(captst,ns);
+   skisn[captst,.]=skifn[captst,.];
+   it=1;
+   do until it==captst;
+      if minc(skif[captst-it,.]') > 1.e-150;
+         skisn[captst-it,.]=skifn[captst-it,.].*
+               ((skisn[captst-it+1,.]./(skifn[captst-it,.]*pmn'))*pmn);
+      else;   @ adjust code so as not to divide by zero @
+          hk=skifn[captst-it,.]*pmn';
+          ihk=1;
+          do until ihk > n;
+              if hk[1,ihk] > 1.e-150;
+                 hk[1,ihk] = skisn[captst-it+1,ihk]/hk[1,ihk];
+              else;
+                 hk[1,ihk] = 0;
+              endif;
+          ihk = ihk + 1;
+          endo;
+          skisn[captst-it,.] = skifn[captst-it,.].*(hk*pmn);
+      endif;
+   it = it+1;
+   endo;
+
+   retp(skisn);
+endp;
+
+end;

@@ -1,0 +1,74 @@
+@ Maximo Camacho
+www.um.es/econometria/Maximo
+April, 21th 2010  @
+
+@ This GAUSS file computes out-of sample estimation
+of the slope parameter in an AR(1) model for
+US output growth rate
+Yt = C + A Yt-1 + Et
+Et ~ N(0,V)         @
+new;
+cls;
+library pgraphtranslate;
+graphset;
+format/rd 1,4;
+_pmcolor=0|0|1|1|1|0|0|0|15;
+_pcolor=4|3;
+_pltype=6;
+pqgwin many;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+LOADING DATA (in levels)
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+load yy[252,2]=gdp.txt;
+yy=yy[.,2];
+dy=ln(yy[2:rows(yy)])-ln(yy[1:rows(yy)-1]);
+y=ln(yy[2:rows(yy)]);
+dy=dy;
+capt=rows(y);
+b=0;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ADJUST CONTROL SPECIFICATIONS
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+pphi=1;        @ ps is the number of lags in autoregression for dy @
+graphs=1;      @ graphs=0 to skip graphs @
+nk=pphi+1;     @ nk is the first observation for which the
+likelihood will be evaluated @
+captst=capt-pphi;
+t=seqa(nk,1,captst);
+tstat=ADFfun(dy,y);
+b';
+tstat;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+GRAPHS
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+if graphs ne 0;
+    title("log-level");
+    xy(seqa(1,1,rows(y)),y);
+    title("log-differences");
+    xy(seqa(1,1,rows(dy)),dy);
+endif;
+
+/*++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+OLS estimation
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+proc(1)=ADFfun(dy,y);
+    local x,i,ye,e,si,vb,ts;
+    x=y[nk-1:capt-1]~ones(captst,1)~t;
+    i=1;
+    do while i<=pphi;
+        x=x~dy[pphi-i+1:capt-i];
+        i=i+1;
+    endo;
+    b=inv(x'x)*x'dy[nk:capt];
+    ye=x*b;
+    e=dy[nk:capt]-ye;
+    si=e'e/(captst);
+    vb=si*inv(x'x);
+    ts=b[1]/sqrt(vb[1,1]);
+    retp(ts);
+endp;
+
+end;;

@@ -3,7 +3,8 @@ cls;
 library tspdlib;
 
 // Load date file
-y = loadd(__FILE_DIR $+ "ts_examples.csv", "Y + date($Date, '%b-%y')");
+y = loadd(__FILE_DIR $+ "ts_examples.csv", 
+                     "Y + date($Date, '%b-%y')");
 
 // Break in level
 model = 1;

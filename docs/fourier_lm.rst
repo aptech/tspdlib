@@ -14,7 +14,7 @@ Format
     :param y: Dependent variable.
     :type y: Nx1 matrix
 
-    :param pmax: Optional, maximum number of lags for Dy; 0=no lag. Default = 8.
+    :param pmax: Optional, maximum number of lags for :math:`\delta y`; 0=no lag. Default = 8.
     :type pmax: Scalar
 
     :param fmax: Optional, maximum number of single Fourier frequency (upper bound is 5). Default = 5.
@@ -60,5 +60,4 @@ Source
 
 fourier_lm.src
 
-.. seealso:: Functions :func:`fourier_adf, `fourier_gls`, `fourier_kpss`
-
+.. seealso:: Functions :func:`fourier_adf, :func:`fourier_gls`, :func:`fourier_kpss`

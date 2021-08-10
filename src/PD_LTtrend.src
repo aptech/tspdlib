@@ -39,7 +39,7 @@
 proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     local n, t, Nlm, Ntb, Np, i;
     local tb1, tb2, p, cv;
-    local meanp, varp, PD_lm, LMtau, dt_vec, brk1, brk2;
+    local meanp, varp, PD_lm, LMtau, dt_vec, brk1, brk2, y_tst, dt_vec_tst, tmp;
     
     { dt_vec, y } =_checkfordate(y);
     
@@ -56,8 +56,19 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
         print;
         
         for i(1, N, 1);
+            
+            // Adapt for unbalanced panel
+            if ismiss(y);
+                tmp = packr(y[., i]~dt_vec);
+                y_tst = tmp[., 1];
+                dt_vec_tst = tmp[., 2];
+            else;
+                y_tst = y[., i];
+                dt_vec_tst = dt_vec;
+            endif;
+                
             screen off;
-            {LMtau, p, cv} = LM(y[., i], pmax, ic);
+            {LMtau, p, cv} = LM(y_tst, pmax, ic);
             screen on;
 
             Nlm[i] = LMtau;
@@ -71,13 +82,23 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
         Ntb = zeros(N, 1);
         
         for i(1, N, 1);
-            {LMtau, tb1, p} = _get_LMtrend_1break(y[., i], model, pmax, ic, trimm);
+            // Adapt for unbalanced panel
+            if ismiss(y);
+                tmp = packr(y[., i]~dt_vec);
+                y_tst = tmp[., 1];
+                dt_vec_tst = tmp[., 2];
+            else;
+                y_tst = y[., i];
+                dt_vec_tst = dt_vec;
+            endif;
+            
+            {LMtau, tb1, p} = _get_LMtrend_1break(y_tst, model, pmax, ic, trimm);
             
             // i~LM~tb1~p;
             Nlm[i] = LMtau;
             // Get break
             if not ismiss(dt_vec);
-                    Ntb[i] = dt_vec[tb1];
+                    Ntb[i] = dt_vec_tst[tb1];
             else;
                     Ntb[i] = tb1;
                 
@@ -92,13 +113,23 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
         print;
         Ntb = zeros(N, 2);
         for i(1, N, 1);
-            {LMtau, tb1, tb2, p} = _get_LMtrend_2breaks(y[., i], model, pmax, ic, trimm);
+            // Adapt for unbalanced panel
+            if ismiss(y);
+                tmp = packr(y[., i]~dt_vec);
+                y_tst = tmp[., 1];
+                dt_vec_tst = tmp[., 2];
+            else;
+                y_tst = y[., i];
+                dt_vec_tst = dt_vec;
+            endif;
+            
+            {LMtau, tb1, tb2, p} = _get_LMtrend_2breaks(y_tst, model, pmax, ic, trimm);
             //i~LM~tb1~p;
             Nlm[i] = LMtau;
             // Get break
             if not ismiss(dt_vec);
-                    Ntb[i, 1] = dt_vec[tb1];
-                    Ntb[i, 2] = dt_vec[tb2];
+                    Ntb[i, 1] = dt_vec_tst[tb1];
+                    Ntb[i, 2] = dt_vec_tst[tb2];
             else;
                     Ntb[i, 1] = tb1;
                     Ntb[i, 2] = tb2;    
@@ -146,7 +177,7 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
         #ifminkernelversion(20)
             sprintf("%15s", top);
             if ismiss(dt_vec);
-                sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, brk1$~brk2, Np);
+                sprintf("%15d%15.3f%15d%15d", seqa(1, 1, cols(y)), Nlm, brk1~brk2, Np);
             else;
                 sprintf("%15d%15.3f%15s%15d", seqa(1, 1, cols(y)), Nlm, brk1$~brk2, Np);
             endif;

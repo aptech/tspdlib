@@ -27,7 +27,7 @@ Format
 
     :type model: Scalar
 
-    :param pmax: Optional, maximum number of lags for Dy in ADF test. Default = 8.
+    :param pmax: Optional, maximum number of lags for :math:`\delta y` in ADF test. Default = 8.
     :rtype pmax: Scalar
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 2.
@@ -55,7 +55,7 @@ Examples
   library tspdlib;
 
   // Load dataset
-  data = loadd(__FILE_DIR $+ "ts_coint.csv", 
+  data = loadd(__FILE_DIR $+ "ts_coint.csv",
                             "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
 
   // Define y and x matrix

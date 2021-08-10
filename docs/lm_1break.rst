@@ -24,7 +24,7 @@ Format
 
     :type model: Scalar
 
-    :param pmax: Optional, the maximum number of lags for Dy. Default = 8.
+    :param pmax: Optional, the maximum number of lags for :math:`\delta y`. Default = 8.
     :type pmax: Scalar
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.

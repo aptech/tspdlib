@@ -1,0 +1,62 @@
+#include optmt.sdf
+
+struct msurControl {
+
+// Control specifications
+scalar seed;
+
+// Set to control simulations
+//       0       no simulations
+//       1       run simulations
+scalar simula;
+
+// Set up maximum number of simulations
+scalar maxsim;
+
+// Set to control smoothing
+//       0       no smoothing
+//       1       smoothing
+scalar smooth;
+
+// Set to graph probabilities
+//       0       no graphs
+//       1       graphs
+scalar graphs;
+
+// Skip hessian calculations
+//       0       no hessians
+//       1       hessians
+scalar je;
+
+
+scalar fun;
+
+// Control structure for optmt
+struct optmtControl oCtl;
+
+// Start values for simulations
+matrix startvalSimulations;
+};
+
+struct msurOut {
+    // Filtered probabilities
+    matrix skif;   
+    
+    // Smoothed probabilities
+    matrix skis;   
+    
+    // Fitted endogenous variable
+    matrix dye;   
+    
+    // Within regime fitted endogenous variable
+    matrix dys;    
+    
+    // In-sample errors conditional to the state
+    matrix erro;   
+    
+    // In-sample errors
+    matrix mse;    
+    
+    // Bootstrap pvalues
+    matrix pvalues;
+};

@@ -39,7 +39,7 @@ Format
         1           iid.
         2           Bartlett.
         3           Quadratic Spectral (QS).
-        4           SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+        4           SPC with Bartlett (Sul, Phillips & Choi, 2005)
         5           SPC with QS
         6           Kurozumi with Bartlett
         7           Kurozumi with QS
@@ -82,7 +82,7 @@ Examples
   library tspdlib;
 
   // Load dataset
-  data = loadd(__FILE_DIR $+ "ts_coint.csv", 
+  data = loadd(__FILE_DIR $+ "ts_coint.csv",
                             "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
 
 
@@ -98,4 +98,3 @@ Source
 ------
 
 coint_tsongetal.src
-
