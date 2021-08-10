@@ -87,6 +87,6 @@ Examples
 Source
 ------
 
-gctests.src.src
+gctests.src
 
 .. seealso::

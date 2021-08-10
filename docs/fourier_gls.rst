@@ -74,4 +74,4 @@ Source
 
 fourier_gls.src
 
-.. seealso:: Functions :func:`fourier_adf`, `fourier_kpss`, `fourier_lm`
+.. seealso:: Functions :func:`fourier_adf`, :func:`fourier_kpss`, :func:`fourier_lm`

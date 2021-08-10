@@ -73,4 +73,4 @@ Source
 
 kpss.src
 
-.. seealso:: Functions :func:`adf`, :func:`kpss`, :func:`gls`, :func:`dfgls`, :func:`erspt`
+.. seealso:: Functions :func:`adf`, :func:`lmkpss`, :func:`dfgls`, :func:`erspt`

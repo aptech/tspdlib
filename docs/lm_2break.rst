@@ -79,4 +79,4 @@ Source
 
 lm_1br.src
 
-.. seealso:: Functions :func:`lm`, :func:`lm_1break`
+.. seealso:: Functions :func:`lmkpss`, :func:`lm_1break`

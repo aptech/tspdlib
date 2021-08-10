@@ -71,4 +71,4 @@ Source
 
 gls.src
 
-.. seealso:: Functions :func:`adf`, :func:`kpss`
+.. seealso:: Functions :func:`adf`, :func:`lmkpss`
