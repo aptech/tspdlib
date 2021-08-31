@@ -289,7 +289,7 @@ proc(2) = _get_ILTmoments(T, N, Nlm, Np);
     local fname, crit, row_n, panel_k, meanp, varp, optk, ct1, ct2, ct;
     
     // Reading critical values
-    fname = __FILE_DIR $+ "/ILTlevel_crit.tsv";
+    fname = getGAUSSHome() $+ "pkgs/tspdlib/examples/"/ILTlevel_crit.tsv";
     
     //    load crit[27, 19] = ^fname;
     

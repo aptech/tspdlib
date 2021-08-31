@@ -54,7 +54,7 @@ Examples
   library tspdlib;
 
   // Load date file
-  y = loadd(__FILE_DIR $+ "TSe.dat");
+  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"TSe.dat");
 
   // With constant
   model = 1;

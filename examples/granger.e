@@ -3,7 +3,7 @@ cls;
 library tspdlib;
 
 // Load data matrix
-GCdata = loadd(__FILE_DIR $+ "TScaus.dat");
+GCdata = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"TScaus.dat");
 data   = ln(GCdata);
 
 // Toda & Yamamoto test

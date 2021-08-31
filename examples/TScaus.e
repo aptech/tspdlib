@@ -22,7 +22,7 @@ order= 0;  // 0 = VAR in levels for Granger causality test
 // 1 = VAR in first differences for Granger causality test
 
 // Load data matrix
-GCdata = loadd(__FILE_DIR $+ "TScaus.dat");
+GCdata = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"TScaus.dat");
 
 for test(1, 5, 1);
     

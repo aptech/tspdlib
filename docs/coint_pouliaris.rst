@@ -68,7 +68,7 @@ Examples
   library tspdlib;
 
   // Load dataset
-  data = loadd(__FILE_DIR $+ "ts_coint.csv",
+  data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"ts_coint.csv",
                             "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
 
 

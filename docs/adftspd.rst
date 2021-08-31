@@ -56,7 +56,7 @@ Examples
   library tspdlib;
 
   // Load date file
-  y = loadd(__FILE_DIR $+ "ts_examples.csv", "Y");
+  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"ts_examples.csv", "Y");
 
   // No deterministic component
   model = 0;
