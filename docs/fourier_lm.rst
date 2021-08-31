@@ -14,18 +14,20 @@ Format
     :param y: Dependent variable.
     :type y: Nx1 matrix
 
-    :param pmax: Optional, maximum number of lags for :math:`\delta y`; 0=no lag. Default = 8.
+    :param pmax: Optional, maximum number of lags for :math:`\Delta y`; 0=no lag. Default = 8.
     :type pmax: Scalar
 
     :param fmax: Optional, maximum number of single Fourier frequency (upper bound is 5). Default = 5.
     :type fmax: Scalar
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
+
     =========== ====================
     1           Akaike.
     2           Schwarz.
     3           t-stat significance.
     =========== ====================
+
     :type ic: Scalar
 
     :return lmk: LM(k) statistic.
@@ -60,4 +62,4 @@ Source
 
 fourier_lm.src
 
-.. seealso:: Functions :func:`fourier_adf, :func:`fourier_gls`, :func:`fourier_kpss`
+.. seealso:: Functions :func:`fourier_adf`, :func:`fourier_gls`, :func:`fourier_kpss`

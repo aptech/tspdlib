@@ -28,11 +28,13 @@ Format
     :type pmax: Scalar
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
+
     =========== ======================
     1           Akaike.
     2           Schwarz.
     3           t-stat significance.
     =========== ======================
+
     :type ic: Scalar
 
     :param trimm: Optional, trimming rate. Default = 0.10.

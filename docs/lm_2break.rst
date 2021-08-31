@@ -28,6 +28,7 @@ Format
     :type pmax: Scalar
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
+
         =========== ======================
         1           Akaike.
         2           Schwarz.

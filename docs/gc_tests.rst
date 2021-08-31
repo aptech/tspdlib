@@ -21,11 +21,13 @@ Format
     :type pmax: Scalar
 
     :param ic: The information criterion used for choosing lags.
+
     =========== =====================
     1           Akaike.
     2           Schwarz.
     3           t-stat significance.
     =========== =====================
+
     :type ic: Scalar
 
     :param test: Test option for Granger causality

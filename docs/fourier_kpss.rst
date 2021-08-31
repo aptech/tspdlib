@@ -30,6 +30,7 @@ Format
     :type bwl: Scalar
 
     :param varm: Optional, long-run consistent variance estimation method. Default = 1.
+
     =========== ==========================
     1           iid
     2           Bartlett
@@ -39,6 +40,7 @@ Format
     6           Kurozumi with Bartlett
     7           Kurozumi with QS
     =========== ==========================
+
     :type varm: Scalar
 
     :return KPSSk: KPSS(k) statistic.
@@ -73,4 +75,4 @@ Source
 
 fourier_kpss.src
 
-.. seealso:: Functions :func:`fourier_adf, :func:`fourier_gls`, :func:`fourier_lm`
+.. seealso:: Functions :func:`fourier_adf`, :func:`fourier_gls`, :func:`fourier_lm`
