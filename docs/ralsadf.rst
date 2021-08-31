@@ -24,7 +24,7 @@ Format
 
     :type model: Scalar
 
-    :param pmax: Optional, the maximum number of lags for :math:`\delta y`. Default = 8.
+    :param pmax: Optional, the maximum number of lags for :math:`\Delta y`. Default = 8.
     :type pmax: Scalar
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
@@ -37,7 +37,7 @@ Format
 
     :type ic: Scalar
 
-    :return rals_tau: The tau statistic based on RALS procedure.
+    :return rals_tau: The tau statistic based on RALS procedure and ADF test.
     :rtype rals_tau: Scalar
 
     :return rho2: The estimated rho square.
