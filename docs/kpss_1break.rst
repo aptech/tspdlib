@@ -12,7 +12,7 @@ Format
 .. function:: { kpss_stat, tb, lambda, cv } = KPSS_1break(y, model[, bwl, varm, trimm])
     :noindexentry:
 
-    :param y: Time series data to be test.
+    :param y: Time series data to be tested.
     :type y: Nx1 matrix
 
     :param model: Model to be implemented.

@@ -12,7 +12,7 @@ Format
 .. function:: { lm_tstat, tb1, tb2, lags, cv } = LM_2break(y, model[, pmax, ic, trimm])
     :noindexentry:
 
-    :param y: Time series data to be test.
+    :param y: Time series data to be tested.
     :type y: Nx1 matrix
 
     :param model: Model to be implemented.

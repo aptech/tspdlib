@@ -12,7 +12,7 @@ Format
 .. function:: { rals_tau, rho2, cv } = rals_adf(y, model[, pmax, ic])
     :noindexentry:
 
-    :param y: Time series data to be test.
+    :param y: Time series data to be tested.
     :type y: Nx1 matrix
 
     :param model: Model to be implemented.

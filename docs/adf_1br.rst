@@ -12,7 +12,7 @@ Format
 .. function:: { tstat, tb, lags, cv } = adf_1br(y, model [, pmax, ic, trimm])
     :noindexentry:
 
-    :param y: Time series data to be test.
+    :param y: Time series data to be tested.
     :type y: Nx1 matrix
 
     :param model: Model to be implemented.

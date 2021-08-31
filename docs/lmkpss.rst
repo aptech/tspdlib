@@ -12,7 +12,7 @@ Format
 .. function:: { kpss, cv } = LMkpss(y, model[, bwl, varm])
     :noindexentry:
 
-    :param y: Time series data to be test.
+    :param y: Time series data to be tested.
     :type y: Nx1 matrix
 
     :param model: Model to be implemented.

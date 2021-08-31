@@ -12,7 +12,7 @@ Format
 .. function:: { tstat, tb1, tb2, lags, cv } = adf_2br((y, model[, pmax, ic, trimm])
     :noindexentry:
 
-    :param y: Time series data to be test.
+    :param y: Time series data to be tested.
 
     :type y: Nx1 matrix
 

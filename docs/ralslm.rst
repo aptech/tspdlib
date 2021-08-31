@@ -12,7 +12,7 @@ Format
 .. function:: { rals_tau, rho2, cv } = ralslm(y, [, pmax, ic])
     :noindexentry:
 
-    :param y: Time series data to be test.
+    :param y: Time series data to be tested.
     :type y: Nx1 matrix
 
     :param pmax: Optional, the maximum number of lags for :math:`\Delta y`. Default = 8.
