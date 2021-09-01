@@ -62,19 +62,19 @@ Examples
   cls;
   library tspdlib;
 
-  // Date dimensions
-  N    = 24;
-  T    = 112;
+  // CADF and Modified CADF tests
+  /*
+  ** Using the defaults
+  ** for maximum number of lags
+  ** and information criterions,
+  */
 
-  // Load date file
-  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/PDe.dat");
-
+  // Set up model
+  model = 1;
   { Ncadf, Nlm, Nmcadf, Nlags, pcadf, pmcadf } = cips(y, model);
 
 
 Source
 ------
 
-lm.src
-
-.. seealso:: Functions :func:`lm_1break`, :func:`lm_2break`
+pd_cips.src
