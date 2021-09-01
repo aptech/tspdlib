@@ -39,7 +39,7 @@ Format
 
     :type ic: Scalar
 
-    :param pmax: Optional, maximum number of lags for :math:`\delta y` in ADF test. Default = 8.
+    :param pmax: Optional, maximum number of lags for :math:`\Delta y` in ADF test. Default = 8.
     :type pmax: Scalar
 
     :param varm: Optional, long-run consistent variance estimation method. Default = 1.

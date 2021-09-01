@@ -23,7 +23,7 @@ Format
 
     :type model: Scalar
 
-    :param pmax: Maximum number of lags for :math:`\delta y`; 0=no lag.
+    :param pmax: Maximum number of lags for :math:`\Delta y`; 0=no lag.
     :type pmax: Scalar
 
     :param fmax: Maximum number of single Fourier frequency (upper bound is 5).

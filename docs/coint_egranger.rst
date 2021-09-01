@@ -27,7 +27,7 @@ Format
 
     :type model: Scalar
 
-    :param pmax: Optional, maximum number of lags for :math:`\delta y` in ADF test. Default = 8.
+    :param pmax: Optional, maximum number of lags for :math:`\Delta y` in ADF test. Default = 8.
     :rtype pmax: Scalar
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 2.
