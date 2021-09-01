@@ -457,8 +457,8 @@ endp;
 proc(2) = _get_LTmoments(T, N, Nlm, Np, r);
     local fname1, fname2, panel_k, meanp, varp, row_n, mmm, optk, ct1, ct2, ct, crit, crit_tr;
     
-    fname1 = getGAUSSHome() $+ "pkgs/tspdlib/examples/"ILTlevel_crit.tsv";
-    fname2 = getGAUSSHome() $+ "pkgs/tspdlib/examples/"LTtrend_crit.tsv";
+    fname1 = getGAUSSHome() $+ "pkgs/tspdlib/examples/ILTlevel_crit.tsv";
+    fname2 = getGAUSSHome() $+ "pkgs/tspdlib/examples/LTtrend_crit.tsv";
     
     panel_k = Np;
     meanp = 0;

@@ -67,7 +67,7 @@ Examples
   T    = 112;
 
   // Load date file
-  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"PDe.dat");
+  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/PDe.dat");
 
   { Ncadf, Nlm, Nmcadf, Nlags, pcadf, pmcadf } = cips(y, model);
 

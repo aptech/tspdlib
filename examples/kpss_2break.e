@@ -3,7 +3,7 @@ cls;
 library tspdlib;
 
 // Load date file
-y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"ts_examples.csv", 
+y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", 
                      "Y + date($Date, '%b-%y')");
 
 // Break in level

@@ -3,7 +3,7 @@ cls;
 library tspdlib;
 
 // Load date file
-y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"PDe.dat");
+y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/PDe.dat");
 
 /*
 ** Using the defaults 

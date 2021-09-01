@@ -3,7 +3,7 @@ cls;
 library tspdlib;
 
 // Load date file
-y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"TSe.dat");
+y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/TSe.dat");
 
 // Model 1: break in level  
 model = 1;      

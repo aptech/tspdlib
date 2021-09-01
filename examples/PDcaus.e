@@ -37,7 +37,7 @@ dmax = 1;
 // 1 = Akaike, 2 = Schwarz
 ic   = 2; 	
 
-data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/"pdcause.dat");
+data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pdcause.dat");
 
 // Variable names
 vnames = "y"$|"x";
