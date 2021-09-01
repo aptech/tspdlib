@@ -42,7 +42,7 @@ Format
     :return tau: Engle & Granger (1987) ADF test.
     :rtype tau: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for chosen model.
+    :return cv:  1%, 5%, 10% critical values for chosen model.
     :rtype cv: Vector
 
 Examples
@@ -72,4 +72,4 @@ Source
 
 coint_egranger.src
 
-.. seealso::
+.. seealso:: Functions :func:`coint_ghansen`, :func:`coint_hatemij`, :func:`coint_maki`

@@ -53,7 +53,7 @@ Format
     :return lambda: Break fraction (tb/T).
     :rtype lambda: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for :func:`kpss_1break` statistic.
+    :return cv: 1%, 5%, and 10% critical values for :func:`kpss_1break` statistic.
     :rtype cv: Vector
 
 Examples

@@ -68,6 +68,7 @@ Format
 
     :return cv: 1%, 5%, 10% critical values for the chosen model
     :rtype cv: Vector
+
 Examples
 --------
 

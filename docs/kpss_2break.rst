@@ -53,7 +53,7 @@ Format
     :return tb1: Location of the second break.
     :rtype tb1: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for :func:`kpss_2break` statistic.
+    :return cv: 1%, 5%, and 10% critical values for :func:`kpss_2break` statistic.
     :rtype cv: Vector
 
 Examples

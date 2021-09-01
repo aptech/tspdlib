@@ -43,7 +43,7 @@ Format
     :return rho2: The estimated rho square.
     :rtype rho2: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for the estimated rho2
+    :return cv: 1%, 5%, and 10% critical values for the estimated rho2
     :rtype cv: Vector
 
 Examples

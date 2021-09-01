@@ -17,7 +17,7 @@
 
 **
 **  Output:  cv      - The lag adjsuted finite sample 
-**                     1, 5, and 10 percent critical values for LM-stat based on response surfaces.
+**                     1%, 5%, and 10% critical values for LM-stat based on response surfaces.
 **			 
 **
 **  Author: Saban Nazlioglu

@@ -77,11 +77,11 @@ Examples
 
   // No constant
   model = 0;
-     { CIols, CIdols, cv} = coint_shin(y, x, model);
+  { CIols, CIdols, cv} = coint_shin(y, x, model);
 
   // Constant only
   model = 1;
-     { CIols, CIdols, cv} = coint_shin(y, x, model);
+  { CIols, CIdols, cv} = coint_shin(y, x, model);
 
 
 Source

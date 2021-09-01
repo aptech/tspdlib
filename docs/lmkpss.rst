@@ -44,7 +44,7 @@ Format
     :return kpss: The KPSS test statistic.
     :rtype kpss: Scalar
 
-    :return cvKPSS: 1, 5, and 10 percent critical values for the KPSS test statistic.
+    :return cvKPSS: 1%, 5%, and 10% critical values for the KPSS test statistic.
     :rtype cvKPSS: Scalar
 
 Examples

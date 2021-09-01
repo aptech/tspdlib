@@ -53,16 +53,16 @@ Format
     :return MPT: MPT test statistic.
     :rtype MZt: Scalar
 
-    :return cvMZa: 1, 5, and 10 percent critical values for MZa.
+    :return cvMZa: 1%, 5%, and 10% critical values for MZa.
     :rtype cvMZa: Scalar
 
-    :return cvMZt: 1, 5, and 10 percent critical values for MZt.
+    :return cvMZt: 1%, 5%, and 10% critical values for MZt.
     :rtype cvMZt: Vector
 
-    :return cvMSB: 1, 5, and 10 percent critical values for MSB.
+    :return cvMSB: 1%, 5%, and 10% critical values for MSB.
     :rtype cvMSB: Vector
 
-    :return cvMPT: 1, 5, and 10 percent critical values for MPT.
+    :return cvMPT: 1%, 5%, and 10% critical values for MPT.
     :rtype cvMPT: Vector
 
 Examples

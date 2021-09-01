@@ -52,7 +52,7 @@ Format
     :return lambda: Break fraction (tb/T).
     :rtype lambda: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for :func:`lm_1break` :math:`\tau`-stat..
+    :return cv: 1%, 5%, and 10% critical values for :func:`lm_1break` :math:`\tau`-stat..
     :rtype cv: Vector
 
 Examples

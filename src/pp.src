@@ -38,8 +38,8 @@
 **                      Empirical Economics, 31(2), 433.
 **
 **  Output:  Zt & Za  -  PP tests
-**           cvZt     -  1, 5, and 10 percent critical values for PP Zt-stat
-**           cvZa     -  1, 5, and 10 percent critical values for PP Za-stat
+**           cvZt     -  1%, 5%, and 10% critical values for PP Zt-stat
+**           cvZa     -  1%, 5%, and 10% critical values for PP Za-stat
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.

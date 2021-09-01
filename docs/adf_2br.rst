@@ -53,7 +53,7 @@ Format
     :return lags: Number of lags selected by chosen information criterion.
     :rtype lags: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for :func:`adf_2br` t-stat.
+    :return cv: 1%, 5%, and 10% critical values for :func:`adf_2br` t-stat.
     :rtype cv: Vector
 
 Examples

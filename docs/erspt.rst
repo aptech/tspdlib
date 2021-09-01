@@ -47,7 +47,7 @@ Format
     :return lrv: Long-run variance estimate.
     :rtype lrv: Scalar
 
-    :return cvPt: 1, 5, and 10 percent critical values for Pt.
+    :return cvPt: 1%, 5%, and 10% critical values for Pt.
     :rtype cvPt: Vector
 
 Examples

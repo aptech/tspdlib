@@ -45,7 +45,7 @@ Format
     :return lags: Number of lags selected by chosen information criterion.
     :rtype lags: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for ADF :math:`\tau`-stat.
+    :return cv: 1%, 5%, and 10% critical values for ADF :math:`\tau`-stat.
     :rtype cv: Vector
 
 Examples

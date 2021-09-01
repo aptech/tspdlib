@@ -43,7 +43,7 @@ Format
     :return lags: Number of lags selected by chosen information criterion.
     :rtype lags: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for GLS tau statistic.
+    :return cv: 1%, 5%, and 10% critical values for GLS tau statistic.
     :rtype cv: Vector
 
 Examples

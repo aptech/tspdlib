@@ -47,7 +47,7 @@
 **
 **           lambda  - fractions of breaks (tb/T)
 **
-**			 cv      - 1, 5, and 10 percent critical values for the break location
+**			 cv      - 1%, 5%, and 10% critical values for the break location
 
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.

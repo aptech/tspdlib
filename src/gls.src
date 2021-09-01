@@ -65,7 +65,7 @@
 **
 **           lrv     - Long-run variance
 **
-**			 cv      - 1, 5, and 10 percent critical values
+**			 cv      - 1%, 5%, and 10% critical values
 
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.

@@ -14,7 +14,7 @@
 **           T       -  Number of observations
 **
 **  Output:  cv      - The lag adjsuted finite sample 
-**                     1, 5, and 10 percent critical values for KPSS stat based on response surfaces.
+**                     1%, 5%, and 10% critical values for KPSS stat based on response surfaces.
 **			 
 **
 **  Author: Saban Nazlioglu
