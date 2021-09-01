@@ -24,9 +24,9 @@
 **                      2 = Schwarz
 **                      3 = t-stat significance
 **
-**  Output:  tstat   - ADF tau-statistic
+**  Output:  tstat   - ADF :math:`\tau`-stat.istic
 **			 p       - number of lags selected by chosen information criterion
-**			 cv      - 1, 5, and 10 percent critical values for ADF tau-stat based on response surfaces
+**			 cv      - 1, 5, and 10 percent critical values for ADF :math:`\tau`-stat. based on response surfaces
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.

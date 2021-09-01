@@ -45,7 +45,7 @@ Format
     :return lags: Number of lags selected by chosen information criterion.
     :rtype lags: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for ADF tau-stat.
+    :return cv: 1, 5, and 10 percent critical values for ADF :math:`\tau`-stat.
     :rtype cv: Vector
 
 Examples
@@ -61,6 +61,7 @@ Examples
   // No deterministic component
   model = 0;
 
+  // Call ADF test
   { ADFtau, ADFp, cvADF } = ADF(y, model);
 
 Source

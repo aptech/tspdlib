@@ -70,6 +70,7 @@ Examples
   // Break in level
   model = 1;
 
+  // Run lags
   { ADF_min, tb1, tb2, lags, cv } = adf_2br(y, model);
 
 Source

@@ -49,7 +49,7 @@ Format
     :return lags: Number of lags selected by chosen information criterion.
     :rtype lags: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for :func:`adf_1br` tau-stat.
+    :return cv: 1, 5, and 10 percent critical values for :func:`adf_1br` :math:`\tau`-stat..
     :rtype cv: Vector
 
 Examples
@@ -65,7 +65,8 @@ Examples
   // Break in level
   model = 1;
 
-  { ADF_min, tb1,lags, cv } = adf_1br(y, model);
+  // Run test
+  { ADF_min, tb1, lags, cv } = adf_1br(y, model);
 
 Source
 ------

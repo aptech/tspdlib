@@ -52,7 +52,7 @@ Format
     :return lags: Number of lags selected by chosen information criterion.
     :rtype lags: Scalar
 
-    :return cv: 1, 5, and 10 percent critical values for :func:`lm_1break` tau-stat.
+    :return cv: 1, 5, and 10 percent critical values for :func:`lm_1break` :math:`\tau`-stat..
     :rtype cv: Vector
 
 Examples

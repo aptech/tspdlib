@@ -18,7 +18,7 @@
 **                      3=t-stat significance
 **                      Default = 3.
 **
-**  Output:  tstat   - LM tau-statistic
+**  Output:  tstat   - LM :math:`\tau`-stat.istic
 **
 **			 p       - number of lags selected by chosen information criterion
 **
