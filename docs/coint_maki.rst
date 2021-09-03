@@ -83,4 +83,4 @@ Source
 
 coint_maki.src
 
-.. seealso::
+.. seealso:: Functions :func:`coint_egranger`, :func:`coint_ghansen`, :func:`coint_hatemij`

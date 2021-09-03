@@ -87,6 +87,8 @@ Examples
 
   // Level shifts
   model = 1;
+
+  // Call test
   { SCols, TBols, SCdols, TBdols, lambda, cv } = coint_cissanso(y, x, model);
 
 

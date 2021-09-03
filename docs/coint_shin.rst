@@ -77,10 +77,14 @@ Examples
 
   // No constant
   model = 0;
+
+  // Call test
   { CIols, CIdols, cv} = coint_shin(y, x, model);
 
   // Constant only
   model = 1;
+
+  // Call test
   { CIols, CIdols, cv} = coint_shin(y, x, model);
 
 

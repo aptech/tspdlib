@@ -67,8 +67,6 @@ Examples
   pmax = 12;
 
   // Information criterion
-  // 1 = Akaike;
-  // 2 = Schwarz;
   ic   = 1;
 
   // Set to perform Granger Causality

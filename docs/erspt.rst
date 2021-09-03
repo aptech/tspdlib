@@ -62,9 +62,10 @@ Examples
   // Load date file
   y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y");
 
-  //  With constant
+  // With constant
   model = 1;
 
+  // Call test
   { Pt, lrv, cvPt } = ERSpt(y, model);
 
 Source

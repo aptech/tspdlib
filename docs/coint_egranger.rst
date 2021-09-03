@@ -64,6 +64,8 @@ Examples
 
   // No constant or trend
   model = 0;
+
+  // Call test
   { tau, cvADF } = coint_egranger(y, x, model);
 
 

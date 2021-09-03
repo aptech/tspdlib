@@ -79,6 +79,7 @@ Examples
   // No constant or trend
   model = 0;
 
+  // Call test
   { Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model);
 
 

@@ -107,6 +107,7 @@ Examples
   // Level shift
   model = 1;
 
+  // Call test
   { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } = coint_ghansen(y, x, model);
 
 
@@ -114,3 +115,5 @@ Source
 ------
 
 coint_ghansen.src
+
+.. seealso:: Functions :func:`coint_egranger`, :func:`coint_hatemij`, :func:`coint_maki`

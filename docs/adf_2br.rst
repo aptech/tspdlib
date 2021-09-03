@@ -9,7 +9,7 @@ Computes the Augmented Dickey Fuller unit root test with two structural breaks.
 
 Format
 ----------------
-.. function:: { tstat, tb1, tb2, lags, cv } = adf_2br((y, model[, pmax, ic, trimm])
+.. function:: { tstat, tb1, tb2, lags, cv } = adf_2br(y, model[, pmax, ic, trimm])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -32,8 +32,8 @@ Format
 
         =========== ==============
         1           Akaike.
-        2          Schwarz.
-        3          t-stat significance.
+        2           Schwarz.
+        3           t-stat significance.
         =========== ==============
 
     :type ic: Scalar

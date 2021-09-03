@@ -31,11 +31,11 @@ Format
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
-    =========== =====================
-    1           Akaike.
-    2           Schwarz.
-    3           t-stat significance.
-    =========== =====================
+        =========== =====================
+        1           Akaike.
+        2           Schwarz.
+        3           t-stat significance.
+        =========== =====================
 
     :type ic: Scalar
 
@@ -65,7 +65,7 @@ Examples
   // With constant
   model = 1;
 
-  "Fourier ADF test (Enders & Lee, 2012)";
+  // Call test
   { ADFstat, f, p, cv } = Fourier_ADF(y, model);
 
 Source

@@ -15,7 +15,7 @@ Format
     :type y: Nx1 matrix
 
     :param model: Model to be implemented.
-    
+
           =========== ====================
           1           Constant
           2           Constant and trend
@@ -67,7 +67,7 @@ Examples
   // With constant
   model = 1;
 
-  "Fourier KPSS test (Becker, Enders & Lee, 2006)";
+  // Call test
   { KPSS, k, cv } = Fourier_KPSS(y, model);
 
 Source

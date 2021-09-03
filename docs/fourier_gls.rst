@@ -31,11 +31,11 @@ Format
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
-    =========== ========================
-    1           Akaike.
-    2           Schwarz.
-    3           t-stat significance.
-    =========== ========================
+      =========== ========================
+      1           Akaike.
+      2           Schwarz.
+      3           t-stat significance.
+      =========== ========================
 
     :type ic: Scalar
 
@@ -63,11 +63,10 @@ Examples
   // Load date file
   y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
 
-
   // With constant
   model = 1;
 
-  "Fourier GLS test (Rodrigues & Taylor, 2012)";
+  // Call test
   { GLSstat, f, p, cv } = Fourier_GLS(y, model);
 
 

@@ -54,7 +54,7 @@ Examples
   // Load date file
   y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
 
-
+  // Call test
   { LMstat, f, p, cv} = Fourier_LM(y);
 
 Source

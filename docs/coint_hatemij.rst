@@ -114,7 +114,7 @@ Examples
 
   T = rows(data);
 
-  // Two breaks
+  // Call test
   {ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa } =
       coint_hatemiJ(y, x);
 
@@ -124,4 +124,4 @@ Source
 
 coint_hatemij.src
 
-.. seealso::
+.. seealso:: Functions :func:`coint_egranger`, :func:`coint_ghansen`, :func:`coint_maki`

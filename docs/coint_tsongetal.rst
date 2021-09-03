@@ -92,6 +92,8 @@ Examples
 
   // Level shift
   model = 1;
+
+  // Call test
   { CIfols, FFols, CIfdols, FFdols, cv_fourier, Fols, Fdols } = coint_tsongetal(y, x, model);
 
 Source
