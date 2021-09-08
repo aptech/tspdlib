@@ -1,0 +1,218 @@
+/*
+**> qr_fourier_adf
+**  Reference:
+**  Li, H., & Zheng, C. (2018). 
+**  Unit root quantile autoregression testing with smooth structural changes. 
+**  Finance Research Letters, 25, 83-89.
+**
+**
+**  Format:  {tn}             = QR_Fourier_ADF(y, model, p, k, tau, _print);
+**           {test_boot, cv}  = QR_Fourier_ADF_bootstrap(y, model, p, k, tau, Nboot);
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = Model with constant
+**                      2 = Model with constant and trend
+**           p       -  Number of lags for Dy; 0 = no lags
+**           k       -  Number of Fourier frequency
+**           tau     -  quantile (0.1,...,1)
+**           _print  -  print option "true" for printing results
+**           Nboot   -  Number of bootstrap replications
+**
+**  Output:  tn      - tn statistic for a given quantile
+**			 cv      - 1, 5, and 10 percent bootstrap critical values for tn test
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/* 17 December 2020 */
+
+/*Procedures*/
+
+
+
+/*Procedures*/
+proc(1) = QR_Fourier_ADF(y, model, p, k, tau, _print);
+    local n, t, y1, dy, dyl, x;
+    local qr_beta, rho_tau, res,ind,phi;
+    local w,cov,delta2,crv,h,x1,rq1,rq2;
+    local z,mz,q1,q2,fz,xx,px,tn;
+    local sink, cosk;
+    
+    t  = rows(y);
+    y1 = lagn(y,1);
+    dy = diff(y,1);   
+    sink = sin(2 * pi * k * seqa(1, 1, t)/t);
+    cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
+    
+    if p == 0;
+        y    = trimr(y, p + 1, 0);
+        y1   = trimr(y1, p + 1, 0);
+        sink = trimr(sink, p + 1, 0);
+        cosk = trimr(cosk, p + 1, 0);
+        if model == 1;
+            x = y1 ~ sink ~ cosk; 
+        endif;
+        if model == 2;
+            x = y1 ~ sink ~ cosk ~ seqa(1,1,rows(y1)); 
+        endif;
+    endif;
+    
+    if p > 0;
+        dyl = zeros(rows(y),p);
+        for j(1,p,1);
+            dyl[.,j]=lagn(dy,j);
+        endfor;
+        y    = trimr(y,    p+1, 0);
+        y1   = trimr(y1,   p+1, 0);
+        dyl  = trimr(dyl,  p+1, 0); 
+        sink = trimr(sink, p+1, 0);
+        cosk = trimr(cosk, p+1, 0);  
+        if model == 1;
+            x = y1 ~ dyl ~ sink ~ cosk; 
+        endif;
+        if model == 2;
+            x = y1 ~ dyl ~ sink ~ cosk ~ seqa(1,1,rows(y1)); 
+        endif;      
+    endif;
+    
+    // Declare qFitControl structure
+    struct qfitControl qctl;
+    qctl = qfitControlCreate();
+    // for print result: qCtl.verbose = 1;
+    qctl.verbose = 0;       
+    // Declare qFitOut structure
+    struct qFitOut qOut1;    
+    qOut1 = quantileFit(Y, X, tau, qctl);
+    
+    qr_beta = qOut1.beta;
+    rho_tau = qr_beta[2];    
+    res = y-(ones(rows(x),1)~x)*qr_beta;
+    ind = res.<0;
+    phi = tau-ind;
+    w   = res;
+    cov = sumc((w-meanc(w)).*(phi-meanc(phi)))/(rows(w)-1);
+    delta2 = (cov/(stdc(w)*sqrt(tau*(1-tau))))^2;
+    n  =rows(y);
+        
+    h = bandwidth(tau,n,"true",0.05);
+    if tau<=0.5 and h > tau;
+        h = bandwidth(tau,n,"false",0.05); 
+        if h > tau; 
+           h = tau/1.5;
+        endif;
+    endif;
+    
+    if tau>0.5 and h>1-tau;
+        h = bandwidth(tau,n,"false",0.05); 
+        if h>1-tau; 
+        h = (1-tau)/1.5; 
+        endif;
+    endif;
+    
+    x1 = x;  
+    
+    // Declare qFitOut structure
+    struct qFitOut qOut2;
+    qOut2 = quantileFit(Y, X1, tau+h, qctl);
+    // Extract beta
+    rq1 = qOut2.beta;
+    
+    // Declare qFitOut structure
+    struct qFitOut qOut3;
+    qOut3 = quantileFit(Y, X1, tau-h, qctl);
+    // Extract beta
+    rq2 = qOut3.beta;
+ 
+    z  = ones(rows(x1),1)~x1;
+    mz = meanc(z);
+    q1 = mz'*rq1;
+    q2 = mz'*rq2;
+    fz = 2*h/(q1-q2);
+    if fz < 0; 
+       fz= 0.01; 
+    endif;
+    
+    xx = ones(rows(x),1)~x[.,2:cols(x)];
+    PX = eye(rows(xx))-xx*inv(xx'xx)*xx';       
+    tn = fz/sqrt(tau*(1-tau))* sqrt(Y1'*PX*Y1)*( rho_tau-1);
+
+    if _print=="true";
+        "Fourier QR-ADF";
+        "quantil        " ;; tau;    
+        "rho(qauntil)   " ;; rho_tau;
+        "Fourier QR-ADF " ;; tn;       
+    endif;
+retp(tn);
+
+endp;
+
+proc(2) = QR_Fourier_ADF_bootstrap(y, model, p, k, tau, Nboot);
+    local t, sink, cosk, c, trend, dy, p_lags, dy_lags, x;
+    local b, yd, yd1, fi, mu, replace;
+    local tt, mustar, ydstar, ystar;
+    local test_boot, tn_boot, cv_boot;
+    
+    // See Li & Zheng (2018, p.86)
+    t     = rows(y);
+    sink  = sin(2 * pi * k * seqa(1, 1, t)/t);
+    cosk  = cos(2 * pi * k * seqa(1, 1, t)/t);
+    c     = ones(t, 1);
+    trend = seqa(1,1,t);
+    dy   = diff(y, 1);
+
+    if p  > 0;
+        p_lags  = seqa(1, 1, p);
+        dy_lags = lagn(dy, p_lags);
+    endif;
+    
+    // X under the null hypothesis
+    if model == 1;
+        if p == 0;
+            x = c ~ sink ~ cosk;
+        elseif p > 0;
+            x = c ~ sink ~ cosk ~ dy_lags;
+        endif;            
+    endif;    
+
+    if model == 2;
+        if p == 0;
+            x = c ~ trend ~ sink ~ cosk ;
+        elseif p > 0;
+            x = c ~ trend ~ sink ~ cosk ~ dy_lags ;
+        endif;    
+    endif; 
+    
+    dy = trimr(dy, p+1, 0);
+    x  = trimr(x, p+1, 0);
+    b  = inv(x'x)*x'y;
+    yd = y - x * b;
+    yd1= lagn(yd,1);
+    yd = trimr(yd, 1, 0);
+    yd1= trimr(yd1,1, 0); 
+    fi = inv(yd1'yd1)*yd1'yd;
+    mu = yd - yd1 * fi;     // Residuals from AR(1) model
+    mu = mu - meanc(mu);    //Centered residuals
+    
+    tt = rows(mu);
+    test_boot = zeros(Nboot,1);
+    for reps(1,Nboot,1);
+        replace = 1;
+        mustar = sampleData(mu, tt, replace);
+        ydstar = zeros(tt,1);
+        ydstar[1] = mustar[1];
+        for s(2,tt,1); 
+            ydstar[s]= ydstar[s-1] + mustar[s];
+        endfor;
+        ystar = ydstar;
+        tn_boot = QR_Fourier_ADF(ystar, model, p, k, tau, "false");        
+        test_boot[reps] = tn_boot;        
+    endfor; //End for replications
+    
+    test_boot = sortc(test_boot,1); 
+    cv_boot   = test_boot[0.99*Nb] ~ test_boot[0.95*Nb] ~ test_boot[0.90*Nb];
+
+retp( test_boot, cv_boot);
+endp;

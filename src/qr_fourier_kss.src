@@ -1,0 +1,203 @@
+/*
+**> qr_fourier_kss
+**  Reference:
+**  Bahmani‐Oskooee, M., Chang, T., Niroomand, F., & Ranjbar, O. (2020). 
+**  Fourier nonlinear quantile unit root test and PPP in Africa. 
+**  Bulletin of Economic Research, 72(4), 451-481.
+**
+**  Format:  {tn}             = QR_Fourier_KSS(y, model, p, k, tau, _print);
+**           {test_boot, cv}  = QR_Fourier_KSS_bootstrap(y, model, p, k, tau, Nboot);
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = Model with constant
+**                      2 = Model with constant and trend
+**           p       -  Number of lags for Dy; 0 = no lags
+**           k       -  Number of Fourier frequency
+**           tau     -  quantile (0.1,...,1)
+**           _print  -  print option "true" for printing results
+**           Nboot   -  Number of bootstrap replications
+**
+**  Output:  tn      - tn statistic for a given quantile
+**			 cv      - 1, 5, and 10 percent bootstrap critical values for tn test
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/* 17 December 2020 */
+
+
+/*Procedures*/
+proc(1) = QR_Fourier_KSS(y, model, p, k, tau, _print);
+    local n, y1, dy, x, p_lags, dy_lags;
+    local t, sink, cosk, dt, qr_beta, rho_tau;
+    local h, rq1, rq2, z, mz, q1, q2, fz, px, tn;
+    
+    t    = rows(y);
+    dt   = seqa(1, 1, t);
+    sink = sin(2 * pi * k * seqa(1, 1, t)/t);
+    cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
+    dy   = diff(y, 1);
+    y1   = lagn(y^3, 1);
+    
+    if p  > 0;
+        p_lags  = seqa(1, 1, p);
+        dy_lags = lagn(dy, p_lags);
+    endif;
+    
+    if model == 1;
+        if p == 0;
+        x = y1 ~ sink ~ cosk;
+        elseif p > 0;
+        x = y1 ~ dy_lags ~ sink ~ cosk;
+        endif;            
+    endif;    
+
+    if model == 2;
+        if p == 0;
+        x = y1 ~ sink ~ cosk ~ dt;
+        elseif p > 0;
+        x = y1 ~ dy_lags ~ sink ~ cosk ~ dt;
+        endif;    
+    endif; 
+
+    dy = trimr(dy, p+1, 0);
+    y1 = trimr(y1, p+1, 0);
+    x  = trimr(x, p+1, 0);
+    
+    // Declare qFitControl structure
+    struct qfitControl qctl;
+    qctl = qfitControlCreate();
+    // for print result: qCtl.verbose = 1;
+    qctl.verbose = 0;       
+    // Declare qFitOut structure
+    struct qFitOut qOut1;    
+    qOut1 = quantileFit(DY, X, tau, qctl);
+    
+    qr_beta = qOut1.beta;
+    rho_tau = qr_beta[2]; 
+    n = rows(y);
+    h = bandwidth(tau, n, "false", 0.05);    
+    if tau <= 0.5 and h > tau;
+        h = bandwidth(tau, n, "false", 0.05);
+        if h > tau;
+            h = tau/1.5;
+        endif;
+    endif;
+    if tau > 0.5 and h > 1-tau;
+        h = bandwidth(tau, n, "false", 0.05);
+        if h > (1 - tau);
+            h = (1-tau)/1.5;
+        endif;
+    endif;  
+
+    // Declare qFitOut structure
+    struct qFitOut qOut2;
+    qOut2 = quantileFit(DY, X, tau+h, qctl);
+    // Extract beta
+    rq1 = qOut2.beta;
+    
+    // Declare qFitOut structure
+    struct qFitOut qOut3;
+    qOut3 = quantileFit(DY, X, tau-h, qctl);
+    // Extract beta
+    rq2 = qOut3.beta;
+    
+    z = ones(rows(x), 1)~x;
+    mz = meanc(z);
+    q1 = mz' * rq1;
+    q2 = mz' * rq2;
+    fz = 2 * h/(q1 - q2);
+    if fz < 0;
+        fz = 0.01;
+    endif;
+    
+    if p == 0;
+       x = ones(rows(x), 1);
+    endif;
+    if p > 0;
+        x =ones(rows(x), 1)~x[.,2:cols(x)];
+    endif;
+
+    PX = eye(rows(x)) - x * inv(x'x) * x';
+    tn = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau);
+
+    if _print == "true";
+        "Nonlinear QR-KSS";
+        "quantil        " ;; tau;    
+        "rho(qauntil)   " ;; rho_tau;
+        "Fourier QR-KSS " ;; tn;       
+    endif;
+    
+retp(tn);
+endp;
+
+proc(1) = QR_Fourier_KSS_bootstrap(y, model, p, k, tau, Nboot);
+    local t, sink, cosk, c, trend, dy, p_lags, dy_lags;
+    local x, b, yd, yd1, fi;
+    local mu, tt, mustar, ydstar, ystar;
+    local test_boot, tn_boot, replace;
+    
+    // See Li & Zheng (2018, p.86)
+    t     = rows(y);
+    sink  = sin(2 * pi * k * seqa(1, 1, t)/t);
+    cosk  = cos(2 * pi * k * seqa(1, 1, t)/t);
+    c     = ones(t, 1);
+    trend = seqa(1,1,t);
+    dy   = diff(y, 1);
+
+    if p  > 0;
+        p_lags  = seqa(1, 1, p);
+        dy_lags = lagn(dy, p_lags);
+    endif;
+    
+    // X under the null hypothesis
+    if model == 1;
+        if p == 0;
+            x = c ~ sink ~ cosk;
+        elseif p > 0;
+            x = c ~ sink ~ cosk ~ dy_lags;
+        endif;            
+    endif;    
+
+    if model == 2;
+        if p == 0;
+            x = c ~ trend ~ sink ~ cosk ;
+        elseif p > 0;
+            x = c ~ trend ~ sink ~ cosk ~ dy_lags ;
+        endif;    
+    endif; 
+    
+    dy = trimr(dy, p+1, 0);
+    x  = trimr(x, p+1, 0);
+    b  = inv(x'x)*x'dy;
+    yd = dy - x * b;
+    yd1= lagn(yd,1);
+    yd = trimr(yd, 1, 0);
+    yd1= trimr(yd1,1, 0); 
+    fi = inv(yd1'yd1)*yd1'yd;
+    mu = yd - yd1 * fi;     // Residuals from AR(1) model
+    mu = mu - meanc(mu);    //Centered residuals
+    
+    tt = rows(mu);
+    test_boot = zeros(Nboot,1);
+    for reps(1,Nboot,1);
+        replace = 1;
+        mustar = sampleData(mu, tt, replace);
+        ydstar = zeros(tt,1);
+        ydstar[1] = mustar[1];
+        for s(2,tt,1); 
+            ydstar[s]= ydstar[s-1] + mustar[s];
+        endfor;
+        ystar = ydstar;
+        tn_boot = QR_Fourier_KSS(ystar, model, p, k, tau, "false");
+        test_boot[reps] = tn_boot;
+            
+    endfor; //End for replications
+    
+    test_boot = sortc(test_boot,1); 
+    
+retp(test_boot);
+endp;

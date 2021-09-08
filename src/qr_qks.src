@@ -1,0 +1,159 @@
+/*
+**> Quantile Kolmogorov–Smirnov (QKS) tests
+**  Reference:
+**  Koenker, R., Xiao, Z., (2004).
+**  Unit root quantile autoregression inference.
+**  Journal of the American Statistical Association 99, 775-787.
+**
+**  Li, H., & Zheng, C. (2018). 
+**  Unit root quantile autoregression testing with smooth structural changes. 
+**  Finance Research Letters, 25, 83-89.
+**
+**  Li, H., & Park, S. Y. (2018). 
+**  Testing for a unit root in a nonlinear quantile autoregression framework. 
+**  Econometric Reviews, 37(8), 867-892.
+**
+**  Bahmani‐Oskooee, M., Chang, T., Niroomand, F., & Ranjbar, O. (2020). 
+**  Fourier nonlinear quantile unit root test and PPP in Africa. 
+**  Bulletin of Economic Research, 72(4), 451-481.
+**
+**
+**  Format:  {QKS}     = QKS_tests(y, model, test, p, k);
+**           {cv_boot} = QKS_bootstrap(y, model, test, p, k, Nboot);
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = model with constant
+**                      2 = model with constant and trend
+**           test    - 	1 = QKS test of Koenker & Xiao (2004)
+**                      2 = Fourier QKS test of Li & Zheng (2018)
+**                      3 = Nonlinear QKS test of Li & Park (2018)
+**                      4 = Fourier Nonlinear QKS test of Bahmani-Oskooee et al. (2020)
+**           p       -  Number of lags for Dy; 0=no lags
+**           _print  -  print option "true" for printing results
+**
+**  Output:  QKS     - Quantile Kolmogorov–Smirnov (QKS) 
+**			 cv_boot - 1, 5, and 10 percent bootstrap critical values
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+
+/* Procedures */
+proc(1) = QKS_tests(y, model, test, p, k);
+    local qr_tn, tau, rho_tau, tn, temp_p, delta2, cv;
+    local Un, QKS_stat, indc, QKS_tau;
+    
+    qr_tn = {};
+    for quantil(0.1,0.91,0.01);
+        tau = quantil;
+        if test == 1; tn = QR_ADF(y, model, p, tau, "false");            endif;
+        if test == 2; tn = QR_Fourier_ADF(y, model, p, k, tau, "false"); endif;
+        if test == 3; tn = QR_KSS(y, model, p, tau, "false");            endif;
+        if test == 4; tn = QR_Fourier_KSS(y, model, p, k, tau);          endif; 
+        qr_tn = qr_tn|(tau~tn);
+    endfor;
+    
+    Un       = qr_tn[.,2];
+    QKS_stat = maxc(abs(Un));
+    indc     = maxindc(abs(Un));
+    QKS_tau  = qr_tn[indc,1];
+    
+retp(QKS_stat);
+endp;
+
+proc(1) = QKS_bootstrap(y, model, test, p, k, Nboot);
+    local t, sink, cosk, dy, dyl, fsin, fcos;
+    local c, trend, x, b, yd, yd1, fi;
+    local mu, tt, mustar, y0, rho, ystar, replace;
+    local QKSboot, QKS_stat, QKS_tau, cv_boot;
+    
+    // See Li & Zheng (2018, p.86)
+    t     = rows(y);
+    sink  = sin(2 * pi * k * seqa(1, 1, t)/t);
+    cosk  = cos(2 * pi * k * seqa(1, 1, t)/t);
+    c     = ones(t, 1);
+    trend = seqa(1,1,t);
+    
+    if p == 0;
+        if model == 1;
+            if test == 1 or test == 3;
+                x = c ;
+            elseif test == 2 or test == 4;
+                x = c ~ sink ~ cosk;
+            endif;
+        elseif model == 2;
+            if test == 1 or test == 3;
+                x = c ~ trend;
+            elseif test == 2 or test == 4;
+                x = c ~ trend ~ sink ~ cosk;
+            endif;
+        endif;            
+    endif;
+    
+    if p > 0;
+       dy  = diff(y,1); 
+       dyl = zeros(rows(y),p);
+       for j(1,p,1);
+            dyl[.,j] = lagn(dy,j);
+       endfor; 
+       y    = trimr(y,   p+1, 0);
+       dy   = trimr(dy,  p+1, 0);
+       dyl  = trimr(dyl, p+1, 0);
+       sink = trimr(sink,p+1, 0);
+       cosk = trimr(cosk,p+1, 0);
+       c     = ones(rows(dyl), 1);
+       trend = seqa(1,1,rows(dyl));
+        if model == 1;
+            if test == 1 or test == 3;
+                x = c ~ dyl;
+            elseif test == 2 or test == 4;
+                x = c ~ sink ~ cosk ~ dyl;
+            endif;
+        elseif model == 2;
+            if test == 1 or test == 3;
+                x = c ~ trend ~ dyl;
+            elseif test == 2 or test == 4;
+                x = c ~ trend ~ sink ~ cosk ~ dyl;  
+            endif;
+        endif;   
+    endif;
+    
+    b   = inv(x'x)*x'y;
+    yd  = y - x * b;
+    yd1 = lagn(yd,1);
+    yd  = trimr(yd, 1, 0);
+    yd1 = trimr(yd1,1, 0); 
+    fi  = inv(yd1'yd1)*yd1'yd;
+    mu  = yd - yd1 * fi;     // Residuals from AR(1) model
+    mu  = mu - meanc(mu);    //Centered residuals
+    tt  = rows(mu);
+
+    QKSboot = zeros(Nboot,1);
+    for reps(1,Nboot,1);
+        replace = 1;
+        mustar = sampleData(mu, tt, replace);
+        ystar  = zeros(tt,1);
+        y0     = mustar[1];
+        rho    = 1;
+        //ystar  = recserar(mustar, y0, rho);
+        
+            ystar[1] = mustar[1];
+            for s(2,tt,1); 
+                ystar[s]= rho * ystar[s-1] + mustar[s];
+            endfor;
+        
+  
+        {QKS_stat, QKS_tau} = QKS_tests(ystar, model, test, p, k, "false"); 
+        
+        QKSboot[reps] = QKS_stat; 
+    endfor; //End for replications
+    
+    QKSboot = sortc(QKSboot,1); 
+    cv_boot = QKSboot[0.99*Nb] ~ QKSboot[0.95*Nb] ~ QKSboot[0.90*Nb];
+    
+retp(cv_boot);
+endp;
+
