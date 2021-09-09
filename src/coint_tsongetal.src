@@ -76,7 +76,12 @@ proc(7) = coint_tsongetal(y, x, model, ...);
     local p , cv;
     local Fols , Fdols, zr, zrdols, bwl_dftl, bwl, kmax, varm, q, dt_vec;
     
+    // Error checks
     _checkForMissings(y~x, "coint_tsongetal");
+    if rows(y) != rows(x);
+        errorlog "'coint_tsongetal': Y and X must have same number of rows";
+        end;
+    endif;
     
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));

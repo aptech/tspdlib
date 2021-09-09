@@ -87,7 +87,12 @@ proc(11) = coint_hatemiJ(y, x, ...);
     local cv0, cv1, cv2, bwl_dftl, bwl, ic, pmax, varm, trimm, model, dt_vec,
         fracADF, fracZa, fracZt, TBadf, TBzt, TBza;
     
+    // Error checks
     _checkForMissings(y~x, "coint_hatemiJ");
+    if rows(y) != rows(x);
+        errorlog "'coint_hatemiJ': Y and X must have same number of rows";
+        end;
+    endif;
     
     n     = rows(y);      /*# of observation*/
     bwl_dftl = round(4 * (n/100)^(2/9));
