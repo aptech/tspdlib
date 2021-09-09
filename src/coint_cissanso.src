@@ -77,6 +77,8 @@ proc(6) = coint_cissanso(y, x, model, ...);
     local b2, e2, ssr2, St2, lrv2, SC2;
     local k, lambda, cv, bwl_dftl, bwl, varm, trimm, q, frac1, frac2, dt_vec;
     
+    _checkForMissings(y~x, "coint_cissanso");
+    
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     

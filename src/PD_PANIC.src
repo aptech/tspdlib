@@ -88,6 +88,8 @@ proc(5) = BNG_PANIC(y, model, ...);
     local dx, x, e, t, n, nf, Fhat, lambda, ehat;
     local ADFe, lags, cv0, pval, par, qval, j, Pe, pmax, icp, kmax, ick, dt_vec;
     
+    _checkForMissings(y, "BNG_PANIC");
+    
     // Get optional arguments
     { pmax, icp, kmax, ick } = dynargsGet(1|4, 8, 3, 5, 1);
     { dt_vec, y } =_checkfordate(y);
@@ -177,6 +179,8 @@ proc(3) = BNG_PANICnew(y, model, ...);
     local dx, nf, fhat, Floads, ehat, e;
     local x, Pa, Pb, PMSB, kmax, ick;
     
+    _checkForMissings(y, "BNG_PANICnew");
+    
     // Get optional arguments
     { kmax, ick } = dynargsGet(1|2, 5, 1);
     
@@ -225,6 +229,8 @@ proc(2) = JWL_PANICadj(y, model, ...);
     local nf, Fhat, lambda, ehat, E, ADFe, eb, varB, Ze, aN, Ze_ba;
     local lags, dx, x, de, de0, del, rho, djwj, wj, cv0;
     local T, N, pmax, icp, kmax, ick;
+    
+    _checkForMissings(y, "JWL_PANICadj");
     
     { pmax, icp, kmax, ick } = dynargsGet(1|4, 8, 3, 5, 1);
     
@@ -308,6 +314,8 @@ endp;
 proc(3) = JWR_PANICCA(y, model);
     local T, dx, x, z, Fp, Ci, vi, e;
     local Pa, Pb, PMSB;
+    
+    _checkForMissings(y, "JWL_PANICCA");
     
     T = rows(y);
     

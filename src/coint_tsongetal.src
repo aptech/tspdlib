@@ -76,6 +76,8 @@ proc(7) = coint_tsongetal(y, x, model, ...);
     local p , cv;
     local Fols , Fdols, zr, zrdols, bwl_dftl, bwl, kmax, varm, q, dt_vec;
     
+    _checkForMissings(y~x, "coint_tsongetal");
+    
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     

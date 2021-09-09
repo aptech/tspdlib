@@ -66,6 +66,8 @@ proc(7) = RALSLM_breaks(y, model, nbr, ...);
     local e2, e3, m2, m3, w, tau_rals, sig2A, p2, rals_lm, rho2,
         pmax, ic, trimm, dt_vec, frac;
     
+    _checkForMissings(y, "RALSLM_breaks");
+    
     // Get optional arguments
     { pmax, ic, trimm } = dynargsGet(1|3, 8, 3, 0.10);
     

@@ -46,6 +46,7 @@ proc(1) = QKS_tests(y, model, test, p, k);
     local qr_tn, tau, rho_tau, tn, temp_p, delta2, cv;
     local Un, QKS_stat, indc, QKS_tau;
     
+    _checkForMissings(y, "QKS_tests");
     qr_tn = {};
     for quantil(0.1,0.91,0.01);
         tau = quantil;

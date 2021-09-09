@@ -45,6 +45,8 @@
 proc(2) = LMkpss(y, model, ...);
     local t, z, lm_KPSS, ssr, cv, bwl_dftl, l, varm, dt_vec;
     
+    _checkForMissings(y, "LMkpss");
+    
     t = rows(y);
     bwl_dftl = round(4 * (t/100)^(2/9));
     

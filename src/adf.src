@@ -43,6 +43,8 @@ proc(3) = ADF(y, model, ...);
     local b, e1, sig2, se, ssr, cv;
     local pmax, ic, dt_vec;
     
+    _checkForMissings(y, "ADF");
+    
     { pmax, ic } = dynargsGet(1|2, 8, 3);
     { dt_vec, y } =_checkfordate(y);
     
@@ -318,4 +320,16 @@ proc (1) = _printVarm(varm);
         retp("Kurozumi with QS");
     endif;
     
+endp;
+
+proc (0) = _checkForMissings(data, functionname);
+    local tmp, msg;
+    
+    tmp = ismiss(data);
+    if tmp;
+        msg = "'"$+functionname$+"' : Data contains missing data. Cannot run test.";
+        errorlog msg;
+        end;
+    endif;
+
 endp;

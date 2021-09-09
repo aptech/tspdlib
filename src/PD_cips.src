@@ -51,6 +51,8 @@ proc(6) = cips(y, model, ...);
     local n, Ncadf, Nlm, Nd, Nlags, 
     f, pcadf, pmcadf, q, pmax, ic, dt_vec;
     
+    _checkForMissings(y, "cips");
+    
     // Get defaults
     { pmax, ic } = dynargsGet(1|2, 8, 3);
     { dt_vec, y } =_checkfordate(y);

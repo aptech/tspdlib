@@ -64,6 +64,8 @@ proc(16) =  GLS_1break(y, model, ...);
     local ADFGLS_min, PT_min, MZa_min, MSB_min, MZt_min, MPT_min;
     local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa, pmax, ic, dt_vec, modl_str, frac;
     
+    _checkForMissings(y, "GLS_1break");
+    
     t = rows(y);
     tb1_min = 0; 
     ssra_min = 1000;

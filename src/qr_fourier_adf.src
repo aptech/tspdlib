@@ -41,6 +41,8 @@ proc(1) = QR_Fourier_ADF(y, model, p, k, tau, _print);
     local z,mz,q1,q2,fz,xx,px,tn;
     local sink, cosk;
     
+    _checkForMissings(y, "QR_Fourier_ADF");
+    
     t  = rows(y);
     y1 = lagn(y,1);
     dy = diff(y,1);   

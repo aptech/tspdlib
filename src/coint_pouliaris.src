@@ -59,6 +59,8 @@ proc(4) = coint_pouliaris(y, x, model, ...);
     local n, x1, b, e1, sig2, se, ssr, Zt, Za, cvZt, cvZa, k, cv1, cv2,
     bwl_dftl, bwl, varm, dt_vec;
     
+    _checkForMissings(y~x, "coint_pouliaris");
+    
     n = rows(y);
     bwl_dftl = round(4 * (n/100)^(2/9));
     

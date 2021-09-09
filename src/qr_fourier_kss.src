@@ -35,6 +35,8 @@ proc(1) = QR_Fourier_KSS(y, model, p, k, tau, _print);
     local t, sink, cosk, dt, qr_beta, rho_tau;
     local h, rq1, rq2, z, mz, q1, q2, fz, px, tn;
     
+    _checkForMissings(y, "QR_Fourier_KPSS");
+    
     t    = rows(y);
     dt   = seqa(1, 1, t);
     sink = sin(2 * pi * k * seqa(1, 1, t)/t);

@@ -47,6 +47,8 @@
 proc(3) = PDfzk(y, model, k, ...);
     local t, n, ft, Nkpss, i, fpk, mu, var, fzk, varm, dt_vec;
     
+    _checkForMissings(y, "PDfzk");
+    
     // Get option arguments
     varm = dynargsGet(1, 1);
     { dt_vec, y } =_checkfordate(y);

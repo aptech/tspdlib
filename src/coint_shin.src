@@ -68,6 +68,8 @@ proc(3) = coint_shin(y, x, model, ...);
     local b2, e2, ssr2, St2, lrv2, C2, k, cv, T, 
     bwl_dftl, bwl, varm, q, dt_vec;
     
+    _checkForMissings(y~x, "coint_shin");
+    
     T = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));
     

@@ -46,6 +46,8 @@
 proc (1) = quantileADF(y, model, tau, ...);
     local dt_vec, pmax, ic, _print;
     
+    _checkForMissings(y, "quantileADF");
+    
     { dt_vec, y } =_checkfordate(y);
     
     // Get defaults

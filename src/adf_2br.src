@@ -38,6 +38,8 @@ proc(5) = ADF_2breaks(y, model, ...);
     local dep, ldy, ly, lz, x, stat;
     local b, e1, sig2, se, ssr, cv, opt_lag, pmax, ic, trimm, dt_vec, frac;
     
+    _checkForMissings(y, "ADF_2break");
+    
     { pmax, ic, trimm } = dynargsGet(1|3, 8, 3, 0.10);
             
     { dt_vec, y } = _checkfordate(y);

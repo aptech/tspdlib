@@ -43,6 +43,8 @@ proc(4) = Fourier_LM(y, ...);
         sbt, trnd, sinp, cosp, z, f, lm,
         b, e1, sig2, se, ssr, crit, keep_p, opt_lag, pmax, kmax, ic, dt_vec;
     
+    _checkForMissings(y, "Fourier_LM");
+    
     { pmax, kmax, ic } = dynargsGet(1|3, 8, 5, 3);
           
     // Check for dates

@@ -38,6 +38,8 @@ proc(3) = LM(y, ...);
     b0, psi, ylm, ly, lmat, dep, y1, ds, ldy, sbt, trnd, x, n, k, LL, tau,
     b, e1, sig2, se, ssr, cv, pmax, ic, dt_vec;
     
+    _checkForMissings(y, "LM");
+    
     // Get defaults
     { pmax, ic } = dynargsGet(1|2, 8, 3);
     { dt_vec, y } =_checkfordate(y);

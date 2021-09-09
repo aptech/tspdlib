@@ -85,6 +85,8 @@
 proc(1)= granger(data, test, ...);
     local vnames_dflt, vnames, pmax, ic, Nboot, dt_vec;
     
+    _checkForMissings(data, "granger");
+    
     { dt_vec, data } =_checkfordate(data);
     // Check for metadata to get column names
 #ifminkernelversion(21)

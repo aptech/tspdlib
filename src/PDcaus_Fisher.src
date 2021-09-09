@@ -48,6 +48,8 @@ proc(1) = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
     local e0, z0, NeH0, NzH0, Fisher;
     local Fisher_b, boot_cv10, boot_cv5, boot_cv1, dt_vec;
 
+    _checkForMissings(data, "Panel_Fisher");
+    
     { dt_vec, data } =_checkfordate(data);
     n = Ncross;
     t = rows(data)/n;

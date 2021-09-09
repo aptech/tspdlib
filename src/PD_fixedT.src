@@ -45,6 +45,8 @@ proc(10)= fixed_T_panel(y, model);
     local mu_lm1, var_lm1, mu_lm2, var_lm2, lm1, lm2;
     local lm1_bar, lm2_bar, Zhl, Zch, pval_Zhl, pval_Zch, N, dt_vec; 
 
+    _checkForMissings(y, "fixed_T_panel");
+    
     N = cols(y);
     { dt_vec, y } =_checkfordate(y);
     

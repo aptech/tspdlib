@@ -53,6 +53,8 @@
 proc(5) = PDLM(y, model, ...);
     local nbreak, pmax, ic, trimm;
     
+    _checkForMissings(y, "PDLM");
+    
     // Get defaults
     { nbreak, pmax, ic, trimm } = dynargsGet(1|4, 0, 8, 3, 0.10);
     

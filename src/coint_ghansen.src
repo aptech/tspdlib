@@ -85,6 +85,8 @@ proc(8) = coint_ghansen(y, x, model, ...);
     local b, e1, sig2, se, ssr, cvADFZt, cvZa, k;
     local cv0, cv1, cv2, bwl_dftl, bwl, pmax, ic, varm, trimm, fracZa, fracZt, fracADF, dt_vec;
     
+    _checkForMissings(y~x, "coint_ghansen");
+    
     n = rows(y);      /*# of observation*/
     bwl_dftl = round(4 * (n/100)^(2/9));
     
