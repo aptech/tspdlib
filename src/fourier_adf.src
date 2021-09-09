@@ -207,7 +207,7 @@ proc(4) = Fourier_ADF(y, model, ...);
     dec = 3;
     colwidth = 15;
             
-    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0, p-1, f);
+    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0, opt_lag - 1, f);
     _printConclusion(ADF, crit[f, .], 0, "unit root");
 
     retp(ADF, f, opt_lag-1, crit[f, .]);
