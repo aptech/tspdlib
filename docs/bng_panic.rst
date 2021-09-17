@@ -24,7 +24,6 @@ Format
 
     :type model: Scalar
 
-
     :param pmax: Optional, the maximum number of lags for :math:`\Delta y`. Default = 8.
     :type pmax: Scalar
 
@@ -93,4 +92,4 @@ Source
 
 pd_panic.src
 
-.. seealso:: Functions :func:`adf`,:func:`adf_1br`, :func:`adf_2br`
+.. seealso:: Functions :func:`jwl_panicadj`, :func:`jwr_panicca`
