@@ -1,5 +1,5 @@
 
-jwr_panicca
+JWL_PANICadj
 ==============================================
 
 Purpose
@@ -9,7 +9,7 @@ Panel analysis of idiosyncratic and common components (PANIC) test of nonstation
 
 Format
 ----------------
-.. function:: { Ze, Ze_ba } =JWR_PANICCA(y, model[, pmax, icp, kmax, ick])
+.. function:: { Ze, Ze_ba } = JWL_PANICadj(y, model[, pmax, ic_lags, kmax, ic_factors])
     :noindexentry:
 
     :param y: Panel data to be tested.
@@ -76,4 +76,4 @@ Source
 
 pd_panic.src
 
-.. seealso:: Functions :func:`bng_panic`, :func:`jwr_panicca`
+.. seealso:: Functions :func:`BNG_PANIC`, :func:`JWR_PANICCA`, :func:`BNG_PANICnew`

@@ -1,5 +1,5 @@
 
-jwr_panicca
+JWR_PANICCA
 ==============================================
 
 Purpose
@@ -9,7 +9,7 @@ Panel analysis of idiosyncratic and common components (PANIC) test of nonstation
 
 Format
 ----------------
-.. function:: { Pa_ca, Pb_ca, PMSB_ca } =JWR_PANICCA(y, model)
+.. function:: { Pa_ca, Pb_ca, PMSB_ca } = JWR_PANICCA(y, model)
     :noindexentry:
 
     :param y: Panel data to be tested.
@@ -24,13 +24,13 @@ Format
 
     :type model: Scalar
 
-    :return Pa_ca: Pa statistic based on principal components with N(0,1).
+    :return Pa_ca: Pa statistic based on cross-section averages with N(0,1).
     :rtype Pa_ca: Scalar
 
-    :return Pb_ca: Pb statistic based on principal components with N(0,1).
+    :return Pb_ca: Pb statistic based on cross-section averages with N(0,1).
     :rtype Pb_ca: Scalar
 
-    :return PMSB_ca: PMSB statistic based on principal components with N(0,1).
+    :return PMSB_ca: PMSB statistic based on cross-section averages with N(0,1).
     :rtype PMSB_ca: Scalar
 
 Examples
@@ -54,4 +54,4 @@ Source
 
 pd_panic.src
 
-.. seealso:: Functions :func:`bng_panic`
+.. seealso:: Functions :func:`BNG_PANIC`, :func:`JWL_PANICadj`, :func:`BNG_PANICnew`
