@@ -22,23 +22,23 @@ Format
 
     :param ic: The information criterion used for choosing lags.
 
-    =========== =====================
-    1           Akaike.
-    2           Schwarz.
-    3           t-stat significance.
-    =========== =====================
+          =========== =====================
+          1           Akaike.
+          2           Schwarz.
+          3           t-stat significance.
+          =========== =====================
 
     :type ic: Scalar
 
     :param test: Test option for Granger causality
 
-    =========== =============================================
-    0           Granger causality.
-    1           Toda & Yamamoto
-    2           Single Fourier-frequency Granger causality.
-    4           Single Fourier frequency Toda & Yamamoto.
-    5           Cumulative Fourier-frequency Toda & Yomamoto
-    =========== =============================================
+          =========== =============================================
+          0           Granger causality.
+          1           Toda & Yamamoto
+          2           Single Fourier-frequency Granger causality.
+          4           Single Fourier frequency Toda & Yamamoto.
+          5           Cumulative Fourier-frequency Toda & Yomamoto
+          =========== =============================================
 
     :type ic: Scalar
 
