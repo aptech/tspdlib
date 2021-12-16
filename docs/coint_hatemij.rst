@@ -35,7 +35,7 @@ Format
          1           Akaike.
          2           Schwarz.
          3           t-stat significance
-         =========== ====================
+         =========== =====================
 
     :type ic: Scalar
 

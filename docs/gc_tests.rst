@@ -31,6 +31,7 @@ Format
     :type ic: Scalar
 
     :param test: Test option for Granger causality
+
     =========== =============================================
     0           Granger causality.
     1           Toda & Yamamoto
@@ -38,6 +39,7 @@ Format
     4           Single Fourier frequency Toda & Yamamoto.
     5           Cumulative Fourier-frequency Toda & Yomamoto
     =========== =============================================
+
     :type ic: Scalar
 
     :param Nboot: Number of bootstrap replications.
@@ -88,5 +90,3 @@ Source
 ------
 
 gctests.src
-
-.. seealso::

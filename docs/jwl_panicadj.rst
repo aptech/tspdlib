@@ -17,10 +17,10 @@ Format
 
     :param model: Model to be implemented.
 
-        =========== ==============
+        =========== ====================
         1           Constant.
         2           Constant and trend.
-        =========== ==============
+        =========== ====================
 
     :type model: Scalar
 
@@ -30,11 +30,11 @@ Format
 
     :param ic_lags: Optional, the information criterion used for choosing lags. Default = 3.
 
-        =========== ==============
+        =========== ====================
         1           Akaike.
         1           Schwarz.
         2           t-stat significance.
-        =========== ==============
+        =========== ====================
 
     :type ic_lags: Scalar
 

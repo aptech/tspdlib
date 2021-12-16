@@ -13,6 +13,8 @@ Econometric package for Time Series and Panel Data Methods covering unit root, c
     adf_1br
     adf_2br
     adftspd
+    bng_panic
+    bng_panicnew
     changelog
     cips
     coint_cissano
@@ -30,10 +32,17 @@ Econometric package for Time Series and Panel Data Methods covering unit root, c
     fourier_lm
     gc_tests
     glstspd
+    jwl_panicadj
+    jwl_panicca
     kpss_1break
     kpss_2break
     lm_1break
     lm_2break
     lmkpss
     mgls
-
+    pdfzk
+    pp
+    quantile_adf
+    ralsadf
+    ralslm
+    ralslm_breaks

@@ -29,7 +29,7 @@ Format
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
-             =========== =======================
+             =========== ========================
              1           Akaike.
              1           Schwarz.
              2           t-stat significance.

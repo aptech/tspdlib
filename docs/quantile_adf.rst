@@ -17,7 +17,7 @@ Format
 
     :param model: Model to be implemented.
 
-        =========== ===================
+        =========== ====================
         1           Constant.
         2           Constant and trend.
         =========== ====================
