@@ -25,17 +25,11 @@ tau   = 0.1;
 // Turn printing on
 _print= "true";
 
-/*
-** 1 = With constant
-** 2 = With constant and trend
-*/
+// With constant
 model = 1;
 stat = QRADF(y, model, pmax, ic, tau, _print); 
 
-/*
-** 1 = With constant
-** 2 = With constant and trend
-*/
+// With constant and trend
 model = 2;
 stat = QRADF(y, model, pmax, ic, tau, _print); 
 
