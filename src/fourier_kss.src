@@ -1,0 +1,288 @@
+
+/*
+**> fourier_adf and kss
+**  Reference:
+**  Christopoulos, D. K., & León-Ledesma, M. A. (2010). 
+**  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates. 
+**  Journal of International Money and Finance, 29(6), 1076-1093.
+**
+**  Format:  { Ftau, p, k} = Fourier_KSS(y, model, pmax, fmax, ic, test);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	1 = Constant
+**                      2 = Constant and trend
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           fmax    -  Maximumum number of single Fourier frequency
+**                      (upper bound is 5)
+**           ic      -  Information Criterion:
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
+**           test     - "FADF"
+**                      "FKSS"
+**                     
+**
+**  Output:  Ftau    - Ftau statistic
+**			 p       - number of lags selected by chosen information criterion
+**           k       - Number of single frequency
+**			 cv      - 1%, 5%, 10% critical values for the chosen model and k
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+/*12 December 2020*/
+
+proc(3) = Fourier_KSS(y, model, pmax, fmax, ic, test);
+    local t, taup, aicp, sicp, tstatp;
+    local dc, dt, z, a, v, dv, v1;
+    local p_lags, dv_lags, p, x, dep;
+    local LL, n, k, p_opt, tn;
+    local b, e1, sig2, se, ssr, cv;
+    local k_star, F_trig, p_val, sink, cosk;
+    
+    t    = rows(y);
+    taup = zeros(pmax + 1, 1);
+    aicp = zeros(pmax + 1, 1);
+    sicp = zeros(pmax + 1, 1);
+    tstatp = zeros(pmax + 1, 1);
+    
+   // Constant
+    dc = ones(t, 1);
+    // Trend
+    dt = seqa(1, 1, t);
+    // Get k_star
+    {k_star, F_trig, p_val} = _get_kstar(y, model, fmax);
+    // Fourier series
+    sink = sin(2 * pi * k_star * seqa(1, 1, t)/t);
+    cosk = cos(2 * pi * k_star * seqa(1, 1, t)/t);
+    
+    // Residual regression
+    if model == 1;
+        z = dc ~ sink ~ cosk;
+        a = y/z;
+        v = y - z * a;
+    elseif model == 2;
+        z = dc ~ dt ~ sink ~ cosk;
+        a = y/z;
+        v = y - z * a;
+    endif;
+    
+    dv = diff(v,1);
+    if test == "FADF";
+        v1 = lagn(v, 1);
+    endif;    
+    if test == "FKSS";
+        v1 = lagn(v^3,1);
+    endif;    
+    
+    if pmax > 0;
+        p_lags  = seqa(1, 1, pmax);
+        dv_lags = lagn(dv, p_lags);
+    endif;
+    
+    for p(0, pmax, 1);        
+        if p == 0;
+           x = v1; 
+        elseif p > 0;
+            x = v1 ~ dv_lags[., 1:p];
+        endif;
+        
+        dep = trimr(dv, p+1, 0);
+        x   = trimr(x, p+1, 0);
+        {b, e1, sig2, se, ssr} = myols(dep, x);
+        taup[p+1] = b[1]/se[1];
+        n = rows(x);
+        k = cols(x);
+        
+        // Log-likelihood
+        LL = -n/2 * (1 + ln(2*pi) + ln(e1'e1/n));     
+        
+        aicp[p+1] = (2 * k-2 * LL)/n;
+        sicp[p+1] = (k * ln(n) - 2 * LL)/n;
+        tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
+    endfor;
+    // Check results
+    // seqa(0,1,13)~taup;
+    p_opt = _get_lag(ic, pmax, aicp, sicp, tstatp);
+    tn    = taup[p_opt];
+         
+    retp(tn, p_opt - 1, k_star);
+endp;
+
+// Critical Values (see, Christopoulos, & León-Ledesma , 2010)
+proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
+    local test_sim, s, MCr, e0, rho, eps;
+    local e, a, dc, dt, sink, cosk, y;
+    local z, v, dv, v1, cv;
+    local b, e1, sig2, se, ssr;
+    
+    MCr  = 10000;
+    test_sim = zeros(MCr, 1);
+    for s(1, MCr, 1);
+        // Starting value for the time series
+        e0 = 0;
+        // AR(1) parameter
+        rho = 1;
+        // Innovations
+        eps = rndn(T, 1);
+        // Simulate AR(1) model
+        e = recserar(eps, e0, rho);
+        
+        dc   = ones(T, 1);
+        dt   = seqa(1, 1, T);
+        sink = sin(2 * pi * k * seqa(1,1,t)/T);
+        cosk = cos(2 * pi * k * seqa(1,1,t)/T);
+        if model == 1;
+            y = rndu(1,1)*dc + rndu(1,1)*sink + rndu(1,1)*cosk + e;
+        endif;
+        if model == 2;
+            y = rndu(1,1)*dc + rndu(1,1)*dt + rndu(1,1)*sink + rndu(1,1)*cosk + e;
+        endif;
+        
+        // Residual regression
+        if model == 1;
+            z = sink ~ cosk ~ dc;
+        endif;
+        if model == 2;
+            z = sink ~ cosk ~ dc ~ dt;
+        endif;
+        a  = y / z;
+        v  = y - z * a;
+        dv = diff(v,1);
+        if test == "FADF";
+            v1 = lagn(v, 1);
+        endif;    
+        if test == "FKSS";
+            v1 = lagn(v^3,1);
+        endif;   
+        dv = trimr(dv, 1, 0);
+        v1 = trimr(v1, 1, 0);
+        {b, e1, sig2, se, ssr} = myols(dv, v1);
+        test_sim[s] = b[1]/se[1];
+    endfor;
+    test_sim = sortc(test_sim,1);
+    cv = test_sim[0.01*MCr] ~ test_sim[0.05*MCr] ~ test_sim[0.10*MCr];
+    retp(cv);
+endp;
+
+
+proc(1) = Fourier_KSS_bootstrap(y, model, pmax, kmax, test, Nboot);
+    local t, dc, dt, sink, cosk, z, a, v, dv, v1, x, p_lags;
+    local dy, b, yd, yd1, fi, mu;
+    local tt, mustar, ydstar, ystar;
+    local test_boot, replace;
+    
+    t    = rows(y);
+    dc   = ones(t, 1);
+    dt   = seqa(1, 1, t);
+    sink = sin(2 * pi * k * seqa(1, 1, t)/t);
+    cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
+    
+    // Residual regression
+    if model == 1;
+        z = dc ~ sink ~ cosk;
+        a = y/z;
+        v = y - z * a;
+    elseif model == 2;
+        z = dc ~ dt ~ sink ~ cosk;
+        a = y/z;
+        v = y - z * a;
+    endif;
+    
+    dv = diff(v,1);
+    if test == "FADF";
+        v1 = lagn(v, 1);
+    endif;    
+    if test == "FKSS";
+        v1 = lagn(v^3,1);
+    endif;
+
+    // X under the null hypothesis rho*v(t-1)    
+    if p == 0;
+       x = lagn(dv, 1); 
+    elseif p > 0;
+        p_lags  = seqa(1, 1, p);
+        x = lagn(dv, p_lags);
+    endif;
+    
+    dy = trimr(dv, p+1, 0);
+    x  = trimr(x, p+1, 0);
+    b  = inv(x'x)*x'dy;
+    yd = dy - x * b;
+    yd1= lagn(yd,1);
+    yd = trimr(yd, 1, 0);
+    yd1= trimr(yd1,1, 0); 
+    fi = inv(yd1'yd1)*yd1'yd;
+    mu = yd - yd1 * fi;     // Residuals from AR(1) model
+    mu = mu - meanc(mu);    //Centered residuals
+    
+    tt = rows(mu);
+    test_boot = zeros(Nboot,1);
+    for reps(1,Nboot,1);
+        replace = 1;
+        mustar = sampleData(mu, tt, replace);
+        ydstar = zeros(tt,1);
+        ydstar[1] = mustar[1];
+        for s(2,tt,1); 
+            ydstar[s]= ydstar[s-1] + mustar[s];
+        endfor;
+        ystar = ydstar;
+        
+        local Ftau_boot, p_temp, k_temp;
+        {Ftau_boot, p_temp, k_temp} = Fourier_KSS(ystar, model, pmax, kmax, ic, test);
+        test_boot[reps] = Ftau_boot;
+            
+    endfor; //End for replications
+    
+    test_boot = sortc(test_boot,1); 
+    
+retp(test_boot);
+endp;
+
+
+proc(3) = _get_kstar(y, model, fmax);
+    local t, c, trend, sink, cosk, x, b, e, ssr;
+    local keep_ssr, keep_k, f, sinf, cosf;
+    local z, zr, F_trig, p_val;
+    
+    t     = rows(y);
+    c     = ones(t, 1);
+    trend = seqa(1,1,t);
+    
+    keep_ssr = {};
+    keep_k   = {};
+    for k(1, fmax, 1);
+        sink  = sin(2 * pi * k * seqa(1, 1, t)/t);
+        cosk  = cos(2 * pi * k * seqa(1, 1, t)/t);
+        if model == 1;
+            x  = c ~ sink ~ cosk;
+        elseif model == 2;
+            x  = c ~ trend ~ sink ~ cosk;
+        endif;
+        b = y / x;
+        e = y - x*b;
+        ssr = e'e;
+        keep_ssr = keep_ssr | ssr;
+        keep_k   = keep_k | k;
+    endfor;
+    
+    //keep_k~keep_ssr;
+    f = keep_k[minindc(keep_ssr)];
+    sinf  = sin(2 * pi * f * seqa(1, 1, t)/t);
+    cosf  = cos(2 * pi * f * seqa(1, 1, t)/t);
+    if model == 1;
+        z  = c ~ sinf ~ cosf;
+        zr = c;
+    elseif model == 2;
+        z  = c ~ trend ~ sinf ~ cosf;
+        zr = c ~ trend;
+    endif;
+    
+    F_trig = _get_Ftest(y,Zr,z);
+    p_val   = cdfFc(F_trig,2,rows(y)-cols(z));
+        
+    retp(f, F_trig, p_val);
+endp;

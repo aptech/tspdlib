@@ -6,16 +6,23 @@
 **  Finance Research Letters, 25, 83-89.
 **
 **
-**  Format:  {tn}             = QR_Fourier_ADF(y, model, p, k, tau, _print);
-**           {test_boot, cv}  = QR_Fourier_ADF_bootstrap(y, model, p, k, tau, Nboot);
+**  Format:  qr_f_adf         = QR_Fourier_ADF(y, model, tau [, p, k, _print]);
+**           {test_boot, cv}  = QR_Fourier_ADF_bootstrap(y, model, tau [, p, k, Nboot]);
+**
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = Model with constant
 **                      2 = Model with constant and trend
-**           p       -  Number of lags for Dy; 0 = no lags
-**           k       -  Number of Fourier frequency
+**
 **           tau     -  quantile (0.1,...,1)
-**           _print  -  print option "true" for printing results
-**           Nboot   -  Number of bootstrap replications
+**
+**           pmax    -  Optional, number of lags for Dy; 0 = no lags
+**
+**           k       -  Optional, number of Fourier frequency
+**
+**           _print  -  Optional, print option "true" for printing results
+**
+**           Nboot   -  Optional, number of bootstrapmaxreplications
 **
 **  Output:  tn      - tn statistic for a given quantile
 **			 cv      - 1, 5, and 10 percent bootstrap critical values for tn test
@@ -34,14 +41,19 @@
 
 
 /*Procedures*/
-proc(1) = QR_Fourier_ADF(y, model, p, k, tau, _print);
+proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     local n, t, y1, dy, dyl, x;
     local qr_beta, rho_tau, res,ind,phi;
-    local w,cov,delta2,crv,h,x1,rq1,rq2;
+    local w,cov,delta2,h,x1,rq1,rq2;
     local z,mz,q1,q2,fz,xx,px,tn;
-    local sink, cosk;
+    local sink, cosk, dt_vec, pmax, k, _print;
     
+    // Data checks
     _checkForMissings(y, "QR_Fourier_ADF");
+    { dt_vec, y } =_checkfordate(y);
+    
+    // Get defaults
+    { pmax, k, _print } = dynargsGet(1|3, 8, 3, "true");
     
     t  = rows(y);
     y1 = lagn(y,1);
@@ -141,11 +153,24 @@ proc(1) = QR_Fourier_ADF(y, model, p, k, tau, _print);
     PX = eye(rows(xx))-xx*inv(xx'xx)*xx';       
     tn = fz/sqrt(tau*(1-tau))* sqrt(Y1'*PX*Y1)*( rho_tau-1);
 
+    
+    
+
     if _print=="true";
-        "Fourier QR-ADF";
-        "quantil        " ;; tau;    
-        "rho(qauntil)   " ;; rho_tau;
-        "Fourier QR-ADF " ;; tn;       
+        _printHeaderTSPDLIB(0, 0, 1, model, 4, 0, "Quantile Fourier ADF", "Unit root", 0);
+
+        local top, side, stats, dec;
+        top = "";
+        side = "quantile:"$|"rho(quantile):"$|"Fourier QR-ADF:";
+        stats = tau|rho_tau|tn;
+        
+          #ifminkernelversion(20)
+            sprintf("%14s %14.3f", side, stats);
+            print;
+            print;
+        #else;
+            side$~(ntos(stats, dec));
+        #endif;
     endif;
 retp(tn);
 
@@ -214,7 +239,7 @@ proc(2) = QR_Fourier_ADF_bootstrap(y, model, p, k, tau, Nboot);
     endfor; //End for replications
     
     test_boot = sortc(test_boot,1); 
-    cv_boot   = test_boot[0.99*Nb] ~ test_boot[0.95*Nb] ~ test_boot[0.90*Nb];
+    cv_boot   = test_boot[0.99*Nboot] ~ test_boot[0.95*Nboot] ~ test_boot[0.90*Nboot];
 
 retp( test_boot, cv_boot);
 endp;
