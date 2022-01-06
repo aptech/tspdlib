@@ -216,7 +216,10 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     
     cv = crit_QRadf(delta2, model);
     screen on;
+    
     if _print == "true";
+        _printHeaderTSPDLIB(ic, 0, 1, model, 4, 0, "Quantile ADF", "Unit root", 0);
+
         local top, side, stats, dec;
         top = "";
         side = "quantile:"$|"rho(quantile):"$|"rho (OLS):"$|"delta^2:"$|"ADF(quantile):";
