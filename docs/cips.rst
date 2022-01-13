@@ -9,7 +9,7 @@ A simple unit root test in the presence of cross-section dependence.
 
 Format
 ----------------
-.. function:: { Ncadf, Nmcadf, Nlags, pcadf, pmcadf } = CIPS(y, model[, pmax, ic])
+.. function:: { Ncadf, Nmcadf, Nlags, pcadf, pmcadf } = CIPS(y, model[, pmax[, ic]])
     :noindexentry:
 
     :param y: Wide panel data set to be tested.

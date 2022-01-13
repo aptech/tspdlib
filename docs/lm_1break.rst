@@ -9,7 +9,7 @@ Computes the minimum LM unit root test with one structural break.
 
 Format
 ----------------
-.. function:: { lm_tstat, tb, lags, lambda, cv } = LM_1break(y, model[, pmax, ic, trimm])
+.. function:: { lm_tstat, tb, lags, lambda, cv } = LM_1break(y, model[, pmax[, ic[, trimm]]])
     :noindexentry:
 
     :param y: Time series data to be tested.

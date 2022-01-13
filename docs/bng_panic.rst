@@ -9,7 +9,7 @@ Panel analysis of idiosyncratic and common components (PANIC) test of nonstation
 
 Format
 ----------------
-.. function:: { ADFe, pval, lags, Pe, n_factors } = BNG_PANIC(y, model[, pmax, ic_lags, kmax, ic_lags])
+.. function:: { ADFe, pval, lags, Pe, n_factors } = BNG_PANIC(y, model[, pmax[, ic_lags[, kmax[, ic_lags]]]])
     :noindexentry:
 
     :param y: Panel data to be tested.

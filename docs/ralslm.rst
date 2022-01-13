@@ -9,7 +9,7 @@ Computes the LM unit root test with the RALS technique for non-normal errors.
 
 Format
 ----------------
-.. function:: { rals_tau, rho2, cv } = ralslm(y, [, pmax, ic])
+.. function:: { rals_tau, rho2, cv } = ralslm(y, [, pmax[, ic]])
     :noindexentry:
 
     :param y: Time series data to be tested.

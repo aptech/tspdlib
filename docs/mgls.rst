@@ -9,7 +9,7 @@ Performs the MGLS unit root test.
 
 Format
 ----------------
-.. function::  { MZa, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT } = MGLS(y, model[, bwl, varm])
+.. function::  { MZa, MZt, MSB, MPT, cvMZA, cvMZt, cvMSB, cvMPT } = MGLS(y, model[, bwl[, varm]])
     :noindexentry:
 
     :param y: Time series data to be tested.

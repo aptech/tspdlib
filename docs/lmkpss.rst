@@ -9,7 +9,7 @@ Performs the Kwiatkowski, Phillips, Schmidt, and Shin (KPSS) stationarity test.
 
 Format
 ----------------
-.. function:: { kpss, cv } = LMkpss(y, model[, bwl, varm])
+.. function:: { kpss, cv } = LMkpss(y, model[, bwl[, varm]])
     :noindexentry:
 
     :param y: Time series data to be tested.

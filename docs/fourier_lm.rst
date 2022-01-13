@@ -8,7 +8,7 @@ LM unit root test with Flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { LMk, k, p, cv } = Fourier_LM(y[, pmax, fmax, ic])
+.. function:: { LMk, k, p, cv } = Fourier_LM(y[, pmax[, fmax[, ic]]])
     :noindexentry:
 
     :param y: Dependent variable.

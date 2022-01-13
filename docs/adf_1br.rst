@@ -9,7 +9,7 @@ Computes the Augmented Dickey Fuller unit root test with one structural break.
 
 Format
 ----------------
-.. function:: { tstat, tb, lags, cv } = adf_1br(y, model [, pmax, ic, trimm])
+.. function:: { tstat, tb, lags, cv } = adf_1br(y, model [, pmax[, ic[, trimm]]])
     :noindexentry:
 
     :param y: Time series data to be tested.

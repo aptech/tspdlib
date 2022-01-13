@@ -9,7 +9,7 @@ Computes the Augmented Dickey Fuller unit root test with the RALS technique for 
 
 Format
 ----------------
-.. function:: { rals_tau, rho2, cv } = rals_adf(y, model[, pmax, ic])
+.. function:: { rals_tau, rho2, cv } = rals_adf(y, model[, pmax[, ic]])
     :noindexentry:
 
     :param y: Time series data to be tested.

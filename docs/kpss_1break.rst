@@ -9,7 +9,7 @@ Computes the KPSS stationary test with one structural break.
 
 Format
 ----------------
-.. function:: { kpss_stat, tb, lambda, cv } = KPSS_1break(y, model[, bwl, varm, trimm])
+.. function:: { kpss_stat, tb, lambda, cv } = KPSS_1break(y, model[, bwl[, varm[, trimm]]])
     :noindexentry:
 
     :param y: Time series data to be tested.

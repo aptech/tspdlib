@@ -9,7 +9,7 @@ Asymptotic critical values for residual based tests for cointegration.
 
 Format
 ----------------
-.. function:: { Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model[, bwl, varm])
+.. function:: { Zt, Za, cvZt, cvZa } = coint_pouliaris(y, x, model[, bwl[, varm]])
     :noindexentry:
 
     :param y: Dependent variable.

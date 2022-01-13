@@ -8,7 +8,7 @@ Local generalized lease squares unit root test with Flexible Fourier form struct
 
 Format
 ----------------
-.. function:: { GLSk, k, p, cv } = fourier_gls(y, model, pmax, fmax, ic)
+.. function:: { GLSk, k, p, cv } = fourier_gls(y, model[, pmax[, fmax[, ic]]])
     :noindexentry:
 
     :param y: Dependent variable.
