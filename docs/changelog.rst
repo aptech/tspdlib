@@ -3,23 +3,24 @@ Change Log
 ==========
 
 The following is a list of changes from the previous version of tspdlib.
+
 2.1.0
 -----
 #. Bug Fix: Fixed incorrect printing of model type for coint_maki.
-#  Bug Fix: Fix critical values printing bug in rals_lm_break. 
+#. Bug Fix: Fix critical values printing bug in rals_lm_break.
 #. Bug Fix: Fix printing error for pd_lttrend and pd_iltlevel for case with no date vector.
 #. Added examples:
-    - pd_getCDError.e 
-    - rals_lm_breaks.e
+      - pd_getCDError.e
+      - rals_lm_breaks.e
 #. Added function:
-    - pd_getCDError 
+      - pd_getCDError
 
 2.0.1
 -----
 #. Bug Fix: Fixed printing of model type.
 #. Add critical values for coint_maki.
 #. Update printing style for coint_maki
-   - 
+
 2.0.0
 -----
 #. Added response surface critical values in ADF, GLS, LM, and KPSS tests.
@@ -36,7 +37,7 @@ The following is a list of changes from the previous version of tspdlib.
       - ADF_2break_est - ADF break with 2 break unit root tests with regression coefficients returned.
       - granger - Granger causality function with optional arguments.
       - pdlm - PD level and trend break test with optional arguments.
-      - quantileADF - quantile ADF procedure with option arguments. 
+      - quantileADF - quantile ADF procedure with option arguments.
 #. Update ADF_1br.e to accommodate new outlier model input.
 #. Update all procedure to use optional arguments for parameters and set defaults for all optional arguments.
 #. Add new dataframe datasets with date types.
@@ -48,7 +49,7 @@ The following is a list of changes from the previous version of tspdlib.
     - gls_1br.e
     - gls_2br.e
     - pdlm.e
-    - granger.e 
+    - granger.e
     - quantileADF.e
 
 1.1.1
@@ -86,4 +87,3 @@ The following is a list of changes from the previous version of tspdlib.
     - PDcaus_Zhnc
     - PD_cips
     - GCtest
-
