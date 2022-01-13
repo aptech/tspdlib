@@ -5,7 +5,7 @@ ralslm_breaks
 Purpose
 ----------------
 
-Computes the Augmented Dickey Fuller unit root test with the RALS technique for non-normal errors.
+Computes the Augmented Dickey Fuller unit root test with 1 or 2 breaks and the RALS technique for non-normal errors.
 
 Format
 ----------------
@@ -52,8 +52,8 @@ Format
     :return p: Optimal number of lags selected by determined information criterion.
     :rtype p: Scalar
 
-    :return cv_lm : 1%, 5%, 10% critical values for LM test based on response surfaces.
-    :rtype cv_lm : Vector
+    :return cv_lm: 1%, 5%, 10% critical values for LM test based on response surfaces.
+    :rtype cv_lm: Vector
 
     :return RALS_lm: LM statistic based on RALS procedure and breaks.
     :rtype RALS_lm: Scalar
@@ -61,8 +61,8 @@ Format
     :return rho2: The estimated rho square.
     :rtype rho2: Scalar
 
-    :return cv_ralslm : 1%, 5%, 10% critical values for RALS-LM test basen the estimated rho2.
-    :rtype cv_ralslm : Vector
+    :return cv_ralslm: 1%, 5%, 10% critical values for RALS-LM test basen the estimated rho2.
+    :rtype cv_ralslm: Vector
 
 Examples
 --------
@@ -83,4 +83,4 @@ Source
 
 rals_lm_breaks.src
 
-.. seealso:: Functions :func:`lm`,:func:`lm_1break`, :func:`lm_2break`, :func:`ralslm`
+.. seealso:: Functions :func:`lmkpss`, :func:`lm_1break`, :func:`lm_2break`, :func:`ralslm`
