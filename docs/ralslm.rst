@@ -56,4 +56,4 @@ Source
 
 rals_lm.src
 
-.. seealso:: Functions :func:`lm`,:func:`lm_1break`, :func:`lm_2break`
+.. seealso:: Functions :func:`lmkpss`, :func:`lm_1break`, :func:`lm_2break`
