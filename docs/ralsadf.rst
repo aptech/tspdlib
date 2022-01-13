@@ -65,4 +65,4 @@ Source
 
 rals_adf.src
 
-.. seealso:: Functions :func:`adf`,:func:`adf_1br`, :func:`adf_2br`
+.. seealso:: Functions :func:`adf`, :func:`adf_1br`, :func:`adf_2br`
