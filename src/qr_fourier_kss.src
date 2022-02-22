@@ -41,7 +41,7 @@
 ///proc(1) = QR_Fourier_KSS(y, model, p, k, tau, _print);
 proc(1) = QR_Fourier_KSS(y, model, tau, ...);    
     local n, y1, dy, x, p_lags, dy_lags;
-    local t, sink, cosk, dt, qr_beta, rho_tau;
+    local t, sink, cosk, dt, qr_beta, rho_tau, dt_vec;
     local h, rq1, rq2, z, mz, q1, q2, fz, px, tn, pmax, k, _print;
     
     // Data checks

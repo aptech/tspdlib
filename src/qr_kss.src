@@ -138,12 +138,12 @@ proc(1) = QR_KSS(y, model, tau, ...);
     
     screen on;
     if _print == "true";
-        _printHeaderTSPDLIB(ic, 0, 1, model, 4, 0, "Quantile KSS", "Unit root", 0);
+        _printHeaderTSPDLIB(0, 0, 1, model, 4, 0, "Quantile KSS", "Unit root", 0);
 
         local top, side, stats, dec;
         top = "";
         side = "quantile:"$|"rho(quantile):"$|"delta^2:"$|"KSS(quantile):";
-        stats = tau|rho_tau|rho_ols|delta2|tn;
+        stats = tau|rho_tau|delta2|tn;
 
         #ifminkernelversion(20)
             sprintf("%14s %14.3f", side, stats);
