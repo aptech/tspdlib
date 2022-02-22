@@ -1,0 +1,98 @@
+
+/*
+**> kss
+**  Reference:
+**  Kapetanios, G., Shin, Y., & Snell, A. (2003). 
+**  Testing for a unit root in the nonlinear STAR framework. 
+**  Journal of econometrics, 112(2), 359-379.
+**
+**
+**  Format:  {t_nl, p, cv} = KSS(y, model, pmax, ic);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**           model   - 	0 = none
+**                      1 = model with constant
+**                      2 = model with constant and trend
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**           ic      -  Information Criterion:
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
+**
+**  Output:  t_nl    - Non-linear tau-statistic
+**			 p       - number of lags selected by chosen information criterion
+**			 cv      - 1, 5, and 10 percent critical values for ADF tau-stat based on response surfaces
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+
+proc(3) = KSS(y, model, pmax, ic);
+    local t, taup, aicp, sicp, tstatp;
+    local dc, dt, z, a, v, dv, v1;
+    local p_lags, dv_lags, p, x, dep;
+    local LL, n, k, p_opt, t_nl;
+    local b, e1, sig2, se, ssr, cv;
+    
+    t    = rows(y);
+    taup = zeros(pmax + 1, 1);
+    aicp = zeros(pmax + 1, 1);
+    sicp = zeros(pmax + 1, 1);
+    tstatp = zeros(pmax + 1, 1);
+    
+    // Zero-mean & no-trend
+    if model == 0;
+        v = y;
+    // De-meaned data    
+    elseif model == 1;
+        v = y - meanc(y);
+    // De-meaned and de-trended data    
+    elseif model == 2;
+        dc = ones(T, 1);
+        dt = seqa(1, 1, T);
+        z = dc ~ dt;
+        a = y/z;
+        v = y - z * a;
+    endif;
+    
+    dv = diff(v,1);
+    v1 = lagn(v^3,1);
+    
+    if pmax > 0;
+        p_lags  = seqa(1, 1, pmax);
+        dv_lags = lagn(dv, p_lags);
+    endif;
+    
+    for p(0, pmax, 1);        
+        if p == 0;
+           x = v1; 
+        elseif p > 0;
+            x = v1 ~ dv_lags[., 1:p];
+        endif;
+        
+        dep = trimr(dv, p+1, 0);
+        x   = trimr(x, p+1, 0);
+        {b, e1, sig2, se, ssr} = myols(dep, x);
+        taup[p+1] = b[1]/se[1];
+        n = rows(x);
+        k = cols(x);
+        
+        // Log-likelihood
+        LL = -n/2 * (1 + ln(2*pi) + ln(e1'e1/n));     
+        
+        aicp[p+1] = (2 * k-2 * LL)/n;
+        sicp[p+1] = (k * ln(n) - 2 * LL)/n;
+        tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
+    endfor;
+ 
+    p_opt = _get_lag(ic, pmax, aicp, sicp, tstatp);
+    t_nl  = taup[p_opt];
+    if model == 0; cv = { -2.82, -2.22, -1.92}; endif;
+    if model == 1; cv = { -3.38, -2.93, -2.66}; endif;
+    if model == 2; cv = { -3.93, -3.40, -3.13}; endif;
+        
+    retp(t_nl, p_opt - 1, cv');
+endp;
