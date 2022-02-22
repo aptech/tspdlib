@@ -14,10 +14,10 @@ y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($
 
 // With constant
 model = 1;
-qr_kss = QR_Fourier_ADF(y, model, 0.7);
+qr_adf_stat = QR_Fourier_ADF(y, model, 0.7);
 
 
 // With constant and trend
 model = 2;
-qr_kss = QR_Fourier_ADF(y, model, 0.7);
+qr_adf_stat = QR_Fourier_ADF(y, model, 0.7);
 
