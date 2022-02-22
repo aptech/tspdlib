@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="2.2"?>
 <app>
 <name>tspdlib</name>
 <source>adf.src</source>
@@ -11,9 +11,11 @@
 <source>coint_pouliaris.src</source>
 <source>coint_shin.src</source>
 <source>coint_tsongetal.src</source>
+<source>coint_maki.src</source>
 <source>diff.src</source>
 <source>fourier_adf.src</source>
 <source>fourier_gls.src</source>
+<source>fourier_kss.src</source>
 <source>fourier_kpss.src</source>
 <source>fourier_lm.src</source>
 <source>GCtests.src</source>
@@ -24,6 +26,7 @@
 <source>kpss.src</source>
 <source>kpss_1br.src</source>
 <source>kpss_2br.src</source>
+<source>kss.src</source>
 <source>lm.src</source>
 <source>lm_1br.src</source>
 <source>lm_2br.src</source>
@@ -38,6 +41,11 @@
 <source>PDcaus_Zhnc.src</source>
 <source>pp.src</source>
 <source>qr_adf.src</source>
+<source>qr_fourier_adf.src</source>
+<source>qr_fourier_kss.src</source>
+<source>qr_kss.src</source>
+<source>qr_qks.src</source>
 <source>rals_adf.src</source>
 <source>rals_lm.src</source>
+<source>rals_lm_breaks.src</source>
 </app>
