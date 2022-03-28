@@ -56,6 +56,9 @@ Cointegration Tests
 Causality Tests
 +++++++++++++++++
 :func:`granger`
+:func:`panel_fisher`
+:func:`panel_surwald`
+:func:`panel_zhnc`
 
 Further Reading
 -----------------
