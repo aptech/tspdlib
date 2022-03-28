@@ -90,3 +90,5 @@ Source
 ------
 
 gctests.src
+
+.. seealso:: Functions :func:`panel_fisher`, :func:`panel_zhnc`, :func:`panel_surwald`
