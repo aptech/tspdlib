@@ -5,7 +5,7 @@ rals_adf
 Purpose
 ----------------
 
-Computes the Augmented Dickey Fuller unit root test with the RALS technique for non-normal errors.
+Computes the Augmented Dickey-Fuller unit root test with the RALS technique for non-normal errors.
 
 Format
 ----------------

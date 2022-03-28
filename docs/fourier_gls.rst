@@ -4,7 +4,7 @@ fourier_gls
 Purpose
 ----------------
 
-Local generalized lease squares unit root test with Flexible Fourier form structural breaks.
+Local generalized least squares unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------

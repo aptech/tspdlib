@@ -5,7 +5,7 @@ quantile_adf
 Purpose
 ----------------
 
-Computes the quantile Augmented Dickey Fuller unit root test.
+Computes the quantile Augmented Dickey-Fuller unit root test.
 
 Format
 ----------------
