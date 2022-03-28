@@ -4,7 +4,7 @@ gc_tests
 Purpose
 ----------------
 
-LM unit root test with Flexible Fourier form structural breaks.
+Tests for Granger causality of specified variables. 
 
 Format
 ----------------
