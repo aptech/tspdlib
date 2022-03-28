@@ -9,7 +9,7 @@ Computes the DF-GLS unit root test.
 
 Format
 ----------------
-.. function:: { GLStau, lags, cvGLS } = dfgls(y, model[, pmax[, ic]])
+.. function:: { GLStau, lags, cvGLS } = dfgls(y, model[, pmax, ic])
     :noindexentry:
 
     :param y: Time series data to be tested.

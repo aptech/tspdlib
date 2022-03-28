@@ -8,7 +8,7 @@ Tests for the null of no cointegration against the alternative of cointegration 
 
 Format
 ----------------
-.. function:: { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } = coint_ghansen(y, x, model[, bwl[, ic[, pmax[, varm[, trimm]]]]])
+.. function:: { ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa } = coint_ghansen(y, x, model[, bwl, ic, pmax, varm, trimm])
     :noindexentry:
 
     :param y: Dependent variable.

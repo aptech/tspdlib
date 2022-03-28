@@ -9,7 +9,7 @@ Computes the Augmented Dickey Fuller unit root test with 1 or 2 breaks and the R
 
 Format
 ----------------
-.. function:: { LM_min, tb, p, cv_lm, RALS_lm, p2, cv_ralslm } = ralslm_breaks(y, model, nbreaks[, pmax[, ic[, trimm]]])
+.. function:: { LM_min, tb, p, cv_lm, RALS_lm, p2, cv_ralslm } = ralslm_breaks(y, model, nbreaks[, pmax, ic, trimm])
     :noindexentry:
 
     :param y: Time series data to be tested.

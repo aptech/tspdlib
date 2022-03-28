@@ -9,7 +9,7 @@ Test of the null of cointegration allowing for structural breaks of unknown form
 
 Format
 ----------------
-.. function:: { CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols } = coint_tsongetal(y, x, model[, bwl[, kmax[, varm[, q]]]])
+.. function:: { CIfols, FFols, CIfdols, FFdols, cv, Fols, Fdols } = coint_tsongetal(y, x, model[, bwl, kmax, varm, q])
     :noindexentry:
 
     :param y: Dependent variable.

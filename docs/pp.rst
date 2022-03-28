@@ -9,7 +9,7 @@ Computes the Phillips and Perron unit root test (Perron, P., & Ng, S. (1996)).
 
 Format
 ----------------
-.. function:: { Zt, Za, cvZt, cvZa } = PP(y, model[, bwl[, varm]])
+.. function:: { Zt, Za, cvZt, cvZa } = PP(y, model[, bwl, varm])
     :noindexentry:
 
     :param y: Time series data to be tested.

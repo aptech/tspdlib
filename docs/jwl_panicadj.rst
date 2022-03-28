@@ -9,7 +9,7 @@ Panel analysis of idiosyncratic and common components (PANIC) test of nonstation
 
 Format
 ----------------
-.. function:: { Ze, Ze_ba } = JWL_PANICadj(y, model[, pmax[, ic_lags[, kmax[, ic_factors]]]])
+.. function:: { Ze, Ze_ba } = JWL_PANICadj(y, model[, pmax, ic_lags, kmax, ic_factors])
     :noindexentry:
 
     :param y: Panel data to be tested.

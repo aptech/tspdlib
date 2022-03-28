@@ -9,7 +9,7 @@ Computes the Augmented Dickey Fuller unit root test.
 
 Format
 ----------------
-.. function:: { tstat, lags, cv } = adf(y, model[, pmax [, ic]])
+.. function:: { tstat, lags, cv } = adf(y, model[, pmax , ic])
     :noindexentry:
 
     :param y: Time series data to be tested.

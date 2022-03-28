@@ -9,7 +9,7 @@ Panel analysis of idiosyncratic and common components (PANIC) test of nonstation
 
 Format
 ----------------
-.. function:: { Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, model[, kmax[, ic_factors]])
+.. function:: { Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, model[, kmax, ic_factors])
     :noindexentry:
 
     :param y: Panel data to be tested.

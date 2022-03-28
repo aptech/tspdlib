@@ -8,7 +8,7 @@ KPSS stationarity test with Flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { KPSSk, k, cv } = fourier_kpss(y, model[, fmax[, bwl[, varm]]])
+.. function:: { KPSSk, k, cv } = fourier_kpss(y, model[, fmax, bwl, varm])
     :noindexentry:
 
     :param y: Dependent variable.

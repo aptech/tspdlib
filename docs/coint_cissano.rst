@@ -8,7 +8,7 @@ Lagrange Multiplier‐type statistic to test the null hypothesis of cointegratio
 
 Format
 ----------------
-.. function:: { SCols, TBols, SCdols, TBdols, lambda, cv } = coint_cissano(y, x, model [, bwl[, varm[, trimm[, q]]]])
+.. function:: { SCols, TBols, SCdols, TBdols, lambda, cv } = coint_cissano(y, x, model [, bwl, varm, trimm, q])
     :noindexentry:
 
     :param y: Dependent variable.
