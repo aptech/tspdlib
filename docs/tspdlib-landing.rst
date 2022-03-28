@@ -11,6 +11,9 @@ Installation
 The GAUSS Time Series and Panel data tests library can be installed and updated directly in GAUSS using the GAUSS package manager. It requires a working copy of GAUSS 21+.
 Commands
 
+Commands
+------------------------------
+
 Time Series Stationarity Tests
 +++++++++++++++++++++++++++++++
 
@@ -52,7 +55,6 @@ Panel Data Unit Root Tests
   ========================== =======================================================================================================================================================
 
 
-
 Cointegration Tests
 +++++++++++++++++++++
 
@@ -80,7 +82,6 @@ Causality Tests
   :func:`panel_zhnc`         Tests for Granger causality in heterogeneous mixed panels with bootstrap critical values.
 
   ========================== =======================================================================================================================================================
-
 
 Further Reading
 -----------------
