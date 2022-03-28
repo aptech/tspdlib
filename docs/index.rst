@@ -40,7 +40,11 @@ Econometric package for Time Series and Panel Data Methods covering unit root, c
     lm_2break
     lmkpss
     mgls
+    panel_fisher
+    panel_surwald
+    panel_zhnc
     pdfzk
+    pdlm
     pp
     quantile_adf
     ralsadf
