@@ -4,8 +4,7 @@ TSPDLIB
 Description
 ----------------
 Unit root, cointegration, and causality testing tools for time series and panel data.
-
-It includes extensive coverage of testing in the presence of structural breaks.
+Includes extensive coverage of testing in the presence of structural breaks.
 
 Installation
 --------------
@@ -14,51 +13,74 @@ Commands
 
 Time Series Stationarity Tests
 +++++++++++++++++++++++++++++++
-:func:`adf`
-:func:`adf_1br`
-:func:`adf_2br`
-:func:`fourier_adf`
-:func:`fourier_gls`
-:func:`fourier_kpss`
-:func:`fourier_lm`
-:func:`kpss_1break`
-:func:`kpss_2break`
-:func:`lm_1break`
-:func:`lm_2break`
-:func:`lmkpss`
-:func:`pp`
-:func:`quantile_adf`
-:func:`rals_adf`
-:func:`ralslm`
-:func:`ralslm_break`
-:func:`mgls`
-:func:`erspt`
+
+  ========================== ===========================================================================================================
+
+  :func:`adf`                Augmented Dickey-Fuller unit root test.
+  :func:`adf_1br`            Augmented Dickey-Fuller unit root test with one structural break.
+  :func:`adf_2br`            Augmented Dickey-Fuller unit root test with two structural breaks.
+  :func:`fourier_adf`        Augmented Dickey-Fuller unit root test with flexible Fourier form structural breaks.
+  :func:`fourier_gls`        Local generalized least squares unit root test with flexible Fourier form structural breaks.
+  :func:`fourier_kpss`       KPSS stationarity test with flexible Fourier form structural breaks.
+  :func:`fourier_lm`         LM unit root test with flexible Fourier form structural breaks.
+  :func:`kpss_1break`        KPSS stationary test with one structural break.
+  :func:`kpss_2break`        KPSS stationary test with two structural breaks.
+  :func:`lm_1break`          LM unit root test with one structural break.
+  :func:`lm_2break`          LM unit root test with two structural breaks.
+  :func:`lmkpss`             Performs the Kwiatkowski, Phillips, Schmidt, and Shin (KPSS) stationarity test.
+  :func:`pp`                 Phillips and Perron unit root test (Perron, P., & Ng, S. (1996)).
+  :func:`quantile_adf`       Quantile augmented Dickey-Fuller unit root test.
+  :func:`rals_adf`           Augmented Dickey-Fuller unit root test with the RALS technique for non-normal errors.
+  :func:`ralslm`             LM unit root test with the RALS technique for non-normal errors.
+  :func:`ralslm_break`       Augmented Dickey-Fuller unit root test with 1 or 2 breaks and the RALS technique for non-normal errors.
+  :func:`mgls`               MGLS unit root test.
+  :func:`erspt`              ERS point optimal unit root test.
+
+  ========================== ===========================================================================================================
 
 Panel Data Unit Root Tests
 +++++++++++++++++++++++++++
-:func:`cips`
-:func:`BNG_PANIC`
-:func:`BNG_PANICnew`
-:func:`JWL_PANICadj`
-:func:`pdfzk`
+
+  ========================== =======================================================================================================================================================
+
+  :func:`cips`               A simple unit root test in the presence of cross-section dependence.
+  :func:`BNG_PANIC`          Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Pe test on ADF p-values found in Bai & Ng (2004).
+  :func:`BNG_PANICnew`       Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010).
+  :func:`JWL_PANICadj`       Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Ze and Ze+ tests in Westerlund & Larsson (2009).
+  :func:`pdfzk`              Panel stationary test with gradual shifts.
+
+  ========================== =======================================================================================================================================================
+
+
 
 Cointegration Tests
 +++++++++++++++++++++
-:func:`coint_egranger`
-:func:`coint_cissano`
-:func:`coint_ghansen`
-:func:`coint_hatemij`
-:func:`coint_pouliaris`
-:func:`coint_shin`
-:func:`coint_tsongetal`
-:func:`coint_maki`
+
+  ========================== =======================================================================================================================================================
+
+  :func:`coint_egranger`     Engle-Granger residual-based test of the null hypothesis of no cointegration.
+  :func:`coint_ghansen`      Test of the null hypothesis of no cointegration against the alternative of cointegration with a structural break in the mean.
+  :func:`coint_cissano`      Lagrange Multiplier‐type statistic to test the null hypothesis of cointegration allowing for the possibility of a structural break.
+  :func:`coint_hatemij`      Test of the null hypothesis of no cointegration against the alternative of cointegration with two structural breaks.
+  :func:`coint_pouliaris`    Asymptotic critical values for residual based tests for cointegration.
+  :func:`coint_shin`         A residual-based test for the null of cointegration using a structural single equation model.
+  :func:`coint_tsongetal`    Test of the null hypothesis of cointegration allowing for structural breaks of unknown form in deterministic trend by using the Fourier form.
+  :func:`coint_maki`         Test of the null hypothesis of no cointegration against the alternative of cointegration with an unknown number of breaks.
+
+  ========================== =======================================================================================================================================================
 
 Causality Tests
 +++++++++++++++++
-:func:`granger`
-:func:`panel_fisher`
-:func:`panel_surwald`
-:func:`panel_zhnc`
+
+  ========================== =======================================================================================================================================================
+
+  :func:`granger`            Tests for Granger causality of specified variables.
+  :func:`panel_fisher`       Tests for Granger causality in heterogeneous mixed panels with bootstrap critical values.
+  :func:`panel_surwald`      Tests for Granger causality in heterogeneous mixed panels with bootstrap critical values.
+  :func:`panel_zhnc`         Tests for Granger causality in heterogeneous mixed panels with bootstrap critical values.
+
+  ========================== =======================================================================================================================================================
+
 
 Further Reading
 -----------------
