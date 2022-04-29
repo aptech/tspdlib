@@ -1,5 +1,5 @@
 
-BNG_PANIC
+bng_panic
 ==============================================
 
 Purpose
@@ -9,7 +9,7 @@ Panel analysis of idiosyncratic and common components (PANIC) test of nonstation
 
 Format
 ----------------
-.. function:: { ADFe, pval, lags, Pe, n_factors } = BNG_PANIC(y, model[, pmax, ic_lags, kmax, ic_lags])
+.. function:: { ADFe, pval, lags, Pe, n_factors } = bng_panic(y, model[, pmax, ic_lags, kmax, ic_lags])
     :noindexentry:
 
     :param y: Panel data to be tested.
@@ -85,11 +85,11 @@ Examples
   ** Model with constant
   */
   model = 1;
-  { ADFe, pval, lags, Pe, nf } = BNG_PANIC(y, model);
+  { ADFe, pval, lags, Pe, nf } = bng_panic(y, model);
 
 Source
 ------
 
 pd_panic.src
 
-.. seealso:: Functions :func:`BNG_PANICnew`, :func:`JWL_PANICadj`, :func:`JWR_PANICCA`
+.. seealso:: Functions :func:`bng_panicnew`, :func:`jwl_panicadj`, :func:`jwr_panicca`

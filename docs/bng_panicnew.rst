@@ -1,5 +1,5 @@
 
-BNG_PANICnew
+bng_panicnew
 ==============================================
 
 Purpose
@@ -9,7 +9,7 @@ Panel analysis of idiosyncratic and common components (PANIC) test of nonstation
 
 Format
 ----------------
-.. function:: { Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, model[, kmax, ic_factors])
+.. function:: { Pa_pc, Pb_pc, PMSB_pc } = bng_panicNew(y, model[, kmax, ic_factors])
     :noindexentry:
 
     :param y: Panel data to be tested.
@@ -62,11 +62,11 @@ Examples
 
   // Model with constant and trend
   model = 1;
-  { Pa_pc, Pb_pc, PMSB_pc } = BNG_PANICnew(y, model);
+  { Pa_pc, Pb_pc, PMSB_pc } = bng_panicNew(y, model);
 
 Source
 ------
 
 pd_panic.src
 
-.. seealso:: Functions :func:`BNG_PANIC`, :func:`JWR_PANICCA`, :func:`JWL_PANICadj`
+.. seealso:: Functions :func:`bng_panic`, :func:`jwr_panicca`, :func:`jwl_panicadj`

@@ -43,10 +43,10 @@ Panel Data Unit Root Tests
 
 ========================== =================================================================================================================================================================
 :func:`cips`               A simple unit root test in the presence of cross-section dependence.
-:func:`BNG_PANIC`          Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Pe test on ADF p-values found in Bai & Ng (2004).
-:func:`BNG_PANICnew`       Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010).
-:func:`JWL_PANICadj`       Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Ze and Ze+ tests in Westerlund & Larsson (2009).
-:func:`JWR_PANICCA`        Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Pooled Pa, Pb, and PMSB tests in Westerlund & Reese (2016).
+:func:`bng_panic`          Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Pe test on ADF p-values found in Bai & Ng (2004).
+:func:`bng_panicnew`       Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010).
+:func:`jwl_panicadj`       Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Ze and Ze+ tests in Westerlund & Larsson (2009).
+:func:`jwr_panicca`        Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Pooled Pa, Pb, and PMSB tests in Westerlund & Reese (2016).
 :func:`pdfzk`              Panel stationary test with gradual shifts.
 ========================== =================================================================================================================================================================
 
@@ -153,4 +153,3 @@ Nazlioglu, S (2021) TSPDLIB: GAUSS Time Series and Panel Data Methods (Version 2
     panel_fisher
     panel_surwald
     panel_zhnc
-

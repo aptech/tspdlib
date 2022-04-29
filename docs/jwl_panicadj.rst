@@ -1,5 +1,5 @@
 
-JWL_PANICadj
+jwl_panicadj
 ==============================================
 
 Purpose
@@ -76,4 +76,4 @@ Source
 
 pd_panic.src
 
-.. seealso:: Functions :func:`BNG_PANIC`, :func:`JWR_PANICCA`, :func:`BNG_PANICnew`
+.. seealso:: Functions :func:`bng_panic`, :func:`jwr_panicca`, :func:`bng_panicnew`
