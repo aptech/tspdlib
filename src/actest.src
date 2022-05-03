@@ -1,8 +1,27 @@
-#include ascomp.src
 /*
 ** This code is based on the original ACtest.prg file provide by
 ** Abdulnasser Hatemi-J
 */
+
+proc(4) = asymCause(y, ...);
+    local pos, ln_form, maxlags, infocrit, intorder, bootmaxiter, dt_vec, fullprint;
+    
+    // Default values
+    // pos               1 to use positive components
+    // ln_form           0 for no log form
+    // intorder          0 for no unit root lags
+    // maxlags           4 
+    // infocrit          3 to use SBC
+    // bootmaxiter       1000 bootstraps
+       
+    { pos, intorder, ln_form, maxlags, infocrit, bootmaxiter, fullprint } = dynargsGet(1|7, 1, 0, 0, 8, 3, 1000, 0);
+    
+    // Look for a date vector in data
+    { dt_vec, y } =_checkfordate(y);
+
+    // Call testing procedure
+    retp(asymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter, pos, fullprint));
+endp;
 
 
 /*
@@ -13,14 +32,14 @@
 ** other hypotheses of interest.
 */
 
-proc(4) = aymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter, pos);
+proc(4) = asymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter, pos, fullprint);
     local CUMDYZpc, CUMDYZnc, z, addlags, numvars, yT, yLags, xT,
         yS, xS, Rvector1, Rmatrix1, AhatTU, leverageTU, AhatTR, leverageTR,
         AhatSR, leverageSR, Wstat , WCriticalvalsS, Azdsys, ICorder,
-        rejectnullbootS, rejectnullchi, icA, onelA, nocando;
+        rejectnullbootS, rejectnullchi, icA, onelA, nocando, top;
     
     // Find cumulative positive and negative components
-    { CUMDYZpc, CUMDYZnc } = cumulativeComp(y, ln_form);
+    { CUMDYZpc, CUMDYZnc } = cumulativeComp(y, ln_form, fullprint);
     
     if pos;
         // Allows for causality test between positive components.
@@ -65,11 +84,20 @@ proc(4) = aymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter,
         AhatSR  = AhatSR~zeros(numvars, numvars*addlags);
     endif;
     
-    "AhatTU=";;
-    AhatTU;
+    if fullprint;
+    sprintf("%s", " AhatT estimated parameters"); 
+    top = ""$~"Unrestricted"$~""$~"Restricted";
+     print "==============================================================";
+    sprintf("%15s", top);
+    sprintf("%15.2f", AhatTU'~AhatTR');
+     print "==============================================================";
+    endif;
     
-    "AhatTR=";;
-    AhatTR;
+//    "AhatTU=";;
+//    AhatTU;
+    
+//    "AhatTR=";;
+//    AhatTR;
     
     // Find test statistics
     Wstat = W_Test(yT, XT, AhatTU, Rmatrix1);
@@ -81,19 +109,21 @@ proc(4) = aymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter,
     // Rejection of null
     rejectnullchi = (cdfchic(Wstat, ICorder).<0.01) | (cdfchic(Wstat, ICorder).<0.05) | (cdfchic(Wstat, ICorder).<0.10);
     rejectnullbootS = (Wstat.>WcriticalvalsS[1,.]) | (Wstat.>WcriticalvalsS[2,.]) | (Wstat.>WcriticalvalsS[3,.]);
-    
-    "-----------------------------------------";
+
     Azdsys = Azd(ICorder);
-    format /rd 5,3;
     
-    "Varorder chosen by information criterion (excluding augmentation lag(s)) is ";;
-    ICorder;
-    "additional lags=";;
-    addlags;
-    "Wstat = ";;
-    Wstat;
-    "Wcriticalvals=";;
-    WcriticalvalsS;
+    
+    // Print results
+    _printHeaderASYM(infocrit, pos);
+     local side, stats, dec, colwidth;
+    side = "W-stat:";
+    stats = Wstat;
+    dec = 3;
+    colwidth = 15;
+    // Print statistics
+    _printStatsTable("", side, stats, WcriticalvalsS, dec, colwidth, 0, ICorder); 
+    // Print conclusions
+    _printConclusion(Wstat, WcriticalvalsS, 1, "non-causality");
     retp(Wstat, WcriticalvalsS, ICOrder, Azdsys);
 endp;
 
@@ -367,7 +397,7 @@ endp;
 **
 **      Wcriticalvals       Matrix of critical values for Wald statistics
 */
-proc(1) = Bootstrap_Toda(y, X, zlags, Ahat, leverage, order, addlags,bootsimmax, Rmatrix1);
+proc(1) = Bootstrap_Toda(y, X, zlags, Ahat, leverage, order, addlags, bootsimmax, Rmatrix1);
     local RES, adjRES, bootsim, numobs, maxlag, Wstatv, yhatrow, Xhat, obspull, index,
         simerr, yhat, AhatTU, Wstat, randomnumbers,
         onepct_index, fivepct_index, tenpct_index, critical_W, critical_Wpl1,
@@ -535,36 +565,59 @@ proc (4) = lag_length2(z, minlag, p, infocrit);
         lag_guess = lag_guess - 1;
         
     endo;
-    
-    // Print the output
-    __printLags(iclag, infocrit, p);
-    
+
     retp(iclag, icA, onelA, nocando);
 endp;
 
-proc (0) = __printLags(iclag, infocrit, maxlags);
+proc (1) = _printICASYM(infocrit);
     
-    format /rd 5,3;
-    "Information criterion used; lags based on that =";;
     If infocrit == 1;
-        "AIC ";;
+        retp("AIC");
     elseif infocrit == 2;
-        "AICC ";;
+        retp("AICC");
     elseif infocrit ==3;
-        "SBC ";;
+        retp("SBC");
     elseif infocrit ==4;
-        "HQC ";;
+        retp("HQC");
     elseif infocrit ==5;
-        "Hatemi-J Criterion (HJC) ";;
+        retp("Hatemi-J Criterion (HJC)");
     elseif infocrit ==6;
-        "User given:";;
+        retp("User given:");
+    endif;
+ 
+endp;
+
+proc (0) = _printHeaderASYM(ic, pos);
+    local ic_str, modl_str, fmt, clm1, clm2;
+    
+    // Get information criterion
+    ic_str = _printICASYM(ic);
+ 
+    // Get model specification
+    if pos;
+      modl_str = "Positive components";
+    else;
+      modl_str = "Negative components";
     endif;
     
-    if infocrit !=6;
-        iclag;
-    else;
-        maxlags;
-    endif;
+    // Set up table columns
+    clm1 = "Test:"$|"Ho:";
+    clm2 = "Asymmetric Causality"$|"X2 does not cause X1";
+    
+    // Print IC criteria
+    clm1 = clm1$|"Lag selection:";
+    clm2 = clm2$|ic_str;
+
+    // Print model typ
+    clm1 = clm1$|"Model:";
+    clm2 = clm2$|modl_str;
+ 
+    // Print table
+    fmt = "%-30s%30s";
+    print "==============================================================";
+    sprintf(fmt, clm1, clm2);
+    print "==============================================================";
+
 endp;
 
 proc (1) = __getic(VARCOV, T, M, lag_guess, infocrit, maxlags);
@@ -596,10 +649,10 @@ proc (1) = __getic(VARCOV, T, M, lag_guess, infocrit, maxlags);
 endp;
 
 proc (0) =  __printInfoACTest();
-    Print " This program performs an asymmetric causality test developed by Hatemi-J (2012).
-        Reference: Hatemi-J (2012) Asymmetric Causality Tests with an Application, Empirical Economics, forthcoming";
+    sprintf("%s", "This program performs an asymmetric causality test developed by Hatemi-J (2012)."); 
+    sprintf("%s", "Reference: Hatemi-J (2012) Asymmetric Causality Tests with an Application, Empirical Economics, 447-456");
     Print " ";
-    Print " This program code is the copyright of the authors. Applications are allowed only if proper reference and acknowledgments are provided. For non-Commercial applications only.";
-    Print "No performance guarantee is made. Bug reports are welcome. ";
+    sprintf("%s", "This program code is the copyright of the authors. Applications are allowed only if proper reference and acknowledgments are provided. For non-Commercial applications only.");
+    sprintf("%s", "No performance guarantee is made. Bug reports are welcome.") ;
     Print " ";
 endp;
