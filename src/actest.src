@@ -2,35 +2,79 @@
 ** This code is based on the original ACtest.prg file provide by
 ** Abdulnasser Hatemi-J
 */
+/*
+**> asymCause
+**
+**  The program tests the hypothesis that the 
+**  z does not cause the y. 
+**
+**  Format:  { Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(y, z [, pos, intorder, ln_form, maxlags, infocrit, bootmaxiter, fullprint] ) ;
+**
+**  Input:   y	              -    TN x 1 vector, data
+**
+**           z                -    TN x 1 vector, data 
+**
+**           pos              -    Optional, specifies whether to use positive or 
+**                                 negative component. Default = 1.
+**                                 0 = Negative
+**                                 1 = Positive                               
+**
+**           infocrit         -    Optional, information criteria. Default = 3.
+**                                 1 = AIC
+**                                 2 = AICC
+**                                 3 = SBC
+**                                 4 = HQC
+**                                 5 = HJC
+**                                 6 = Use maxloags
+**           
+**           intorder         -    Optional, order of integration to adjust for 
+**                                 unit roots. 
+**                                 Default = 0.
+**
+**           ln_form          -    Optional, specifies to use data in log form.
+**                                 Default = 0.
+**                                 0 = No log form.
+**                                 1 = Log form.
+**
+**           maxlags          -    Optional, maximum number of lags. Default = 4.
+**
+**           bootmaxiter      -    Optional, number of bootstrap iterations. Default = 1000.
+**
+**           fullprint        -    Optional, print full output including the Ahat predications and 
+**                                 negative/positive components. 
+**
+**  Output:  Wstat            -    Wald statistic. 
+**
+**			 WcriticalvalsS   -    Bootstrap 1%, 5%, and 10% critical values for the Wald statistic. 
+**
+**           ICOrder          -    Optimal number of lags based on the information criteria. 
+**
+**           Azdsys           -    Number of lags after the added lags for integration. 
+*/
 
-proc(4) = asymCause(y, ...);
+proc(4) = asymCause(y, z, ...);
     local pos, ln_form, maxlags, infocrit, intorder, bootmaxiter, dt_vec, fullprint;
     
-    // Default values
-    // pos               1 to use positive components
-    // ln_form           0 for no log form
-    // intorder          0 for no unit root lags
-    // maxlags           4 
-    // infocrit          3 to use SBC
-    // bootmaxiter       1000 bootstraps
+    /*
+    ** Default values
+    ** pos               1 to use positive components
+    ** ln_form           0 for no log form
+    ** intorder          0 for no unit root lags
+    ** maxlags           4 
+    ** infocrit          3 to use SBC
+    ** bootmaxiter       1000 bootstraps
+    ** fullprint         Print the full output including Ahat and components. 
+    */
        
-    { pos, intorder, ln_form, maxlags, infocrit, bootmaxiter, fullprint } = dynargsGet(1|7, 1, 0, 0, 8, 3, 1000, 0);
+    { pos, infocrit, intorder, ln_form, maxlags, bootmaxiter, fullprint } = dynargsGet(1|7, 1, 3, 0, 0, 8, 1000, 0);
     
     // Look for a date vector in data
     { dt_vec, y } =_checkfordate(y);
-
+    { dt_vec, z } =_checkfordate(z);
+    
     // Call testing procedure
-    retp(asymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter, pos, fullprint));
+    retp(asymCasualitytest(y~z, ln_form, maxlags, infocrit, intorder, bootmaxiter, pos, fullprint));
 endp;
-
-
-/*
-** The program tests the hypothesis that the
-** second variable in your data file do not
-** cause the first one. Change the order of the
-** variables in the data file in oder to test
-** other hypotheses of interest.
-*/
 
 proc(4) = asymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter, pos, fullprint);
     local CUMDYZpc, CUMDYZnc, z, addlags, numvars, yT, yLags, xT,
@@ -93,11 +137,6 @@ proc(4) = asymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter
      print "==============================================================";
     endif;
     
-//    "AhatTU=";;
-//    AhatTU;
-    
-//    "AhatTR=";;
-//    AhatTR;
     
     // Find test statistics
     Wstat = W_Test(yT, XT, AhatTU, Rmatrix1);
