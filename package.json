@@ -11,7 +11,7 @@
     "name": "tspdlib",
     "repo": "",
     "src": [
-        "astest.src",
+        "actest.src",
         "ascomp.src",
         "adf.src",
         "adf_1br.src",
