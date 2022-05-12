@@ -1,5 +1,3 @@
-#include actest.src
-
 /*
 ** This code is based on the original ACtest.prg file provide by
 ** Abdulnasser Hatemi-J
@@ -14,8 +12,7 @@
 ** other hypotheses of interest.
 */
 
-// For printing
-outwidth 200;
+library tspdlib;
 
 /*
 ** Load data
@@ -60,4 +57,4 @@ intorder = 1;
 pos = 1;
 
 // Call for asymetric test
-{ Wstat, WcriticalvalsS, ICOrder, Azdsys } = aymCasualitytest(YZlevel, ln_form, maxlags, infocrit, intorder, bootmaxiter, pos);
+{ Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(YZlevel[., "m"], YZlevel[., "bnd"], pos, intorder);
