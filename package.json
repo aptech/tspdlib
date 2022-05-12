@@ -11,6 +11,8 @@
     "name": "tspdlib",
     "repo": "",
     "src": [
+        "astest.src",
+        "ascomp.src",
         "adf.src",
         "adf_1br.src",
         "adf_2br.src",
@@ -67,5 +69,5 @@
         "rals_lm_breaks.src",
         "coint_maki.src"
     ],
-    "version": "2.2.0"
+    "version": "2.3.0"
 }
