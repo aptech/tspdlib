@@ -14,6 +14,8 @@ The program files require a working copy of **GAUSS 21+**. Many tests can be run
 ### Installing
 The GAUSS Time Series and Panel data tests library can be installed and updated directly in GAUSS using the [GAUSS package manager](https://www.aptech.com/blog/gauss-package-manager-basics/).
 
+**Please do not download the source code and install manually. You will not be able to properly install the library.** 
+
 Before using the functions created by `tspdlib` you will need to load the newly created `tspdlib` library. This can be done in a number of ways:
   *   Navigate to the library tool view window and click the small wrench located next to the `tspdlib` library. Select `Load Library`.  
   ![load library](images/load_tspdlib.PNG)
@@ -32,7 +34,7 @@ The documentation for the `tspdlib` procedures can be found on our [Aptech TSPDL
 The author makes no performance guarantees. The `tspdlib` is available for public non-commercial use only.
 
 ## Author
-For any bugs, please send e-mail to [Saban Nazlioglu](mailto:snazlioglu@pau.edu.tr) or [Erica Clower](mailto:erica@aptech.com).
+For any bugs, please send e-mail to [Saban Nazlioglu](mailto:snazlioglu@pau.edu.tr) or [Eric Clower](mailto:eric@aptech.com).
 
 ## Supported
 ### Time Series Unit Root Tests
