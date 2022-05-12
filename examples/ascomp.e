@@ -11,12 +11,7 @@
 ** The author makes no guarantee about performance.
 */
 
-// For printing
-outwidth 200;
-
-// Make sure screen in on
-screen on;
-#include actest.src
+library tspdlib;
 
 /*
 ** Load data
@@ -33,4 +28,7 @@ YZlevel  = packr(loadd(fname, formula));
 // Specify whether to use log form
 ln_form = 0;
 
-{ YZ_pos, YZ_neg } = cumulativeComp(YZlevel, ln_form);
+// Specify to print components
+fullprint = 1;
+
+{ YZ_pos, YZ_neg } = cumulativeComp(YZlevel, ln_form, fullprint);
