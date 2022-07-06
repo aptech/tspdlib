@@ -57,4 +57,6 @@ intorder = 1;
 pos = 1;
 
 // Call for asymetric test
-{ Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(YZlevel[., "m"], YZlevel[., "bnd"], pos, intorder);
+// { Wstat, WcriticalvalsS, ICOrder, Azdsys } = 
+// asymCause(y, z [, pos, infocrit, intorder, ln_form, maxlags, bootmaxiter, fullprint] ) ;
+{ Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(YZlevel[., "m"], YZlevel[., "bnd"], pos, infocrit, intorder, ln_form, maxlags);
