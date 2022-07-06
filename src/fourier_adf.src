@@ -219,7 +219,7 @@ proc (2) = fourierADFFTest(y, model, k, p);
     local t, dy, ly, dc, dt, sink, cosk,
         dep, y1, ldy, sbt, trnd, sinp, cosp, z1, z2,
         b1, e1, sig21, se1, ssr1, b2, e2, sig22, se2, ssr2,
-        k1, k2, lmat, j;
+        k1, k2, lmat, j, cv_fstat;
     
     // Check number of columns of y
     if cols(y) > 1;
@@ -300,6 +300,18 @@ proc (2) = fourierADFFTest(y, model, k, p);
     // Print results
     cv_fstat = fstatcv(model, t);
     
+    _printHeaderTSPDLIB(0, 0, 2, model, 4, 0, "Fourier ADF F-Stat", "Linearity", 0);
+
+    // Print results & Critical values
+    local top, side, stats, dec, colwidth;
+    side = "F-stat:";
+    top = "";
+    stats = F_stat; 
+    dec = 3;
+    colwidth = 15;
+            
+    _printStatsTable(top, side, stats, cv_fstat', dec, colwidth, 0, p, k);
+    _printConclusion(F_stat, cv_fstat, 1, "linearity");
     
     retp(F_stat, cv_fstat);
 endp;
