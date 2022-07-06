@@ -16,7 +16,7 @@
 
 new;
 cls;
-library tspdlib;
+library tspdlib_dv;
 
 // Number of bootstrap replications
 Nboot= 1000;    

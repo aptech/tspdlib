@@ -1,5 +1,3 @@
-#include optmt.sdf
-
 struct msurControl {
 
 // Control specifications

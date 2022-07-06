@@ -8,7 +8,7 @@
 **  The program tests the hypothesis that the 
 **  z does not cause the y. 
 **
-**  Format:  { Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(y, z [, pos, intorder, ln_form, maxlags, infocrit, bootmaxiter, fullprint] ) ;
+**  Format:  { Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(y, z [, pos, infocrit, intorder, ln_form, maxlags, bootmaxiter, fullprint] ) ;
 **
 **  Input:   y	              -    TN x 1 vector, data
 **
@@ -36,7 +36,7 @@
 **                                 0 = No log form.
 **                                 1 = Log form.
 **
-**           maxlags          -    Optional, maximum number of lags. Default = 4.
+**           maxlags          -    Optional, maximum number of lags. Default = 8.
 **
 **           bootmaxiter      -    Optional, number of bootstrap iterations. Default = 1000.
 **
@@ -567,6 +567,7 @@ proc (4) = lag_length2(z, minlag, p, infocrit);
     j = 0;
 //    aicfnd = 0;
     do until (lag_guess < minlag);
+ 
         if (lag_guess > 0);
             X = ones(T, 1)~ylags[ . , 1:lag_guess*M];
         else;
@@ -690,8 +691,10 @@ endp;
 proc (0) =  __printInfoACTest();
     sprintf("%s", "This program performs an asymmetric causality test developed by Hatemi-J (2012)."); 
     sprintf("%s", "Reference: Hatemi-J (2012) Asymmetric Causality Tests with an Application, Empirical Economics, 447-456");
-    Print " ";
-    sprintf("%s", "This program code is the copyright of the authors. Applications are allowed only if proper reference and acknowledgments are provided. For non-Commercial applications only.");
+    print ;
+    sprintf("%s", "This program code is the copyright of the authors.");
+    sprintf("%s", "Applications are allowed only if proper reference and acknowledgments are provided.");
+    sprintf("%s", "For non-Commercial applications only.");
     sprintf("%s", "No performance guarantee is made. Bug reports are welcome.") ;
-    Print " ";
+    print ;
 endp;
