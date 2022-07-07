@@ -130,6 +130,27 @@ proc(4) = Fourier_ADF(y, model, ...);
     opt_lag = keep_p[f];
     
     // Critical Values (see, Enders & Lee, 2012, Table 1b)
+    crit = _getFourierADFCrit(T, model);
+    
+    _printHeaderTSPDLIB(ic, 0, 2, model, 4, 0, "Fourier ADF", "Unit root", 0);
+
+    // Print results & Critical values
+    local top, side, stats, dec, colwidth;
+    side = "ADF-stat:";
+    top = "";
+    stats = ADF;
+    dec = 3;
+    colwidth = 15;
+            
+    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0, opt_lag-1, f);
+    _printConclusion(ADF, crit[f, .], 0, "unit root");
+
+    retp(ADF, f, opt_lag-1, crit[f, .]);
+endp;
+
+proc (1) = _getFourierADFCrit(T, model);
+    local crit;
+    
     crit = zeros(5, 3);
     if model == 1;
         if T <= 150;
@@ -199,20 +220,7 @@ proc(4) = Fourier_ADF(y, model, ...);
         endif;
     endif;
     
-    _printHeaderTSPDLIB(ic, 0, 2, model, 4, 0, "Fourier ADF", "Unit root", 0);
-
-    // Print results & Critical values
-    local top, side, stats, dec, colwidth;
-    side = "ADF-stat:";
-    top = "";
-    stats = ADF;
-    dec = 3;
-    colwidth = 15;
-            
-    _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0, opt_lag-1, f);
-    _printConclusion(ADF, crit[f, .], 0, "unit root");
-
-    retp(ADF, f, opt_lag-1, crit[f, .]);
+    retp(crit);
 endp;
 
 proc (2) = fourierADFFTest(y, model, k, p);
