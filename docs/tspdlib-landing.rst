@@ -1,4 +1,4 @@
-TSPDLIB
+GAUSS Time-Seroes Panel Data (TSPDLIB)
 ==============================================
 
 Description
