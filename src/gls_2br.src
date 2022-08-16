@@ -125,7 +125,7 @@ proc(18) =  GLS_2breaks(y, model, ...);
  
         // ADF-GLS test
         screen off;
-        {ADF_GLS, p, cv_temp} = ADF(ygls, 0, pmax, ic);
+        { ADF_GLS, p, cv_temp } = ADF(ygls, 0, pmax, ic);
         screen on;
         
         // Autoregressive estimate of the long-run variance
@@ -163,7 +163,7 @@ proc(18) =  GLS_2breaks(y, model, ...);
     lambda1 = tb1_min / t;
     lambda2 = tb2_min / t;
     
-    {cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa} = _get_cv_gls_2breaks(model,lambda1, lambda2);
+    { cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa } = _get_cv_gls_2breaks(model,lambda1, lambda2);
          
     _printHeaderTSPDLIB(ic, 0, 1, modl_str, 2, 0, "GLS", "Unit root", 0);
 
