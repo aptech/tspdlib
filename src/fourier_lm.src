@@ -38,10 +38,10 @@
 
 proc(4) = Fourier_LM(y, ...);
     local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
-        k, dc, dt, sink, cosk, dy, dsink, dcosk, dz,
-        b0, psi, ylm, ly, lmat, dep, y1, ldy,
-        sbt, trnd, sinp, cosp, z, f, lm,
-        b, e1, sig2, se, ssr, crit, keep_p, opt_lag, pmax, kmax, ic, dt_vec;
+        k, dc, dt, sink, cosk, dy, dsink, dcosk,
+        ylm, ly, lmat, dep, y1, ldy,
+        sbt, trnd, sinp, cosp, z, f, lm_, dy0,
+       crit, keep_p, opt_lag, pmax, kmax, ic, dt_vec;
     
     _checkForMissings(y, "Fourier_LM");
     
@@ -50,7 +50,7 @@ proc(4) = Fourier_LM(y, ...);
     // Check for dates
     { dt_vec, y } =_checkfordate(y);
     
-    t = rows(y);
+  
     taup = zeros(pmax + 1, 1);
     aicp = zeros(pmax + 1, 1);
     sicp = zeros(pmax + 1, 1);
@@ -61,29 +61,24 @@ proc(4) = Fourier_LM(y, ...);
     keep_p = zeros(kmax, 1);
     
     k = 1;
+    
+    { t, dy0, ly, dc, dt } = _getFourierDeterministic(y); 
+    dy0 = trimr(dy0, 1, 0);
+    
     do while k <= kmax;
-        dc = ones(t, 1);
-        dt = seqa(1, 1, t);
+        // Fourier terms
         sink = sin(2 * pi * k * seqa(1, 1, t)/t);
         cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
-        z = dt~sink~cosk;
-        dy = trimr(diff(y, 1), 1, 0);
         dsink = trimr(diff(sink, 1), 1, 0);
         dcosk = trimr(diff(cosk, 1), 1, 0);
-        dz = ones(rows(dy), 1)~dsink~dcosk;
-        b0 = dy/dz;
-        psi = y[1] - dz[1,.] * b0;
-        ylm = y - psi - z * b0;
         
-        t = rows(ylm);
-        dy = diff(ylm, 1);
-        ly = lagn(ylm, 1);
+        z = dt~sink~cosk;
+        ylm = _detrendData(y, z, dy0, dsink, dcosk);
         
-        // Deterministic term=constant
-        dc = ones(t, 1);
-        
-        // Deterministic term=trend
-        dt = seqa(1, 1, t);
+        // New deterministic trends
+        { t, dy, ly, dc, dt } = _getFourierDeterministic(ylm); 
+
+        // New Fourier Terms 
         sink = diff(sin(2 * pi * k  *seqa(1, 1, t)/t), 1);
         cosk = diff(cos(2 * pi * k * seqa(1, 1, t)/t), 1);
         
@@ -95,34 +90,39 @@ proc(4) = Fourier_LM(y, ...);
                 lmat[., j] = lagn(dy, j);
                 j = j + 1;
             endo;
+            
+            // Trim components
             dep = trimr(dy, p + 1, 0);
             y1 = trimr(ly, p + 1, 0);
             ldy = trimr(lmat, p + 1, 0);
             sbt = trimr(dc, p + 1, 0);
             trnd = trimr(dt, p + 1, 0);
+            
+            // Trim Fourier terms
             sinp = trimr(sink, p + 1, 0);
             cosp = trimr(cosk, p + 1, 0);
+            
             if p == 0;
                 z = y1~sbt~sinp~cosp;
             elseif p > 0;
                 z = y1~sbt~sinp~cosp~ldy[., 1:p];
             endif;
-            {b, e1, sig2, se, ssr} = myols(dep, z);
-            taup[p+1] = b[1]/se[1];
-            aicp[p+1] = ln(e1'e1/rows(z)) + 2 * (k + 2)/rows(z);
-            sicp[p+1] = ln(e1'e1/rows(z)) + (cols(z) + 2) * ln(rows(z))/rows(z);
-            tstatp[p+1] = b[cols(z)]/se[cols(z)];
-            ssrp[p+1] = ssr;
+            
+            { taup[p+1], aicp[p+1], sicp[p+1], tstatp[p+1], ssrp[p+1] } = _runFourierOLS(dep, z, k);
+            
             p = p + 1;
         endo;
-        p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
+        
+        // Find optimal lag
+         p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
         keep_p[k] = p;
         ssrk[k] = ssrp[p];
         tauk[k] = taup[p];
         k = k + 1;
     endo;
+    
     f = minindc(ssrk);
-    LM = tauk[f];
+    LM_ = tauk[f];
     opt_lag = keep_p[f];   
     
     // Critical Values (see, Enders & Lee, 2012, Table 1)
@@ -135,15 +135,23 @@ proc(4) = Fourier_LM(y, ...);
     local top, stats, side, dec, colwidth;
     side = "LM test:";
     top = "";
-    stats = LM;
+    stats = LM_;
     side = "";
     dec = 3;
     colwidth = 15;
                      
     _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0, opt_lag, f);
-    _printConclusion(LM, crit[f, .], 0, "unit root");
+    _printConclusion(LM_, crit[f, .], 0, "unit root");
 
-    retp(LM, f, opt_lag - 1, crit[f, .]);
+    retp(LM_, f, opt_lag - 1, crit[f, .]);
+endp;
+
+proc (1) = _detrendData(y, z, dy, dsink, dcosk);
+    local dz, b0, psi_;
+        dz = ones(rows(dy), 1)~dsink~dcosk;
+        b0 = dy/dz;
+        psi_ = y[1] - dz[1,.] * b0;
+        retp(y - psi_ - z * b0);
 endp;
 
 proc (1) = _getFourierLMCrit(T);
