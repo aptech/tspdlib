@@ -22,4 +22,6 @@ model = 1;
 model = 2;
 { KPSS, k, cv } = Fourier_KPSS(y, model);
 
+// Find F-stat
+{ f_stat, p_val } = fourierKPSSFTest(y[., "Y"], model, k);
 

@@ -59,17 +59,19 @@ proc(3) = Fourier_KPSS(y, model, ...);
     t = rows(y);
     l_dftl = round(4 * (T/100)^(2/9));
     { kmax, l, varm } = dynargsGet(1|3, 5, l_dftl, 1);
-      
+    
     // Check for dates
     { dt_vec, y } =_checkfordate(y);
     
     k = _get_fourier(y, model, kmax);
-    sink = sin(2 * pi * k * seqa(1, 1, t)/t);
-    cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
+    
+    // Get Fourier terms
+    { sink, cosk } = _getFourierTerms(t, k);
     
     if model == 1;
         z = ones(t, 1)~sink~cosk;
     endif;
+    
     if model == 2;
         z = ones(t, 1)~seqa(1, 1, t)~sink~cosk;
     endif;
@@ -86,28 +88,103 @@ proc(3) = Fourier_KPSS(y, model, ...);
     
     // Critical Values (see, Becker, Enders & Lee, 2006, Table 1)
     crit = _getFourierKPSSCrit(T, model);
-  
+    
     _printHeaderTSPDLIB(0, varm, 2, model, 4, 0, "Fourier KPSS", "Stationarity", 0);
-
+    
     // Print results & Critical values
     local top, side, stats, dec, colwidth;
     side = "KPSS:";
-    top = "";   
+    top = "";
     stats = KPSS;
     dec = 3;
     colwidth = 15;
-                 
+    
     _printStatsTable(top, side, stats, crit[k, .]', dec, colwidth, 0, error(30), k);
     _printConclusion(KPSS, crit[k, .], 1, "stationarity");
-
+    
     retp(KPSS, k, crit[k, .]);
+endp;
+
+proc (2) = fourierKPSSFTest(y, model, k);
+    local t, sink, cosk, z1, z2, f_stat,
+        cv_fstat;
+    
+    t = rows(y);
+    
+    // Check number of columns of y
+    if cols(y) > 1;
+        errorlogat "Cannot run test, y must be single column.";
+        end;
+    endif;
+    
+    // Get Fourier terms
+    { sink, cosk } = _getFourierTerms(t, k);
+    
+    // Z for restricted model
+    z1 = ones(t, 1);
+    
+    if model == 2;
+        z1 = z1~seqa(1, 1, t);
+    endif;
+    
+    // Unrestricted model
+    z2 = z1~sink~cosk;
+    
+    f_stat = _regFstat(y, z1, z2);
+    
+    // Print results
+    cv_fstat = fstatKPSScv(model, t);
+    
+    _printHeaderTSPDLIB(0, 0, 2, model, 4, 0, "Fourier KPSS F-Stat", "Linearity", 0);
+    
+    // Print results & Critical values
+    local top, side, stats, dec, colwidth;
+    side = "F-stat:";
+    top = "";
+    stats = F_stat;
+    dec = 3;
+    colwidth = 15;
+    
+    _printStatsTable(top, side, stats, cv_fstat', dec, colwidth, 0, 0, k);
+    _printConclusion(F_stat, cv_fstat, 1, "linearity");
+    
+    retp(f_stat, cv_fstat);
+endp;
+
+proc (1) = fstatKPSScv(model, T);
+    local crit;
+    
+    // Critical Values (see, Enders & Lee, 2012, Table 1b)
+    crit = zeros(5, 3);
+    
+    if model == 1;
+        if T < 500;
+            crit = { 6.730 4.929 4.133 };
+        endif;
+        
+        if 500 <= T;
+            crit = { 6.281 4.651 3.935 };
+        endif;
+    endif;
+    
+    if model == 2;
+        if T < 500;
+            crit = { 6.873 4.972 4.162 };
+        endif;
+        
+        if 500 <= T;
+            crit = { 6.315 4.669 3.928 };
+        endif;
+        
+    endif;
+    retp(crit);
 endp;
 
 proc (1) = _getFourierKPSSCrit(T, model);
     local crit;
     
-     crit = zeros(5, 3);
-   
+    crit = zeros(5, 3);
+    
     if model == 1;
         if T <= 250;
             crit = {0.2699 0.1720 0.1318,
@@ -162,17 +239,20 @@ proc (1) = _getFourierKPSSCrit(T, model);
     
     retp(crit);
 endp;
-    
+
 /*Selection of optimum k via min SSR*/
 proc(1) = _get_fourier(y, model, kmax);
     local temp, k, t, sink, cosk, z, betaols, e, ssr;
     
     temp = zeros(kmax, 1);
     k = 1;
+    
     do while k <= kmax;
         t = rows(y);
-        sink = sin(2 * pi * k * seqa(1, 1, t)/t);
-        cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
+        
+        // Get Fourier terms
+        { sink, cosk } = _getFourierTerms(t, k);
+        
         if model == 1;
             z = ones(t, 1)~sink~cosk;
         endif;
