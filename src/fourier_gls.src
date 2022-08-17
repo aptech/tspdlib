@@ -44,11 +44,12 @@
 
 
 proc(4) = Fourier_GLS(y, model, ...);
-    local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
+    local t, p, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
         k, cbar, sink, cosk, ygls, SSRa,
         dy, ly, lmat, dep, y1, ldy, 
-        sinp, cosp, z, f, gls, crit, d,
-        b, e1, sig2, se, ssr, keep_p, opt_lag, pmax, fmax, ic,  dt_vec;
+        z, f, gls, crit, d,
+        b, e1, sig2, se, ssr, keep_p, opt_lag, 
+        pmax, fmax, ic,  dt_vec, zero_vec;
     
     _checkForMissings(y, "Fourier_GLS");
     
@@ -67,7 +68,7 @@ proc(4) = Fourier_GLS(y, model, ...);
     ssrk = zeros(fmax, 1);
     tauk = zeros(fmax, 1);
     keep_p = zeros(fmax, 1);
-    
+
     k = 1;
     do while k <= fmax;
         cbar = _getCbar(d, k);
@@ -91,19 +92,24 @@ proc(4) = Fourier_GLS(y, model, ...);
         dy = diff(ygls, 1);
         ly = lagn(ygls, 1);
         
+        // Lag y variable
+        lmat = lagn(dy, seqa(1, 1, pmax));
+        
+        // Zero vector
+        zero_vec = zeros(rows(dy), 1);
+        
         p = 0;
         do while p <= pmax;
-            lmat = zeros(rows(dy), p + 1);
+
+            // Get lags of y
+            ldy = trimr(zero_vec, p+1, 0);
             
-            j = 1;
-            do while j <= p;
-                lmat[., j] = lagn(dy, j);
-                j = j + 1;
-            endo;
+            if p>0;
+                ldy = trimr(lmat[., 1:p], p+1, 0)~ldy;
+            endif;
             
             dep = trimr(dy, p + 1, 0);
             y1 = trimr(ly, p + 1, 0);
-            ldy = trimr(lmat, p + 1, 0);
 
             if p == 0;
                 z = y1;
