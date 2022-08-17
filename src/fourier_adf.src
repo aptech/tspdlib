@@ -42,14 +42,13 @@
 
 
 proc(4) = Fourier_ADF(y, model, ...);
-    local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
+    local t, p, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
         k, dy, ly, dc, dt, sink, cosk, lmat, dep, y1, ldy,
         sbt, trnd, sinp, cosp, z, adf,
-        b, e1, sig2, se, ssr, f, crit, keep_p, opt_lag, pmax, fmax, ic, dt_vec;
+        f, crit, keep_p, opt_lag, pmax, fmax, ic,
+        dt_vec, zero_vec;
     
     _checkForMissings(y, "Fourier_ADF");
-    
-    t = rows(y);
     
     { pmax, fmax, ic } = dynargsGet(1|3, 8, 5, 3);
     
@@ -65,33 +64,40 @@ proc(4) = Fourier_ADF(y, model, ...);
     tauk = zeros(fmax, 1);
     keep_p = zeros(fmax, 1);
     
+    // Get deterministic terms
+    { t, dy, ly, dc, dt } = _getFourierDeterministic(y);
+    
+    // Lag y variable
+    lmat = lagn(dy, seqa(1, 1, pmax));
+    
+    // Zero vector
+    zero_vec = zeros(rows(dy), 1);
+    
     k = 1;
     do while k <= fmax;
-        dy = diff(y, 1);
-        ly = lagn(y, 1);
         
-        // Deterministic term=constant
-        dc = ones(t, 1);
+        // Get Fourier terms
+        { sink, cosk } = _getFourierTerms(t, k);
         
-        // Deterministic term=trend
-        dt = seqa(1, 1, t);
-        sink = sin(2 * pi * k * seqa(1, 1, t)/t);
-        cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
         p = 0;
         do while p <= pmax;
-            lmat = zeros(rows(dy), p + 1);
-            j = 1;
-            do while j <= p;
-                lmat[., j] = lagn(dy, j);
-                j = j + 1;
-            endo;
+            
             dep = trimr(dy, p + 1, 0);
             y1 = trimr(ly, p + 1, 0);
-            ldy = trimr(lmat, p + 1, 0);
+            
+            // Get lags of y
+            ldy = trimr(zero_vec, p+1, 0);
+            
+            if p>0;
+                ldy = trimr(lmat[., 1:p], p+1, 0)~ldy;
+            endif;
+            
             sbt = trimr(dc, p + 1, 0);
             trnd = trimr(dt, p + 1, 0);
+            
             sinp = trimr(sink, p + 1, 0);
             cosp = trimr(cosk, p + 1, 0);
+            
             if p == 0;
                 if model == 1;
                     z = y1~sbt~sinp~cosp;
@@ -110,14 +116,12 @@ proc(4) = Fourier_ADF(y, model, ...);
                 endif;
             endif;
             
-            {b, e1, sig2, se, ssr} = myols(dep, z);
-            taup[p+1] = b[1]/se[1];
-            aicp[p+1] = ln(e1'e1/rows(z)) + 2 * (k + 2)/rows(z);
-            sicp[p+1] = ln(e1'e1/rows(z)) + (cols(z) + 2) * ln(rows(z))/rows(z);
-            tstatp[p+1] = b[cols(z)]/se[cols(z)];
-            ssrp[p+1] = ssr;
+            { taup[p+1], aicp[p+1], sicp[p+1], tstatp[p+1], ssrp[p+1] } = _runFourierOLS(dep, z, k);
+            
             p = p + 1;
         endo;
+        
+        // Find optimal lag
         p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
         keep_p[k] = p;
         ssrk[k] = ssrp[p];
@@ -133,7 +137,7 @@ proc(4) = Fourier_ADF(y, model, ...);
     crit = _getFourierADFCrit(T, model);
     
     _printHeaderTSPDLIB(ic, 0, 2, model, 4, 0, "Fourier ADF", "Unit root", 0);
-
+    
     // Print results & Critical values
     local top, side, stats, dec, colwidth;
     side = "ADF-stat:";
@@ -141,11 +145,24 @@ proc(4) = Fourier_ADF(y, model, ...);
     stats = ADF;
     dec = 3;
     colwidth = 15;
-            
+    
     _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0, opt_lag-1, f);
     _printConclusion(ADF, crit[f, .], 0, "unit root");
-
+    
     retp(ADF, f, opt_lag-1, crit[f, .]);
+endp;
+
+proc (5) = _runFourierOLS(dep, z, k);
+    local b, e1, sig2, se, ssr, taup, aicp, sicp, tstatp, ssrp;
+    
+    {b, e1, sig2, se, ssr} = myols(dep, z);
+    taup = b[1]/se[1];
+    aicp = ln(e1'e1/rows(z)) + 2 * (k + 2)/rows(z);
+    sicp = ln(e1'e1/rows(z)) + (cols(z) + 2) * ln(rows(z))/rows(z);
+    tstatp = b[cols(z)]/se[cols(z)];
+    ssrp = ssr;
+    
+    retp(taup, aicp, sicp, tstatp, ssrp);
 endp;
 
 proc (1) = _getFourierADFCrit(T, model);
@@ -224,10 +241,8 @@ proc (1) = _getFourierADFCrit(T, model);
 endp;
 
 proc (2) = fourierADFFTest(y, model, k, p);
-    local t, dy, ly, dc, dt, sink, cosk,
-        dep, y1, ldy, sbt, trnd, sinp, cosp, z1, z2,
-        b1, e1, sig21, se1, ssr1, b2, e2, sig22, se2, ssr2,
-        k1, k2, lmat, j, cv_fstat;
+    local t, dy, ly, dc, dt, dep, y1, ldy, sbt,
+        trnd, sinp, cosp, z1, z2, f_stat, cv_fstat;
     
     // Check number of columns of y
     if cols(y) > 1;
@@ -235,37 +250,20 @@ proc (2) = fourierADFFTest(y, model, k, p);
         end;
     endif;
     
-    t = rows(y);
+    { t, dy, ly, dc, dt } = _getFourierDeterministic(y);
     
-    dy = diff(y, 1);
-    ly = lagn(y, 1);
+    // Get Fourier terms
+    { sinp, cosp } = _getFourierTerms(t, k, p);
     
-    // Deterministic term=constant
-    dc = ones(t, 1);
-    
-    // Deterministic term=trend
-    dt = seqa(1, 1, t);
-    sink = sin(2 * pi * k * seqa(1, 1, t)/t);
-    cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
-    
-    // Find lmat
-    lmat = zeros(rows(dy), p + 1);
-    j = 1;
-    do while j <= p;
-        local tmp;
-        tmp = lagn(dy, j);
-        lmat[., j] = lagn(dy, j);
-        j = j + 1;
-    endo;
+    // Lag y variable
+    ldy = trimr(lagn(dy, seqa(1, 1, p))~zeros(rows(dy), 1), p+1, 0);
     
     // Prepare data
     dep = trimr(dy, p + 1, 0);
     y1 = trimr(ly, p + 1, 0);
-    ldy = trimr(lmat, p + 1, 0);
+    
     sbt = trimr(dc, p + 1, 0);
     trnd = trimr(dt, p + 1, 0);
-    sinp = trimr(sink, p + 1, 0);
-    cosp = trimr(cosk, p + 1, 0);
     
     if p == 0;
         if model == 1;
@@ -288,43 +286,83 @@ proc (2) = fourierADFFTest(y, model, k, p);
     // Unrestricted model
     z2 = z1~sinp~cosp;
     
+    f_stat = _regFstat(dep, z1, z2);
+    
+    // Print results
+    cv_fstat = fstatADFcv(model, t);
+    
+    _printHeaderTSPDLIB(0, 0, 2, model, 4, 0, "Fourier ADF F-Stat", "Linearity", 0);
+    
+    // Print results & Critical values
+    local top, side, stats, dec, colwidth;
+    side = "F-stat:";
+    top = "";
+    stats = F_stat;
+    dec = 3;
+    colwidth = 15;
+    
+    _printStatsTable(top, side, stats, cv_fstat', dec, colwidth, 0, p, k);
+    _printConclusion(F_stat, cv_fstat, 1, "linearity");
+    
+    retp(f_stat, cv_fstat);
+endp;
+
+proc (1) = _regFstat(dep, z1, z2);
+    local t, b1, b2, e1, e2, se1, se2, 
+    dep1, dep2, ssr1, ssr2, k1, k2, sig21, sig22;
+    
+    t = rows(dep);
+    
+    dep1 = dep[., 1];
+    if cols(dep)>1;
+        dep2 = dep[., 2];
+    else;
+        dep2 = dep1;
+    endif;
+    
     // Estimate model one
     // Restricted model
-    {b1, e1, sig21, se1, ssr1} = myols(dep, z1);
+    {b1, e1, sig21, se1, ssr1} = myols(dep1, z1);
     
     // Unrestricted model
-    {b2, e2, sig22, se2, ssr2} = myols(dep, z2);
+    {b2, e2, sig22, se2, ssr2} = myols(dep2, z2);
     
     // Count dimension of models
     k1 = cols(z1);
     k2 = cols(z2);
     
     // Generate F_stat
-    F_stat = ((ssr1 - ssr2)/(k2 - k1))/(ssr2/(t-k2));
-    
-    // Find p-value
-    p_val = cdffc(F_stat, k2 - k1, t-k2);
-    
-    // Print results
-    cv_fstat = fstatcv(model, t);
-    
-    _printHeaderTSPDLIB(0, 0, 2, model, 4, 0, "Fourier ADF F-Stat", "Linearity", 0);
-
-    // Print results & Critical values
-    local top, side, stats, dec, colwidth;
-    side = "F-stat:";
-    top = "";
-    stats = F_stat; 
-    dec = 3;
-    colwidth = 15;
-            
-    _printStatsTable(top, side, stats, cv_fstat', dec, colwidth, 0, p, k);
-    _printConclusion(F_stat, cv_fstat, 1, "linearity");
-    
-    retp(F_stat, cv_fstat);
+    retp(Fstat(ssr1, (k2 - k1), ssr2, (t-k2)));
 endp;
 
-proc (1) = fstatcv(model, T);
+proc (1) = Fstat(ssr1, d1, ssr2, d2);
+    if d1 == 0;
+        retp(ssr1/ssr2);
+    else;
+        retp(((ssr1 - ssr2)/d1)/(ssr2/d2));
+    endif;
+endp;
+
+proc (5) = _getFourierDeterministic(y);
+    local t, dy, ly, dc, dt;
+    
+    // Get time
+    t = rows(y);
+    
+    // Transform data
+    dy = diff(y, 1);
+    ly = lagn(y, 1);
+    
+    // Deterministic term=constant
+    dc = ones(t, 1);
+    
+    // Deterministic term=trend
+    dt = seqa(1, 1, t);
+    
+    retp(t, dy, ly, dc, dt);
+endp;
+
+proc (1) = fstatADFcv(model, T);
     local crit;
     
     // Critical Values (see, Enders & Lee, 2012, Table 1b)
@@ -332,38 +370,56 @@ proc (1) = fstatcv(model, T);
     
     if model == 1;
         if T <= 150;
-            crit = { 6.35 7.58 10.35 };
+            crit = { 10.35 7.58 6.35 };
         endif;
         
         if 151 < T and T <= 349;
-            crit = { 6.25 7.41 10.02 };
+            crit = { 10.02 7.41 6.25 };
         endif;
         
         if 350 < T and T <= 500;
-            crit = { 6.16 7.29 9.78 };
+            crit = { 9.78 7.29 6.16 };
         endif;
         
         if 500 < T;
-            crit = { 6.11 7.25 9.72 };
+            crit = { 9.72 7.25 6.11 };
         endif;
     endif;
     
     if model == 2;
         if T <= 150;
-            crit = { 7.78 9.14 12.21 };
+            crit = { 12.21 9.14 7.78 };
         endif;
         
         if 151 < T and T <= 349;
-            crit = { 7.62 8.88 11.70 };
+            crit = { 11.70 8.88 7.62 };
         endif;
         
         if 350 < T and T <= 500;
-            crit = { 7.53 8.76 11.52 };
+            crit = { 11.52 8.76 7.53 };
         endif;
         
         if 500 < T;
-            crit = { 7.50 8.71 11.35 };
+            crit = { 11.35 8.71 7.50 };
         endif;
     endif;
     retp(crit);
+endp;
+
+proc(2) = _getFourierTerms(t, k, ...);
+    local sinp, cosp, p;
+    
+    // Get lags
+    p = dynargsGet(1, 0);
+    
+    // Get fourier terms
+    if p>0;
+        sinp = trimr(sin(2 * pi * k * seqa(1, 1, t)/t), p+1, 0);
+        cosp = trimr(cos(2 * pi * k * seqa(1, 1, t)/t), p+1, 0);
+    else;
+        sinp = sin(2 * pi * k * seqa(1, 1, t)/t);
+        cosp = cos(2 * pi * k * seqa(1, 1, t)/t);
+    endif;
+    
+    retp(sinp, cosp);
 endp;
