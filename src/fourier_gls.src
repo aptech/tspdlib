@@ -44,16 +44,16 @@
 
 
 proc(4) = Fourier_GLS(y, model, ...);
-    local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk, 
-        k, cbar, sink, cosk, abar, ya, za, bhat, ygls, 
-        dy, ly, dc, dt, lmat, dep, y1, ldy, sbt, trnd, 
-        sinp, cosp, z, f, gls, crit, d, 
+    local t, p, j, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
+        k, cbar, sink, cosk, ygls, SSRa,
+        dy, ly, lmat, dep, y1, ldy, 
+        sinp, cosp, z, f, gls, crit, d,
         b, e1, sig2, se, ssr, keep_p, opt_lag, pmax, fmax, ic,  dt_vec;
     
     _checkForMissings(y, "Fourier_GLS");
     
     { pmax, fmax, ic } = dynargsGet(1|3, 8, 5, 3);
-  
+    
     // Check for dates
     { dt_vec, y } =_checkfordate(y);
     
@@ -70,82 +70,12 @@ proc(4) = Fourier_GLS(y, model, ...);
     
     k = 1;
     do while k <= fmax;
-        if d == 1;
-            if k == 0;
-                cbar = -7.00;
-            endif;
-        endif;
+        cbar = _getCbar(d, k);
         
-        if d == 1;
-            if k == 1;
-                cbar = -12.25;
-            endif;
-        endif;
+        // Get Fourier terms
+        { sink, cosk } = _getFourierTerms(t, k);
         
-        if d == 1;
-            if k == 2;
-                cbar = -8.25;
-            endif;
-        endif;
-        
-        if d == 1;
-            if k == 3;
-                cbar = -7.75;
-            endif;
-        endif;
-        
-        if d == 1;
-            if k == 4;
-                cbar = -7.50;
-            endif;
-        endif;
-        
-        if d == 1;
-            if k == 5;
-                cbar = -7.25;
-            endif;
-        endif;
-        
-        if d == 2;
-            if k == 0;
-                cbar = -13.50;
-            endif;
-        endif;
-        
-        if d == 2;
-            if k == 1;
-                cbar = -22.00;
-            endif;
-        endif;
-        
-        if d == 2;
-            if k == 2;
-                cbar = -16.25;
-            endif;
-        endif;
-        
-        if d == 2;
-            if k == 3;
-                cbar = -14.75;
-            endif;
-        endif;
-        
-        if d == 2;
-            if k == 4;
-                cbar = -14.25;
-            endif;
-        endif;
-        
-        if d == 2;
-            if k == 5;
-                cbar = -14.00;
-            endif;
-        endif;
-        //"cbar    = ";;cbar;
-        
-        sink = sin(2 * pi * k * seqa(1, 1, t)/t);
-        cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
-        
+        // Restricted z1
         if model == 1;
             z = ones(t, 1)~sink~cosk;
         endif;
@@ -154,29 +84,12 @@ proc(4) = Fourier_GLS(y, model, ...);
             z = ones(t, 1)~seqa(1, 1, t)~sink~cosk;
         endif;
         
-        abar = 1 + cbar/t;
-        ya = zeros(t, 1);
-        za = zeros(t, cols(z));
-        ya[1:1, 1] = y[1:1, 1];
-        za[1:1, .] = z[1:1, .];
-        ya[2:t, 1] = y[2:t, 1] - abar * y[1:t-1, 1];
-        za[2:t, .] = z[2:t, .] - abar * z[1:t-1, .];
-        
-        // Constructing GLS detrended series
-        bhat = inv(za'za) * za'ya;
-        
-        // GLS trending data
-        ygls= y - z * bhat;                      
-        
+        // Get GLS detrending series for restricted model
+        { ygls, SSRa } = glsDetrend(y, z, cbar);
+       
         t = rows(ygls);
         dy = diff(ygls, 1);
         ly = lagn(ygls, 1);
-        
-        // Deterministic term=constant
-        dc = ones(t, 1);       
-        
-        // Deterministic term=trend
-        dt = seqa(1, 1, t);     
         
         p = 0;
         do while p <= pmax;
@@ -191,25 +104,24 @@ proc(4) = Fourier_GLS(y, model, ...);
             dep = trimr(dy, p + 1, 0);
             y1 = trimr(ly, p + 1, 0);
             ldy = trimr(lmat, p + 1, 0);
-            sbt = trimr(dc, p + 1, 0);
-            trnd = trimr(dt, p + 1, 0);
-            sinp = trimr(sink, p + 1, 0);
-            cosp = trimr(cosk, p + 1, 0);
-            
+
             if p == 0;
                 z = y1;
             elseif p > 0;
                 z = y1~ldy[., 1:p];
             endif;
             
-            {b, e1, sig2, se, ssr} = myols(dep, z);
+            { b, e1, sig2, se, ssr } = myols(dep, z);
+            
             taup[p+1] = b[1]/se[1];
             aicp[p+1] = ln(e1'e1/rows(z)) + 2 * (k + 2)/rows(z);
             sicp[p+1] = ln(e1'e1/rows(z)) + (cols(z)+2) * ln(rows(z))/rows(z);
             tstatp[p+1] = b[cols(z)]/se[cols(z)];
             ssrp[p+1] = ssr;
             p = p + 1;
+            
         endo;
+        
         p = _get_lag(ic, pmax, aicp, sicp, tstatp);
         keep_p[k] = p;
         ssrk[k] = ssrp[p];
@@ -223,9 +135,9 @@ proc(4) = Fourier_GLS(y, model, ...);
     
     // Critical Values (see,  Rodrigues & Taylor,  2012,  Table 2)
     crit = _getFourierGLSCrit(T, model);
-        
+    
     _printHeaderTSPDLIB(ic, 0, 2, model, 4, 0, "Fourier GLS", "Unit root", 0);
-
+    
     // Print results & Critical values
     local top, side, stats, dec, colwidth;
     side = "ADF-stat:";
@@ -233,66 +145,225 @@ proc(4) = Fourier_GLS(y, model, ...);
     stats = GLS;
     dec = 3;
     colwidth = 15;
-             
+    
     _printStatsTable(top, side, stats, crit[f, .]', dec, colwidth, 0, opt_lag-1, f);
     _printConclusion(GLS, crit[f, .], 0, "unit root");
-
+    
     retp(GLS, f, opt_lag - 1, crit[f, .]);
+endp;
+
+proc (2) = fourierGLSFTest(y, model, k, p);
+    local t, dy1, ly1, dy2, ly2, 
+        ygls1, ygls2, y1, y2, ldy1, ldy2, SSRa,
+        sink, cosk, z1, z2, f_stat, cv_fstat, cbar,
+        dep1, dep2, prob;
+    
+    t = rows(y);
+    cbar = _getCbar(model, k);
+    
+    // Check number of columns of y
+    if cols(y) > 1;
+        errorlogat "Cannot run test, y must be single column.";
+        end;
+    endif;
+    
+    // Get Fourier terms
+    { sink, cosk } = _getFourierTerms(t, k);
+    
+    // Restricted model
+    if model == 1;
+        z1 = ones(t, 1);
+    endif;
+    
+    if model == 2;
+        z1 = ones(t, 1)~seqa(1, 1, t);
+    endif;
+    
+    // Unrestricted model
+    z2 = z1~sink~cosk;
+    
+    // Get GLS detrending series for restricted model
+    { ygls1, SSRa } = glsDetrend(y, z1, cbar);
+    { ygls2, SSRa } = glsDetrend(y, z2, cbar);
+    
+    // Restricted model
+    dy1 = diff(ygls1, 1);
+    ly1 = lagn(ygls1, 1);
+    
+    // Unrestricted model
+    dy2 = diff(ygls2, 1);
+    ly2 = lagn(ygls2, 1);
+    
+    // Lag y variable
+    ldy1 = trimr(lagn(dy1, seqa(1, 1, p))~zeros(rows(dy1), 1), p+1, 0);
+    ldy2 = trimr(lagn(dy2, seqa(1, 1, p))~zeros(rows(dy2), 1), p+1, 0);
+    
+    // Prepare data
+    y1 = trimr(ly1, p + 1, 0);
+    y2 = trimr(ly2, p + 1, 0);
+    
+    // Get dependent variables
+    dep1 = trimr(dy1, p + 1, 0);
+    dep2 = trimr(dy2, p + 1, 0);
+    
+    // Get restricted and unrestricted y values
+    if p == 0;
+        z1 = y1;
+    elseif p > 0;
+        z1 = y1~ldy1[., 1:p];
+    endif;
+        
+    if p == 0;
+        z2 = y2;
+    elseif p > 0;
+        z2 = y2~ldy2[., 1:p];
+    endif;
+    
+    // Unrestricted model
+    f_stat = _regFstat(dep1~dep2, z1, z2);
+    
+    // Probabilities
+    prob = { 0.01, 0.05, 0.10 };
+    
+    cv_fstat = cdfFncInv(1-prob, t-cols(z1), t-cols(z1), 0)';
+//    cv_fstat = fstatADFcv(model, t);
+    
+    _printHeaderTSPDLIB(0, 0, 2, model, 4, 0, "Fourier ADF F-Stat", "Linearity", 0);
+    
+    // Print results & Critical values
+    local top, side, stats, dec, colwidth;
+    side = "F-stat:";
+    top = "";
+    stats = F_stat;
+    dec = 3;
+    colwidth = 15;
+    
+    _printStatsTable(top, side, stats, cv_fstat', dec, colwidth, 0, p, k);
+    _printConclusion(F_stat, cv_fstat, 1, "linearity");
+    
+    retp(f_stat, cv_fstat);
+endp;
+
+proc(2) = glsDetrend(y, z, cbar, ...);
+    local t, a, ya, za, bhat, getSSR, SSRa, ba, ua;
+    
+    getSSR = dynargsGet(1, 0);
+    
+    // Estimation on transformed data
+    t = rows(y);
+    a = 1 + cbar/t;
+    ya = zeros(t, 1);
+    za = zeros(t, cols(z));
+    ya[1:1, 1] = y[1:1, 1];
+    za[1:1, .] = z[1:1, .];
+    ya[2:t,1]  = y[2:t, 1] - a * y[1:t-1, 1];
+    za[2:t,.]  = z[2:t, .] - a * z[1:t-1, .];
+    
+    // Detrending regression
+    bhat = inv(za'za)*za'ya;
+    
+    if getSSR == 1;
+        ba = inv(za'za)*za'ya;
+        ua = ya - za * ba;
+        SSRa = ua'ua;
+    else;
+        SSRa = miss();
+    endif;
+    
+    retp(y - z * bhat, SSRa);
+endp;
+
+proc (1) = _getCbar(d, k);
+    local cbar;
+    
+    if d == 1;
+        if k == 0;
+            cbar = -7.00;
+        elseif k == 1;
+            cbar = -12.25;
+        elseif k == 2;
+            cbar = -8.25;
+        elseif k == 3;
+            cbar = -7.75;
+        elseif k == 4;
+            cbar = -7.50;
+        elseif k == 5;
+            cbar = -7.25;
+        endif;
+    endif;
+    
+    if d == 2;
+        if k == 0;
+            cbar = -13.50;
+        elseif k == 1;
+            cbar = -22.00;
+        elseif k == 2;
+            cbar = -16.25;
+        elseif k == 3;
+            cbar = -14.75;
+        elseif k == 4;
+            cbar = -14.25;
+        elseif k == 5;
+            cbar = -14.00;
+        endif;
+    endif;
+    
+    retp(cbar);
 endp;
 
 proc (1) = _getFourierGLSCrit(T, model);
     local crit;
     
     crit = zeros(5, 3);
-
+    
     if model == 1;
         if T <= 150;
-        crit = {-3.911 -3.294 -2.328, 
-                -3.298 -2.601 -2.187, 
-                -3.131 -2.359 -2.005, 
-                -2.934 -2.256 -1.918, 
+            crit = {-3.911 -3.294 -2.328,
+                -3.298 -2.601 -2.187,
+                -3.131 -2.359 -2.005,
+                -2.934 -2.256 -1.918,
                 -2.888 -2.200 -1.880};
         endif;
         
         if 151 < T and T <= 350;
-        crit = {-3.780 -3.176 -2.828, 
-                -3.278 -2.473 -2.099, 
-                -2.989 -2.226 -1.896, 
-                -2.884 -2.179 -1.830, 
+            crit = {-3.780 -3.176 -2.828,
+                -3.278 -2.473 -2.099,
+                -2.989 -2.226 -1.896,
+                -2.884 -2.179 -1.830,
                 -2.840 -2.120 -1.787};
         endif;
         
         if 350 < T;
-        crit = {-3.637 -3.017 -2.661, 
-                -3.074 -2.377 -1.990, 
-                -2.916 -2.175 -1.808, 
-                -2.773 -2.079 -1.732, 
+            crit = {-3.637 -3.017 -2.661,
+                -3.074 -2.377 -1.990,
+                -2.916 -2.175 -1.808,
+                -2.773 -2.079 -1.732,
                 -2.745 -2.022 -1.695};
         endif;
     endif;
     
     if model == 2;
         if T <= 150;
-        crit = {-4.771 -4.175 -3.879, 
-                -4.278 -3.647 -3.316, 
-                -4.044 -3.367 -3.037, 
-                -3.920 -3.232 -2.902, 
+            crit = {-4.771 -4.175 -3.879,
+                -4.278 -3.647 -3.316,
+                -4.044 -3.367 -3.037,
+                -3.920 -3.232 -2.902,
                 -3.797 -3.149 -2.831};
         endif;
         
         if 151 < T and T <= 350;
-        crit = {-4.593 -4.041 -3.749, 
-                -4.191 -3.569 -3.228, 
-                -3.993 -3.300 -2.950, 
-                -3.852 -3.174 -2.852, 
+            crit = {-4.593 -4.041 -3.749,
+                -4.191 -3.569 -3.228,
+                -3.993 -3.300 -2.950,
+                -3.852 -3.174 -2.852,
                 -3.749 -3.075 -2.761};
         endif;
         
         if 350 < T;
-        crit = {-4.462 -3.917 -3.651, 
-                -4.073 -3.438 -3.108, 
-                -3.822 -3.220 -2.868, 
-                -3.701 -3.092 -2.758, 
+            crit = {-4.462 -3.917 -3.651,
+                -4.073 -3.438 -3.108,
+                -3.822 -3.220 -2.868,
+                -3.701 -3.092 -2.758,
                 -3.603 -3.012 -2.690};
         endif;
     endif;

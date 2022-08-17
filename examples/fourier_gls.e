@@ -20,3 +20,6 @@ model = 1;
 // With constant and trend
 model = 2;
 { GLSstat, f, p, cv } = Fourier_GLS(y, model);
+
+// Find F-stat
+{ f_stat, p_val } = fourierGLSFTest(y[., "Y"], model, f, p);
