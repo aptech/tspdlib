@@ -149,6 +149,8 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, te
             modl_str = _printModel2(model);
         elseif model_type == 3;
             modl_str = _printModel3(model);
+        elseif model_type == 5;
+            modl_str = _printModel5(model);
         endif;
     elseif type(model) == 13 or type(model) == 15;
         modl_str = model;
@@ -289,6 +291,20 @@ proc (1) = _printModel3(model);
         retp("Regime shift");
     elseif model == 4;
         retp("Regime and trend shift");
+    endif;
+endp;
+
+proc (1) = _printModel5(model);
+    if model == 1;
+        retp("None");
+    elseif model == 2;
+        retp("Restricted constant");
+    elseif model == 3;
+        retp("Unrestricted constant");
+    elseif model == 4;
+        retp("Restricted trend");
+    elseif model == 4;
+        retp("Unrestricted trend");
     endif;
 endp;
 
