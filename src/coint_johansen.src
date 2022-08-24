@@ -1,0 +1,144 @@
+/*
+**  Johansen
+**  Reference:
+**  Johansen, S. (1991). 
+**  Estimation and hypothesis testing of cointegration vectors in gaussian Vector Autoregressive models. 
+**  Econometrica 59(6), 1551–1580.
+**
+**  Johansen, S. and K. Juselius (1990). 
+**  Maximum likelihood estimation and inference on cointegration with applications to the demand for money. 
+**  Oxford Bulletin of Eco- nomics and Statistics 52(2), 169–210.
+**
+**
+**  Format:  {JHlambda, JHtrace, cv_Trace, logL, eigen_value} = Johansen(x, model, k);
+**
+**
+**  Input:   
+**          x	   - [T,m] endogenous variables matrix
+**
+**          model  - 1 = None
+**                   2 = Resctricted constant (RC) model
+**                   3 = Unrestricted constant model
+**                   4 = Restricted Trend model
+**                   5 = Unrestricted Trend model
+**
+**          k      - Number of lags for VAR model
+**                   Note: Code automatically will use (k-1) for VECM
+**
+**  Output: 
+**	        eigen_value - Ordered eigen-values
+**
+**          JHlambda    - Lambda-max test
+**
+**          JHtrace     - Trace test
+**
+**	        cv_trace    - 5% critical value for Trace  stat.
+**                        Note: Max. 6 m is allowed  
+**
+**	        logL        - Log-likelihood
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+*/
+
+proc(5) = Johansen(x, model, k);
+    local m, t, dx, dt, z;
+    local r0, r1, s00, sk0, skk, sig;
+    local a, b, d, c, lr1, lr2, cv_lr1;
+    local n, Li, lam, logL, eig_val;
+    
+    // Model dimensions
+    m = cols(x);
+    t = rows(x);
+    
+    // First difference of x
+    // and lag mat of x 
+    { dx, z } = _transformX(x, k);
+    
+    // Deterministic terms
+    // Get dt and x
+    { dt, x } = _getFourierModelSetup(x, model, T);
+
+    // Residuals from regression of DX on Z
+    // an regression of X(t-k) on Z
+    { r0, r1 } = _getCointRegResiduals(z, dx, dt, k);
+    
+    // Get eigenvalues
+    { eig_val, a, d } = _getJohansenEigval(r1, r0);
+    
+    // Order the eigenvalues and eigenvectors
+    { a, d } = _reorderEig(a, d);
+
+    // Trace statistics
+    { lr1, lr2 } = _getTraceStats(T, a, model, m);
+    
+    n  = cols(x);
+    Li = inv(chol(r1'r1)');
+    lam = 0|rev(eigh(Li*r1'r0*invpd(r0'r0)*r0'r1*Li'));
+    if model == 2 or model == 4;
+        lam = 0|rev(trimr(eigh(Li*r1'r0*invpd(r0'r0)*r0'r1*Li'),1,0));
+    endif;
+    k = cols(dx/z);
+    
+    logL = -(T/2)*(k*(1+ln(2*pi)) + ln(det(r0'r0/T))+ cumsumc(ln(1-lam)));
+  
+    cv_lr1 = _get_cv_Trace(model, m);
+    cv_lr1 = rev(cv_lr1');
+    
+    // Print results
+    _printHeaderTSPDLIB(0, 0, 5, model, 0, 0, "Johansen Cointegration", "No cointegrating equations", long);
+    
+    // Print results & Critical values
+    local side, stats, dec, colwidth;
+    side = "VAR number of lags:";
+    stats = k;
+    dec = 3;
+    colwidth = 15;
+    
+    // Print stats 
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0);
+
+    // Results table
+    sprintf("%-15s", "Rank"$~"Eigenvalue"$~"Lambda"$~"Trace"$~"cv (5%)"$~"Log-likelihood");
+    "--------------------------------------------------------------------------------------------------"
+    sprintf("%15d%15.3f", seqa(0,1,cols(x)+1), (miss(1,1)|eigen_value)~(miss(1,1)|JHlambda)~(miss(1,1)|JHtrace)~(miss(1,1)|cv_Trace)~logL);
+    
+    retp(lr2, lr1, cv_lr1, logL, eig_val);
+endp;
+
+proc (2) = _transformX(x, k);
+    local dx, q , z;
+    
+    // First difference of x
+    dx = x - lagn(x, 1);
+    
+    // Lag of first difference
+    z = lagn(dx, 1);
+    
+    q = 2;
+    do until (q >= k);
+        z = z~lagn(dx, q);
+        q = q + 1 ;
+    endo;
+    
+    retp(dx, z);
+endp;
+
+    
+// Critical Values
+// 5 percent critical values of Trace test
+proc(1) = _get_cv_Trace(model, r);
+    local cv_trace, cv;
+    cv_trace =
+        /*Model r=1     r=2     r=3       r=4     r=5      r=6*/
+        /*1*/ {4.157   12.271   24.116   39.977   59.682   83.424,
+        /*2*/  9.133   20.264   35.060   53.750   76.447  103.126,
+        /*3*/  3.860   15.465   29.701   47.559   69.362   94.989,
+        /*4*/ 12.500   25.760   42.682   63.455   87.999  116.611,
+        /*5*/  3.852   18.223   34.825   54.812   78.599  106.395};
+        cv = cv_trace[model, 1:r];  
+    retp(cv);
+endp;
+

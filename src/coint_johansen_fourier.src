@@ -1,0 +1,443 @@
+/*
+**  Johansen_Fourier
+**  Reference:
+**  Pascalau, R., Lee, J., Nazlioglu, S., Lu, Y. O. (2022).
+**  "Johansen-type Cointegration Tests with a Fourier Function".
+**  Journal of Time Series Analysis 83(5): 828-852.
+**
+**
+**  Format:  { Ftrace, Flambda,cv_Flambda,cv_Ftrace, logL } = Johansen_Fourier(x, model, k, f, option);
+**
+**
+**  Input:
+**          x	   - [T,m] endogenous variables matrix
+**
+**          model  - 1 = Constant model
+**                   2 = Trend model
+**                   3 = Restricted Constant model
+**                   4 = Restricted Trend model
+**
+**          k      - Number of lags for VAR model
+**                   Note: Code automatically will use (k-1) for VECM
+**
+**          f      - Number of Fourier frequency
+**
+**          option - 1 = Single frequency
+**                   2 = Cumulative frequency
+**
+**  Output:
+**          Flambda    - Fourier Lambda-max test
+**          Ftrace     - Fourier Trace test
+**	        cv_Flambda - 5% critical value for Flambda stat.
+**	        cv_Ftrace  - 5% critical value for Ftrace stat.
+**                       Note: Max. 5 m is allowed
+**	        logL       - Log-likelihood
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+*/
+
+// Printing
+"         Johansen-Fourier Co-integration Tests         ";
+"=======================================================";
+" #var.  =";;
+m;
+" Model  =";;
+model;
+" Freq.  =";;
+f;
+" Option =";;
+option;
+" VAR(k) =";;
+k;
+" VECM(k)=";;
+k-1;
+"           Fourier  Fourier  cv(5%)    cv(5%)    Log-  ";
+"   Rank    Lambda    Trace   Lambda    Trace  Likelihood";
+"--------------------------------------------------------";;
+format /rd 8,3;
+seqa(0,1,m+1)~(miss(1,1)|Flambda)~(miss(1,1)|Ftrace)~(miss(1,1)|cv_Flambda)~(miss(1,1)|cv_Ftrace)~logL;
+
+
+
+proc(5) = Johansen_Fourier(x, model, k, f, option);
+    local m, t, dx, sink, cosk, dt, z, 
+    r0, r1, a, d, lr1, lr2, logL, eig_val;
+    
+    m = cols(x);
+    t = rows(x);
+    
+    // First difference of x
+    // and lag mat of x
+    { dx, z } = _transformX(x, k);
+    
+    if option == 1;
+        
+        { sink, cosk } =  _getFourierTerms(t, f);
+        
+    endif;
+    
+    if option == 2;
+        
+        { sink, cosk } =  _getCumFourierTerms(t, f);
+        
+    endif;
+    
+    // Get dt and x
+    { dt, x } = _getFourierModelSetup(x, model, T, sink, cosk );
+    
+    // Residuals from regression of DX on Z
+    // an regression of X(t-k) on Z
+    { r0, r1 } = _getCointRegResiduals(z, dx, dt, k);
+    
+    // Get eigenvalues
+    { eig_val, a, d } = _getJohansenEigval(r1, r0);
+    
+    // Order the eigen values and eigen vectors
+    { a, d } = _reorderEig(a, d);
+    
+    // Trace statistics
+    { lr1, lr2 } = _getTraceStats(T, a, model, m);
+ 
+    // Get LogL
+    k = cols(dx/z);  
+    logL = _getJohansenLogL(r1, r0, model, T, k);
+    
+    // Get critical values
+    local cv_lr1, cv_lr2;
+    cv_lr1 = _get_cv_Fourier_Trace(option, model, f, m);
+    cv_lr2 = _get_cv_Fourier_Lambda(option, model, f, m);
+    cv_lr1 = rev(cv_lr1');
+    cv_lr2 = rev(cv_lr2');
+    retp(lr2, lr1, cv_lr2, cv_lr1, logL);
+endp;
+
+proc (1) = _getJohansenLogL(r1, r0, model, T, k);
+    local Li, lam;
+    
+    Li = inv(chol(r1'r1)');
+    lam = 0|rev(eigh(Li*r1'r0*invpd(r0'r0)*r0'r1*Li'));
+    if model == 2 or model == 4;
+        lam = 0|rev(trimr(eigh(Li*r1'r0*invpd(r0'r0)*r0'r1*Li'),1,0));
+    endif;
+    
+    k = cols(dx/z);  
+    retp( -(T/2)*(k*(1+ln(2*pi)) + ln(det(r0'r0/T))+ cumsumc(ln(1-lam))));
+endp;
+
+    
+proc (3) = _getJohansenEigval(r1, r0);
+    local skk, sk0, s00, sig, a, b, c, d;
+    
+    skk = r1'r1/rows(r1) ;
+    sk0 = r1'r0/rows(r1) ;
+    s00 = r0'r0/rows(r0) ;
+    sig = sk0*inv(s00)*(sk0');
+    
+    { a, b, d, c } = eigrg2(inv(skk)*sig);
+    eig_val = rev(sortc(a, 1));
+    eig_val = eig_val[1:m];
+    
+    d = d*inv(chol(d'skk*d)) ;
+    
+    retp(eig_val, a, d);
+endp;
+
+proc (2) = _getCointRegResiduals(z, dx, dt, k);
+    local dx, lx, r0, r1;
+    
+    z  = z ~ dt;
+    z  = trimr(z, k, 0);
+    dx = trimr(dx, k ,0);
+    
+    // X(t-k)
+    lx = trimr(lagn(x, k), k, 0);
+    
+    // Residuals from regression of DX on Z
+    r0  = dx - z*(dx/z);
+    
+    // Residuals from regression of X(t-k) on Z
+    r1  = lx - z*(lx/z);
+    
+    retp(r0, r1);
+endp;
+
+proc (2) = _getFourierModelSetup(x, model, T, ... );
+    local sink, cosk, constant, trend;
+    
+    { sink, cosk } = dynargsGet(1|2, miss(0), miss(0);
+    
+    // Deterministic terms
+    constant = ones(T, 1) ;
+    trend    = seqa(1, 1, T);
+    
+    if ismiss(sink) == 0 and ismiss(cosk) == 0;
+        if model == 1 ;
+            // Unrestricted constant model
+            dt = constant ~ sink ~ cosk;
+            x  = x;
+        elseif model == 2;
+            // Unrestricted trend model
+            dt = constant ~ trend ~ sink ~ cosk;
+            x  = x;
+        elseif model == 3;
+            // Restricted constant (RC) model
+            dt = sink ~ cosk;
+            x  = x ~ constant;
+        elseif model == 4;
+            // Restricted trend (RT) model
+            dt = constant ~ sink ~ cosk;
+            x  = x ~ trend;
+        endif;
+    else;
+        // None
+        if model == 1 ;
+            dt = {};
+            x  = x;
+        elseif model == 2;
+            // Unrestricted constant model
+            dt = {};
+            x  = x ~ constant;
+        elseif model == 3;    
+            // Unrestricted constant model
+            dt = constant;
+            x  = x;
+        elseif model == 4;
+            // Restricted trend (RT) model
+            dt = constant;
+            x  = x ~ trend;
+        elseif model == 5;
+            // Unrestricted trend model
+            dt = constant ~ trend;
+            x  = x;
+        endif;   
+    endif;
+        retp(dt,x);
+endp;
+
+proc (2) = _reorderEig(a, d);
+    local zz;
+    
+    zz = (-a)~(d') ;
+    zz = sortc(zz,1) ;
+    a  = -zz[., 1] ;
+    d  = zz[., 2:cols(zz)]' ;  /* Done */
+    
+    retp(a, d);
+endp;
+
+proc (2) = _getTraceStats(T, a, model, m);
+    
+    lr1 =  zeros(rows(a),1);
+    local lr1, lr2;
+    
+    i = 1 ;
+    do while (i <= rows(a));
+        lr1[i,1] = -T*sumc(trimr(ln(1-a),i-1,0));
+        i = i + 1 ;
+    endo ;
+    
+    // Maximum-eigen value statistics
+    lr2 = -T*ln(1-a);
+    
+    if model >= 3;
+        lr1 = lr1[1:m];
+        lr2 = lr2[1:m];
+    endif;
+    
+    retp(lr1, lr2);
+endp;
+
+// Critical Values
+// See Pascalau, Lee, Nazlioglu & Lu, 2022, Online Appendix Tables 1-8
+// 5 percent critical values of Fourier-Trace test
+proc(1) = _get_cv_Fourier_Trace(option, model, f, r);
+    local cv_fourier_trace, cv;
+    if option == 1;
+        if model == 1;
+            cv_fourier_trace =
+                /*Freq   r=1        r=2        r=3       r=4         r=5  */
+                /*1*/ {14.30840   28.18929   46.02544   67.68133   93.91098,
+                /*2*/  10.51359   22.60040   38.91366   60.67533   86.50896,
+                /*3*/   9.4069    20.71316   35.77095   56.38972   81.37919,
+                /*4*/   8.85902   19.7394    34.62302   53.82681   78.36771,
+                /*5*/   8.62743   19.13382   33.64254   52.29388   76.0114};
+        endif;
+        
+        if model == 2;
+            cv_fourier_trace =
+                /*Freq   r=1        r=2        r=3       r=4         r=5  */
+                /*1*/ {18.09039   35.55617   56.49866   81.12916   109.17405,
+                /*2*/  15.86571   31.17837   50.74269   74.78432    102.38793,
+                /*3*/   14.21382  28.55989   46.79052   69.25963    96.24529,
+                /*4*/   13.22626  26.89691   44.13739   66.35955    92.48682,
+                /*5*/   12.58547  25.83584   43.00055   64.33425    89.88038};
+        endif;
+        
+        if model == 3;
+            cv_fourier_trace =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {14.74275     29.58587    48.92995    71.81054    99.11298,
+                /*2*/  11.22645     24.46542    42.119      65.00828    91.92876,
+                /*3*/  10.24255     22.83348    39.16091    60.81107    86.83963,
+                /*4*/  9.85987      21.88533    37.84303    58.23366    83.59189,
+                /*5*/  9.53509      21.32864    36.9486     56.82161    81.6248};
+        endif;
+        
+        if model == 4;
+            cv_fourier_trace =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {18.90748     37.47358    59.39504    85.16574    114.20359,
+                /*2*/  16.37934     33.03774    53.42384    78.86507    107.71686,
+                /*3*/  114.82827    30.20683    49.80522    73.87547    101.74087,
+                /*4*/  13.83531     28.82023    47.18157    70.47044    97.87634,
+                /*5*/  13.2854      27.72151    45.80354    68.30843    95.16862};
+        endif;
+        
+    endif;
+    
+    if option == 2;
+        if model == 1;
+            cv_fourier_trace =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {14.3084      28.18929    46.02544    67.68133    93.91098,
+                /*2*/  19.73892     37.92253    59.84259    86.58413    117.05128,
+                /*3*/  25.34511     47.78119    73.55901    104.83568   140.70307,
+                /*4*/  30.39381     57.38707    87.96552    123.44607   163.66453,
+                /*5*/  35.78632     67.11283    102.21303   142.35412   187.47393};
+        endif;
+        
+        if model == 2;
+            cv_fourier_trace =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {18.09039     35.55617    56.49866    81.12916    109.17405,
+                /*2*/  24.65593     46.81503    72.96398    103.00425   136.41383,
+                /*3*/  30.28825     58.41858    89.82574    125.17419   163.80433,
+                /*4*/  36.91493     69.48224    106.815     145.99311   190.71159,
+                /*5*/  42.74488     80.94095    122.9247    168.06434   217.45626};
+        endif;
+        
+        if model == 3;
+            cv_fourier_trace =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {18.09039     35.55617    56.49866    81.12916    109.17405,
+                /*2*/  24.65593     46.81503    72.96398    103.00425   136.41383,
+                /*3*/  30.28825     58.41858    89.82574    125.17419   163.80433,
+                /*4*/  36.91493     69.48224    106.815     145.99311   190.71159,
+                /*5*/  42.74488     80.94095    122.9247    168.06434   217.45626};
+        endif;
+        
+        if model == 4;
+            cv_fourier_trace =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {17.36134     34.86245    56.15881    81.32806    111.08734,
+                /*2*/  25.51318     48.98605    76.33016    109.20236   144.88705,
+                /*3*/  32.82653     62.79299    96.91238    135.64276   179.15233,
+                /*4*/  40.45318     77.00024    116.93661   162.08337   212.44297,
+                /*5*/  47.73399     90.84489    137.39421   189.81457   246.32093};
+        endif;
+        
+    endif;
+    
+    cv = cv_fourier_trace[f,1:r];
+    
+    retp(cv);
+endp;
+
+// 5 percent critical values of Fourier-Lambda test
+proc(1) = _get_cv_Fourier_Lambda(option, model, f, r);
+    local cv_fourier_lambda, cv;
+    if option == 1;
+        if model == 1;
+            cv_fourier_lambda =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {14.3084      21.81952    28.35264    34.91794    41.17167,
+                /*2*/  10.51359     19.05594    26.30747    33.44158    40.27457,
+                /*3*/   9.4069      17.35662    24.69282    32.11669    38.74516,
+                /*4*/   8.85902     16.54828    23.96644    30.86204    37.83603,
+                /*5*/   8.62743     16.0725     22.72801    30.08076    36.78717};
+        endif;
+        
+        if model == 2;
+            cv_fourier_lambda =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {18.09039     25.46954    32.22024    38.25462    44.55845,
+                /*2*/  15.86571     24.05796    30.45904    37.58944    43.98831,
+                /*3*/  14.21382     22.17946    29.614      36.66324    42.69462,
+                /*4*/  13.22626     20.99576    28.10436    35.01388    41.95523,
+                /*5*/  12.58547     20.27764    27.17991    34.32537    41.09012};
+        endif;
+        
+        if model == 3;
+            cv_fourier_lambda =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {14.74275     22.19508    28.89295    35.39524    41.54859,
+                /*2*/  11.22645     19.6962     26.90804    34.01138    40.76375,
+                /*3*/  10.24255     18.08373    25.11247    32.64265    39.36979,
+                /*4*/  9.85987      17.23072    24.46652    31.35129    38.52174,
+                /*5*/  9.53509      16.79633    23.3704     30.58855    37.49176};
+        endif;
+        
+        if model == 4;
+            cv_fourier_lambda =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ {18.90748     26.44461    33.03344    39.23833    45.38248,
+                /*2*/  16.37934     24.68322    30.95725    38.1791     44.72682,
+                /*3*/  14.82827     22.90663    30.23652    37.2978     43.44843,
+                /*4*/  13.83531     21.73118    28.57067    35.63663    42.66692,
+                /*5*/  13.2854      20.8269     27.77769    35.0607     41.73858};
+        endif;
+        
+    endif;
+    
+    if option == 2;
+        if model == 1;
+            cv_fourier_lambda =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ { 14.3084     21.81952    28.35264    34.91794    41.17167,
+                /*2*/  19.73892     27.76404    35.04145    41.93187    48.45197,
+                /*3*/  25.34511     33.8306     41.42773    48.46413    55.34988,
+                /*4*/  30.39381     39.85131    47.92928    55.3712     62.26346,
+                /*5*/  35.78632     45.91888    54.4122     61.89791    69.0094};
+        endif;
+        
+        if model == 2;
+            cv_fourier_lambda =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ { 18.09039    25.46954    32.22024    38.25462    44.55845,
+                /*2*/  24.65593     32.06307    38.79872    45.22149    52.11245,
+                /*3*/  30.28825     38.466      45.62627    52.60794    59.17533,
+                /*4*/  36.91493     44.757      52.37514    59.21325    65.76993,
+                /*5*/  42.74488     51.04538    58.6176     65.85758    72.81402};
+            
+        endif;
+        
+        if model == 3;
+            cv_fourier_lambda =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ { 17.36134    25.09009    31.81531    38.66757    45.12572,
+                /*2*/  25.51318     34.10673    41.3475     48.25683    55.09165,
+                /*3*/  32.82653     42.475      50.36196    57.50662    64.95132,
+                /*4*/  40.45318     50.95535    59.10846    67.01418    73.76121,
+                /*5*/  47.73399     59.52646    67.9576     75.93939    83.23137};
+            
+        endif;
+        
+        if model == 4;
+            cv_fourier_lambda =
+                /*Freq   r=1        r=2         r=3         r=4         r=5  */
+                /*1*/ { 18.09039    25.46954    32.22024    38.25462    44.55845,
+                /*2*/  24.65593     32.06307    38.79872    45.22149    52.11245,
+                /*3*/  30.28825     38.466      45.62627    52.60794    59.17533,
+                /*4*/  36.91493     44.757      52.37514    59.21325    65.76993,
+                /*5*/  42.74488     51.04538    58.6176     65.85758    72.81402};
+        endif;
+        
+    endif;
+    
+    cv = cv_fourier_lambda[f,1:r];
+    
+    retp(cv);
+endp;
