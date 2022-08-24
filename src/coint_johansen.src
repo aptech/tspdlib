@@ -44,10 +44,8 @@
 */
 
 proc(5) = Johansen(x, model, k);
-    local m, t, dx, dt, z;
-    local r0, r1, s00, sk0, skk, sig;
-    local a, b, d, c, lr1, lr2, cv_lr1;
-    local n, Li, lam, logL, eig_val;
+    local m, t, dx, dt, z, r0, r1, a, d, 
+    lr1, lr2, cv_lr1, logL, eig_val;
     
     // Model dimensions
     m = cols(x);
@@ -74,16 +72,11 @@ proc(5) = Johansen(x, model, k);
     // Trace statistics
     { lr1, lr2 } = _getTraceStats(T, a, model, m);
     
-    n  = cols(x);
-    Li = inv(chol(r1'r1)');
-    lam = 0|rev(eigh(Li*r1'r0*invpd(r0'r0)*r0'r1*Li'));
-    if model == 2 or model == 4;
-        lam = 0|rev(trimr(eigh(Li*r1'r0*invpd(r0'r0)*r0'r1*Li'),1,0));
-    endif;
-    k = cols(dx/z);
-    
-    logL = -(T/2)*(k*(1+ln(2*pi)) + ln(det(r0'r0/T))+ cumsumc(ln(1-lam)));
-  
+    // Get LogL
+    k = cols(dx/z);  
+    logL = _getJohansenLogL(r1, r0, model, T, k);
+   
+    // Get critical values
     cv_lr1 = _get_cv_Trace(model, m);
     cv_lr1 = rev(cv_lr1');
     
