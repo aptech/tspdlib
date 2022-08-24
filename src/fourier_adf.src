@@ -308,8 +308,8 @@ proc (2) = fourierADFFTest(y, model, k, p);
 endp;
 
 proc (1) = _regFstat(dep, z1, z2);
-    local t, b1, b2, e1, e2, se1, se2, 
-    dep1, dep2, ssr1, ssr2, k1, k2, sig21, sig22;
+    local t, b1, b2, e1, e2, se1, se2,
+        dep1, dep2, ssr1, ssr2, k1, k2, sig21, sig22;
     
     t = rows(dep);
     
@@ -406,7 +406,7 @@ proc (1) = fstatADFcv(model, T);
     retp(crit);
 endp;
 
-proc(2) = _getFourierTerms(t, k, ...);
+proc (2) = _getFourierTerms(t, k, ...);
     local sinp, cosp, p;
     
     // Get lags
@@ -419,6 +419,29 @@ proc(2) = _getFourierTerms(t, k, ...);
     else;
         sinp = sin(2 * pi * k * seqa(1, 1, t)/t);
         cosp = cos(2 * pi * k * seqa(1, 1, t)/t);
+    endif;
+    
+    retp(sinp, cosp);
+endp;
+
+proc (2) = _getCumFourierTerms(t, k, ...);
+    local sinp, cosp, p;
+    
+    // Get lags
+    p = dynargsGet(1, 0);
+    
+    // Fourier series
+    sinp = {};
+    cosp = {};
+    for j(1, k, 1);
+        sinp = sinp ~ sin(2 * pi * j * seqa(1, 1, t)/T);
+        cosp = cosp ~ cos(2 * pi * j * seqa(1, 1, t)/T);
+    endfor;
+
+    // Get fourier terms
+    if p>0;
+        sinp = trimr(sinp, p+1, 0);
+        cosp = trimr(cosp, p+1, 0);
     endif;
     
     retp(sinp, cosp);
