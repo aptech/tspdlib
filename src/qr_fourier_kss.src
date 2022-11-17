@@ -54,9 +54,8 @@ proc(1) = QR_Fourier_KSS(y, model, tau, ...);
     t    = rows(y);
     dt   = seqa(1, 1, t);
     
-    // Fourier transform
-    sink = sin(2 * pi * k * seqa(1, 1, t)/t);
-    cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
+    // Get Fourier terms
+    { sink, cosk } = _getFourierTerms(t, k);
     
     // Difference and lag variable
     dy   = diff(y, 1);
@@ -92,6 +91,7 @@ proc(1) = QR_Fourier_KSS(y, model, tau, ...);
     qctl = qfitControlCreate();
     // for print result: qCtl.verbose = 1;
     qctl.verbose = 0;       
+    
     // Declare qFitOut structure
     struct qFitOut qOut1;    
     qOut1 = quantileFit(DY, X, tau, qctl);
@@ -179,10 +179,12 @@ proc(1) = QR_Fourier_KSS_bootstrap(y, model, tau, ...);
     
     // See Li & Zheng (2018, p.86)
     t     = rows(y);
-    sink  = sin(2 * pi * k * seqa(1, 1, t)/t);
-    cosk  = cos(2 * pi * k * seqa(1, 1, t)/t);
+    
+    // Get Fourier terms
+    { sink, cosk } = _getFourierTerms(t, k);
+
     c     = ones(t, 1);
-    trend = seqa(1,1,t);
+    trend = seqa(1, 1, t);
     dy   = diff(y, 1);
 
     if pmax > 0;
