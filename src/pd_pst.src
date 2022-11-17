@@ -257,7 +257,7 @@ proc (2) = hadriStats(LM, var, mu, N);
 endp;
    
 proc (1) = _get_ca_deterministic(model, t, ca, ...);
-    local sink, cosk, z;
+    local sink, cosk, z, s;
     
     { sink, cosk } = dynargsGet(1|2, 0, 0);
     
@@ -270,7 +270,7 @@ proc (1) = _get_ca_deterministic(model, t, ca, ...);
         errorlogat s;
     endif;
     
-    if sink;
+    if sink != 0;
         z = z~sink~cosk;
     endif;
     
@@ -357,7 +357,8 @@ endp;
 
 proc(10) = pst_ca_fourier(y, ...);
     local N, T, ca, Nkpss, Npval, q, LM, mu, var, W, W_pval;
-    local P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec,  bwl_dftl;
+    local P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec,  bwl_dftl,
+          model, varm, l, k;
     
      // Data checks
     _checkForMissings(y, "pst_ca");
@@ -372,7 +373,7 @@ proc(10) = pst_ca_fourier(y, ...);
     
     // Dynamic arguments
     bwl_dftl = round(4 * (t/100)^(2/9));
-    { model, varm, l, k } = dynargsGet(1|3, 1, 1, bwl_dftl, 5);
+    { model, varm, l, k } = dynargsGet(1|4, 1, 1, bwl_dftl, 5);
     
     for i(1, N, 1);
         // Individual KPSS statistics
@@ -438,7 +439,7 @@ endp;
 
 proc(1) = ca_kpss_fourier(y, model, varm, l, ca, k);
     local t, sink, cosk, z, s, lrv, kpss_ca;
-    local b, e1, sig2, se, ssr, s;
+    local b, e1, sig2, se, ssr;
     
     t = rows(y);
     
@@ -532,8 +533,8 @@ endp;
 */
 
 proc(10) = pst_panic(y, ...);
-    local model, varm, l, kmax, ick, n, t, dx, x, nf, ICp, e, t, n, Fhat, Floads, ehat;
-    local Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval, dt_vec;
+    local model, varm, l, kmax, ick, n, t, dx, x, nf, ICp, e, Fhat, Floads, ehat;
+    local Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval, dt_vec, bwl_dftl;
     
     // Data checks
     _checkForMissings(y, "pst_panic");
