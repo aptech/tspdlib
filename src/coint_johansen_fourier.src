@@ -129,7 +129,7 @@ endp;
 
     
 proc (3) = _getJohansenEigval(r1, r0);
-    local skk, sk0, s00, sig, a, b, c, d;
+    local skk, sk0, s00, sig, a, b, c, d, eig_val;
     
     skk = r1'r1/rows(r1) ;
     sk0 = r1'r0/rows(r1) ;
@@ -146,7 +146,7 @@ proc (3) = _getJohansenEigval(r1, r0);
 endp;
 
 proc (2) = _getCointRegResiduals(z, dx, dt, k);
-    local dx, lx, r0, r1;
+    local lx, r0, r1;
     
     z  = z ~ dt;
     z  = trimr(z, k, 0);
@@ -165,9 +165,9 @@ proc (2) = _getCointRegResiduals(z, dx, dt, k);
 endp;
 
 proc (2) = _getFourierModelSetup(x, model, T, ... );
-    local sink, cosk, constant, trend;
+    local sink, cosk, constant, trend, dt;
     
-    { sink, cosk } = dynargsGet(1|2, miss(0), miss(0);
+    { sink, cosk } = dynargsGet(1|2, miss(0), miss(0));
     
     // Deterministic terms
     constant = ones(T, 1) ;
@@ -229,9 +229,9 @@ proc (2) = _reorderEig(a, d);
 endp;
 
 proc (2) = _getTraceStats(T, a, model, m);
+    local lr1, i, lr2;
     
     lr1 =  zeros(rows(a),1);
-    local lr1, lr2;
     
     i = 1 ;
     do while (i <= rows(a));

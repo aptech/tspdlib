@@ -191,7 +191,7 @@ endp;
 **      cbar    scalar,  the value of the c_bar parameter that is used in the quasi GLS-detrending.
 **
 **
-**  Josep Lluís Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
+**  Josep Lluis Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
 **  Last modification: July 1st,  2006,  23:47 pm
 */
 proc (9) = __pdsbur_multiple_gls(y,  model,  penalty,  kmax,  kmin,  estimation);
@@ -202,7 +202,7 @@ proc (9) = __pdsbur_multiple_gls(y,  model,  penalty,  kmax,  kmin,  estimation)
         
         { pt,  mpt,  adf,  za,  mza,  msb,  mzt,  min_tb,  cbar } = __pdsbur_multiple_gls_brute(y,  model,  penalty,  kmax,  kmin);
         
-    elseif model[1]==2 or model[1] == 3; @ Change in both the level and the slope of the trend @
+    elseif model[1] == 2 or model[1] == 3; @ Change in both the level and the slope of the trend @
         
         if estimation[1] == 0; @ Conducts the estimation using brute force. Only for up to 3 structural breaks @
             
@@ -277,7 +277,7 @@ endp;
 **      cbar    scalar,  the value of the c_bar parameter that is used in the quasi GLS-detrending.
 **
 **
-**  Josep Lluís Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
+**  Josep Lluis Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
 **  Last modification: May 26th,  2006,  20:52 pm
 */
 
@@ -617,17 +617,12 @@ proc (9) = __pdsbur_multiple_gls_brute(y,  model,  penalty,  kmax,  kmin);
     msb = sqrt(sumyt2/sar);
     mzt = mza*msb;
     
-    /* construct PT and MPT */
+    // Construct PT
     { ytf,  ssr1 } = __pd_glsd(y,  z,  0);
     pt = (ssra - (1 + cbar/nt)*ssr1)/sar;
     
-    if model[1] == 0;
-        mpt = (cbar*cbar*sumyt2 - cbar*(yt[nt,  1]^2)/nt)/sar;
-    elseif  model[1] == 1;
-        mpt = (cbar*cbar*sumyt2 + (1 - cbar)*(yt[nt,  1]^2)/nt)/sar;
-    elseif  model[1] == 2 or model[1]==3;
-        mpt = (cbar*cbar*sumyt2 + (1 - cbar)*(yt[nt,  1]^2)/nt)/sar;
-    endif;
+    // Construct MPT statistics
+    mpt = __get_mpt(model, cbar, sumyt2, (yt[nt,  1]^2)/nt, sar);
     
     if model[1] == 0 or model[1] == 1;
         retp(pt,  mpt,  adf,  za,  mza,  msb,  mzt,  0,  cbar);
@@ -637,6 +632,16 @@ proc (9) = __pdsbur_multiple_gls_brute(y,  model,  penalty,  kmax,  kmin);
     
 endp;
 
+proc(1) = __get_mpt(model, cbar, sumyt2, yt, sar);
+ 
+    if model[1] == 0;
+        retp((cbar*cbar*sumyt2 - cbar*yt)/sar);
+    elseif  model[1] == 1;
+        retp((cbar*cbar*sumyt2 + (1 - cbar)*yt)/sar);
+    elseif  model[1] == 2 or model[1]==3;
+        retp((cbar*cbar*sumyt2 + (1 - cbar)*yt)/sar);
+    endif;
+endp;
 
 proc(3) = __pd_adfp(yt,  kstar);
     local reg,  dyt,  i,  rho,  ee,  ff,  nef,  s2e,  xx,  sre,  adf,  sumb,  s2vec;
@@ -741,7 +746,7 @@ proc (2) = __pd_glsd(y,  z,  cbar);
     /*constructing the gls detrended series*/
     bhat = inv(za'za)*za'ya;
     yt = y - z*bhat;
-    recssr = (ya - za*bhat)'(ya - za*bhat);
+    ssr = (ya - za*bhat)'(ya - za*bhat);
     
     retp(yt,  ssr);
 endp;
@@ -1049,7 +1054,7 @@ endp;
 **      cbar    scalar,  the value of the c_bar parameter that is used in the quasi GLS-detrending.
 **
 **
-**  Josep Lluís Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
+**  Josep Lluis Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
 **  Last modification: May 26th,  2006,  20:52 pm
 */
 
@@ -1187,11 +1192,13 @@ proc (9) = __pdsbur_multiple_gls_algorithm(y,  model,  penalty,  kmax,  kmin,  m
     msb = sqrt(sumyt2/sar);
     mzt = mza*msb;
     
-    /* construct PT and MPT */
+    // Construct PT 
     { ytf,  ssr1 } = __pd_glsd(y,  z,  0);
     pt = (ssra -(1 + cbar/t)*ssr1)/sar;
-    mpt = (cbar*cbar*sumyt2 + (1-cbar)*(yt[t,  1]^2)/t)/sar;
     
+    //  Compute MPT statistic
+    mpt = __get_mpt(1, cbar, sumyt2, (yt[t,  1]^2)/t, sar);
+
     retp(pt,  mpt,  adf,  za,  mza,  msb,  mzt,  datevec,  cbar);
     
 endp;
@@ -1351,7 +1358,7 @@ endp;
 @********************************************************************@
 /* This procedure computes recursive residuals from a data set that starts at date "start" and ends at date "last". */
 proc (1) = recssr(start,  y,  z,  h,  last, ...);
-    local vecssr,  delta1,  delta2,  inv1,  inv2,  invz,  res,  v,  f,  r;
+    local vecssr,  delta1,  delta2,  inv1,  inv2,  invz,  res,  v,  f,  r, gls_on;
     /*
     Inputs:
     start: starting entry of the sample used.
@@ -1370,7 +1377,7 @@ proc (1) = recssr(start,  y,  z,  h,  last, ...);
     gls_on = dynargsGet(1, 0);
     
     if gls_on;
-        retp(__recssr_gls(start,  y,  z,  h,  last);
+        retp(__recssr_gls(start,  y,  z,  h,  last));
     endif;
     
     // Initialize storage vector
