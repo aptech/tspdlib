@@ -1,0 +1,2107 @@
+#include dynargs.dec
+#include tspdlib.sdf
+
+/*
+** Procedure to estimate the structural breaks in a GLS-detrended framework.
+** This procedure returns the unit root statistics.
+**
+** Sintaxis:
+**
+**      msburOut = msbur_gls(y,  model [,  msburCtl]);
+**
+** Inputs:
+**
+**      y       (T x 1) time series with the variable to be analysed.
+**
+**      model       Scalar,  specifies the model to be estimated.
+**
+**                      0   for the constant case,  without structural breaks,
+**                      1   for the linear time trend case,  without structural breaks,
+**                      3   for the linear time trend that is affected by multiple
+**                          structural breaks; the structural break affects both the level and
+**                          the slope of the time trend.
+**
+**     msburCtl     An instance of the pd_msburControl structure containing the following
+**                  members:
+**
+**                  msburCtl.knownBreaks    Scalar,  specifies if breaks are known or unknown.
+**                                          0 when the structural breaks are known,
+**                                          1 when the structural breaks are unknown.
+**                                          Default = 1;
+**
+**                  msburCtl.breakDate      Vector,  when the structural breaks are known,
+**                                          this collects an (mx1) vector with the break points.
+**
+**                  msburCtl.numberBreaks   Scalar,  when the structural breaks are unknown,
+**                                          this scalar indicates the number of structural breaks
+**                                          that is assumed. Note that,  at the moment,  the procedure is
+**                                          designed for up to m <= 5 structural breaks.
+**
+**
+**                  msburCtl.penalty        Scalar,  indicates the penalty function that defines the information
+**                                          criteria that is used to determine the number of lags used to estimate
+**                                          the long-run variance. penalty = 0 for maic,  and penalty = 1 for bic.
+**                                          Default = 0.
+**
+**                  msburCtl.kmax           Scalar,  denotes the maximum number of lags that is used to estimate
+**                                          the long-run variance. Default = 4.
+**
+**                  msburCtl.kmin           Scalar,  denotes the minimum number of lags that is used to estimate
+**                                          the long-run variance. Default = 0.
+**
+**	                msburCtl.estimation	    Scalar,  specifying the estimation method:
+**			                                0 indicates brute force estimation,
+**			                                1,  then it uses the dynamic algorithm.
+**                                          Default = 0;
+**
+**                  msburCtl.maxIters       Scalar,  if dynamic algorithm is used,
+**                                          this indicates the maximum number of
+**                                          iterations.
+**
+** Output:
+**
+**      msburOut    An instance of the msburOut structure containing the following
+**                  members:
+**
+**                  msburCtl.pt             Scalar,  the value for the Pt unit root test.
+**
+**                  msburCtl.mpt            Scalar,  the value for the MPT unit root test.
+**
+**                  msburCtl.adf            Scalar,  the value for the ADF unit root test.
+**
+**                  msburCtl.za             Scalar,  the value for the ZA unit root test.
+**
+**                  msburCtl.mza            Scalar,  the value for the MZA unit root test.
+**
+**                  msburCtl.msb            Scalar,  the value for the MSB unit root test.
+**
+**                  msburCtl.mzt            Scalar,  the value for the MZT unit root test.
+**
+**                  msburCtl.min_tb         Vector,  the estimated break points.
+**
+**                  msburCtl.cbar           Scalar,  the value of the c_bar parameter
+**                                          that is used in the quasi GLS-detrending.
+**
+**  Based on code by Josep Llui�s Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
+**  Last modification: July 1st,  2006,  23:47 pm
+*/
+
+proc (1) = pd_msbur_gls(y,  model,  ...);
+    local n_dynargs, pt, mpt, adf, za, mza, msb, mzt, min_tb, cbar;
+    
+    n_dynargs = COUNT_DYNARGS;
+    
+    // Get control structure
+    if n_dynargs < 1;
+        // Default case
+        struct pd_msburControl msburCtl;
+        msburCtl = pd_msburControlCreate();
+    else;
+        msburCtl = sysstate(GET_ONE_DYNARG,  1);
+    endif;
+    
+    local err_msg1;
+    
+    err_msg1 = "'%s' : Exceeds the maximum allows breaks/n the procedure is designed for up to m <= 5 structural breaks.";
+    
+    // Get model vector
+    if msburCtl.knownBreak == 0;
+        if (rows(msburCtl.breakDate) > 5);
+            errorlogat sprintf(err_msg1, currentprocname());
+            end;
+        endif;
+        
+        model = model|msburCtl.knownBreak|msburCtl.breakDate;
+    else;
+        if msburCtl.numberBreaks > 5;
+            errorlogat sprintf(err_msg1, currentprocname());
+            end;
+        endif;
+        
+        model = model|msburCtl.knownBreak|msburCtl.numberBreaks;
+    endif;
+    
+    
+    {pt,  mpt,  adf,  za,  mza,  msb,  mzt,  min_tb,  cbar}
+        = __pdsbur_multiple_gls(y,  model,  msburCtl.penalty,  msburCtl.kmax,  msburCtl.kmin,  msburCtl.estimation|msburCtl.maxIters);
+    
+    struct pd_msburOut mOut;
+    mOut.pt = pt;
+    mOut.mpt = mpt;
+    mOut.adf = adf;
+    mOut.za = za;
+    mOut.mza = mza;
+    mOut.msb = msb;
+    mOut.mzt = mzt;
+    mOut.min_tb = min_tb;
+    mOut.cbar = cbar;
+    retp(mOut);
+endp;
+
+/*
+** Procedure to estimate the structural breaks in a GLS-detrended framework.
+** This procedure returns the unit root statistics.
+**
+** Sintaxis:
+**
+**      { pt,  mpt,  adf,  za,  mza,  msb,  mzt,  min_tb,  cbar } = sbur_multiple_gls(y,  model,  penalty,  kmax,  kmin,  estimation);
+**
+** Inputs:
+**
+**      y       (Tx1) time series with the variable to be analysed.
+**
+**      model   Vector,  whose dimension depends on whether there are structural
+**              breaks or not,  as well as on the fact of whether the structural
+**              breaks are known or have to be estimated.
+**
+**              model[1] = 0 for the constant case,  without structural breaks,
+**              model[1] = 1 for the linear time trend case,  without structural breaks,
+**              model[1] = 3 for the linear time trend that is affected by multiple
+**                          structural breaks; the structural break affects both the level and
+**                          the slope of the time trend.
+**
+**              model[2] = 0 when the structural breaks are known,
+**              model[2] = 1 when the structural breaks are unknown,
+**
+**              model[3] when the structural breaks are known,  this collects an (mx1)
+**                          vector with the break points
+**              model[3] when the structural breaks are unknown,  this scalar indicates
+**                          the number of structural breaks that is assumed. Note that,  at the moment,
+**                          the procedure is designed for up to m <= 5 structural breaks.
+**
+**      penalty     scalar,  indicates the penalty function that defines the information
+**                  criteria that is used to determine the number of lags used to estimate
+**                  the long-run variance. penalty = 0 for maic,  and penalty = 1 for bic.
+**
+**      kmax    scalar,  denotes the maximum number of lags that is used to estimate the long-run variance.
+**
+**      kmin    scalar,  denotes the minimum number of lags that is used to estimate the long-run variance.
+**
+**	estimation	scalar or (2x1)-vector,  depending on the option:
+**			if estimation[1] = 0 indicates brute force estimation,
+**			if estimation[1] = 1,  then it uses the dynamic algorithm;
+**			in this case estimation[2] indicates the maximum number of iterations.
+**
+** Output:
+**
+**      pt      scalar,  the value for the Pt unit root test.
+**
+**      min_tb  (mx1)-vector of break points
+**
+**      cbar    scalar,  the value of the c_bar parameter that is used in the quasi GLS-detrending.
+**
+**
+**  Josep Lluís Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
+**  Last modification: July 1st,  2006,  23:47 pm
+*/
+proc (9) = __pdsbur_multiple_gls(y,  model,  penalty,  kmax,  kmin,  estimation);
+    
+    local pt,  mpt,  adf,  za,  mza,  msb,  mzt,  min_tb,  cbar;
+    
+    if (model[1] == 0) or (model[1] == 1); @ Models without structural breaks @
+        
+        { pt,  mpt,  adf,  za,  mza,  msb,  mzt,  min_tb,  cbar } = __pdsbur_multiple_gls_brute(y,  model,  penalty,  kmax,  kmin);
+        
+    elseif model[1]==2 or model[1] == 3; @ Change in both the level and the slope of the trend @
+        
+        if estimation[1] == 0; @ Conducts the estimation using brute force. Only for up to 3 structural breaks @
+            
+            { pt,  mpt,  adf,  za,  mza,  msb,  mzt,  min_tb,  cbar } = __pdsbur_multiple_gls_brute(y,  model,  penalty,  kmax,  kmin);
+            
+        elseif estimation[1] == 1; @ Estimates the break points using the dynamic algorithm @
+            
+            { pt,  mpt,  adf,  za,  mza,  msb,  mzt,  min_tb,  cbar } = __pdsbur_multiple_gls_algorithm(y,  model,  penalty,  kmax,  kmin,  estimation[2]);
+            
+        endif;
+        
+    endif;
+    
+    if model[1] == 0 or model[1] == 1;
+        retp(pt,  mpt,  adf,  za,  mza,  msb,  mzt,  0,  cbar);
+    elseif model[1] == 2 or model[1] == 3;
+        retp(pt,  mpt,  adf,  za,  mza,  msb,  mzt,  min_tb,  cbar);
+    endif;
+    
+endp;
+
+
+/*
+** Procedure to estimate the structural breaks in a GLS-detrended framework.
+** This procedure returns the unit root statistics.
+**
+** Sintaxis:
+**
+**      {pt, mpt, adf, za, mza, msb, mzt, min_tb, cbar} = __pdsbur_multiple_gls_brute(y, model, penalty, kmax, kmin, estimation);
+**
+** Inputs:
+**
+**      y       (Tx1) time series with the variable to be analysed.
+**
+**      model   Vector,  whose dimension depends on whether there are structural
+**              breaks or not,  as well as on the fact of whether the structural
+**              breaks are known or have to be estimated.
+**
+**              model[1] = 0 for the constant case,  without structural breaks,
+**              model[1] = 1 for the linear time trend case,  without structural breaks,
+**              model[1] = 2 for the linear time trend that is affected by multiple
+**                          structural breaks; the structural breaks affect
+**                          the slope of the time trend.
+**              model[1] = 3 for the linear time trend that is affected by multiple
+**                          structural breaks; the structural break affects both the level and
+**                          the slope of the time trend.
+**
+**              model[2] = 0 when the structural breaks are known,
+**              model[2] = 1 when the structural breaks are unknown,
+**
+**              model[3] when the structural breaks are known,  this collects an (mx1)
+**                          vector with the break points
+**              model[3] when the structural breaks are unknown,  this scalar indicates
+**                          the number of structural breaks that is assumed. Note that,  at the moment,
+**                          the procedure is designed for up to m <= 5 structural breaks.
+**
+**      penalty     scalar,  indicates the penalty function that defines the information
+**                  criteria that is used to determine the number of lags used to estimate
+**                  the long-run variance. penalty = 0 for maic,  and penalty = 1 for bic.
+**
+**      kmax    scalar,  denotes the maximum number of lags that is used to estimate the long-run variance.
+**
+**      kmin    scalar,  denotes the minimum number of lags that is used to estimate the long-run variance.
+**
+**
+** Output:
+**
+**      pt      scalar,  the value for the Pt unit root test.
+**
+**      min_tb  (mx1)-vector of break points
+**
+**      cbar    scalar,  the value of the c_bar parameter that is used in the quasi GLS-detrending.
+**
+**
+**  Josep Lluís Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
+**  Last modification: May 26th,  2006,  20:52 pm
+*/
+
+proc (9) = __pdsbur_multiple_gls_brute(y,  model,  penalty,  kmax,  kmin);
+    
+    local nt,  cns,  tend,  z,  cbar,  yt,  ssra,  ahat,  r,  fit,  s2u,  sumyt2,  yt_ols,  ssra_ols,  krule,  adf,  a1,  sar,  bt,  za,  mza,  msb,
+        mzt,  ytf,  ssr1,  pt,  mpt;
+    
+    local nbrk,  j,  jj,  jjj,  du,  dt,  min_ssra,  min_tb,  du1,  dt1,  du2,  dt2,  du3,  dt3;
+    
+    nt = rows(y);
+    
+    cns = ones(nt,  1);
+    tend = seqa(1,  1,  nt);
+    
+    if (model[1] == 0) or (model[1] == 1); @ Models without structural breaks @
+        
+        if model[1] == 0;
+            z = cns;
+            cbar = -7.0;
+        elseif model[1] == 1;
+            z = cns~tend;
+            cbar = -13.5;
+        endif;
+        
+        
+    elseif model[1] == 2; @ Structural breaks: slope shifts @
+        
+        if model[2] == 0; @ Known structural breaks @
+            
+            min_tb = model[3:rows(model)]; @ Break points @
+            nbrk = rows(min_tb); @ Number of structural breaks @
+            
+            z = cns~tend;
+            
+            j = 1;
+            do until j>nbrk;
+                dt = zeros(min_tb[j],  1)|seqa(1,  1,  nt-min_tb[j]);
+                z = z~dt;
+                j = j + 1;
+            endo;
+            
+            if nbrk < 5;
+                cbar = __pd_c_bar_rs((min_tb/nt)|zeros(5-nbrk, 1));
+            elseif nbrk == 5;
+                cbar = __pd_c_bar_rs(min_tb/nt);
+            endif;
+            
+        elseif model[2] == 1; @ Unknown structural breaks @
+            
+            nbrk = model[3]; @ Number of structural breaks @
+            
+            min_ssra = y'y;
+            min_tb = 0;
+            
+            if nbrk == 1; @ One break @
+                
+                j = 3;
+                do until j > (nt-3); @ Loop for the search of the structural breaks @
+                    
+                    dt = zeros(j,  1)|seqa(1,  1,  nt-j);
+                    
+                    z = cns~tend~dt;
+                    cbar = __pd_c_bar_rs((j/nt)|0|0|0|0); @ Only consider one break at this stage @
+                    
+                    { yt,  ssra } = __pd_glsd(y,  z,  cbar); /* transforming the data*/
+                    
+                    if ssra<min_ssra;
+                        min_tb = j;
+                        min_ssra = ssra;
+                    endif;
+                    
+                    j = j + 1;
+                endo;
+                
+                dt = zeros(min_tb,  1)|seqa(1,  1,  nt-min_tb);
+                
+                z = cns~tend~dt;
+                cbar = __pd_c_bar_rs((min_tb/nt)|0|0|0|0); @ Only consider one break at this stage @
+                
+            elseif nbrk == 2; @ Two breaks @
+                
+                j = 3;
+                do until j > (nt-3-2); @ Loop for the search of the first structural break @
+                    
+                    dt1 = zeros(j,  1)|seqa(1,  1,  nt-j);
+                    
+                    jj = j + 2;
+                    do until jj > (nt-3); @ Loop for the search of the second structural break @
+                        
+                        dt2 = zeros(jj,  1)|seqa(1,  1,  nt-jj);
+                        
+                        z = cns~tend~dt1~dt2;
+                        cbar = __pd_c_bar_rs((j/nt)|(jj/nt)|0|0|0); @ Only consider two breaks at this stage @
+                        
+                        { yt,  ssra } = __pd_glsd(y,  z,  cbar); /* transforming the data*/
+                        
+                        if ssra<min_ssra;
+                            min_tb = j|jj;
+                            min_ssra = ssra;
+                        endif;
+                        
+                        jj = jj + 1;
+                        
+                    endo;
+                    
+                    j = j + 1;
+                endo;
+                
+                dt1 = zeros(min_tb[1],  1)|seqa(1,  1,  nt-min_tb[1]);
+                
+                dt2 = zeros(min_tb[2],  1)|seqa(1,  1,  nt-min_tb[2]);
+                
+                z = cns~tend~dt1~dt2;
+                cbar = __pd_c_bar_rs((min_tb[1]/nt)|(min_tb[2]/nt)|0|0|0); @ Only consider two breaks at this stage @
+                
+            elseif nbrk == 3; @ Three breaks @
+                
+                j = 3;
+                do until j > (nt-3-4); @ Loop for the search of the first structural break @
+                    
+                    dt1 = zeros(j,  1)|seqa(1,  1,  nt-j);
+                    
+                    jj = j + 2;
+                    do until jj > (nt-3-2); @ Loop for the search of the second structural break @
+                        
+                        dt2 = zeros(jj,  1)|seqa(1,  1,  nt-jj);
+                        
+                        jjj = jj + 2;
+                        do until jjj > (nt-3); @ Loop for the search of the second structural break @
+                            
+                            dt3 = zeros(jjj,  1)|seqa(1, 1, nt-jjj);
+                            
+                            z = cns~tend~dt1~dt2~dt3;
+                            cbar = __pd_c_bar_rs((j/nt)|(jj/nt)|(jjj/nt)|0|0); @ Only consider three breaks at this stage @
+                            
+                            { yt,  ssra } = __pd_glsd(y,  z,  cbar); /* transforming the data*/
+                            
+                            if ssra<min_ssra;
+                                min_tb = j|jj|jjj;
+                                min_ssra = ssra;
+                            endif;
+                            
+                            jjj = jjj+ 1;
+                            
+                        endo;
+                        
+                        jj = jj+ 1;
+                        
+                    endo;
+                    
+                    j = j + 1;
+                endo;
+                
+                dt1 = zeros(min_tb[1],  1)|seqa(1,  1,  nt-min_tb[1]);
+                
+                dt2 = zeros(min_tb[2], 1)|seqa(1,  1,  nt-min_tb[2]);
+                
+                dt3 = zeros(min_tb[3],  1)|seqa(1,  1,  nt-min_tb[3]);
+                
+                z = cns~tend~dt1~dt2~dt3;
+                cbar = __pd_c_bar_rs((min_tb[1]/nt)|(min_tb[2]/nt)|(min_tb[3]/nt)|0|0); @ Only consider three breaks at this stage @
+                
+            endif;
+            
+        endif;
+        
+    elseif model[1] == 3; @ Structural breaks: level and slope shifts @
+        
+        if model[2] == 0; @ Known structural breaks @
+            
+            min_tb = model[3:rows(model)]; @ Break points @
+            nbrk = rows(min_tb); @ Number of structural breaks @
+            
+            z = cns~tend;
+            
+            j = 1;
+            do until j>nbrk;
+                du = zeros(min_tb[j],  1)|ones(nt-min_tb[j],  1);
+                dt = zeros(min_tb[j],  1)|seqa(1,  1,  nt-min_tb[j]);
+                z = z~du~dt;
+                j = j + 1;
+            endo;
+            
+            if nbrk < 5;
+                cbar = __pd_c_bar_rs((min_tb/nt)|zeros(5-nbrk,  1));
+            elseif nbrk == 5;
+                cbar = __pd_c_bar_rs(min_tb/nt);
+            endif;
+            
+        elseif model[2] == 1; @ Unknown structural breaks @
+            
+            nbrk = model[3]; @ Number of structural breaks @
+            
+            min_ssra = y'y;
+            min_tb=  0;
+            
+            if nbrk == 1; @ One break @
+                
+                j = 3;
+                do until j > (nt-3); @ Loop for the search of the structural breaks @
+                    
+                    du = zeros(j,  1)|ones(nt-j,  1);
+                    dt = zeros(j,  1)|seqa(1,  1,  nt-j);
+                    
+                    z = cns~tend~du~dt;
+                    cbar = __pd_c_bar_rs((j/nt)|0|0|0|0); @ Only consider one break at this stage @
+                    
+                    { yt,  ssra } = __pd_glsd(y,  z,  cbar); /* transforming the data*/
+                    
+                    if ssra<min_ssra;
+                        min_tb = j;
+                        min_ssra = ssra;
+                    endif;
+                    
+                    j = j + 1;
+                endo;
+                
+                du = zeros(min_tb,  1)|ones(nt-min_tb,  1);
+                dt = zeros(min_tb,  1)|seqa(1,  1,  nt-min_tb);
+                
+                z = cns~tend~du~dt;
+                cbar = __pd_c_bar_rs((min_tb/nt)|0|0|0|0); @ Only consider one break at this stage @
+                
+            elseif nbrk == 2; @ Two breaks @
+                
+                j = 3;
+                do until j > (nt-3-2); @ Loop for the search of the first structural break @
+                    
+                    du1 = zeros(j,  1)|ones(nt-j,  1);
+                    dt1 = zeros(j,  1)|seqa(1,  1,  nt-j);
+                    
+                    jj = j + 2;
+                    do until jj > (nt-3); @ Loop for the search of the second structural break @
+                        
+                        du2 = zeros(jj,  1)|ones(nt-jj,  1);
+                        dt2 = zeros(jj,  1)|seqa(1,  1,  nt-jj);
+                        
+                        z = cns~tend~du1~dt1~du2~dt2;
+                        cbar = __pd_c_bar_rs((j/nt)|(jj/nt)|0|0|0); @ Only consider two breaks at this stage @
+                        
+                        { yt,  ssra } = __pd_glsd(y,  z,  cbar); /* transforming the data*/
+                        
+                        if ssra<min_ssra;
+                            min_tb = j|jj;
+                            min_ssra = ssra;
+                        endif;
+                        
+                        jj = jj + 1;
+                        
+                    endo;
+                    
+                    j=j+1;
+                endo;
+                
+                du1 = zeros(min_tb[1],  1)|ones(nt-min_tb[1],  1);
+                dt1 = zeros(min_tb[1],  1)|seqa(1, 1, nt-min_tb[1]);
+                
+                du2 = zeros(min_tb[2],  1)|ones(nt-min_tb[2],  1);
+                dt2 = zeros(min_tb[2],  1)|seqa(1,  1,  nt-min_tb[2]);
+                
+                z = cns~tend~du1~dt1~du2~dt2;
+                cbar = __pd_c_bar_rs((min_tb[1]/nt)|(min_tb[2]/nt)|0|0|0); @ Only consider two breaks at this stage @
+                
+            elseif nbrk == 3; @ Three breaks @
+                
+                j = 3;
+                do until j > (nt-3-4); @ Loop for the search of the first structural break @
+                    
+                    du1 = zeros(j,  1)|ones(nt-j,  1);
+                    dt1 = zeros(j,  1)|seqa(1,  1,  nt-j);
+                    
+                    jj = j + 2;
+                    do until jj > (nt-3-2); @ Loop for the search of the second structural break @
+                        
+                        du2 = zeros(jj,  1)|ones(nt-jj,  1);
+                        dt2 = zeros(jj,  1)|seqa(1,  1,  nt-jj);
+                        
+                        jjj = jj + 2;
+                        do until jjj > (nt-3); @ Loop for the search of the second structural break @
+                            
+                            du3 = zeros(jjj,  1)|ones(nt-jjj,  1);
+                            dt3 = zeros(jjj,  1)|seqa(1,  1,  nt-jjj);
+                            
+                            z = cns~tend~du1~dt1~du2~dt2~du3~dt3;
+                            cbar = __pd_c_bar_rs((j/nt)|(jj/nt)|(jjj/nt)|0|0); @ Only consider three breaks at this stage @
+                            
+                            { yt,  ssra } = __pd_glsd(y,  z,  cbar); /* transforming the data*/
+                            
+                            if ssra<min_ssra;
+                                min_tb = j|jj|jjj;
+                                min_ssra = ssra;
+                            endif;
+                            
+                            jjj = jjj + 1;
+                            
+                        endo;
+                        
+                        jj = jj + 1;
+                        
+                    endo;
+                    
+                    j = j + 1;
+                endo;
+                
+                du1 = zeros(min_tb[1],  1)|ones(nt-min_tb[1],  1);
+                dt1 = zeros(min_tb[1],  1)|seqa(1,  1,  nt-min_tb[1]);
+                
+                du2 = zeros(min_tb[2],  1)|ones(nt-min_tb[2],  1);
+                dt2 = zeros(min_tb[2],  1)|seqa(1,  1,  nt-min_tb[2]);
+                
+                du3 = zeros(min_tb[3],  1)|ones(nt-min_tb[3],  1);
+                dt3 = zeros(min_tb[3],  1)|seqa(1,  1,  nt-min_tb[3]);
+                
+                z = cns~tend~du1~dt1~du2~dt2~du3~dt3;
+                cbar = __pd_c_bar_rs((min_tb[1]/nt)|(min_tb[2]/nt)|(min_tb[3]/nt)|0|0); @ Only consider three breaks at this stage @
+                
+            endif;
+            
+        endif;
+        
+    endif;
+    
+    { yt,  ssra } = __pd_glsd(y,  z,  cbar); /* transforming the data*/
+    { ahat,  r,  fit } = olsqr2(yt[2:nt,  1],  yt[1:nt-1,  1]);  /* estimate the alpha-hat*/
+    s2u = r'r/(nt-1);
+    sumyt2 = sumc(yt[1:nt-1, 1]^2)/(nt-1)^2;
+    
+    { yt_ols,  ssra_ols } = __pd_olsd(y,  z);
+    krule = __pd_s2ar(yt_ols,  penalty,  kmax,  kmin); /* estimate s2ar,  using OLS detrended data!!!! See the note of Perron */
+    { adf,  a1,  sar } = __pd_adfp(yt,  krule);
+    
+    /*constructing zalpha and the M tests using GLS detrended data*/
+    bt = nt - 1;
+    za = bt*(ahat-1)-(sar-s2u)/(2*sumyt2);
+    mza = ((yt[nt, 1]^2)/bt-sar)/(2*sumyt2);
+    msb = sqrt(sumyt2/sar);
+    mzt = mza*msb;
+    
+    /* construct PT and MPT */
+    { ytf,  ssr1 } = __pd_glsd(y,  z,  0);
+    pt = (ssra - (1 + cbar/nt)*ssr1)/sar;
+    
+    if model[1] == 0;
+        mpt = (cbar*cbar*sumyt2 - cbar*(yt[nt,  1]^2)/nt)/sar;
+    elseif  model[1] == 1;
+        mpt = (cbar*cbar*sumyt2 + (1 - cbar)*(yt[nt,  1]^2)/nt)/sar;
+    elseif  model[1] == 2 or model[1]==3;
+        mpt = (cbar*cbar*sumyt2 + (1 - cbar)*(yt[nt,  1]^2)/nt)/sar;
+    endif;
+    
+    if model[1] == 0 or model[1] == 1;
+        retp(pt,  mpt,  adf,  za,  mza,  msb,  mzt,  0,  cbar);
+    elseif model[1] == 2 or model[1]==3;
+        retp(pt,  mpt,  adf,  za,  mza,  msb,  mzt,  min_tb,  cbar);
+    endif;
+    
+endp;
+
+
+proc(3) = __pd_adfp(yt,  kstar);
+    local reg,  dyt,  i,  rho,  ee,  ff,  nef,  s2e,  xx,  sre,  adf,  sumb,  s2vec;
+    
+    reg = lagn(yt,  1);
+    dyt = diff(yt,  1);
+    
+    i = 1;
+    do while i <= kstar;
+        reg = reg~lagn(dyt,  i);
+        i = i + 1;
+    endo;
+    
+    dyt = trimr(dyt,  kstar + 1,  0);
+    reg = trimr(reg,  kstar + 1,  0);
+    
+    { rho,  ee,  ff } = olsqr2(dyt,  reg);
+    
+    /*nef=rows(ee);*/
+    nef = rows(dyt);
+    s2e = ee'ee/nef;
+    xx = inv(reg'reg);
+    sre = xx[1,  1]*s2e;
+    adf = rho[1,  1]/sqrt(sre);
+    
+    if kstar> 0;
+        sumb = sumc(rho[2:kstar+1]);
+    else;
+        sumb = 0;
+    endif;
+    
+    s2vec = s2e/(1-sumb)^2;
+    
+    retp(adf,  rho[1,  1]+1,  s2vec);
+endp;
+
+
+proc (1) = __pd_s2ar(yts,  penalty,  kmax,  kmin);
+    
+    local nt,  min,  s2vec,  dyts,  reg,  k,  b,  e,  fit,  nef,  s2e,  dyts0,  reg0,  i;
+    local bic,  kbic,  sumb,  j,  msbar,  gap,  kopt,  ssr,  trgff,  sumy,  tau,  mic,  kk;
+    
+    nt = rows(yts);
+    min = 9999999999;
+    tau = zeros(kmax+1,  1);
+    s2e = 999*ones(kmax+1,  1);
+    
+    dyts = diff(yts,  1);
+    reg = lagn(yts,  1);
+    
+    i = 1;
+    do while i <= kmax;
+        reg = reg~lagn(dyts,  i);
+        i = i + 1;
+    endo;
+    
+    dyts0 = dyts;
+    reg0 = reg;
+    
+    /*loop over k*/
+    dyts0 = trimr(dyts,  kmax+1,  0);
+    reg0 = trimr(reg,  kmax+1,  0);
+    sumy = sumc(reg0[.,  1].*reg0[.,  1]);
+    nef = nt - kmax - 1;
+    
+    k = kmin;
+    do while k <= kmax;
+        /*{b, e, fit}=olsqr2(dyts0, reg0[., 1:k+1]);*/
+        b = dyts0/reg0[.,  1:k+1];
+        e = dyts0-reg0[., 1:k+1]*b;
+        s2e[k+1] = e'e/nef;
+        tau[k+1] = (b[1]*b[1])*sumy/s2e[k+1];
+        k = k + 1;
+    endo;
+    
+    kk = seqa(0,  1,  kmax+1);
+    
+    if penalty == 0;
+        mic = ln(s2e) + 2.0*(kk + tau)./nef;
+    else;
+        mic = ln(s2e) + ln(nef)*(kk)./nef;
+    endif;
+    
+    kopt = minindc(mic) - 1;
+    
+    retp(kopt);
+endp;
+
+
+proc (2) = __pd_glsd(y,  z,  cbar);
+    
+    local nt,  abar,  ya,  za,  bhat,  yt,  ssr;
+    
+    nt = rows(y);
+    abar = 1 + cbar/nt;
+    ya = zeros(nt,  1);
+    za = zeros(nt,  cols(z));
+    ya[1:1,  1] = y[1:1,  1];
+    za[1:1,  .] = z[1:1,  .];
+    ya[2:nt, 1] = y[2:nt, 1] - abar*y[1:nt-1,  1];
+    za[2:nt, .] = z[2:nt, .] - abar*z[1:nt-1,  .];
+    /*constructing the gls detrended series*/
+    bhat = inv(za'za)*za'ya;
+    yt = y - z*bhat;
+    recssr = (ya - za*bhat)'(ya - za*bhat);
+    
+    retp(yt,  ssr);
+endp;
+
+
+proc (2) = __pd_olsd(y,  z);
+    
+    local yd,  reg,  trend,  ahat,  fit,  i;
+    
+    { ahat,  yd,  fit } = olsqr2(y,  z);
+    
+    retp(yd,  sumc(yd[1:rows(yd)-1]^2)/(rows(yd)-1)^2);
+endp;
+
+
+/*
+** Response surface to approximate the c_bar parameter for
+** a vector of break fractions (lambda). Only allows up to 5 structural breaks!!
+**
+** Sintaxis:
+**
+**      c_bar = __pd_c_bar_rs(lam);
+**
+** Input:
+**
+**      lam     (5 x 1)-vector of break fraction parameters
+**
+** Output:
+**
+**      c_bar   scalar,  the c_bar parameter
+**
+*/
+
+proc (1) = __pd_c_bar_rs(lam);
+    
+    local lam1,  lam2,  lam3,  lam4,  lam5,  xreg,  param;
+    
+    lam1 = lam[1];
+    lam2 = lam[2];
+    lam3 = lam[3];
+    lam4 = lam[4];
+    lam5 = lam[5];
+    
+    xreg =  1~LAM1~LAM2~LAM3~LAM4~LAM5~LAM1^2~LAM2^2~LAM3^2~LAM4^2~LAM5^2~LAM1^3~LAM2^3~LAM3^3~LAM4^3~LAM5^3~LAM1^4~LAM2^4~
+        LAM3^4~LAM4^4~LAM5^4~ABS(LAM1-LAM2)~ABS(LAM1-LAM3)~ABS(LAM1-LAM4)~ABS(LAM1-LAM5)~ABS(LAM2-LAM3)~ABS(LAM2-LAM4)~
+        ABS(LAM2-LAM5)~ABS(LAM3-LAM4)~ABS(LAM3-LAM5)~ABS(LAM4-LAM5)~ABS(LAM1-LAM2)^2~ABS(LAM1-LAM3)^2~ABS(LAM1-LAM4)^2~
+        ABS(LAM1-LAM5)^2~ABS(LAM2-LAM3)^2~ABS(LAM2-LAM4)^2~ABS(LAM2-LAM5)^2~ABS(LAM3-LAM4)^2~ABS(LAM3-LAM5)^2~
+        ABS(LAM4-LAM5)^2~ABS(LAM1-LAM2)^3~ABS(LAM1-LAM3)^3~ABS(LAM1-LAM4)^3~ABS(LAM1-LAM5)^3~ABS(LAM2-LAM3)^3~ABS(LAM2-LAM4)^3~
+        ABS(LAM2-LAM5)^3~ABS(LAM3-LAM4)^3~ABS(LAM3-LAM5)^3~ABS(LAM4-LAM5)^3~ABS(LAM1-LAM2)^4~ABS(LAM1-LAM3)^4~ABS(LAM1-LAM4)^4~
+        ABS(LAM1-LAM5)^4~ABS(LAM2-LAM3)^4~ABS(LAM2-LAM4)^4~ABS(LAM2-LAM5)^4~ABS(LAM3-LAM4)^4~ABS(LAM3-LAM5)^4~ABS(LAM4-LAM5)^4;
+    
+    param = -13.12832|-36.53045|0|20.2423|-4.596202|-10.31678|115.2092|-29.18712|-68.36453|5.873121|0|
+        -130.337|74.64396|85.48737|0|0|51.98117|-53.03452|-36.27221|0|11.27727|-23.39517|-5.360149|23.99683|
+        4.788676|-27.10002|-35.78388|51.12371|-29.8518|-3.069174|-37.45898|64.95842|5.825729|-88.78176|
+        -11.54197|83.48645|125.2349|-173.1259|80.95821|2.863782|118.2829|-80.1287|0|128.872|6.387147|
+        -118.1043|-199.0615|247.6469|-98.05947|0|-160.5713|38.52177|0|-65.21576|0|62.86494|
+        117.9976|-127.5544|46.2304|0|79.1693;
+    
+    retp(xreg*param);
+    
+endp;
+
+
+/*
+** Response surface to approximate the 5% critical value for
+** the PT test. Only allows up to 3 structural breaks!!
+**
+** Sintaxis:
+**
+**      PT5cv = PT_5_rs(lam, c_bar);
+**
+** Inputs:
+**
+**      lam     (3 x 1)-vector of break fraction parameters
+**
+**      c_bar   Scalar,  denotes the c_bar parameter
+**
+** Output:
+**
+**      PT5cv   scalar,  the 5% critival value for the PT test
+**
+*/
+
+proc (1) = pd_PT_5_rsf(lam,  c_bar);
+    
+    local lam1,  lam2,  lam3,  lam4,  lam5,  xreg,  param;
+    
+    lam1 = lam[1];
+    lam2 = lam[2];
+    lam3 = lam[3];
+    lam4 = lam[4];
+    lam5 = lam[5];
+    
+    xreg =  1~LAM2~LAM3~LAM4~LAM5~LAM2^2~LAM3^2~LAM4^2~LAM5^2~LAM1^3~
+        LAM2^3~LAM3^3~LAM4^3~LAM5^3~LAM1^4~LAM2^4~LAM3^4~LAM4^4~
+        LAM5^4~C_BAR~C_BAR^2;
+    
+    param = 1.297220|-3.523523|-1.882518|-2.588280|-3.995227|12.56318|5.237713|
+        6.494368|13.19702|-0.613987|-17.91967|-6.205210|-7.241264|-17.14313|0.521344|
+        8.708664|2.640202|2.950094|7.708809|-0.278350|0.002254;
+    
+    retp(xreg*param);
+    
+endp;
+
+
+/*
+** Response surfaces to approximate the critical values for
+** the unit root test
+**
+** Sintaxis:
+**
+**      {critical_msb,  critical_mza,  critical_mzt,  critical_pt} = pd_msbur_rsf(lam, c_bar);
+**
+** Inputs:
+**
+**      lam             (5 x 1)-vector of break fraction parameters
+**
+**      c_bar           Scalar,  denotes the c_bar parameter
+**
+** Output:
+**
+**      critical_?      (4x1)-vector,  the critival values for the corresponding statistic.
+**
+**                      critical_?[1]   the 1% level of significance critival value
+**                      critical_?[2]   the 2.5% level of significance critival value
+**                      critical_?[3]   the 5% level of significance critival value
+**                      critical_?[4]   the 10% level of significance critival value
+**
+*/
+
+proc(4) = pd_msbur_rsf(lam,  c_bar);
+    
+    local lam1,  lam2,  lam3,  lam4,  lam5,  xreg,  param,  critical,  critical_pt,  critical_mza,  critical_msb,  critical_mzt;
+    
+    lam1 = lam[1];
+    lam2 = lam[2];
+    lam3 = lam[3];
+    lam4 = lam[4];
+    lam5 = lam[5];
+    
+    
+    xreg=
+        1~lam1~lam2~lam3~lam4~lam5
+        ~lam1^2~lam2^2~lam3^2~lam4^2~lam5^2
+        
+        ~c_bar~lam1*c_bar~lam2*c_bar~lam3*c_bar~lam4*c_bar~lam5*c_bar
+        ~c_bar^2~lam1*c_bar^2~lam2*c_bar^2~lam3*c_bar^2~lam4*c_bar^2~lam5*c_bar^2
+        
+        ~abs(lam1-lam2)*c_bar~abs(lam1-lam3)*c_bar~abs(lam1-lam4)*c_bar~abs(lam1-lam5)*c_bar
+        ~abs(lam2-lam3)*c_bar~abs(lam2-lam4)*c_bar~abs(lam2-lam5)*c_bar
+        ~abs(lam3-lam4)*c_bar~abs(lam3-lam5)*c_bar
+        ~abs(lam4-lam5)*c_bar
+        
+        ~abs(lam1-lam2)^2*c_bar~abs(lam1-lam3)^2*c_bar~abs(lam1-lam4)^2*c_bar~abs(lam1-lam5)^2*c_bar
+        ~abs(lam2-lam3)^2*c_bar~abs(lam2-lam4)^2*c_bar~abs(lam2-lam5)^2*c_bar
+        ~abs(lam3-lam4)^2*c_bar~abs(lam3-lam5)^2*c_bar
+        ~abs(lam4-lam5)^2*c_bar
+        
+        ~abs(lam1-lam2)^3*c_bar~abs(lam1-lam3)^3*c_bar~abs(lam1-lam4)^3*c_bar~abs(lam1-lam5)^3*c_bar
+        ~abs(lam2-lam3)^3*c_bar~abs(lam2-lam4)^3*c_bar~abs(lam2-lam5)^3*c_bar
+        ~abs(lam3-lam4)^3*c_bar~abs(lam3-lam5)^3*c_bar
+        ~abs(lam4-lam5)^3*c_bar
+        
+        ~abs(lam1-lam2)^4*c_bar~abs(lam1-lam3)^4*c_bar~abs(lam1-lam4)^4*c_bar~abs(lam1-lam5)^4*c_bar
+        ~abs(lam2-lam3)^4*c_bar~abs(lam2-lam4)^4*c_bar~abs(lam2-lam5)^4*c_bar
+        ~abs(lam3-lam4)^4*c_bar~abs(lam3-lam5)^4*c_bar
+        ~abs(lam4-lam5)^4*c_bar;
+    
+    param={
+        0.206065483	0.247173646	0.279911696	0.311573002	-26.31391813	-20.61149374	-12.1438623	-6.08490852	-2.52133657	-1.766570893	-1.46435731	-1.277987954	-3.518835863	-3.305558261	-3.454833615	-3.240058047	,
+        -0.131592168	-0.083176707	-0.079273217	-0.136364352	-129.5317914	-84.29286654	-36.47970616	-31.60984523	-6.668037145	-3.349004828	-3.066463141	-3.217982311	-15.69764073	-15.89838295	-10.46560768	-18.14173976	,
+        -0.018230144	0	0	0	-3.503797177	0	0	0	-0.193154126	0	0	0	2.698367477	0	0	3.094894401	,
+        -0.001829617	0	0.036867994	0	0	0	31.56762014	13.63038899	0	0	1.32634005	0.633301965	6.412055579	0	5.223542808	4.405653332	,
+        -0.071694008	-0.069876819	-0.098386033	-0.063992057	-22.82788603	-13.10518388	-39.87684614	-23.51617143	-2.651936734	-1.893827718	-2.317691146	-1.235047933	-10.32717062	-1.986102341	-8.649758634	-1.987760716	,
+        -0.113224418	-0.123618939	-0.114531349	-0.171308084	-71.88919188	-56.62886058	-22.2258743	-45.74522263	-4.308941432	-3.028641495	-2.666831955	-3.513398467	-5.232680619	-13.76324196	-6.17789082	-12.35876925	,
+        0.045497638	0.034139777	0.033789576	0.055316264	47.47172982	32.22798967	18.27175882	11.56516258	2.242409839	1.205414124	1.172595231	1.065619758	4.664094355	5.198014133	4.311973301	6.869459093	,
+        0.005667139	0.007183722	0.014895671	0.00832245	0	5.942060926	8.371062059	6.269767228	0	0.307559368	0.499975826	0.381693852	0	0	1.28702057	0	,
+        0	0	0	0.007275262	0	0	0	0	-0.085060207	0	0	0.194838181	0	0	0	0	,
+        0.011393725	0	0.006925649	0.007101886	14.70004959	11.44618918	8.81485526	8.184740859	0.87936997	0.56718476	0.473032483	0.402464154	1.183189107	1.643475816	0	1.791921929	,
+        0.041416456	0.037458345	0.036987117	0.053884486	37.54355821	29.58007215	20.19100032	26.06901605	2.110275336	1.487278396	1.44212234	1.676575305	4.970060977	6.400077634	6.119151722	6.360822366	,
+        0.006744983	0.009229194	0.01117728	0.012830135	0	0	0.383835339	0.85365241	0.114546234	0.141951363	0.144171363	0.139480635	-0.544592947	-0.53171116	-0.666577377	-0.74225554	,
+        -0.008881686	-0.005163807	-0.00419873	-0.007623439	-8.508298137	-5.471425562	-1.873513518	-2.233163794	-0.457380818	-0.223355446	-0.186935755	-0.219966762	-1.116029433	-1.044782065	-0.624407428	-1.106702061	,
+        -0.000477302	0.001411259	0.001490823	0.000992921	0	0.821678805	0.839344685	0.693315109	0	0.040353055	0.049102085	0.044657513	0.3017767	0.013704832	0.128412682	0.273588757	,
+        0	0	0.003166102	0.000383907	0.315654917	0.353092298	2.84583848	1.121511646	0	0.017148054	0.120078208	0.072095127	0.636962573	0.022144415	0.523175329	0.412172316	,
+        -0.004879334	-0.005905712	-0.007875096	-0.005118819	-0.270010842	0	-2.545569579	-1.407264853	-0.12770179	-0.112106002	-0.155499347	-0.077321047	-0.756479306	0	-0.693933651	0	,
+        -0.005109823	-0.006312857	-0.005745887	-0.008799213	-2.346920289	-1.877066153	0	-1.439270423	-0.15405538	-0.106423683	-0.083556342	-0.135095954	0	-0.587410296	0	-0.447876179	,
+        0.000147113	0.000180001	0.000216343	0.000261777	0.010036211	0	0	0.019804635	0.003272583	0.002943926	0.002822847	0.003038937	0	0.004379253	0	0	,
+        -0.00018911	-0.000109989	-7.2476E-05	-0.000130686	-0.180808958	-0.117234577	-0.036217559	-0.050234142	-0.009870463	-0.004857975	-0.003790936	-0.00464363	-0.023994328	-0.021043324	-0.012868843	-0.021946248	,
+        0	4.98993E-05	3.87592E-05	2.10757E-05	0	0.023326443	0.022083426	0.01757633	0	0.001151668	0.001220296	0.001083382	0.007411666	0	0.003373215	0.005094191	,
+        0	0	6.56928E-05	0	0.012434324	0.014488305	0.063997488	0.02118732	0	0.000643625	0.002670921	0.001514238	0.014861192	0	0.01257116	0.009431941	,
+        -0.000101491	-0.000129658	-0.000170948	-0.000117271	0	0	-0.053703036	-0.033337638	-0.002353799	-0.002482217	-0.003375858	-0.001867064	-0.016239629	0	-0.014642206	0	,
+        -9.12367E-05	-0.000115959	-0.000107388	-0.000164942	-0.042581947	-0.034973534	0	-0.028709714	-0.002863078	-0.002011657	-0.001581567	-0.002664683	0	-0.01272247	-0.000903779	-0.009291186	,
+        0.001502737	0.001632669	0.001702841	0.002021723	1.632727956	1.605877644	1.004404184	0.868853384	0.083333993	0.079478462	0.065367552	0.063715851	0.310198878	0.360029916	0.330191659	0.381965256	,
+        0	0	0	0.001328702	0	0	0.202483643	0.620890565	0.006479305	0	0.006933813	0.032275901	0	0.134517084	0	0	,
+        0	0	0	0	-0.192709346	0	0	0.36221429	-0.021488357	0	-0.001200112	0.011828416	0	0.099982238	0.103069901	0.084964524	,
+        0.000680309	0	0.000414141	0	0.499555624	0	0.269613377	0.236974663	0.040862054	0.022834275	0.016456528	0.017878489	0.127583576	0	0.129658797	0.079531443	,
+        0.001076323	0.000746542	0.001534534	0.001854214	1.222722601	0.980994239	0.952309602	0.981692971	0.06103088	0.048322535	0.062848187	0.068704135	0.34819102	0.351457151	0.285248474	0.389323838	,
+        0.001602307	0.001718432	0.000513486	0.001320012	1.284000309	0.790608102	0.29128284	0.192243305	0.073187675	0.037307962	0.015603486	0.008831525	0	0.161831707	0.161667434	0	,
+        -3.13393E-05	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0.178056784	,
+        0.000915733	0.000465616	0.000828461	0.0015141	0.895732659	0.635112942	0.357984838	0.70758854	0.051259672	0.033026078	0.039391705	0.054005928	0.114186355	0.272130694	0.173459972	0.236092255	,
+        0.001297134	0.001989702	0.001648169	0.000516108	1.486377973	1.448576409	1.438138712	0.44934008	0.06084729	0.063368696	0.060177344	0.023938672	0.184586257	0.01941423	0.270773963	0.306240705	,
+        0.000779578	0.000538182	0.001171215	0.001602482	0.553062822	0.350422194	0.468555532	0.425359716	0.03353265	0.028507047	0.042001183	0.043941342	0.138176188	0.167194529	0.177010468	0.210812736	,
+        -0.004345646	-0.005825265	-0.006868541	-0.00796319	-4.479282599	-4.8858522	-3.136191913	-2.458114748	-0.231523802	-0.248286094	-0.213133815	-0.194637365	-0.922468402	-0.985366571	-0.923999903	-1.130047	,
+        0	0	-5.04974E-05	-0.004738169	0	0	-0.403826354	-1.909565827	-0.009229909	0	-0.008242746	-0.098804196	0	-0.507406066	0	-0.021572133	,
+        0	0	0	-5.05847E-05	0	0	-0.417036823	-1.119339897	0.043558418	0	0	-0.02166457	0	-0.454778552	-0.405307294	-0.332490735	,
+        -0.004679147	-0.002222758	-0.004695542	-0.003025465	-3.000000235	-0.964674073	-1.860955551	-1.416293256	-0.208817124	-0.134046896	-0.136841302	-0.125359252	-0.631341206	0	-0.587433653	-0.487244954	,
+        -0.002164419	-0.001967051	-0.005817976	-0.006214813	-2.092813644	-1.850008801	-2.941485078	-2.857336306	-0.104657956	-0.097680824	-0.195504402	-0.201534614	-1.128138371	-0.979191193	-0.703716053	-1.028065809	,
+        -0.005484897	-0.006163019	-0.00124581	-0.004023965	-4.057652598	-2.738110318	-0.61059659	-0.332618017	-0.222016788	-0.126749269	-0.030055771	-0.009635946	0	-0.599177023	-0.584313329	0	,
+        0	0	0	0	0	0	0	0	0	0	0	0	0.089011851	0.124842286	0	-0.508722695	,
+        -0.00165207	-0.001163458	-0.003198713	-0.005190305	-1.276113948	-0.889271056	-0.747636053	-1.839058302	-0.069225581	-0.055577102	-0.112927132	-0.159646685	-0.154761007	-0.597212331	-0.288535459	-0.379766195	,
+        -0.003789148	-0.0064054	-0.004817945	-0.000649124	-4.496633229	-4.594051759	-4.597029802	-0.694146329	-0.167498301	-0.194612003	-0.171395671	-0.037729237	-0.67125797	0	-0.997655245	-1.102797825	,
+        -0.001096697	-0.000571708	-0.00416902	-0.004537825	0	0	-1.150001536	-0.397475842	0	-0.036557664	-0.117430944	-0.100061587	-0.189720447	-0.156458132	-0.171258066	-0.367949029	,
+        0.004725461	0.008280992	0.010451449	0.011883757	4.700545573	6.27119741	4.178380993	3.094835252	0.247801364	0.322844187	0.291165672	0.255602766	1.114026174	1.079445866	1.116574652	1.435226881	,
+        0	0	0	0.006868754	-0.046355934	0	0.220249151	2.5334366	0	0	0	0.133924549	0	0.776781333	0	0.023477765	,
+        0	0	0	0	0.811913273	0	0.998239994	1.47110097	-0.023485383	0	0	0.010896637	0	0.75874924	0.657353781	0.52514633	,
+        0.009039167	0.005334347	0.009880517	0.007579264	5.503001956	2.327899451	3.493280873	2.574956682	0.361357325	0.240732181	0.272754543	0.241334704	1.095018463	0	0.92651935	0.916080571	,
+        0.001237718	0.001401401	0.008484588	0.008416308	1.02572597	1.046754093	3.967072173	3.760263385	0.052317695	0.060133444	0.261308977	0.263752707	1.565059276	1.23081264	0.745421462	1.252746367	,
+        0.008139359	0.009159069	0.000918836	0.005481258	5.865893641	4.234610015	0.400719375	0.166727218	0.311141107	0.193402656	0.018125688	0	0	0.979632255	0.860652087	0	,
+        0	-5.0721E-05	0	-4.79068E-05	-0.038957002	0	0	-0.024479515	-0.002278556	0	0	-0.001680802	-0.216616021	-0.359131022	0	0.639272615	,
+        0.000809364	0.000809675	0.004538856	0.007550505	0	0	0.474813133	2.435657851	0	0.0278107	0.141916393	0.221121513	0	0.592286581	0.142276904	0.175199011	,
+        0.004893033	0.00886491	0.006136727	0	6.088534864	6.377018844	6.286955077	0.283095346	0.216868391	0.263466015	0.214566444	0.01661417	1.025111042	0	1.492001945	1.627703373	,
+        0.000352955	0	0.005980789	0.005904448	-1.299540015	-0.727894226	1.347458203	0	-0.07801745	0.011508158	0.152800184	0.120073816	0.059252271	0	0	0.316314136	,
+        -0.00179525	-0.004086714	-0.005417723	-0.006105744	-1.709027953	-2.961023806	-2.016300404	-1.471404534	-0.092721304	-0.151065777	-0.142110387	-0.122864487	-0.497264715	-0.42244023	-0.500157415	-0.683828054	,
+        -0.000109346	-5.35444E-05	0	-0.003596853	0	0	0	-1.260438948	0	0	0	-0.069784359	-0.009288362	-0.426512724	0	0	,
+        0	0	-5.57416E-05	0	-0.674459313	0	-0.621350492	-0.713530106	0	0	0	0	0	-0.427537109	-0.374390888	-0.288974182	,
+        -0.005138561	-0.003190206	-0.00580564	-0.004742335	-3.034884695	-1.395732499	-1.970609696	-1.436365327	-0.195891984	-0.132984979	-0.157536611	-0.138135224	-0.602410686	-0.011191895	-0.488796736	-0.530722743	,
+        0	0	-0.004283777	-0.004053352	0	0	-1.984788663	-1.891122229	0	0	-0.126796139	-0.128361041	-0.785227631	-0.594785802	-0.300198458	-0.603224179	,
+        -0.004463549	-0.004931673	0	-0.002862951	-3.272972482	-2.462761762	0	0	-0.170881185	-0.111894795	0	0	-0.010121395	-0.588066534	-0.443113015	0	,
+        0	0	0	0	0	0	0	0	0	0	0	0	0.132384584	0.271088476	0	-0.311195596	,
+        0	0	-0.002139895	-0.003923755	0.528575644	0.366450912	0	-1.31877996	0.026385386	0	-0.064682374	-0.114348818	0.067265656	-0.247275032	0	0	,
+        -0.00241816	-0.004474527	-0.00297588	0.00023128	-3.169547182	-3.321085197	-3.169497865	0	-0.1144538	-0.135673769	-0.103644277	0	-0.570723203	-0.03959037	-0.788709363	-0.849343883	,
+        0	0	-0.002984229	-0.002989047	0.798089652	0.412611617	-0.64630145	0	0.048845232	0	-0.074881653	-0.061526855	0	0	0	-0.147843764	};
+    
+    
+    
+    critical = xreg*param;
+    
+    critical_msb = critical[1:4];
+    critical_mza = critical[5:8];
+    critical_mzt = critical[9:12];
+    critical_pt = critical[13:16];
+    
+    retp(critical_msb',  critical_mza',  critical_mzt',  critical_pt');
+    
+endp;
+
+
+
+@++++++++++++++++++++++++++++++++++++++++++++++++++@
+@++++++++++++++++++++++++++++++++++++++++++++++++++@
+@ Using the algorithm to estimate the break points @
+@++++++++++++++++++++++++++++++++++++++++++++++++++@
+@++++++++++++++++++++++++++++++++++++++++++++++++++@
+
+/*
+** Procedure to estimate the structural breaks in a GLS-detrended framework.
+** This procedure returns the unit root statistics.
+**
+** Sintaxis:
+**
+**      {pt, mpt, adf, za, mza, msb, mzt, min_tb, cbar} = __pdsbur_multiple_gls_algorithm(y, model, penalty, kmax, kmin, estimation);
+**
+** Inputs:
+**
+**      y       (Tx1) time series with the variable to be analysed.
+**
+**      model   Vector,  whose dimension depends on whether there are structural
+**              breaks or not,  as well as on the fact of whether the structural
+**              breaks are known or have to be estimated.
+**
+**              model[1] = 0 for the constant case,  without structural breaks,
+**              model[1] = 1 for the linear time trend case,  without structural breaks,
+**              model[1] = 2 for the linear time trend that is affected by multiple
+**                          structural breaks; the structural breaks affect
+**                          the slope of the time trend.
+**              model[1] = 3 for the linear time trend that is affected by multiple
+**                          structural breaks; the structural break affects both the level and
+**                          the slope of the time trend.
+**
+**              model[2] = 0 when the structural breaks are known,
+**              model[2] = 1 when the structural breaks are unknown,
+**
+**              model[3] when the structural breaks are known,  this collects an (mx1)
+**                          vector with the break points
+**              model[3] when the structural breaks are unknown,  this scalar indicates
+**                          the number of structural breaks that is assumed. Note that,  at the moment,
+**                          the procedure is designed for up to m <= 5 structural breaks.
+**
+**      penalty     scalar,  indicates the penalty function that defines the information
+**                  criteria that is used to determine the number of lags used to estimate
+**                  the long-run variance. penalty = 0 for maic,  and penalty = 1 for bic.
+**
+**      kmax    scalar,  denotes the maximum number of lags that is used to estimate the long-run variance.
+**
+**      kmin    scalar,  denotes the minimum number of lags that is used to estimate the long-run variance.
+**
+**
+** Output:
+**
+**      pt      scalar,  the value for the Pt unit root test.
+**
+**      min_tb  (mx1)-vector of break points
+**
+**      cbar    scalar,  the value of the c_bar parameter that is used in the quasi GLS-detrending.
+**
+**
+**  Josep Lluís Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
+**  Last modification: May 26th,  2006,  20:52 pm
+*/
+
+proc (9) = __pdsbur_multiple_gls_algorithm(y,  model,  penalty,  kmax,  kmin,  maxiter);
+    
+    local t,  z,  trm,  bigt,  h,  m,  q,  global,  datevec,  bigvec,  count,  differe,  cbar,  alpha;
+    local cns_gls,  tend_gls,  z_gls,  y_gls,  datevec_iteration,  du,  dt,  i;
+    local yt,  ssra,  ahat,  r,  fit,  s2u,  sumyt2,  yt_ols,  ssra_ols,  krule,  adf,  a1,  sar,  bt,  za,  mza,  msb,
+        mzt,  ytf,  ssr1,  pt,  mpt;
+    local ssr_prev_iter,  ssr_est_prev,  dx,  delta,  ssr_est;
+    
+    
+    
+    t = rows(y);
+    
+    @++++++++++++++++++++++++++++++++++++++@
+    @ Computing the break points using OLS @
+    @++++++++++++++++++++++++++++++++++++++@
+    
+    z = ones(t,  1)~seqa(1,  1,  t);
+    
+    
+    trm = 0.10;               @ trimming parameter that specifes the minimal lenght of a segment as
+    a proportion of the sample size.@
+    
+    bigt = t;
+    h = int(trm*bigT);
+    m = model[3];
+    q = cols(z);
+    
+    { global,  datevec,  bigvec } = __pd_dating(y,  z,  h,  m,  q,  bigt);
+    
+    @++++++++++++++++++++++++++++++++++++++@
+    @ Computing the break points using GLS @
+    @++++++++++++++++++++++++++++++++++++++@
+    
+    datevec = selif(datevec[.,  m],  datevec[.,  m] .gt 0);
+    datevec = sortc(datevec,  1);
+    
+    count = 0;
+    
+    ssr_prev_iter = global[m];
+    
+    differe = 0;
+    do while differe/=-1;
+        
+        if m < 5;
+            cbar = __pd_c_bar_rs((datevec/t)|zeros(5-m,  1));
+        elseif m == 5;
+            cbar = __pd_c_bar_rs(datevec/t);
+        endif;
+        
+        alpha = 1 + cbar/T;
+        
+        cns_gls = 1|((1-alpha)*ones(t-1,  1));
+        tend_gls = 1|((-cbar/T)*seqa(2,  1,  t-1) + 1);
+        z_gls = cns_gls~tend_gls;
+        y_gls = y[1]|(y[2:T]-alpha*y[1:t-1]);
+        
+        { global,  datevec_iteration,  bigvec } = __pd_dating_gls(y_gls,  z_gls,  h,  m,  q,  bigt);
+        
+        if count<maxiter and abs(global[m]-ssr_prev_iter)>1e-3; @ We set the maximum number of iterations at 10 @
+            ssr_prev_iter = global[m];
+            datevec = datevec_iteration[.,  m];
+            count = count + 1;
+        else;
+            differe = -1; @ stop the iteration @
+        endif;
+        
+    endo;
+    
+    
+    @+++++++++++++++++++++++++++++++++++++++++++++++@
+    @ Computing using restictions on the parameters (we use the difference of the SSR between two
+    iterations to define the iteration @
+    @+++++++++++++++++++++++++++++++++++++++++++++++@
+    
+    
+    count = 0;
+    ssr_est_prev = y'y;
+    start_iter:
+        
+        { dx,  delta,  ssr_est } = __pd_est2_gls(y,  model,  q,  m,  bigt,  trm,  datevec);
+    
+    if (count < maxiter) and (abs(ssr_est-ssr_est_prev) > 1e-3);
+        count = count + 1;
+        ssr_est_prev = ssr_est;
+        datevec = sortc(dx,  1);
+        goto start_iter;
+    endif;
+    
+    if model[1] == 2;
+        
+        dt = zeros(datevec[1],  1)|seqa(1,  1,  t-datevec[1]);
+        
+        z = z~dt;
+        
+        i = 2;
+        do until i>m; @ Construct the matrix of regressors @
+            dt = zeros(datevec[i],  1)|seqa(1,  1,  t-datevec[i]);
+            z = z~dt;
+            i = i + 1;
+        endo;
+        
+    elseif model[1] == 3;
+        
+        du = zeros(datevec[1],  1)|ones(t-datevec[1],  1);
+        dt = zeros(datevec[1],  1)|seqa(1,  1,  t-datevec[1]);
+        
+        z = z~du~dt;
+        
+        i = 2;
+        do until i>m; @ Construct the matrix of regressors @
+            du = zeros(datevec[i],  1)|ones(t-datevec[i],  1);
+            dt = zeros(datevec[i],  1)|seqa(1,  1,  t-datevec[i]);
+            z = z~du~dt;
+            i = i +1 ;
+        endo;
+        
+    endif;
+    
+    { yt,  ssra } = __pd_glsd(y,  z,  cbar); /* transforming the data*/
+    { ahat,  r,  fit } = olsqr2(yt[2:t,  1] ,  yt[1:t-1,  1]);  /* estimate the alpha-hat*/
+    s2u = r'r/(t-1);
+    sumyt2 = sumc(yt[1:t-1,  1]^2)/(t-1)^2;
+    
+    { yt_ols,  ssra_ols } = __pd_olsd(y,  z);
+    krule = __pd_s2ar(yt_ols,  penalty,  kmax,  kmin); /* estimate s2ar,  using OLS detrended data!!!! See the note of Perron */
+    { adf,  a1,  sar } = __pd_adfp(yt,  krule);
+    
+    /*constructing zalpha and the M tests using GLS detrended data*/
+    bt = t - 1;
+    za = bt*(ahat-1) - (sar-s2u)/(2*sumyt2);
+    mza = ((yt[t, 1]^2)/bt-sar)/(2*sumyt2);
+    msb = sqrt(sumyt2/sar);
+    mzt = mza*msb;
+    
+    /* construct PT and MPT */
+    { ytf,  ssr1 } = __pd_glsd(y,  z,  0);
+    pt = (ssra -(1 + cbar/t)*ssr1)/sar;
+    mpt = (cbar*cbar*sumyt2 + (1-cbar)*(yt[t,  1]^2)/t)/sar;
+    
+    retp(pt,  mpt,  adf,  za,  mza,  msb,  mzt,  datevec,  cbar);
+    
+endp;
+
+
+
+
+
+
+
+
+
+
+@++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++@
+@                            Code using OLS detrending                     @
+@++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++@
+
+/* This procedure calculates the break points that globally minimizes the SSR in a un-restricted model. */
+
+proc (3) = __pd_dating(y,  z,  h,  m,  q,  bigt);
+    
+    /* Input:
+    y: dependent variable.
+    z: independent variable.
+    h: mimunum number of observations in each segment
+    m: number of breaks.
+    q: number of regressors
+    bigt: number of obervations in the sample
+    Output:
+    global: The minimized SSR under optimal _pd_partitons.
+    datevec: the estimated break dates.
+    bigvec:the big vector containing the SSR for all possible segments
+    */
+    local datevec,  optdat,  optssr,  dvec,  i,  ssrmin,  datx,  j1,  ib,  jlast;
+    local global,  vecssr,  jb,  xx,  bigvec;
+    
+    datevec = zeros(m,  m);                                      @ up-tiangular matrix contains the estimated break
+    dates for break numbers from one to m@
+    optdat = zeros(bigt,  m);
+    @row index corresponds to the ending dates,
+    column index corresponds to the number of breaks
+    permitted before the ending date
+    the cell contains the optimal final break date@
+    optssr = zeros(bigt,  m);                    @ same as above,  the cell contains the SSR
+    corresponding to that break sturcture@
+    dvec = zeros(bigt,  1);                         @ the index is the date  after which we inserting
+    the break point.The cell
+    contains the corresponding SSR@
+    global = zeros(m,  1);                            @ Global SSR when i breaks are permitted@
+    
+    bigvec = zeros(bigt*(bigt+1)/2,  1);        @ the vector that contains the SSR corresponding
+    to all the possible segments.
+    The SSr corresponding to the segment starting
+    at J and lasting for span corresponds to the index
+    T(j-1)-(j-1)(j-2)/2+span@
+    /* -------------------------Now creat the big vector of residuals------------------------------------*/
+    /* according to different starting points*/
+    i = 1;
+    do while i <= bigt-h+1;
+        
+        { vecssr } = ssr(i,  y,  z,  h,  bigt);
+        
+        bigvec[(i-1)*bigt+i-(i-1)*i/2:i*bigt-(i-1)*i/2, 1] = vecssr[i:bigt, 1];
+        i = i + 1;
+    endo;
+    
+    @
+    Section that applies the dynamic programming algorithm to look for the
+    optimal breaks
+    The first case is when m = 1. Here the dynamic programming algorithm is not
+    needed and one call to the __pd_parti(.) procedure is enough.
+    @
+    
+    if m == 1;
+        { ssrmin,  datx } = __pd_parti(1,  h,  bigt-h,  bigt,  bigvec,  bigt);
+        datevec[1,  1] = datx;
+        global[1,  1] = ssrmin;
+    else;
+        
+        @ when m > 1,  a dynamic programming algorithm is used.
+        The first step is to obtain the optimal one break partitions for all
+        possible ending dates from 2h to T-mh+1.
+        The optimal dates are stored in a vector optdat.
+        The associated ssr are stored in a vector optssr.
+        @
+        j1 = 2*h;                                                                              @First loop. Looking for the@
+        do while j1 <= bigt;                                                        @optimal one break partitions@
+            { ssrmin,  datx } = __pd_parti(1,  h,  j1-h,  j1,  bigvec,  bigt);           @for break dates between h and@
+            optssr[j1,  1] = ssrmin;                                                     @T-h. j1 is the last date of the@
+            optdat[j1,  1] = datx;                                                           @segments.@
+            j1 = j1 + 1;
+        endo;
+        global[1,  1] = optssr[bigt,  1];
+        datevec[1,  1] = optdat[bigt,  1];
+        
+        @
+        When this is done the algorithm looks for optimal 2, 3, ... breaks
+        partitions. The index used is ib.
+        @
+        
+        ib = 2;
+        do while ib <= m;
+            if ib == m;                 @if we have reached the highest number of breaks
+                considered,  only one segment is considered,  that
+                which ends at the last date of the sample.@
+                jlast = bigt;
+                jb = ib*h;                       /* date of the break */
+                do while jb <=jlast-h;
+                    dvec[jb,  1] = optssr[jb,  ib-1]+bigvec[(jb+1)*bigt-jb*(jb+1)/2,  1];
+                    @optssr[jb, ib-1]: starting at 1, ending at jb,  with ib-1 breaks inside@
+                    @bigvec[(jb+1)*bigt-jb*(jb+1)/2, 1]: starting at jb+1,  till big T@
+                    jb = jb + 1;
+                endo;
+                optssr[jlast,  ib] = minc(dvec[ib*h:jlast-h,  1]);
+                optdat[jlast,  ib] = (ib*h-1)+minindc(dvec[ib*h:jlast-h,  1]);
+                
+            else;
+                @if we have not reached the highest number of breaks
+                considered,  we need to loop over the last date of
+                the segment,  between (ib+1)*h and T.@
+                jlast = (ib+1)*h;
+                
+                do while jlast <= bigt;
+                    
+                    jb = ib*h;                       /* date of the break */
+                    
+                    do while jb <=jlast-h;
+                        dvec[jb,  1] = optssr[jb,  ib-1] + bigvec[jb*bigt-jb*(jb-1)/2+jlast-jb,  1];
+                        jb = jb + 1;
+                    endo;
+                    optssr[jlast,  ib] = minc(dvec[ib*h:jlast-h,  1]);
+                    optdat[jlast,  ib] = (ib*h - 1)+minindc(dvec[ib*h:jlast-h,  1]);
+                    jlast = jlast + 1;
+                endo;
+            endif;
+            
+            @At each time we loop the results with ib breaks are retrieved
+            and printed@
+            
+            datevec[ib,  ib] = optdat[bigt,  ib];
+            
+            i=1;
+            do while i <= ib-1;
+                xx = ib-i;
+                datevec[xx,  ib] = optdat[datevec[xx+1,  ib],  xx];
+                i = i + 1;
+            endo;
+            global[ib,  1] = optssr[bigt,  ib];
+            
+            ib = ib + 1;
+        endo;
+        
+    endif;                           /*closing the if for the case m >1*/
+    retp(global,  datevec,  bigvec);
+endp;
+
+@********************************************************************@
+/* This procedure computes recursive residuals from a data set that starts at date "start" and ends at date "last". */
+proc (1) = recssr(start,  y,  z,  h,  last, ...);
+    local vecssr,  delta1,  delta2,  inv1,  inv2,  invz,  res,  v,  f,  r;
+    /*
+    Inputs:
+    start: starting entry of the sample used.
+    last: ending date of the last segment considered
+    y: dependent variable
+    z: matrix of regressors of dimension q
+    h: minimal length of a segment
+    gls Optional argument, indicator to compute gls ssr. Default = 0;
+    Output:    vecssr:    a vector of sum of squared residuals (SSR) of length last-start+1
+    (stored for convenience in a vector of length T).
+    
+    ***Note: that the first h-1 elements have no meaning,  usually is initialized as zero@
+    */
+    
+    // Get dynamic arguments
+    gls_on = dynargsGet(1, 0);
+    
+    if gls_on;
+        retp(__recssr_gls(start,  y,  z,  h,  last);
+    endif;
+    
+    // Initialize storage vector
+    vecssr = zeros(last,  1);
+    
+    // Initialize recursion
+    
+    inv1 = inv(z[start:start+h-1,  .]'z[start:start+h-1,  .]);
+    delta1 = inv1*(z[start:start+h-1,  .]'y[start:start+h-1,  1]);
+    res = y[start:start+h-1,  1] - z[start:start+h-1,  .]*delta1;
+    vecssr[start+h-1,  1] = res'res;
+    
+    /* loop to construct the recursive residuals and update the SSR */
+    
+    r = start + h;
+    do while r <= last;
+        v = y[r,  1] - z[r,  .]*delta1;
+        invz = inv1*z[r,  .]';
+        f = 1 + z[r,  .]*invz;
+        delta2 = delta1+(invz*v)/f;
+        inv2 = inv1-(invz*invz')/f;
+        inv1 = inv2;
+        delta1 = delta2;
+        vecssr[r,  1] = vecssr[r-1,  1] + v*v/f;
+        r = r + 1;
+    endo;
+    retp(vecssr);
+endp;
+
+/* procedure to obtain an optimal one break partitions for a segment that starts at date start and ends at date last. */
+proc (2) = __pd_parti(start,  b1,  b2,  last,  bigvec,  bigt);
+    local k,  dvec,  j,  ssrmin,  dx,  ini,  jj;
+    /* Input:
+    start: begining of the segment considered
+    b1: first possible break date
+    b2: last possible break date
+    last: end of segment considered
+    Output:         SSrmin: minimized SSR
+    dx: the break date
+    */
+    dvec = zeros(bigt,  1);
+    ini = (start-1)*bigt-(start-2)*(start-1)/2 + 1; @ the starting date of the  data@
+    
+    j = b1;
+    do while j<=b2;
+        jj = j-start;
+        k = j*bigt - (j - 1)*j/2 + last - j;
+        dvec[j,  1] = bigvec[ini+jj,  1] + bigvec[k,  1];
+        @ the first term: the SSr corresponding to data from date start to j
+        The second term: the ssr corresponding to data from (j+1)
+        and lasts for last -j @
+        j = j + 1;
+    endo;
+    ssrmin = minc(dvec[b1:b2,  1]);
+    dx = (b1 - 1) + minindc(dvec[b1:b2,  1]);
+    retp(ssrmin,  dx);
+endp;
+
+
+
+
+@++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++@
+@                            Code using GLS detrending                     @
+@++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++@
+
+/* This procedure calculates the break points that globally minimizes the SSR in a un-restricted model. */
+/* Input:
+y: dependent variable.
+z: independent variable.
+h: mimunum number of observations in each segment
+m: number of breaks.
+q: number of regressors
+bigt: number of obervations in the sample
+Output:
+global: The minimized SSR under optimal partitons.
+datevec: the estimated break dates.
+bigvec:the big vector containing the SSR for all possible segments
+*/
+
+proc (3) = __pd_dating_gls(y,  z,  h,  m,  q,  bigt);
+    
+    local datevec,  optdat,  optssr,  dvec,  i,  ssrmin,  datx,  j1,  ib,  jlast;
+    local global,  vecssr,  jb,  xx,  bigvec;
+    
+    datevec = zeros(m,  m);                                      @ up-tiangular matrix contains the estimated break
+    dates for break numbers from one to m@
+    optdat = zeros(bigt,  m);
+    @row index corresponds to the ending dates,
+    column index corresponds to the number of breaks
+    permitted before the ending date
+    the cell contains the optimal final break date@
+    optssr = zeros(bigt,  m);                    @ same as above,  the cell contains the SSR
+    corresponding to that break sturcture@
+    dvec = zeros(bigt,  1);                         @ the index is the date  after which we inserting
+    the break point.The cell
+    contains the corresponding SSR@
+    global = zeros(m,  1);                            @ Global SSR when i breaks are permitted@
+    
+    bigvec = zeros(bigt*(bigt + 1)/2,  1);        @ the vector that contains the SSR corresponding
+    to all the possible segments.
+    The SSr corresponding to the segment starting
+    at J and lasting for span corresponds to the index
+    T(j-1)-(j-1)(j-2)/2+span@
+    /* -------------------------Now creat the big vector of residuals------------------------------------*/
+    /* according to different starting points*/
+    i = 1;
+    do while i <= bigt-h+1;
+        
+        { vecssr } = recssr(i,  y,  z,  h,  bigt, 1);
+        
+        bigvec[(i-1)*bigt+i-(i-1)*i/2:i*bigt-(i-1)*i/2,  1] = vecssr[i:bigt,  1];
+        i = i + 1;
+    endo;
+    
+    @
+    Section that applies the dynamic programming algorithm to look for the
+    optimal breaks
+    The first case is when m = 1. Here the dynamic programming algorithm is not
+    needed and one call to the __pd_parti(.) procedure is enough.
+    @
+    
+    if m == 1;
+        { ssrmin,  datx } = __pd_parti(1,  h,  bigt-h,  bigt,  bigvec,  bigt);
+        datevec[1,  1] = datx;
+        global[1,  1] = ssrmin;
+    else;
+        
+        @ when m > 1,  a dynamic programming algorithm is used.
+        The first step is to obtain the optimal one break partitions for all
+        possible ending dates from 2h to T-mh+1.
+        The optimal dates are stored in a vector optdat.
+        The associated ssr are stored in a vector optssr.
+        @
+        j1 = 2*h;                                                                              @First loop. Looking for the@
+        do while j1 <= bigt;                                                        @optimal one break partitions@
+            { ssrmin,  datx } = __pd_parti(1,  h,  j1-h,  j1,  bigvec,  bigt);           @for break dates between h and@
+            optssr[j1,  1] = ssrmin;                                                     @T-h. j1 is the last date of the@
+            optdat[j1,  1] = datx;                                                           @segments.@
+            j1 = j1 + 1;
+        endo;
+        global[1,  1] = optssr[bigt,  1];
+        datevec[1,  1] = optdat[bigt,  1];
+        
+        @
+        When this is done the algorithm looks for optimal 2, 3, ... breaks
+        partitions. The index used is ib.
+        @
+        
+        ib = 2;
+        do while ib <= m;
+            if ib == m;                 @if we have reached the highest number of breaks
+                considered,  only one segment is considered,  that
+                which ends at the last date of the sample.@
+                jlast = bigt;
+                jb = ib*h;                       /* date of the break */
+                do while jb <=jlast-h;
+                    dvec[jb,  1] = optssr[jb,  ib-1] + bigvec[(jb+1)*bigt-jb*(jb+1)/2,  1];
+                    @optssr[jb, ib-1]: starting at 1, ending at jb,  with ib-1 breaks inside@
+                    @bigvec[(jb+1)*bigt-jb*(jb+1)/2, 1]: starting at jb+1,  till big T@
+                    jb = jb + 1;
+                endo;
+                optssr[jlast,  ib] = minc(dvec[ib*h:jlast-h,  1]);
+                optdat[jlast,  ib] = (ib*h-1)+minindc(dvec[ib*h:jlast-h,  1]);
+                
+            else;
+                @if we have not reached the highest number of breaks
+                considered,  we need to loop over the last date of
+                the segment,  between (ib+1)*h and T.@
+                jlast = (ib+1)*h;
+                
+                do while jlast <= bigt;
+                    
+                    jb = ib*h;                       /* date of the break */
+                    
+                    do while jb <=jlast-h;
+                        dvec[jb,  1] = optssr[jb,  ib-1]+bigvec[jb*bigt-jb*(jb-1)/2+jlast-jb,  1];
+                        jb = jb + 1;
+                    endo;
+                    optssr[jlast,  ib] = minc(dvec[ib*h:jlast-h,  1]);
+                    optdat[jlast,  ib] = (ib*h - 1) + minindc(dvec[ib*h:jlast-h,  1]);
+                    jlast = jlast + 1;
+                endo;
+            endif;
+            
+            @At each time we loop the results with ib breaks are retrieved
+            and printed@
+            
+            datevec[ib,  ib] = optdat[bigt,  ib];
+            
+            i = 1;
+            do while i <= ib-1;
+                xx = ib-i;
+                datevec[xx,  ib] = optdat[datevec[xx+1,  ib],  xx];
+                i = i + 1;
+            endo;
+            global[ib,  1] = optssr[bigt,  ib];
+            
+            ib = ib + 1;
+        endo;
+        
+    endif;                           /*closing the if for the case m >1*/
+    
+    retp(global,  datevec,  bigvec);
+    
+endp;
+
+
+@********************************************************************@
+/* This procedure computes recursive residuals from a data set that starts at date "start" and ends at date "last". */
+/*
+Inputs:
+start: starting entry of the sample used.
+last: ending date of the last segment considered
+y: dependent variable
+z: matrix of regressors of dimension q
+h: minimal length of a segment
+Output:    vecssr:    a vector of sum of squared residuals (SSR) of length last-start+1
+(stored for convenience in a vector of length T).
+
+***Note: that the first h-1 elements have no meaning,  usually is initialized as zero@
+*/
+
+proc (1) = __recssr_gls(start,  y,  z,  h,  last);
+    
+    local vecssr, delta1, delta2, inv1, inv2, invz, res, v, f, r;
+    local initial_impulse;
+    
+    /* initialize the vectors */
+    vecssr = zeros(last, 1);
+    
+    initial_impulse = 1|zeros(rows(z)-1, 1);
+    
+    /* initialize the recursion with the first h data points */
+    
+    inv1 = inv((z[start:start+h-1, .]~initial_impulse[1:h])'(z[start:start+h-1, .]~initial_impulse[1:h]));
+    delta1 = inv1*((z[start:start+h-1, .]~initial_impulse[1:h])'y[start:start+h-1, 1]);
+    res = y[start:start+h-1, 1]-(z[start:start+h-1, .]~initial_impulse[1:h])*delta1;
+    vecssr[start+h-1, 1] = res'res;
+    
+    /* loop to construct the recursive residuals and update the SSR */
+    
+    r = start + h;
+    do while r <= last;
+        v = y[r, 1]-(z[r, .]~initial_impulse[r-start+1])*delta1;
+        invz = inv1*(z[r, .]~initial_impulse[r-start+1])';
+        f = 1 + (z[r, .]~initial_impulse[r-start+1])*invz;
+        delta2 = delta1+(invz*v)/f;
+        inv2 = inv1-(invz*invz')/f;
+        inv1 = inv2;
+        delta1 = delta2;
+        vecssr[r, 1] = vecssr[r-1, 1]+v*v/f;
+        r = r + 1;
+    endo;
+    
+    retp(vecssr);
+    
+endp;
+
+
+
+
+/* procedure to obtain an optimal one break partitions for a segment that starts at date start and ends at date last. */
+/* Input:
+start: begining of the segment considered
+b1: first possible break date
+b2: last possible break date
+last: end of segment considered
+Output:         SSrmin: minimized SSR
+dx: the break date
+*/
+
+proc (2) = __pd_parti(start, b1, b2, last, bigvec, bigt);
+    
+    local k, dvec, j, ssrmin, dx, ini, jj;
+    
+    dvec = zeros(bigt, 1);
+    ini = (start - 1)*bigt - (start - 2)*(start - 1)/2 + 1; @ the starting date of the  data@
+    
+    j = b1;
+    do while j<=b2;
+        jj = j - start;
+        k = j*bigt - (j - 1)*j/2+last - j;
+        dvec[j, 1] = bigvec[ini+jj, 1] + bigvec[k, 1];
+        @ the first term: the SSr corresponding to data from date start to j
+        The second term: the ssr corresponding to data from (j+1)
+        and lasts for last -j @
+        j = j + 1;
+    endo;
+    
+    ssrmin = minc(dvec[b1:b2, 1]);
+    dx = (b1 - 1) + minindc(dvec[b1:b2, 1]);
+    
+    retp(ssrmin, dx);
+    
+endp;
+
+
+
+
+
+@++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++@
+@                     Parts of the restricted SSR code of Perron and Qu (2004)             @
+@++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++@
+
+
+@********************************************************************@
+/* This procedure estimates the breaks and the coefficients using the restrictions,  based on the iterative method*/
+/* while having restrictions formed as R*delta=rr*/
+/* Input:
+y: dependent variable
+q: number of regressors
+m: number of structural breaks
+bigt: sample size
+trm: trimming
+datevec: vector of initial break points
+
+Output:
+dx: the break dates
+delta: the coefficients
+ssr: the sum of the squared residuals
+*/
+
+proc (3) = __pd_est2_gls(y, model, q, m, bigt, trm, datevec);
+    
+    local h,  br,  ssr_iter_prev,  tbar,  i,  t1,  t2,  zi,  delta,  count,  bigvec2,  diff,  dx,  zbar,  b,  zz,  e,  fit,  tstar;
+    local initial_impulse,  R,  rr,  temp;
+    local y_gls,  cns_gls,  tend_gls,  c_bar,  alpha,  z,  global;
+    
+    tstar = bigt;
+    h = round(trm*bigt);
+    
+    br = datevec; @ Break dates @
+    
+    if m < 5;
+        c_bar = __pd_c_bar_rs(sortc(br/bigt, 1)|zeros(5-m, 1));
+    elseif m == 5;
+        c_bar = __pd_c_bar_rs(sortc(br/bigt, 1));
+    endif;
+    
+    alpha = 1 + c_bar/bigt;
+    
+    cns_gls = (1-alpha)*ones(bigt, 1);
+    tend_gls = 1|((-c_bar/bigt)*seqa(1, 1, bigt-1)+1);
+    z = cns_gls~tend_gls;
+    y_gls = y[1]|(y[2:bigt]-alpha*y[1:bigt-1]);
+    
+    initial_impulse = 1|zeros(rows(z)-1, 1);
+    
+    tbar = datevec[1];
+    zbar = trimr(z~initial_impulse, 0, bigt-tbar)|zeros(bigt-tbar, q+1); @ Creating the diagonal matrix of the regressors@
+    
+    i = 2;
+    do while i<=m;
+        t1 = datevec[i-1];
+        t2 = datevec[i];
+        zi = zeros(t1, q+1)|(trimr(z, t1, bigt-t2)~initial_impulse[1:t2-t1])|zeros(bigt-t2, q+1);
+        zbar = zbar~zi;
+        i = i + 1;
+    endo;
+    
+    t2 = datevec[m];
+    zi = zeros(t2, q+1)|(trimr(z, t2, 0)~initial_impulse[1:bigt-t2]);
+    zbar = zbar~zi;
+    
+    { b, e, fit } = olsqr2(y_gls, zbar);	@ Estimate the OLS coefficients for this break structure@
+    zz = invpd(zbar'zbar);
+    
+    
+    
+    @ R should be a matrix of full row rank@
+    
+    if model[1] == 2;
+        
+        R = (-alpha~0~1)~zeros(1, m*3); @ First restriction: first segment,  where gamma_0 = mu_0*alpha_bar @
+        temp = zeros(m, (m+1)*3);
+        i = 1;
+        do until i>m;
+            temp[i, 3*i-2:(i+1)*3] = -1~-datevec[i]~0~1~datevec[i]~0;
+            i = i + 1;
+        endo;
+        R = R|temp;
+        
+        @ Now restrict the parameters of the impulse dummies to equal zero @
+        
+        temp = zeros(m, (m+1)*3);
+        i = 1;
+        do until i>m;
+            temp[i, 3*(i+1)] = 1;
+            i = i + 1;
+        endo;
+        R = R|temp;
+        
+        
+    elseif model[1] == 3;
+        
+        R = (-alpha~0~1)~zeros(1, m*3); @ First restriction: first segment,  where gamma_0 = mu_0*alpha_bar @
+        temp = zeros(m, (m+1)*3);
+        i = 1;
+        do until i>m;
+            temp[i, 3*i-2:(i+1)*3] = -1~-datevec[i]~0~1~datevec[i]~-1/alpha;
+            i = i + 1;
+        endo;
+        R = R|temp;
+        
+    endif;
+    
+    rr = 0;
+    
+    delta = b + zz*R'*invpd(R*zz*R')*(rr - R*b); @ Estimate the restricted coefficients @
+    
+    
+    @++++++++++++++++++++++++++++++++++++++++++++++++@
+    @ Here starts the iterative estimation procedure @
+    @++++++++++++++++++++++++++++++++++++++++++++++++@
+    
+    count = 0; @ Counter of iterations number @
+    
+    ssr_iter_prev = (y_gls - zbar*delta)'(y_gls - zbar*delta); @ Initilize the SSR @
+    
+    start_iter:
+        
+        bigvec2 = __pd_ssr2_gls(y_gls, z, delta, q, br);
+    { global, datevec } = __pd_dating2_gls(bigvec2, h, m, tstar);
+    
+    br = datevec[., m];
+    
+    if m < 5;
+        c_bar = __pd_c_bar_rs(sortc(br/bigt, 1)|zeros(5-m, 1));
+    elseif m == 5;
+        c_bar = __pd_c_bar_rs(sortc(br/bigt, 1));
+    endif;
+    
+    alpha = 1 + c_bar/bigt;
+    
+    cns_gls = (1-alpha)*ones(bigt, 1);
+    tend_gls = 1|((-c_bar/bigt)*seqa(1, 1, bigt-1) + 1);
+    z = cns_gls~tend_gls;
+    y_gls = y[1]|(y[2:bigt]-alpha*y[1:bigt-1]);
+    
+    
+    tbar = datevec[1, m];
+    zbar = trimr(z~initial_impulse, 0, tstar-tbar)|zeros(tstar-tbar, q+1); @ Creating the diagonal matrix of the regressors@
+    
+    i = 2;
+    do while i<=m;
+        t1 = datevec[i-1, m];
+        t2 = datevec[i, m];
+        zi = zeros(t1, q+1)|(trimr(z, t1, tstar-t2)~initial_impulse[1:t2-t1])|zeros(tstar-t2, q+1);
+        zbar = zbar~zi;
+        i=i+1;
+    endo;
+    
+    t2 = datevec[m, m];
+    zi = zeros(t2, q+1)|(trimr(z, t2, 0)~initial_impulse[1:tstar-t2]);
+    zbar = zbar~zi;
+    {b, e, fit}= olsqr2(y_gls, zbar);
+    
+    zz = invpd(zbar'zbar);
+    
+    if model[1] == 2;
+        
+        R = (-alpha~0~1)~zeros(1, m*3); @ First restriction: first segment,  where gamma_0 = mu_0*alpha_bar @
+        temp = zeros(m, (m+1)*3);
+        i = 1;
+        do until i>m;
+            temp[i, 3*i-2:(i+1)*3] = -1~-br[i]~0~1~br[i]~0;
+            i = i + 1;
+        endo;
+        R = R|temp;
+        
+        @ Now restrict the parameters of the impulse dummies to equal zero @
+        
+        temp = zeros(m, (m+1)*3);
+        i = 1;
+        do until i>m;
+            temp[i, 3*(i+1)] = 1;
+            i = i + 1;
+        endo;
+        R = R|temp;
+        
+    elseif model[1] == 3;
+        
+        R = (-alpha~0~1)~zeros(1, m*3); @ First restriction: first segment,  where gamma_0 = mu_0*alpha_bar @
+        temp = zeros(m, (m+1)*3);
+        i = 1;
+        do until i>m;
+            temp[i, 3*i-2:(i+1)*3] = -1~-br[i]~0~1~br[i]~-1/alpha;
+            i = i + 1;
+        endo;
+        R = R|temp;
+        
+    endif;
+    
+    delta = b + zz*R'*invpd(R*zz*R')*(rr - R*b);
+    e = y_gls - zbar*delta; @ Estimated residuals @
+    
+    
+    
+    if (count < 10) and (abs(e'e-ssr_iter_prev) > 1e-3); @ The maximum number of iterations is set at 10 @
+        count = count + 1;
+        ssr_iter_prev = e'e;
+        goto start_iter;
+    endif;
+    
+    retp(br, delta, e'e);
+endp;
+
+
+
+
+/* This procedure creates the matix storing the SSR for all the possible segments,  under estimated coefficients b*/
+/* input:
+y:dependent variable.
+z: regressors
+b: estimated coefficients.
+q: number of regressors.
+br: break points
+output:
+bigvec2: SSR for all the possible segments
+*/
+
+proc (1) = __pd_ssr2_gls(y, z, b, q, br);
+    
+    local m, i, bigvec2, bigt, initial_impulse;
+    
+    m = rows(br); @ Number of break points @
+    
+    bigt = rows(y);
+    bigvec2 = zeros(bigt*(m+1), 1);
+    
+    
+    initial_impulse = 1|zeros(bigt-1, 1);
+    i = 1;
+    do until i>m;
+        initial_impulse = initial_impulse~(zeros(br[i], 1)|1|zeros(bigt-br[i]-1, 1));
+        i = i + 1;
+    endo;
+    
+    
+    i = 1;
+    do while i<=m+1;
+        bigvec2[(i-1)*bigt+1:i*bigt] = (y-(z~initial_impulse[., i])*b[(i-1)*(q+1)+1:i*(q+1)])^2;
+        i = i + 1;
+    endo;
+    
+    retp(bigvec2);
+    
+endp;
+
+
+
+
+/* This procedure is called when multiple breaks are present*/
+/* Calculates the break points that globally minimizes the SSR given the  estimated parameter values. */
+/* Input:
+bigvec2: the matrix storing the SSR for all the possible segments
+h: mimunum number of observations in each segment
+m: number of breaks.
+bigt: number of obervations in the sample
+Output:
+global: the globally minimized SSR
+datevec: breaks
+*/
+
+proc (2) = __pd_dating2_gls(bigvec2, h, m, bigt);
+    
+    local datevec, optdat, optssr, dvec, i, ssrmin, datx, j1, ib, jlast;
+    local global, vecssr, jb, xx, bigvec;
+    
+    datevec = zeros(m, m);                                   @ up-tiangular matrix contains the estimated break
+    dates for break numbers from one to m@
+    optdat = zeros(bigt, m);
+    
+    optssr = zeros(bigt, m);
+    
+    dvec = zeros(bigt, 1);
+    
+    global = zeros(m, 1);
+    
+    @
+    Section that applies the dynamic programming algorithm to look for the
+    optimal breaks
+    The first case is when m = 1. Here the dynamic programming algorithm is not
+    needed
+    @
+    
+    if m == 1;
+        
+        { ssrmin, datx } = _pd_parti2(1, h, bigt-h, bigt,  bigvec2, bigt);
+        datevec[1, 1] = datx;
+        global[1, 1] = ssrmin;
+        
+    else;
+        
+        @ when m > 1,  a dynamic programming algorithm is used.
+        The first step is to obtain the optimal one break partitions for all
+        possible ending dates from 2h to T-mh+1.
+        The optimal dates are stored in a vector optdat.
+        The associated ssr are stored in a vector optssr.@
+        
+        j1 = 2*h;
+        do while j1 <= bigt; @ Optimal one break _pd_partition@
+            { ssrmin, datx } = _pd_parti2(1, h, j1-h, j1, bigvec2[1:2*bigt], bigt);
+            optssr[j1, 1] = ssrmin;
+            optdat[j1, 1] = datx;
+            j1=j1+1;
+        endo;
+        
+        global[1, 1] = optssr[bigt, 1];
+        datevec[1, 1] = optdat[bigt, 1];
+        
+        @
+        When this is done the algorithm looks for optimal 2, 3, ... breaks
+        partitions. The index used is ib.
+        @
+        
+        ib = 2;
+        do while ib <= m;
+            if ib == m;                 @if we have reached the highest number of breaks
+                considered,  only one segment is considered,
+                which ends at the last date of the sample.@
+                jlast = bigt;
+                jb = ib*h;
+                do while jb <=jlast-h;
+                    dvec[jb, 1] = optssr[jb, ib-1]+sumc(bigvec2[bigt*m+jb+1:bigt*(m+1)]);
+                    jb = jb + 1;
+                endo;
+                optssr[jlast, ib] = minc(dvec[ib*h:jlast-h, 1]);
+                optdat[jlast, ib] = (ib*h - 1)+minindc(dvec[ib*h:jlast-h, 1]);
+                
+            else;
+                @if we have not reached the highest number of breaks
+                considered,  we need to loop over the last date of
+                the segment,  between (ib+1)*h and T.@
+                
+                jlast = (ib + 1)*h;
+                
+                do while jlast <= bigt;
+                    jb = ib*h;                       /* date of the break */
+                    do while jb <=jlast-h;
+                        dvec[jb, 1] = optssr[jb, ib-1]+sumc(bigvec2[bigt*ib+jb+1:bigt*ib+jlast]); @change@
+                        jb = jb+1;
+                    endo;
+                    optssr[jlast, ib] = minc(dvec[ib*h:jlast-h, 1]);
+                    optdat[jlast, ib] = (ib*h-1)+minindc(dvec[ib*h:jlast-h, 1]);
+                    jlast = jlast + 1;
+                endo;
+                
+            endif;
+            
+            @At each time we loop the results with ib breaks are retrieved
+            and printed@
+            
+            datevec[ib, ib] = optdat[bigt, ib];
+            
+            i = 1;
+            do while i <= ib-1;
+                xx = ib - i;
+                datevec[xx, ib] = optdat[datevec[xx+1, ib], xx];
+                i = i + 1;
+            endo;
+            global[ib, 1] = optssr[bigt, ib];
+            
+            ib = ib + 1;
+        endo;
+        
+    endif;                           /*closing the if for the case m >1*/
+    
+    retp(global, datevec);
+    
+endp;
+
+
+
+/* the procedure is called only when number of breaks is one */
+/* obtain an optimal one break partitions for a segment that starts at
+date start and ends at date last, under the given coefficients. */
+/* Input:
+start: begining of the segment considered
+b1: first possible break date
+b2: last possible break date
+last: end of segment considered
+Output: SSrmin: the minimized SSR under the optimal _pd_partitons
+dx: the break dates
+NOte:    bigvec must have size 2*bigt
+*/
+
+proc (2) = _pd_parti2(start, b1, b2, last, bigvec2, bigt);
+    
+    local k, dvec, j, ssr1, ssr2, ssrmin, dx, ini, jj;
+    
+    dvec = zeros(bigt, 1);
+    j = b1;
+    do while j<=b2;
+        ssr1 = sumc(bigvec2[start:j]);
+        ssr2 = sumc(bigvec2[1*bigt+j+1:1*bigt+last]);
+        dvec[j, 1] = ssr1+ssr2;
+        j = j + 1;
+    endo;
+    
+    ssrmin = minc(dvec[b1:b2, 1]);
+    dx = (b1 - 1) + minindc(dvec[b1:b2, 1]);
+    
+    retp(ssrmin, dx);
+    
+endp;
+
+proc (1) = pd_msburControlCreate();
+    
+    struct pd_msburControl msburCtl;
+    
+    // Unknown break
+    msburCtl.knownBreak = 1;
+    
+    // Number of breaks
+    msburCtl.numberBreaks = 5;
+    
+    // Penalty function
+    msburCtl.penalty = 0;
+    
+    // Maximum number of lags
+    msburCtl.kmax = 4;
+    
+    // Minumum number of breaks
+    msburCtl.kmin = 0;
+    
+    // Estimation method
+    msburCtl.estimation = 0;
+    
+    // Default maximum iterations
+    msburCtl.maxIters = 100;
+    
+    retp(msburCtl);
+endp;
