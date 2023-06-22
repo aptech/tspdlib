@@ -1,4 +1,181 @@
 /*
+**> Purpose: Calculate critical values for ADF test 
+**           based on response surface regressions  
+**
+**  Reference:
+**  Cheung, Y. W., & Lai, K. S. (1995).
+**  Lag order and critical values of the Augmented Dickey Fuller test.
+**  Journal of Business & Economic Statistics, 13(3), 277-280.
+**
+**  Format:  {cv} = get_cv_ADFrsf(model, T, p);
+** 
+**  Input:   model   - 	0 = none
+**                      1 = model with constant
+**                      2 = model with constant and trend  
+**
+**           T       -  Number of observations
+**
+**           p       -  Number of lags
+**
+**  Output:  cv      - The lag adjsuted finite sample 
+**                     1%, 5%, and 10% critical values for ADF-stat. based on response surfaces
+**			 
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+** April 27, 2020
+*/
+
+// Response Surface Estimations
+
+proc(1) = _get_cv_ADFrsf(model, T, p);
+    local mat_reg, mat_param;    
+
+    mat_reg = 1|1/T|(1/T)^2|p/T|(p/T)^2;
+
+    if model == 0;
+    mat_param= {-2.564 -2.906 -29.773   0.599  -1.580 ,
+                -1.931 -1.289  -5.719   0.380  -0.722 ,
+                -1.609 -0.285  -4.090   0.321  -0.525};
+    endif;    
+
+    if model == 1;    
+    mat_param= {-3.430 -4.959  -72.303  0.842  -2.090 ,
+                -2.857 -2.675  -23.558  0.748  -1.077 ,
+                -2.566 -1.319  -15.086  0.667  -0.650};
+
+    endif;
+
+    if model == 2;    
+    mat_param= {-3.958 -7.448  -104.947  1.327  -3.753 ,
+                -3.406 -4.060   -40.552  1.021  -1.501 ,
+                -3.122 -2.850   -15.813  0.907  -0.804 };
+    endif;
+
+
+retp(mat_param*mat_reg);
+endp;
+
+/*
+**> Purpose: Calculate critical values for DF-GLS test 
+**           based on response surface regressions  
+**
+**  Reference:
+**  Otero, J., & Baum, C. F. (2017).
+**  Response surface models for the Elliott, Rothenberg, and Stock unit-root test.
+**  The Stata Journal 17, Number 4, pp. 985-1002
+**
+**  Format:  {cv} = get_cv_DFGLSrsf(model, T, p);
+** 
+**  Input:   model   - 	1 = model with constant
+**                      2 = model with constant and trend  
+**
+**           T       -  Number of observations
+**
+**           p       -  Number of lags
+**
+**  Output:  cv      - The lag adjsuted finite sample 
+**                     1%, 5%, and 10% critical values for DF-GLS stat. based on response surfaces
+**			 
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+** April 27, 2020
+*/
+
+
+// Response Surface Estimations
+
+proc(1) = _get_cv_DFGLSrsf(model, T, p);
+    local mat_reg, mat_param;    
+
+    mat_reg = 1|1/T|(1/T)^2|(1/T)^3|(1/T)^4|p/T|(p^2/T)|(p^3/T)|(p^4/T);
+  
+
+    if model == 1;    
+    mat_param= {-2.569 -18.779  151.900   -814.600  -9349.300  -0.306   1.059   -0.214  0.013,
+                -1.942 -22.761  427.300  -6537.600  33816.400   0.057   0.764   -0.155  0.010,  
+                -1.617 -25.453  555.300  -8898.600  53120.100   0.237   0.618   -0.128  0.008};
+
+    endif;
+
+    if model == 2;    
+    mat_param= {-3.405 -23.650  251.500   -4110.300   9281.300   0.404   1.327   -0.269  0.017,
+                -2.844 -23.823  477.700   -8786.700  50347.000   0.532   1.060   -0.215  0.014,  
+                -2.555 -24.288  563.500  -10354.100  63554.900   0.584   0.922   -0.187  0.012};
+    endif;
+
+
+retp(mat_param*mat_reg);
+endp;
+
+/*
+**> Purpose: Calculate critical values for LM test 
+**           based on response surface regressions  
+**
+**  Reference:
+**  Nazlioglu, S., Lee, J. (2020).
+**  Response Surface Estimates of the LM Unit Root Tests.
+**  Economics Letters, Vol. 192, Article 109136.
+**
+**  Format:  {cv} = _get_cv_LMrsf(R, T, p);
+** 
+**  Input:   R       - 	Number of breaks ( R = 0, 1, 2, 3)
+**
+**           T       -  Number of observations
+**
+**           p       -  Number of lags
+
+**
+**  Output:  cv      - The lag adjsuted finite sample 
+**                     1%, 5%, and 10% critical values for LM-stat based on response surfaces.
+**			 
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+** March 25, 2020
+*/
+
+
+// Response Surface Estimations
+proc(1) = _get_cv_LMrsf(R, T, p);
+    local mat_reg, mat_param;    
+
+    mat_reg = 1|1/T|(1/T)^2|p/T|(p/T)^2;
+
+    if R == 0;
+    mat_param= {-3.5672 -8.0488 -32.7530   2.0548  -2.7275 ,
+                -3.0249 -3.2352 -13.0129   1.5236  -0.7349 ,
+                -2.7533 -2.7164   17.0174  1.5083  -0.7971};
+    endif;    
+
+    if R == 1;    
+    mat_param= {-4.1943  1.1688  -507.1712 2.2601  -12.4185 ,
+                -3.6694  0.7216  -276.0130 1.9365  -8.9248  ,
+                -3.4021  0.3486  -194.6374 1.6701  -6.8836} ;
+
+    endif;
+
+    if R == 2;    
+    mat_param= {-4.6650 -6.0389  -782.9846  2.0517  -16.1849 ,
+                -4.1382 -4.3855  -470.2925  0.7151  -6.1381  ,
+                -3.8753 -6.1955  -285.6262  0.1020  -0.3905 };
+    endif;
+
+    if R == 3;    
+    mat_param= {-5.0183   5.0292  -1827.1379  -2.4767  3.1280  ,
+                -4.4918 -12.4178  -702.5560   -3.1290  17.3024 ,
+                -4.2360 -17.4578  -292.4609   -3.7384  25.5821};
+    endif;
+
+retp(mat_param*mat_reg);
+endp;
+
+/*
 **> Purpose: Calculate critical values for KPSS test 
 **           based on response surface regressions  
 **
