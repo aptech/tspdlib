@@ -20,7 +20,7 @@ struct sburControl msburCtl;
 msburCtl = sburControlCreate();
 
 // Number of breaks
-msburCtl.numberBreaks = 5;
+msburCtl.numberBreaks = 2;
 
 // Model to use
 model = 3;
