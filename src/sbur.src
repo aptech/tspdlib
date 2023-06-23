@@ -767,8 +767,8 @@ endp;
 
 proc (1) = __sbur_s2ar(yts,  penalty,  kmax,  kmin);
     
-    local nt,  min,  s2vec,  dyts,  reg,  k,  b,  e,  fit,  nef,  s2e,  dyts0,  reg0,  i;
-    local bic,  kbic,  sumb,  j,  msbar,  gap,  kopt,  ssr,  trgff,  sumy,  tau,  mic,  kk;
+    local nt,  min,  dyts,  reg,  k,  b,  e,  nef,  s2e,  dyts0,  reg0,  i;
+    local kopt,  sumy,  tau,  mic,  kk;
     
     nt = rows(yts);
     min = 9999999999;
@@ -840,7 +840,7 @@ endp;
 
 proc (2) = __sbur_olsd(y,  z);
     
-    local yd,  reg,  trend,  ahat,  fit,  i;
+    local yd,  ahat,  fit;
     
     { ahat,  yd,  fit } = olsqr2(y,  z);
     
@@ -1170,7 +1170,7 @@ proc (9) = __sbur_multiple_gls_algorithm(y,  model,  penalty,  kmax,  kmin,  max
     m = model[3];
     q = cols(z);
     
-    { global,  datevec,  bigvec } = __sbur_dating(y,  z,  h,  m,  q,  bigt);
+    { global,  datevec,  bigvec } = __sbur_dating(y,  z,  h,  m,  bigt);
     
     @++++++++++++++++++++++++++++++++++++++@
     @ Computing the break points using GLS @
@@ -1199,7 +1199,7 @@ proc (9) = __sbur_multiple_gls_algorithm(y,  model,  penalty,  kmax,  kmin,  max
         z_gls = cns_gls~tend_gls;
         y_gls = y[1]|(y[2:T]-alpha*y[1:t-1]);
         
-        { global,  datevec_iteration,  bigvec } = __sbur_dating_gls(y_gls,  z_gls,  h,  m,  q,  bigt);
+        { global,  datevec_iteration,  bigvec } = __sbur_dating_gls(y_gls,  z_gls,  h,  m,  bigt);
         
         if count<maxiter and abs(global[m]-ssr_prev_iter)>1e-3; @ We set the maximum number of iterations at 10 @
             ssr_prev_iter = global[m];
@@ -1303,7 +1303,7 @@ endp;
 
 /* This procedure calculates the break points that globally minimizes the SSR in a un-restricted model. */
 
-proc (3) = __sbur_dating(y,  z,  h,  m,  q,  bigt);
+proc (3) = __sbur_dating(y,  z,  h,  m, bigt);
     
     /* Input:
     y: dependent variable.
@@ -1542,7 +1542,7 @@ datevec: the estimated break dates.
 bigvec:the big vector containing the SSR for all possible segments
 */
 
-proc (3) = __sbur_dating_gls(y,  z,  h,  m,  q,  bigt);
+proc (3) = __sbur_dating_gls(y,  z,  h,  m,  bigt);
     
     local datevec,  optdat,  optssr,  dvec,  i,  ssrmin,  datx,  j1,  ib,  jlast;
     local global,  vecssr,  jb,  xx,  bigvec;
@@ -1787,7 +1787,7 @@ ssr: the sum of the squared residuals
 
 proc (3) = __sbur_est2_gls(y, model, q, m, bigt, trm, datevec);
     
-    local h,  br,  ssr_iter_prev,  tbar,  i,  t1,  t2,  zi,  delta,  count,  bigvec2,  diff,  dx,  zbar,  b,  zz,  e,  fit,  tstar;
+    local h,  br,  ssr_iter_prev,  tbar,  i,  t1,  t2,  zi,  delta,  count,  bigvec2,   zbar,  b,  zz,  e,  fit,  tstar;
     local initial_impulse,  R,  rr,  temp;
     local y_gls,  cns_gls,  tend_gls,  c_bar,  alpha,  z,  global;
     
@@ -2030,7 +2030,7 @@ datevec: breaks
 proc (2) = __sbur_dating2_gls(bigvec2, h, m, bigt);
     
     local datevec, optdat, optssr, dvec, i, ssrmin, datx, j1, ib, jlast;
-    local global, vecssr, jb, xx, bigvec;
+    local global, jb, xx;
     
     datevec = zeros(m, m);                                   @ up-tiangular matrix contains the estimated break
     dates for break numbers from one to m@
@@ -2152,7 +2152,7 @@ NOte:    bigvec must have size 2*bigt
 
 proc (2) = __sbur_parti2(start, b1, b2, last, bigvec2, bigt);
     
-    local k, dvec, j, ssr1, ssr2, ssrmin, dx, ini, jj;
+    local dvec, j, ssr1, ssr2, ssrmin, dx;
     
     dvec = zeros(bigt, 1);
     j = b1;
