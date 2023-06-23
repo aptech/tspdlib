@@ -126,17 +126,8 @@ proc(1) = spc_bartlett(e, lags);
     // Truncate the estimated bandwidth
     l = trunc(l);
     
-    // Short-run variance
-    lrv = res'res/t;
-    
-    i = 1;
-    do until i > l;
-        
-        // Bartlett kernel
-        w = (1 - i/(l + 1));
-        lrv = lrv + 2 * res[1:rows(res)-i]'res[1+i:rows(res)] * w/t;
-        i = i + 1;
-    endo;
+    // Bartlett kernel
+    lrv = bartlett(res, l);
     
     // Recoloring
     lrv_recolored = lrv/(1 - sumc(rho))^2;
@@ -200,7 +191,7 @@ proc(1) = spc_qs(e,lags);
     l = 1.3221 * (4 * a^2 * T/((1 + a)^2 * (1 - a)^2))^(1/5);
     
     // Truncate the estimated bandwidth
-    l=trunc(l);
+    l = trunc(l);
     
     // Short-run variance
     lrv = res'res/t;
@@ -246,18 +237,8 @@ proc(1) = Kurozumi_bartlett(e);
     // Truncate the estimated bandwidth
     l = trunc(l);
     
-    // Conventional variance estimation
-    lrv = e'e/t;
-    
-    i = 1;
-    // long-run variance
-    do until i > l; @  @
-        
-        // Bartlett kernel
-        w = (1 - i/(l + 1));
-        lrv = lrv + 2 * e[1:t-i]'e[1+i:t] * w/t;
-        i = i + 1;
-    endo;
+    // Bartlett Kernel
+    lrv = bartlett(e, l);
     
     retp(lrv);
 endp;
@@ -288,7 +269,7 @@ proc(1) = kurozumi_qs(e);
     do until i > l;
         
         // Quadratic spectral kernel
-        w =25/(12 * pi^2 * (i/l)^2) * (sin(6 * pi * i/(l * 5))/(6 * pi * i/(l * 5)) - cos(6 * pi * i/(l * 5)));
+        w = 25/(12 * pi^2 * (i/l)^2) * (sin(6 * pi * i/(l * 5))/(6 * pi * i/(l * 5)) - cos(6 * pi * i/(l * 5)));
         lrv = lrv + 2 * e[1:rows(e)-i]'e[1+i:rows(e)] * w/t;
         i = i + 1;
     endo;
@@ -296,8 +277,11 @@ proc(1) = kurozumi_qs(e);
     retp(lrv);
 endp;
 
-proc(1) = _get_lrv_type(varm, ssr, e1, bwl, print_varm);
-
+proc(1) = _get_lrv_type(varm, ssr, e1, bwl, print_varm, ...);
+    local maxlags;
+    
+    maxlags = dynargsGet(1, 8);
+    
     if print_varm;
         print "LR Variance estimation method:";
     endif;
@@ -320,12 +304,12 @@ proc(1) = _get_lrv_type(varm, ssr, e1, bwl, print_varm);
         if print_varm;
             print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
         endif;
-        retp(spc_bartlett(e1, bwl));
+        retp(spc_bartlett(e1, maxlags));
     elseif varm == 5;
         if print_varm;
             print "SPC with QS";
         endif;
-        retp(spc_qs(e1, bwl));
+        retp(spc_qs(e1, maxlags));
     elseif varm == 6;
         if print_varm;
             print "Kurozumi with Bartlett";
