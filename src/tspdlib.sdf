@@ -1,3 +1,33 @@
+struct sbControl {
+    
+scalar h;
+scalar eps1;
+scalar robust;
+scalar prewhit;
+scalar hetomega;
+scalar hetq;
+scalar doglobal;
+scalar dotest;
+scalar dospflp1;
+scalar doorder;
+scalar dosequa;
+scalar dorepart;
+scalar estimbic;
+scalar estimlwz;
+scalar estimseq;
+scalar estimrep;
+scalar estimfix;
+scalar fixb;
+scalar eps;
+scalar maxi;
+scalar betaini;
+scalar printd;
+scalar hetdat;
+scalar hetvar;
+scalar fixn;
+
+};
+
 struct sburControl {
 scalar knownBreak;
 matrix breakDate;
