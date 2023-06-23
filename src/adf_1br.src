@@ -198,13 +198,14 @@ proc(4) = ADF_1break(y, model, ...);
         cv = -5.57|-5.08|-4.82;
     endif;
     
+    /*
+    ** Printing
+    */
+    // Print hearder
     _printHeaderTSPDLIB(ic, 0, 2, model, 1, trimm, "ADF", "Unit root", 0);
     
-    frac = tb1_min/rows(y);
-    
-    if ismiss(dt_vec) != 1;
-        tb1_min = dt_vec[tb1_min];
-    endif;
+    // Convert breaks for date format
+    { frac, tb1_min } = __convertbreaks(tb1_min, dt_vec, rows(y));
 
     // Print results & Critical values
     local side, stats, dec, colwidth;
@@ -225,6 +226,21 @@ proc(4) = ADF_1break(y, model, ...);
     retp(ADF_min, tb1_min, opt_lag-1, cv);
 endp;
 
+proc (2) = __convertbreaks(tb, dt_vec, T);
+    local frac;
+    
+    // Compute fraction
+    frac = tb/T;
+    
+    // Convert to date format
+    if ismiss(dt_vec) != 1;
+        tb = dt_vec[tb];
+    endif;
+    
+    retp(frac, tb);
+endp;
+
+    
 proc (0) = _printBreaks(dt_vec, brks, frac);
     local side, top, brk_str, break_num, fmt1, fmt2;
     

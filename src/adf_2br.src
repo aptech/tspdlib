@@ -33,7 +33,7 @@
 */
 
 proc(5) = ADF_2breaks(y, model, ...);
-    local t, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
+    local t, tb, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
     local taup, aicp, sicp, tstatp, dy, y1, z1, lmat, j, p;
     local dep, ldy, ly, lz, x, stat;
     local b, e1, sig2, se, ssr, cv, opt_lag, pmax, ic, trimm, dt_vec, frac;
@@ -193,17 +193,14 @@ proc(5) = ADF_2breaks(y, model, ...);
         endif;
     endif;
  
-        
+    /*
+    ** Print results
+    */
     _printHeaderTSPDLIB(ic, 0, 2, model, 2, trimm, "ADF", "Unit root", 0);
    
-    // Print break dates
-    frac = (tb1_min/rows(y))|(tb2_min/rows(y));
-    
-    if ismiss(dt_vec) != 1;
-        tb1_min = dt_vec[tb1_min];
-        tb2_min = dt_vec[tb2_min];
-    endif;
-    
+    // Convert breaks
+    { frac, tb } = __convertbreaks(tb1_min|tb2_min, dt_vec, T);
+
     // Print results & Critical values
     local top, stats, dec, colwidth;
     top = "ADF-stat";
@@ -213,10 +210,10 @@ proc(5) = ADF_2breaks(y, model, ...);
     
     _printStatsTable("", top, stats, cv, dec, colwidth, 0, opt_lag-1);
        
-    _printBreaks(dt_vec, tb1_min|tb2_min, frac);
+    _printBreaks(dt_vec, tb, frac);
     
     // Print conclusion
     _printConclusion(ADF_min, cv, 0, "a unit root");
     
-    retp(ADF_min, tb1_min, tb2_min, opt_lag-1, cv);
+    retp(ADF_min, tb[1], tb[2], opt_lag-1, cv);
 endp;
