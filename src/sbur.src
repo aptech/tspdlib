@@ -189,12 +189,39 @@ proc (1) = sbur_gls(y, model,  ...);
     _printBreaks(dt_vec, min_tb, frac_dts);
     print;
  
-    
-//    print "OLS cointegration conclusion:";
-//    _printConclusion(SC1_min, cv, 1, "co-integration");
-//     print "DOLS cointegration conclusion:";
-//    _printConclusion(SC2_min, cv, 1, "co-integration");
+    /*
+    ** Print conclusions
+    */
+     __printConclusionsSBUR(mOut);
     retp(mOut);
+endp;
+
+proc (0) = __printConclusionsSBUR(struct sburOut mOut);
+    // Print results
+    local s, top, side, stats,  cv, reject_print, no_reject_print;
+    top = ""$~"Stat";
+    stats = mOut.pt|mOut.mpt|mOut.adf|mOut.za|mOut.mza|mOut.msb|mOut.mzt;
+    side = "PT:"$|"MPT:"$|"ADF:"$|"ZA:"$|"MZA:"$|"MSB:"$|"MZT:";
+    cv = mOut.cv_pt'|mOut.cv_pt'|mOut.cv_mzt'|mOut.cv_mza'|mOut.cv_mza'|mOut.cv_msb'|mOut.cv_mzt';
+
+    
+    // Default statements
+    reject_print = "Reject Ho ";
+    no_reject_print = "Cannot reject Ho";
+
+    for i(1, rows(stats), 1);
+        // Print conclusion
+        if stats[i] < cv[i, 1];
+            s = reject_print $+ "( 1% level)";
+        elseif stats[i] < cv[i, 2];
+            s = reject_print $+ "( 5% level)";
+        elseif stats[i] < cv[i, 3];
+            s = reject_print $+ "(10% level)";
+        else;
+            s = no_reject_print;
+        endif;
+        sprintf("%-15s %30s", side[i], s);
+    endfor;
 endp;
 
 /*
