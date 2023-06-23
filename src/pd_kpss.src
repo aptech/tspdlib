@@ -1,0 +1,688 @@
+#include tspdlib.sdf
+/*
+** Procedure to compute the PANKPSS test. The date is assumed to be known
+**
+** Sintax:
+**
+**    { kpsstest, num, den } = pd_kpss(y, model [, bwl, varm, maxlags]);
+**
+** INPUT:
+**
+**    y       -  (TxN) - matrix of panel data in wide format.
+**
+**    model   -  Model specification:
+**                     model = 1, constant (Hadri test)
+**                     model = 2, constant + trend (Hadri test)
+**                     model = 3, constant + shift (in the mean)
+**                     model = 4, constant + trend + shift (in the mean and trend)
+**
+**    m       -  Optional, number of breaks to consider. Default = 5.
+**
+**    varm    -  Optional, long-run consistent variance estimation method.
+**                      Default = 1;
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Quadratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
+**                      6 = Kurozumi with Bartlett
+**                      7 = Kurozumi with QS
+**                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**                      See:
+**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
+**
+**    bwl     -  Optional, bandwidth for spectral window.
+**                      Default = round(4 * (T/100)^(2/9)).
+**
+**    maxlags   scalar, denotes the number of maximum lags that is used
+**              in the estimation of the AR(p) model for lrvar. The final number of
+**              lags is chosen using the BIC criterion. Default = 8
+**
+** OUTPUT:
+**
+**    kpsstest  Value for the individual KPSS test
+**
+**	  num		Numerator of the KPSS test
+**
+**    den 		Denominator of the KPSS test
+**
+**               (c) Josep Lluis Carrion-i-Silvestre (2004)
+**                  Department of Econometrics
+**                  University of Barcelona
+**
+**                   Last modification: July 27th, 2004
+**
+*/
+proc (4) = pd_kpss(data, model, ... );
+    // pd_kpss(data, model, kernel, maxlags, m, struct sbControl bCtl);
+    local dt_vec, bwl_dftl, m, kernel, bwl, maxlags, k, bigt, z, q, x, p, numkpss, denkpss, m_lee_est, m_tb, m_tb2, j,
+        datevec, nbreak, mbic, mlwz, supfl, dateseq, ftest, wftest, reparv, nbr, test_hom, test_het,
+        test_var, test_mean,  kpsstest, num, den, tb, temp1, temp2, testd_hom, testd_het, model0;
+    
+    // Check for missing values and dates
+    _checkForMissings(data, "pd_kpss");
+    { dt_vec, data } =_checkfordate(data);
+    
+    // Number of time periods
+    bigt = rows(data);
+    
+    // Default bandwidth for var
+    bwl_dftl = round(4 * (bigt/100)^(2/9));
+    { m, kernel, bwl, maxlags } = dynargsGet(1|4, 5, 1, bwl_dftl, 8);
+    
+    // Number of countries
+    k = cols(data);
+    
+    // Adjust model
+    if model > 2;
+        model0 = model - 2;
+    else;
+        model0 = model;
+    endif;
+    
+    if model == 1 or model == 3;
+        // Matrix conformeb by the elements that are allowed to change
+        z = ones(bigt, 1);
+        
+        // Number of regressors
+        q = cols(z);
+        
+        // No x or lags
+        x = 0;
+        p = 0;
+        
+    elseif model == 2 or model == 4;
+        
+        // Matrix conformeb by the elements that are allowed to change
+        // includes time trend
+        z = ones(bigt, 1)~seqa(1, 1, bigt);
+        
+        // Number of regressors
+        q = cols(z);
+        
+        // No x or lags
+        x = 0;
+        p = 0;
+    endif;
+    
+    
+    // Storeage matrices of results
+    numkpss = zeros(k, 1);
+    denkpss = zeros(k, 1);
+    m_lee_est = zeros(k, 4);
+    m_tb = zeros(1, m);
+    m_tb2 = zeros(1, m);
+    
+    j = 1;
+    do until j>k;
+        
+        { datevec, nbreak, mbic, mlwz, supfl, dateseq, ftest, wftest, reparv } = structural_break(bigt, data[.,j], z, x, p, q, m, bCtl);
+        
+        nbr = mlwz;
+        
+        if nbr > 0;
+            tb = selif(datevec[.,nbr], datevec[.,nbr] .gt 0);
+            { kpsstest, num, den } = __pd_kpss(data[., j], tb, model, kernel, maxlags);
+        elseif nbr == 0;
+            
+            { kpsstest, num, den } = __pd_kpss(data[., j], 0, model0, kernel, maxlags);
+        endif;
+        
+        numkpss[j] = num;
+        denkpss[j] = den;
+        m_lee_est[j, .] = kpsstest~nbr~mbic~mlwz;
+        
+        m_tb = m_tb|datevec;
+        m_tb2 = m_tb2|reparv;
+        
+        j = j + 1;
+    endo;
+    
+    // Assuming homogenous lr variance
+    test_hom = meanc(numkpss)./meanc(denkpss);
+    
+    // Assuming heterogeneous long-run variance
+    test_het = meanc(m_lee_est[., 1]);
+    
+    m_tb = m_tb[2:rows(m_tb), .];
+    
+    
+    test_mean = zeros(k, 1);
+    test_var = zeros(k, 1);
+    
+    j = 1;
+    do until j>k;
+        if  m_lee_est[j, 2] > 0;
+            temp1 = m_tb[(j*m)-m+1:(j*m), .];
+        elseif m_lee_est[j, 2] == 0;
+            temp1 = 0;
+        endif;
+        
+        // Computes the mean and variance
+        temp2 = __pd_calcdem(model, temp1[., m_lee_est[j, 2]], bigt);
+        test_mean[j] = temp2[1];
+        test_var[j] = temp2[2];
+        
+        j = j + 1;
+    endo;
+    
+    test_mean = meanc(test_mean);
+    test_var = meanc(test_var);
+    
+    testd_hom = sqrt(k)*(test_hom-test_mean)./sqrt(test_var);
+    testd_het = sqrt(k)*(test_het-test_mean)./sqrt(test_var);
+    
+    print "************************************";
+    print "Results for the PANKPSS test        ";
+    print "************************************";
+    
+    print "Stationarity test with structural breaks (homogeneous): " testd_hom "with p-val: " cdfnc(testd_hom);
+    print "Stationarity test with structural breaks (heterogeneous): " testd_het "with p-val: " cdfnc(testd_het);
+    
+    print "Maximum number of breaks allowed" m;
+    print "Matrix of individual tests" m_lee_est;
+    print "Number of observations" rows(data);
+    print "Estimated breaking points" m_tb;
+    
+    retp(testd_hom, testd_het, m_lee_est, areshape(m_tb, K|maxlags|maxlags));
+endp;
+
+proc (0) = plotpdKPSS(data, breaks_array, kpss_tests, dtstart, freq, ...);
+    local num_panels, n_dynargs, varnames;
+    
+    // Notice that you do not pass ‘...’
+    // into ‘dynargsCount’
+    n_dynargs = dynargsCount();
+    
+    // Get varnames
+    varnames = dynargsGet(1, "");
+    
+    // Get number of panels
+    num_panels = getorders(breaks_array);
+    num_panels = num_panels[1];
+    
+    // Create variables names
+    if varnames $== "";
+        if num_panels < 9;
+            varnames = "Group " $+ ntos(seqa(1, 1, num_panels), 1);
+        elseif num_panels > 9;
+            varnames = "Group " $+ ntos(seqa(1, 1, 9), 1);
+            varnames = varnames $| ("Group " $+ ntos(seqa(10, 1, (num_panels-9)),2));
+        endif;
+    endif;
+    
+    if dtstart==0 or freq==0;
+        print "Must specify dtstart and frequency for time series plot. XY plot will be generated.";
+        for i(1, num_panels, 1);
+            plotOpenWindow();
+            __pd_kpssXY(data[., i], arraytomat(breaks_array[i, ., .]), kpss_tests[i, .], varnames[i]);
+        endfor;
+    else;
+        for i(1, num_panels, 1);
+            plotOpenWindow();
+            __pd_kpssTS(data[., i], arraytomat(breaks_array[i, ., .]), kpss_tests[i, .], dtstart, freq, varnames[i]);
+        endfor;
+    endif;
+endp;
+
+proc (0) = __pd_kpssXY(y, breaks_mat, kpss_test, varnames);
+    local num_models, field, prec, fmat, y_line, opt_breaks, grp_title, x;
+    
+    // Count number of model
+    num_models = rows(breaks_mat);
+    
+    // Define plot appearance
+    struct plotControl pc;
+    pc = plotGetDefaults("xy");
+    
+    // Formatting
+    field = 1;
+    prec = 0;
+    fmat = "%*.*lf";
+    
+    // Set up x values
+    x = seqa(1, 1, rows(y));
+    
+    // Set up max height of graph
+    y_line = -9999|9999;
+    
+    // Select breaks data
+    opt_breaks = breaks_mat[., kpss_test[2]];
+    
+    // Set up title
+    grp_title = varnames $+ " Number of breaks: " $+ ntos(kpss_test[2], prec);
+    
+    // Set title
+    plotSetTitle(&pc, grp_title, "Arial", 16);
+    
+    //Set break line format
+    plotSetLineColor(&pc, "red");
+    plotSetLineStyle(&pc, 1);
+    plotSetLineThickness(&pc, 2);
+    
+    //Set up y-range
+    plotSetYRange(&pc, floor(minc(y)), ceil(maxc(y)));
+    
+    //Plot first graph
+    plotXY(pc, x, y);
+    
+    for j(1, kpss_test[2], 1);
+        //Set break line format
+        plotSetLineColor(&pc, "black");
+        plotSetLineStyle(&pc, 2);
+        plotSetLineThickness(&pc, 1);
+        
+        //Add break line
+        plotAddXY(pc, reshape(opt_breaks[j], 2, 1), y_line);
+    endfor;
+    
+endp;
+
+proc (0) = __pd_kpssTS(y, breaks_mat, kpss_tests, dtstart, freq, varnames);
+    local num_models, y_line, grp_title, x,  opt_breaks;
+    
+    //Count number of model
+    num_models = rows(breaks_mat);
+    
+    //Define plot appearance
+    struct plotControl pc;
+    pc = __pd_getKPSStsmtDefaults("xy");
+    
+    //Set text title
+    grp_title = __pd_kpssTextSet(kpss_tests[2]);
+    grp_title = varnames $+ " " $+ grp_title;
+    
+    //Set up x values
+    x = seqa(1, 1, rows(y));
+    
+    //Set up max height of graph
+    y_line = -9999|9999;
+    
+    // Select breaks data
+    opt_breaks = breaks_mat[., kpss_tests[2]];
+    
+    //Set up graph text
+    __pd_kpssGraphText(&pc, y, dtstart, grp_title);
+    
+    //Plot first graph
+    plotTS(pc, dtstart, freq, y);
+    
+    for j(1, kpss_tests[2], 1);
+        
+        __pd_kpssBreakText(&pc);
+        
+        //Add break line
+        plotAddXY(pc, reshape(opt_breaks[j], 2, 1), y_line);
+    endfor;
+    
+endp;
+
+proc (1) = __pd_convertDatesSt(datevecdt, freq);
+    local fmat, tmp_date;
+    
+    if freq == 4;
+        fmat = "QQ-YYYY";
+    elseif freq == 12;
+        fmat = "MO-YYYY";
+    elseif freq == 1;
+        fmat = "YYYY";
+    elseif freq == 365;
+        fmat = "DD-MO-YYYY";
+    endif;
+    
+    tmp_date = "";
+    for i(1,cols(datevecdt),1);
+        for j(1,rows(datevecdt),1);
+            
+            if datevecdt[j,i]!=0;
+                tmp_date =  tmp_date $| dttostr(datevecdt[j,i], fmat);
+            else;
+                tmp_date = tmp_date $| "";
+            endif;
+        endfor;
+    endfor;
+    
+    tmp_date = trimr(tmp_date, 1, 0);
+    tmp_date = reshape(tmp_date,rows(datevecdt),cols(datevecdt))';
+    
+    retp(tmp_date);
+endp;
+
+proc (1) = __pd_getKPSStsmtDefaults(graph_type);
+    local font_name, font_color, title_size, label_size, legend_size;
+    
+    //Plot control structure
+    struct plotControl myPlot;
+    
+    //Set plot typ
+    myPlot = plotGetDefaults(graph_type);
+    
+    //Turn grid off
+    plotSetGrid(&myPlot, "off");
+    
+    //Standard settings
+    font_name = "Helvetica Neue";
+    font_color = "#3e3e3e";
+    title_size = 18;
+    label_size = 14;
+    legend_size = 12;
+    
+    // Set axes line color and size
+    plotSetAxesPen(&myPlot, 1, font_color);
+    
+    // Set font for tick labels and the legend
+    plotSetFonts(&myPlot, "ticks legend", font_name, legend_size, font_color);
+    
+    // Set font for graph title
+    plotSetFonts(&myPlot, "title", font_name, title_size, font_color);
+    
+    // Set fonts for axis labels
+    plotSetFonts(&myPlot, "xaxis yaxis", font_name, label_size, font_color);
+    
+    retp(myPlot);
+endp;
+
+proc (0) = __pd_kpssGraphText(struct plotControl *mp, y, dtstart, grp_title);
+    
+    struct plotControl *myPlot;
+    myPlot = mp;
+    
+    //Set title
+    plotSetTitle(myPlot, grp_title);
+    
+    //Line color
+    plotSetLineColor(myPlot, "#fc8d62");
+    
+    //Set break line format
+    plotSetLineStyle(myPlot, 1);
+    plotSetLineThickness(myPlot, 3);
+    
+    //Set up y-range
+    plotSetYRange(myPlot, floor(minc(y)), ceil(maxc(y)));
+    
+    //Place first 'X' tic mark at start and draw every 4 yrs
+//    plotSetXTicInterval(myPlot, 20 , dtstart+5);
+endp;
+
+proc (0) = __pd_kpssBreakText(struct plotControl *mp);
+    struct plotControl *myPlot;
+    myPlot = mp;
+    
+    //Set break line format
+    plotSetLineColor(myPlot, "#8da0cb");
+    plotSetLineStyle(myPlot, 2);
+    plotSetLineThickness(myPlot, 1);
+    
+endp;
+
+proc (1) = __pd_kpssTextSet(num_breaks);
+    local grp_title, prec;
+    
+    //Formatting
+    prec = 1;
+    
+    //Set up title
+    grp_title = "Number of breaks: " $+ ntos(num_breaks, prec);
+    
+    retp(grp_title);
+endp;
+
+proc (1) = __pd_kpss_GetTicInt(N);
+    local ints;
+    
+    // Number of yrs
+    ints = trunc(N/5);
+    
+    retp(ints);
+endp;
+
+/*
+** Procedure to estimate the break points for the model that includes the change in the slope (model 4).
+** We use the procedure in Bai and Perron (1998, Econometrica) on the first difference of the
+** time series.
+**
+** Sintaxis:
+**
+**  {Dx,mean_var,m_estimated_breaks} = Bai_Perron98(x,model,k);
+*/
+proc(1) = sbControlCreate(bigt);
+    
+    // Declare structure
+    struct sbControl bCtl;
+    bCtl.eps1=.15;                  @Value of the trimming (in percentage) for the construction
+    and critical values of the supF ype tests (used in the
+    supF test, the Dmax, the supF(l+1|l) and the sequential
+    procedure). if these test are used, h below should be set
+    at int(eps1*bigt). But if the tests are not required, estimation
+    can be done with an arbitrary h.
+    There are five options: eps1 = .05, .10, .15, .20 or .25.
+    for each option, the maximal value of m above is: 10 for eps1 = .05;
+    8 for eps1 = .10, 5 for eps1 = .15, 3 for eps1 = .20 and 2 for eps1 = .25.@
+    bCtl.h=int(bCtl.eps1*bigt);                         @minimal length of a segment (h >= q). Note: if
+    robust=1, h should be set at a larger value.@
+    /* the following are options if p > 0.
+    ----------------------------------- */
+    
+    bCtl.fixb=0;                     @set to 1 if use fixed initial values for beta@
+    bCtl.betaini=0;                  @if fixb=1, load the initial value of beta.@
+    bCtl.maxi=20;                    @maximum number of iterations for the nonlinear
+    procedure to obtain global minimizers.@
+    bCtl.printd=0;                   @set to 1 if want the output from the iterations
+    to be printed.@
+    bCtl.eps=0.0001;                 @criterion for the convergence.@
+    /*--------------------------------- */
+    
+    bCtl.robust=1;                   @set to 1 if want to allow for heterogeneity
+    and autocorrelation the in residuals, 0 otherwise.
+    The method used is Andrews(1991) automatic
+    bandwidth with AR(1) approximation and the
+    quadratic quernel. Note: Do not set to 1 if
+    lagged dependent variables are included as
+    regressors.@
+    bCtl.prewhit=0;                   @set to 1 if want to apply AR(1) prewhitening
+    prior to estimating the long run covariance
+    matrix@
+    bCtl.hetdat=1;              @Option for the construction of the F-tests.
+    Set to 1 if want to allow different moment matrices of the
+    regressors accross segments. if hetdat = 0, the same
+    moment matrices are assumed for each segment and estimated
+    from the full sample. It is recommended to set hetdat=1.  if p > 0
+    set hetdat = 1.@
+    bCtl.hetvar=0;              @Option for the construction of the F-tests.
+    Set to 1 if want to allow for the variance of the residuals
+    to be different across segments. if hetvar=0, the variance
+    of the residuals is assumed constant across segments
+    and constructed from the full sample. This option is not available
+    when robust = 1.@
+    bCtl.hetomega=1;                @Used in the construction of the confidence
+    intervals for the break dates. if hetomega=0,
+    the long run covariance matrix of zu is assumed
+    identical accross segments (the variance of the
+    errors u if robust = 0).@
+    bCtl.hetq=1;                    @Used in the construction of the confidence
+    intervals for the break dates. if hetq=0,
+    the moment matrix of the data is assumed
+    identical accross segments.@
+    bCtl.doglobal=1;                 @set to 1 if want to call the procedure
+    to obtain global minimizers.@
+    bCtl.dotest=1;                   @set to 1 if want to construct the sup F,
+    UDmax and WDmax tests. doglobal must be set
+    to 1 to run this procedure.@
+    bCtl.dospflp1=1;                 @set to 1 if want to construct the sup(l+1|l)
+    tests where under the null the l breaks are
+    obtained using global minimizers. doglobal
+    must be set to 1 to run this procedure.@
+    bCtl.doorder=1;                  @set to 1 if want to call the procedure that
+    selects the number of breaks using information
+    criteria. doglobal must be set to 1 to run
+    this procedure.@
+    bCtl.dosequa=1;                  @set to 1 if want to estimate the breaks
+    sequentially and estimate the number of
+    breaks using the supF(l+1|l) test.@
+    bCtl.dorepart=1;                @set to 1 if want to modify the
+    break dates obtained from the sequential
+    method using the repartition method of
+    Bai (1995), Estimating breaks one at a time.
+    This is needed for the confidence intervals
+    obtained with estim below to be valid.@
+    bCtl.estimbic=0;                  @set to 1 if want to estimate the model with
+    the number of breaks selected by BIC.@
+    bCtl.estimlwz=0;                  @set to 1 if want to estimate the model with
+    the number of breaks selected by LWZ.@
+    bCtl.estimseq=1;                 @set to 1 if want to estimate the model with
+    the number of breaks selected using the
+    sequential procedure.@
+    bCtl.estimrep=0;                 @set to 1 if want to esimate the model with
+    the breaks selected using the repartition
+    method.@
+    bCtl.estimfix=0;                  @set to 1 if want to estimate the model with
+    a prespecified number of breaks equal to fixn
+    set below.@
+    bCtl.fixn=0;
+    retp(bCtl);
+endp;
+
+
+proc(3) = __pd_kpss(y, tb, model, kernel, maxlags);
+    
+    local t, z, beta, e, St, var, stl2, lm, num, den;
+    
+    t = rows(y);
+    z = __pd_dekpss(model, t, tb);
+    
+    // Coefficient and residuals
+    beta = y/z;
+    e = y-z*beta;
+    
+    St = cumsumc(e);
+    
+    // Get variance estimate
+    var = _get_lrv_type(kernel, e'e, e, maxlags, 0);
+    
+    Stl2 = var/**T*(T-cols(z))^(-1)*/; @ Finite sample!!: we correct for the degrees of freedom @
+    
+    LM = inv(t^2)*(St'*St)/Stl2;
+    
+    num = inv(t^2)*(St'*St);
+    den = Stl2;
+    
+    retp(lm, num, den);
+endp;
+
+/*
+** Procedure to compute the mean and variance.
+**
+** The input and output is self-explanatory, provided
+** the previous comments.
+**
+*/
+
+proc(1) = __pd_calcdem(model,m_tb,t);
+    local tb, lam, m, mean_test, var_test, i, A, B;
+    
+    if model == 1 or model == 2;
+        tb=0;
+    elseif model == 3 or model == 4;
+        tb=selif(m_tb,m_tb .gt 0);
+    endif;
+    
+    lam=tb./t;
+    m=rows(tb);
+    
+    if model == 1 or model == 3;
+        A = 1/6;
+        B = 1/45;
+    elseif model == 2 or model == 4;
+        A = 1/15;
+        B = 11/6300;
+    endif;
+    
+    if m == 1;
+        mean_test = A*(lam^2+(1-lam)^2);
+        var_test = B*(lam^4+(1-lam)^4);
+    else;
+        mean_test = zeros(m+1,1);
+        mean_test[1] = A*(lam[1]^2);
+        mean_test[m+1] = A*((1-lam[m])^2);
+        
+        var_test = zeros(m+1,1);
+        var_test[1] = B*(lam[1]^4);
+        var_test[m+1]=  B*((1-lam[m])^4);
+        
+        i = 2;
+        do until i>m;
+            mean_test[i] = A*((lam[i]-lam[i-1])^2);
+            var_test[i] = B*((lam[i]-lam[i-1])^4);
+            i = i + 1;
+        endo;
+        
+        mean_test = sumc(mean_test);
+        var_test = sumc(var_test);
+    endif;
+    
+    retp(mean_test~var_test);
+endp;
+
+
+
+/* Procedure to compute deterministic terms
+**
+** Sintax is as follows:
+**
+**       detho = dekpss(model,t,tb);
+**
+** INPUT:
+**
+**    model     Scalar, determines the deterministic model that
+**              is considered under the null hypothesis. If:
+**                   model = 1, constant (Hadri test)
+**                   model = 2, constant + trend (Hadri test)
+**                   model = 3, constant + shift (in the mean)
+**                   model = 4, constant + trend + shift (in the mean and trend)
+**
+**    t         Number of observations.
+**
+**    tb        (mx1) vector of dates of breaks
+**
+**
+** OUTPUT:
+**
+**    detho     Matrix of deterministic terms.
+**
+*/
+
+Proc(1) = __pd_dekpss(model, t, tb);
+    local m, du, dt, i, z;
+    if model == 1;
+        z = ones(t, 1);
+    elseif model == 2;
+        z = ones(t,1)~seqa(1,1,t);
+    elseif model == 3;
+        m = rows(tb);
+        du = zeros(t,1);
+        i = 1;
+        do until i>m;
+            du = du~(zeros(tb[i], 1)|ones(t-tb[i], 1));
+            i = i + 1;
+        endo;
+        z = ones(t,1)~du[., 2:m+1];
+    elseif model == 4;
+        m = rows(tb);
+        du = zeros(t, 1);
+        dt = zeros(t, 1);
+        i = 1;
+        do until i > m;
+            du = du~(zeros(tb[i], 1)|ones(t-tb[i], 1));
+            dt = dt~(zeros(tb[i], 1)|seqa(1, 1, t-tb[i]));
+            i = i + 1;
+        endo;
+        z = ones(t, 1)~seqa(1, 1, t)~du[., 2:m+1]~dt[., 2:m+1];
+    else;
+        errorlog("Try to speciy another model");
+        end;
+    endif;
+    retp(z);
+endp;
+
