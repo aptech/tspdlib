@@ -1,3 +1,31 @@
+struct sburControl {
+scalar knownBreak;
+matrix breakDate;
+matrix numberBreaks;
+scalar penalty;
+scalar kmax;
+scalar kmin;
+scalar estimation;
+scalar maxIters;
+};
+
+struct sburOut {
+    scalar pt;
+matrix mpt;
+matrix adf;
+matrix za;
+matrix mza;
+matrix msb;
+matrix mzt;
+matrix min_tb;
+matrix cbar;
+
+matrix cv_msb;
+matrix cv_mza;
+matrix cv_mzt;
+matrix cv_pt;
+};
+
 struct msurControl {
 
 // Control specifications
@@ -29,8 +57,8 @@ scalar je;
 
 scalar fun;
 
-// Control structure for optmt
-struct optmtControl oCtl;
+//// Control structure for optmt
+//struct optmtControl oCtl;
 
 // Start values for simulations
 matrix startvalSimulations;
