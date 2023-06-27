@@ -59,8 +59,9 @@ proc (4) = pd_kpss(data, model, ... );
     // pd_kpss(data, model, kernel, maxlags, m, struct sbControl bCtl);
     local dt_vec, bwl_dftl, m, kernel, bwl, maxlags, k, bigt, z, q, x, p, numkpss, denkpss, m_lee_est, m_tb, m_tb2, j,
         datevec, nbreak, mbic, mlwz, supfl, dateseq, ftest, wftest, reparv, nbr, test_hom, test_het,
-        test_var, test_mean,  kpsstest, num, den, tb, temp1, temp2, testd_hom, testd_het, model0;
+        frac, test_var, test_mean,  kpsstest, num, den, tb, temp1, temp2, testd_hom, testd_het, model0;
     
+    screen off;
     // Check for missing values and dates
     _checkForMissings(data, "pd_kpss");
     { dt_vec, data } =_checkfordate(data);
@@ -68,9 +69,11 @@ proc (4) = pd_kpss(data, model, ... );
     // Number of time periods
     bigt = rows(data);
     
+    // Structure
+    struct sbControl bCtl;
     // Default bandwidth for var
     bwl_dftl = round(4 * (bigt/100)^(2/9));
-    { m, kernel, bwl, maxlags } = dynargsGet(1|4, 5, 1, bwl_dftl, 8);
+    { m, kernel, bwl, maxlags, bctl } = dynargsGet(1|5, 5, 1, bwl_dftl, 8, sbControlCreate(bigt));
     
     // Number of countries
     k = cols(data);
@@ -124,10 +127,10 @@ proc (4) = pd_kpss(data, model, ... );
         
         if nbr > 0;
             tb = selif(datevec[.,nbr], datevec[.,nbr] .gt 0);
-            { kpsstest, num, den } = __pd_kpss(data[., j], tb, model, kernel, maxlags);
+            { kpsstest, num, den } = __pd_kpss(data[., j], tb, model, kernel, bwl, maxlags);
         elseif nbr == 0;
             
-            { kpsstest, num, den } = __pd_kpss(data[., j], 0, model0, kernel, maxlags);
+            { kpsstest, num, den } = __pd_kpss(data[., j], 0, model0, kernel, bwl, maxlags);
         endif;
         
         numkpss[j] = num;
@@ -154,39 +157,73 @@ proc (4) = pd_kpss(data, model, ... );
     
     j = 1;
     do until j>k;
-        if  m_lee_est[j, 2] > 0;
+         if  m_lee_est[j, 2] > 0;
             temp1 = m_tb[(j*m)-m+1:(j*m), .];
+            // Computes the mean and variance
+            temp2 = __pd_calcdem(model, temp1[., m_lee_est[j, 2]], bigt);
+            test_mean[j] = temp2[1];
+            test_var[j] = temp2[2];
+            
         elseif m_lee_est[j, 2] == 0;
-            temp1 = 0;
+            // Computes the mean and variance
+            temp2 = __pd_calcdem(model0, 0, bigt);
+            test_mean[j] = temp2[1];
+            test_var[j] = temp2[2];
         endif;
-        
-        // Computes the mean and variance
-        temp2 = __pd_calcdem(model, temp1[., m_lee_est[j, 2]], bigt);
-        test_mean[j] = temp2[1];
-        test_var[j] = temp2[2];
         
         j = j + 1;
     endo;
     
-    test_mean = meanc(test_mean);
-    test_var = meanc(test_var);
+    { testd_het, testd_hom } =  __pd_kpss_stats(test_hom, test_het, test_mean, test_var, k);
+    screen on;
     
-    testd_hom = sqrt(k)*(test_hom-test_mean)./sqrt(test_var);
-    testd_het = sqrt(k)*(test_het-test_mean)./sqrt(test_var);
+     /*
+    ** Print results
+    */
+    if model > 2;
+        _printHeaderTSPDLIB(0, kernel, 3, model-2, rows(m_tb), .1, "PD KPSS", "Stationarity", 0);
+    else;
+        _printHeaderTSPDLIB(0, kernel, 2, model, 0, .0, "PD KPSS", "Stationarity", 0);
+    endif;
     
-    print "************************************";
-    print "Results for the PANKPSS test        ";
-    print "************************************";
+    // Convert breaks
+    { frac, m_tb } = __convertbreaks(m_tb, dt_vec, bigT);
+
+    // Print results & Critical values
+    local top, side, stats, dec, colwidth;
+    top = "PD KPSS"$~"P-val";
+    side = ("Homogenous"$|"Heterogenous");
+    stats = (testd_hom|testd_het)~(cdfnc(testd_hom)|cdfnc(testd_het));
+    dec = 3;
+    colwidth = 15;
     
-    print "Stationarity test with structural breaks (homogeneous): " testd_hom "with p-val: " cdfnc(testd_hom);
-    print "Stationarity test with structural breaks (heterogeneous): " testd_het "with p-val: " cdfnc(testd_het);
+    local cv;
+    cv =  cdfni(1-0.01)~cdfni(1-0.05)~cdfni(1-0.1);
     
+    _printStatsTable(top, side, stats, cv', dec, colwidth, 1);
+       
+//    _printBreaks(dt_vec, tb, frac);
+
     print "Maximum number of breaks allowed" m;
     print "Matrix of individual tests" m_lee_est;
     print "Number of observations" rows(data);
     print "Estimated breaking points" m_tb;
     
     retp(testd_hom, testd_het, m_lee_est, areshape(m_tb, K|maxlags|maxlags));
+endp;
+
+proc (2) = __pd_kpss_stats(test_hom, test_het, test_mean, test_var, k);
+    local testd_hom, testd_het;
+    
+    // Get means
+    test_mean = meanc(test_mean);
+    test_var = meanc(test_var);
+    
+    // Find individual stats
+    testd_hom = sqrt(k)*(test_hom-test_mean)./sqrt(test_var);
+    testd_het = sqrt(k)*(test_het-test_mean)./sqrt(test_var);
+    
+    retp(testd_het, testd_hom);
 endp;
 
 proc (0) = plotpdKPSS(data, breaks_array, kpss_tests, dtstart, freq, ...);
@@ -545,7 +582,7 @@ proc(1) = sbControlCreate(bigt);
 endp;
 
 
-proc(3) = __pd_kpss(y, tb, model, kernel, maxlags);
+proc(3) = __pd_kpss(y, tb, model, kernel, bwl, maxlags);
     
     local t, z, beta, e, St, var, stl2, lm, num, den;
     
@@ -559,7 +596,7 @@ proc(3) = __pd_kpss(y, tb, model, kernel, maxlags);
     St = cumsumc(e);
     
     // Get variance estimate
-    var = _get_lrv_type(kernel, e'e, e, maxlags, 0);
+    var = _get_lrv_type(kernel, e'e, e, bwl, 0, maxlags, t);
     
     Stl2 = var/**T*(T-cols(z))^(-1)*/; @ Finite sample!!: we correct for the degrees of freedom @
     
