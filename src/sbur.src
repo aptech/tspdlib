@@ -688,7 +688,9 @@ proc (9) = __sbur_multiple_gls_brute(y,  model,  penalty,  kmax,  kmin);
     endif;
     
     { yt,  ssra } = __sbur_glsd(y,  z,  cbar); /* transforming the data*/
+    screen off;
     { ahat,  r,  fit } = olsqr2(yt[2:nt,  1],  yt[1:nt-1,  1]);  /* estimate the alpha-hat*/
+    screen on;
     s2u = r'r/(nt-1);
     sumyt2 = sumc(yt[1:nt-1, 1]^2)/(nt-1)^2;
     
@@ -744,7 +746,9 @@ proc(3) = __sbur_adfp(yt,  kstar);
     dyt = trimr(dyt,  kstar + 1,  0);
     reg = trimr(reg,  kstar + 1,  0);
     
+    screen off;
     { rho,  ee,  ff } = olsqr2(dyt,  reg);
+    screen on;
     
     /*nef=rows(ee);*/
     nef = rows(dyt);
@@ -842,7 +846,9 @@ proc (2) = __sbur_olsd(y,  z);
     
     local yd,  ahat,  fit;
     
+    screen off;
     { ahat,  yd,  fit } = olsqr2(y,  z);
+    screen on;
     
     retp(yd,  sumc(yd[1:rows(yd)-1]^2)/(rows(yd)-1)^2);
 endp;
@@ -1262,7 +1268,9 @@ proc (9) = __sbur_multiple_gls_algorithm(y,  model,  penalty,  kmax,  kmin,  max
     endif;
     
     { yt,  ssra } = __sbur_glsd(y,  z,  cbar); /* transforming the data*/
+    screen off;
     { ahat,  r,  fit } = olsqr2(yt[2:t,  1] ,  yt[1:t-1,  1]);  /* estimate the alpha-hat*/
+    screen on;
     s2u = r'r/(t-1);
     sumyt2 = sumc(yt[1:t-1,  1]^2)/(t-1)^2;
     
@@ -1826,8 +1834,9 @@ proc (3) = __sbur_est2_gls(y, model, q, m, bigt, trm, datevec);
     t2 = datevec[m];
     zi = zeros(t2, q+1)|(trimr(z, t2, 0)~initial_impulse[1:bigt-t2]);
     zbar = zbar~zi;
-    
+    screen off;
     { b, e, fit } = olsqr2(y_gls, zbar);	@ Estimate the OLS coefficients for this break structure@
+    screen on;
     zz = invpd(zbar'zbar);
     
     
@@ -1918,8 +1927,9 @@ proc (3) = __sbur_est2_gls(y, model, q, m, bigt, trm, datevec);
     t2 = datevec[m, m];
     zi = zeros(t2, q+1)|(trimr(z, t2, 0)~initial_impulse[1:tstar-t2]);
     zbar = zbar~zi;
+    screen off;
     {b, e, fit}= olsqr2(y_gls, zbar);
-    
+    screen on;
     zz = invpd(zbar'zbar);
     
     if model[1] == 2;
