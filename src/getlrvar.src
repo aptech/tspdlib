@@ -30,34 +30,35 @@
 
 /*13 May 2016*/
 
-proc(1) = bartlett(e, l);
+proc(1) = bartlett(e, l, ...);
     local t, lrv, bw, w;
     
-    T = rows(e);
-    
+    t = dynargsGet(1, rows(e));
+
     lrv = e'e/T;
     bw = 1;
     do while bw <=l;
         w   = 1- bw/(l+1);
-        lrv = lrv + 2 * e[1:T-bw]' * e[1+bw:T] * w/T;
+        lrv = lrv + 2 * e[1:rows(e)-bw]' * e[1+bw:rows(e)] * w/T;
         bw = bw + 1;
     endo;
     
     retp(lrv);
 endp;
 
-proc(1) = qs(e, l);
+proc(1) = qs(e, l, ...);
     
     local t, bw, w, x1, x2, lrv;
     
-    T   = rows(e);
+    t = dynargsGet(1, rows(e));
+    
     lrv = e'e/T;
     bw = 1;
     do while bw <= l;
         x1 = bw/l;
         x2 = 6*pi*x1/5;
         w  = (25/(12*(pi*x1)^2)).*(sin(x2)./x2 - cos(x2));
-        lrv= lrv + 2 * e[1:T-bw]' * e[1+bw:T] * w/T;
+        lrv= lrv + 2 * e[1:rows(e)-bw]' * e[1+bw:rows(e)] * w/T;
         bw = bw + 1;
     endo;
     
@@ -70,11 +71,12 @@ endp;
 /* From Carrion-i-Silvestre & Sanso (2006) and (2007)*/
 
 /* Sul, Phillips and Choi (2003). Bartlett kernel*/
-proc(1) = spc_bartlett(e, lags);
+proc(1) = spc_bartlett(e, lags, ...);
     local t, i, temp, j, rho_temp, res_temp, rho, a, res;
     local BIC, min_BIC, k, l, lrv, w, lrv_recolored;
     
-    t = rows(e);
+    t = dynargsGet(1, rows(e));
+    
     if lags <= 0;
         lags = 1;
     endif;
@@ -127,7 +129,7 @@ proc(1) = spc_bartlett(e, lags);
     l = trunc(l);
     
     // Bartlett kernel
-    lrv = bartlett(res, l);
+    lrv = bartlett(res, l, t);
     
     // Recoloring
     lrv_recolored = lrv/(1 - sumc(rho))^2;
@@ -139,11 +141,12 @@ endp;
 
 
 /* Sul, Phillips and Choi (2003). Quadratic Spectral kernel*/
-proc(1) = spc_qs(e,lags);
+proc(1) = spc_qs(e, lags, ...);
     local t, i, temp, j, rho_temp, res_temp, rho, a, res;
     local BIC, min_BIC, k, l, lrv, w, lrv_recolored;
     
-    t = rows(e);
+    t = dynargsGet(1, rows(e));
+    
     if lags <= 0;
         lags = 1;
     endif;
@@ -219,10 +222,10 @@ endp;
 
 
 /*Andrews (1991) and Kurozumi (2002)*/
-proc(1) = Kurozumi_bartlett(e);
-    local t, a, k, l, lrv, i, w;
+proc(1) = Kurozumi_bartlett(e, ...);
+    local t, a, k, l, lrv;
     
-    t = rows(e);
+    t = dynargsGet(1, rows(e));
     
     // AR(1) estimate
     a = e[2:t]/e[1:t-1];
@@ -244,10 +247,10 @@ proc(1) = Kurozumi_bartlett(e);
 endp;
 
 /*Andrews (1991) and Kurozumi (2002)*/
-proc(1) = kurozumi_qs(e);
+proc(1) = kurozumi_qs(e, ...);
     local t, a, k, l, lrv, i, w;
     
-    t = rows(e);
+    t = dynargsGet(1, rows(e));
     
     // AR(1) estimate
     a = e[2:t]/e[1:t-1];
@@ -278,9 +281,9 @@ proc(1) = kurozumi_qs(e);
 endp;
 
 proc(1) = _get_lrv_type(varm, ssr, e1, bwl, print_varm, ...);
-    local maxlags;
+    local maxlags, bigT;
     
-    maxlags = dynargsGet(1, 8);
+    { maxlags, bigT } = dynargsGet(1|2, 8, rows(e1));
     
     if print_varm;
         print "LR Variance estimation method:";
@@ -294,34 +297,34 @@ proc(1) = _get_lrv_type(varm, ssr, e1, bwl, print_varm, ...);
         if print_varm;
             print "Bartlett";
         endif;
-        retp(bartlett(e1, bwl));
+        retp(bartlett(e1, bwl, bigT));
     elseif varm == 3;
         if print_varm;
             print "Quadratic Spectral (QS)";
         endif;
-        retp(qs(e1, bwl));
+        retp(qs(e1, bwl, bigT));
     elseif varm == 4;
         if print_varm;
             print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
         endif;
-        retp(spc_bartlett(e1, maxlags));
+        retp(spc_bartlett(e1, maxlags, bigT));
     elseif varm == 5;
         if print_varm;
             print "SPC with QS";
         endif;
-        retp(spc_qs(e1, maxlags));
+        retp(spc_qs(e1, maxlags, bigT));
     elseif varm == 6;
         if print_varm;
             print "Kurozumi with Bartlett";
         endif;
         
-        retp(kurozumi_bartlett(e1));
+        retp(kurozumi_bartlett(e1, bigT));
     elseif varm == 7;
         if print_varm;
             print "Kurozumi with QS";
         endif;
         
-        retp(kurozumi_qs(e1));
+        retp(kurozumi_qs(e1, bigT));
     endif;
-
+    
 endp;
