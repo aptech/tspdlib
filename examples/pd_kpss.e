@@ -13,22 +13,21 @@ varnames = getColNames(data);
 ** Calculation of the test with 1 change to the mean
 */
 
-// Set kernel
-kernel = 1;
-
-// Set maxlags
-maxlags = 5;
+//  Model when there are changes.
+// Changes in the mean and the slope
+model = 4;
 
 // Maximum humber of structural changes allowed
 max_brks = 5;
 
-// Model when there are no changes.
-// Second model: individual effects + tendency
-model0 = 2;
+// Set kernel
+kernel = 4;
 
-//  Model when there are changes.
-// Changes in the mean and the slope
-model = 4;
+// Set bandwidth for varm
+bwl = round(4 * (rows(data)/100)^(2/9));
+
+// Set maxlags
+maxlags = 5;
 
 /*
 ** Settings for structural break estimation
@@ -62,7 +61,7 @@ bCtl.estimseq = 0;
 
 /*****************************************************************************/
 /*****************************************************************************/
-{ test_hom, test_het, kpsstest, m_br} = pd_kpss(data[., 2:cols(data)], model, model0, kernel, maxlags, max_brks, bCtl);
+{ test_hom, test_het, kpsstest, m_br} = pd_kpss(data[., 2:cols(data)], model, max_brks, kernel, bwl, maxlags, bctl);
 
 plotPDKPSS(data[., 2:cols(data)], m_br, kpsstest, 1995, 1, varnames[2:rows(varnames)]);
 
