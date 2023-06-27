@@ -73,7 +73,7 @@ endp;
 /* Sul, Phillips and Choi (2003). Bartlett kernel*/
 proc(1) = spc_bartlett(e, lags, ...);
     local t, i, temp, j, rho_temp, res_temp, rho, a, res;
-    local BIC, min_BIC, k, l, lrv, w, lrv_recolored;
+    local BIC, min_BIC, k, l, lrv, lrv_recolored;
     
     t = dynargsGet(1, rows(e));
     
