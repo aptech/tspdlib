@@ -1,41 +1,20 @@
 new;
-library westerlundlib;
-
-n = 16;
+library tspdlib_dv;
 
 // Load data
-dat = loadd(__FILE_DIR $+ "panelcoint.dat");
+dat = loadd(__FILE_DIR $+ "pd_coint.gdat");
 
-y = dat[., 1:n];
-x = dat[.,n+1:cols(dat)];
+x = dat[., 1:5];
+y = dat[., 5+1:cols(dat)];
 
-// Dimensions
-t = rows(y);
-
-// Max factors
-max     = 5;         
 
  // Deterministic component
  //  0 = no shift, 
  // 1 = level shift, 
  // 2 = regime shift
-mod     = 0;                       
+mod = 1;                       
 
-// Lags
-p       = int(4*(t/100)^(2/9));     
-
-// Bandwidth
-q       = int(4*(t/100)^(2/9));     
-
-// Trimming
-tr      = 0.1;                    
-
-// Find break points
-brn      = ilt_br(y, x, tr, p, mod);
-
-// Estimate test statistic
-{ lmn, nf } = ilt_fact(y, x, brn, p, q, mod, max);
-
+{ brks, lmn, nf } = pd_coint_wedgerton(y, x, mod);
 
 format/m1/rd 8,3;
 
@@ -48,5 +27,5 @@ print " ";
 print " estimated no of factors = ";; nf;
 print " ";
 print " estimated breakpoints ";
-seqa(1, 1, n)~brn';
+seqa(1, 1, cols(y))~brks';
 
