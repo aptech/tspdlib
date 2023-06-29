@@ -6,26 +6,26 @@
 ** guarantee is made. Bug reports are welcome.
 */
 proc (3) = pd_coint_wedgerton(y, x, mod, ...);
-    local mod, tr, p, q, dft_p, brks, max_f, lmn, nf;
+    local t, tr, p, q, dft_p, brks, max_f, lmn, nf;
     
     t = rows(y);
     
     // Lags
-    dft_p  = int(4*(t/100)^(2/9));     
-
+    dft_p  = int(4*(t/100)^(2/9));
+    
     // Get dynamic arguments
-    { mod, p, q, tr, max_f } = dynargsGet(1|4, 1, dft_p, dft_p, 0.1, 5);
+    { mod, p, q, tr, max_f } = dynargsGet(1|5, 1, dft_p, dft_p, 0.1, 5);
     
     // Find break points
     brks  = __pd_coint_wedgerton_br(y, x, tr, p, mod);
     
     // Estimate test statistic
-    { lmn, nf } = __pd_coint_wedgerton_fact(y, x, brn, p, q, mod, max);   
+    { lmn, nf } = __pd_coint_wedgerton_fact(y, x, brks, p, q, mod, max_f);
     
     retp(brks, lmn, nf);
 endp;
 
-   
+
 proc (1) = __pd_coint_wedgerton_br(y, x, tr, p, mod);
     local t, n, i, br, t1, t2, j, ssr;
     
@@ -41,7 +41,7 @@ proc (1) = __pd_coint_wedgerton_br(y, x, tr, p, mod);
         j   = t1;
         ssr = zeros(t,1);
         do while j <= t2;
-            ssr[j] = __pd_coint_ssr(y[.,i], x[.,i], j, p, mod);
+            ssr[j] = __pd_coint_ssr(y[.,i], x[.,i], j, mod);
             j      = j + 1;
         endo;
         
@@ -55,7 +55,7 @@ endp;
 
 
 proc (2) = __pd_coint_wedgerton_fact(y, x, br, p, q, mod, max);
-    local t,n,i,de,z,dz,dy,dx,nf,f,l,d,b,s0,sl,ds,v,u,v0,vl,zt,za;
+    local t, n, i, de, z, dz, dy, dx, nf, f, l, d, s0, sl, ds, v, u, v0, vl, zt, za;
     
     t = rows(y);
     n = cols(y);
@@ -64,9 +64,9 @@ proc (2) = __pd_coint_wedgerton_fact(y, x, br, p, q, mod, max);
     de = zeros(t-1,n);
     do while i <= n;
         
-        z       = __pd_coint_dum(x[.,i],br[i],mod);
-        dz      = __pd_diff_west(z,1);
-        dy      = __pd_diff_west(y[.,i],1);
+        z       = __pd_coint_dum(x[.,i], br[i], mod);
+        dz      = __pd_diff_west(z, 1);
+        dy      = __pd_diff_west(y[.,i], 1);
         dx      = (__pd_diff_west(x[.,i],1)~dz);
         de[.,i] = (eye(t-1) - dx*inv(dx'dx)*dx')*dy;
         
@@ -94,12 +94,12 @@ proc (2) = __pd_coint_wedgerton_fact(y, x, br, p, q, mod, max);
         d  = inv(dx'dx)*(dx'dy);
         s0 = y[., i] - (y[1, i] - (x[1, i]~z[1, .])*d) - (x[., i]~z)*d  - f[., i];
         ds = __pd_diff_west(s0, 1);
-        sl = (s0[p+1:t-1, .]~lagp(ds, p)~dz[p+1:t-1, 1]);
+        sl = (s0[p+1:t-1, .]~__pd_lagp(ds, p)~dz[p+1:t-1, 1]);
         ds = ds[p+1:t-1];
         d  = inv(sl'sl)*sl'ds;
         u  = ds - sl*d;
-        v0 = lrvar(u, 0);
-        vl = lrvar(ds, q);
+        v0 = __pd_lrvar(u, 0);
+        vl = __pd_lrvar(ds, q);
         v  = sqrt(diag(v0*inv(sl'sl)));
         
         zt = zt + (d[1]/v[1]);
@@ -168,54 +168,42 @@ proc (1) = __pd_coint_detm(x,br,mod);
     
     t = rows(x);
     
+    // Set initial z
+    z = seqa(1, 1, t);
+    
+    // Break points
     if br ne 0;
-        d = (zeros(br,1)|ones(t-br,1));
+        d = (zeros(br, 1)|ones(t-br, 1));
     endif;
     
-    if mod eq 0 or mod eq 1;
-        z = seqa(1,1,t);
-    endif;
-    
+    // Add dummies for model two
     if mod eq 2;
-        if br eq 0;
-            z = seqa(1,1,t);
-        endif;
         if br ne 0;
-            z = seqa(1,1,t)~(d.*x);
+            z = z~(d.*x);
         endif;
     endif;
     
     retp(z);
 endp;
 
-proc (1) = __pd_coint_dum(x, br, mod);
-    local t,d,z,dz;
+proc (1) = __pd_coint_dum(x, br, model);
+    local t, d, z;
     
     t = rows(x);
+    
+    // Set initial z
+    z = seqa(1, 1, t);
     
     if br ne 0;
         d = (zeros(br,1)|ones(t-br,1));
     endif;
     
-    if mod eq 0;
-        z = seqa(1,1,t);
-    endif;
     
-    if mod eq 1;
-        if br eq 0;
-            z = seqa(1,1,t);
-        endif;
-        if br ne 0;
-            z = seqa(1,1,t)~d;
-        endif;
-    endif;
-    
-    if mod eq 2;
-        if br eq 0;
-            z = seqa(1,1,t);
-        endif;
-        if br ne 0;
-            z = seqa(1,1,t)~d~(d.*x);
+    if br ne 0;
+        if model eq 1;
+            z = z~d;
+        elseif model eq 2;
+            z =  z~d~(d.*x);
         endif;
     endif;
     
@@ -224,7 +212,7 @@ endp;
 
 
 proc (1) = __pd_coint_ilt(y, x, br, p, mod);
-    local k,d,b,u,za,zt,t,dy,dx,tr,v,z,dz,s,s0,sl,ds,v0,vl;
+    local d, u, za, zt, t, dy, dx, v, z, dz, s0, sl, ds, v0, vl;
     
     t = rows(y);
     
@@ -235,12 +223,12 @@ proc (1) = __pd_coint_ilt(y, x, br, p, mod);
     d  = inv(dx'dx)*(dx'dy);
     s0 = y - (y[1] - (x[1,.]~z[1,.])*d) - (x~z)*d;
     ds = __pd_diff_west(s0,1);
-    sl = (s0[p+1:t-1,.]~lagp(ds,p)~dz[p+1:t-1,.]);
+    sl = (s0[p+1:t-1,.]~__pd_lagp(ds,p)~dz[p+1:t-1,.]);
     ds = ds[p+1:t-1];
     d  = inv(sl'sl)*sl'ds;
     u  = ds - sl*d;
-    v0 = lrvar(u,0);
-    vl = lrvar(ds,p);
+    v0 = __pd_lrvar(u,0);
+    vl = __pd_lrvar(ds,p);
     v  = sqrt(diag(v0*inv(sl'sl)));
     
     zt = d[1]/v[1];
@@ -249,8 +237,8 @@ proc (1) = __pd_coint_ilt(y, x, br, p, mod);
     retp(zt~za);
 endp;
 
-proc (1) = __pd_coint_ssr(y, x, br, p, mod);
-    local d,u,t,dy,dx,z,dz,b;
+proc (1) = __pd_coint_ssr(y, x, br, mod);
+    local d, u, t, dy, dx, z, dz;
     
     t = rows(y);
     
@@ -297,4 +285,52 @@ proc __pd_diff_west(x, k);
     endif ;
     
     retp(trimr(x, k, 0) - trimr(lagn(x, k), k, 0));
+endp;
+
+proc __pd_lrvar(u, k);
+    local sl,s0;
+    
+    sl = __pd_fejer(u, k);
+    s0 = (u'u)/rows(u);
+    
+    retp((s0 + sl + sl'));
+endp;
+
+proc (1) = __pd_lagp(x, p);
+    local t,i,xl;
+    
+    t = rows(x);
+    
+    i  = 1;
+    xl = lagn(x, 1);
+    do while i < p;
+        i  = i + 1;
+        xl = (xl~lagn(x, i));
+    endo;
+    
+    retp(trimr(xl, p, 0));
+endp;
+
+proc __pd_fejer(uv, k);
+    local i, m, a, t1, t2, f;
+    
+    if k == 0;
+        a = 0;
+        goto out;
+    endif;
+    
+    i = 1;
+    a = 0;
+    do until i > k;
+        f = i/(k+1);
+        m = 1 - f;
+        t1 = trimr(uv, i, 0);
+        t2 = trimr(lagn(uv, i), i, 0);
+        a = a + m*(t1't2);
+        i = i + 1;
+    endo;
+    
+    out:
+    
+    retp(a/rows(uv));
 endp;
