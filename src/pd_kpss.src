@@ -57,9 +57,9 @@
 */
 proc (4) = pd_kpss(data, model, ... );
     // pd_kpss(data, model, kernel, maxlags, m, struct sbControl bCtl);
-    local dt_vec, bwl_dftl, m, kernel, bwl, maxlags, k, bigt, z, q, x, p, numkpss, denkpss, m_lee_est, m_tb, m_tb2, j,
+    local dt_vec, bwl_dftl, m, kernel, bwl, maxlags, k, bigt, z, q, x, p, numkpss, cv_i, denkpss, m_lee_est, m_tb, m_tb2, j,
         datevec, nbreak, mbic, mlwz, supfl, dateseq, ftest, wftest, reparv, nbr, test_hom, test_het,
-        frac, test_var, test_mean,  kpsstest, num, den, tb, temp1, temp2, testd_hom, testd_het, model0;
+        test_var, test_mean,  kpsstest, num, den, tb, temp1, temp2, testd_hom, testd_het, model0, varnames, frac, brks;
     
     screen off;
     // Check for missing values and dates
@@ -68,6 +68,12 @@ proc (4) = pd_kpss(data, model, ... );
     
     // Number of time periods
     bigt = rows(data);
+    
+    if hasmetadata(data);
+        varnames = getcolnames(data);
+    else;
+        varnames = "Y" $+ seqa(1, 1, cols(data));
+    endif;
     
     // Structure
     struct sbControl bCtl;
@@ -157,7 +163,7 @@ proc (4) = pd_kpss(data, model, ... );
     
     j = 1;
     do until j>k;
-         if  m_lee_est[j, 2] > 0;
+        if  m_lee_est[j, 2] > 0;
             temp1 = m_tb[(j*m)-m+1:(j*m), .];
             // Computes the mean and variance
             temp2 = __pd_calcdem(model, temp1[., m_lee_est[j, 2]], bigt);
@@ -177,19 +183,18 @@ proc (4) = pd_kpss(data, model, ... );
     { testd_het, testd_hom } =  __pd_kpss_stats(test_hom, test_het, test_mean, test_var, k);
     screen on;
     
-     /*
+    /*
     ** Print results
     */
     if model > 2;
-        _printHeaderTSPDLIB(0, kernel, 3, model-2, rows(m_tb), .1, "PD KPSS", "Stationarity", 0);
+        _printHeaderTSPDLIB(0, kernel, 3, model-2, m, .1, "PD KPSS", "Stationarity", 0);
     else;
         _printHeaderTSPDLIB(0, kernel, 2, model, 0, .0, "PD KPSS", "Stationarity", 0);
     endif;
     
-    // Convert breaks
-    { frac, m_tb } = __convertbreaks(m_tb, dt_vec, bigT);
-
-    // Print results & Critical values
+    /*
+    ** Print panel results and critical values
+    */
     local top, side, stats, dec, colwidth;
     top = "PD KPSS"$~"P-val";
     side = ("Homogenous"$|"Heterogenous");
@@ -201,15 +206,127 @@ proc (4) = pd_kpss(data, model, ... );
     cv =  cdfni(1-0.01)~cdfni(1-0.05)~cdfni(1-0.1);
     
     _printStatsTable(top, side, stats, cv', dec, colwidth, 1);
-       
-//    _printBreaks(dt_vec, tb, frac);
-
-    print "Maximum number of breaks allowed" m;
-    print "Matrix of individual tests" m_lee_est;
-    print "Number of observations" rows(data);
-    print "Estimated breaking points" m_tb;
+    print "Homogenous var:";
+    _printConclusion(testd_hom, cv[., 1], 1, "stationarity");
+    print "Heterogenous var:";
+    _printConclusion(testd_het, cv[., 2], 1, "stationarity");
+    print "==============================================================";
+    print "Individual panel results";
+    print "==============================================================";
+    /*
+    ** Print individual results and critical values
+    */
+    top = "KPSS"$~"Num. Breaks";
+    side = varnames;
+    stats = m_lee_est[., 1:2];
+    dec = 3;
+    colwidth = 15;
     
-    retp(testd_hom, testd_het, m_lee_est, areshape(m_tb, K|maxlags|maxlags));
+    // Convert breaks to matrix instead of array
+    brks = __pd_kpss_get_breaks(m_tb, m_lee_est[., 2], K, m);
+    
+    // Simulate the critical values
+    cv_i =  __pd_sim_cv(brks, model0, bigt, 20000);
+    _printStatsTable(top, side, stats, cv_i', dec, colwidth, 1);
+    
+    // Print the conclusions
+    __pd_kpss_printConclusions(varnames, m_lee_est[., 1], cv_i);
+    print "==============================================================";
+    /*
+    ** Print break points
+    */
+    // Convert breaks for date format
+    { frac, brks } = __pd_convertbreaks(brks, dt_vec, bigt);
+    
+    brks = __printBrksTable(varnames, brks);
+    
+    retp(testd_hom, testd_het, m_lee_est, brks);
+endp;
+
+proc (0) = __pd_kpss_printConclusions(varnames, stats, cv_i);
+    
+    // Print results
+    local s, reject_print, no_reject_print;
+
+    // Default statements
+    reject_print = "Reject Ho ";
+    no_reject_print = "Cannot reject Ho";
+
+    for i(1, rows(stats), 1);
+        // Print conclusion
+        if stats[i] > cv_i[i, 1];
+            s = reject_print $+ "( 1% level)";
+        elseif stats[i] > cv_i[i, 2];
+            s = reject_print $+ "( 5% level)";
+        elseif stats[i] > cv_i[i, 3];
+            s = reject_print $+ "(10% level)";
+        else;
+            s = no_reject_print;
+        endif;
+        sprintf("%-15s %45s", varnames[i], s);
+    endfor;
+endp;
+
+proc (1) = __printBrksTable(grpnames, brks);
+    local top;
+    format /ld 12,8;
+    top = "Group"$|("Break " $+ ntos(seqa(1, 1, cols(brks))));
+    brks = asDF(grpnames)~brks;
+    brks = setcolnames(brks, top);
+    brks;
+    format /m1 /ros 16,8;
+    retp(brks);
+endp;
+
+proc (2) = __pd_convertbreaks(tb, dt_vec, T);
+    local frac, tmp, fmt;
+    
+    // Compute fraction
+    frac = tb/T;
+    fmt = getcoldateformats(dt_vec);
+    
+    
+    if isempty(fmt);
+        fmt = "%Y-%m-%d";
+    endif;
+    
+    fmt = reshape(fmt, cols(tb), 1);
+    
+    // Convert to date format
+    if ismiss(dt_vec) != 1;
+        for i(1, rows(tb), 1);
+            tmp = packr(miss(tb[i, .], 0)')';
+            if ismiss(tmp) == 0;
+                tb[i, 1:cols(tmp)] = dt_vec[tmp]';
+            endif;
+            
+        endfor;
+    endif;
+    
+    // Remove missing observations
+    tb = miss(tb, 0);
+    
+    tb = setColDateFormats(tb, fmt, seqa(1, 1, cols(tb)));
+    
+    retp(frac, tb);
+endp;
+
+proc (1) = __pd_kpss_get_breaks(m_tb, opt_brks, K, maxbrks);
+    local brk_array, brk_dates;
+    
+    // Shift breaks to array
+    brk_array = areshape(m_tb, K|maxbrks|maxbrks);
+    
+    // Storage matrix
+    brk_dates = zeros(K, maxbrks);
+    
+    for i(1, K, 1);
+        if opt_brks[i] > 0;
+            brk_dates[i, .] =  arraytomat(brk_array[i, . , opt_brks[i]])';
+        endif;
+    endfor;
+    
+    retp(brk_dates);
 endp;
 
 proc (2) = __pd_kpss_stats(test_hom, test_het, test_mean, test_var, k);
@@ -226,19 +343,51 @@ proc (2) = __pd_kpss_stats(test_hom, test_het, test_mean, test_var, k);
     retp(testd_het, testd_hom);
 endp;
 
-proc (0) = plotpdKPSS(data, breaks_array, kpss_tests, dtstart, freq, ...);
-    local num_panels, n_dynargs, varnames;
+proc (0) = plotpdKPSS(data, breaks, kpss_tests, ...);
+    local dt_vec, dtstart, freq, num_panels, n_dynargs, varnames, x;
+    
+    /*
+    ** Check for dates
+    */
+    { dt_vec, data } = _checkfordate(data);
+    
+    /*
+    ** Get varnames
+    */
+    if hasmetadata(data);
+        varnames = getcolnames(data);
+    endif;
     
     // Notice that you do not pass ‘...’
     // into ‘dynargsCount’
     n_dynargs = dynargsCount();
+
+    /*
+    * Optional arguments
+    */
+    { dtstart, freq } = dynargsGet(1|2, 0, 0);
     
-    // Get varnames
-    varnames = dynargsGet(1, "");
+    // Allow for different input variable names
+    if n_dynargs > 2;// Get varnames
+        varnames = dynargsGet(3);
+        
+        if n_dynargs == 2;
+            struct plotControl plt;
+            plt = dynargsGet(4);
+        endif;
+    endif;
+    
+    
+    
+    
+    
+    if ismiss(dt_vec) != 1;
+        dtstart = 0;
+        freq = 0;
+    endif;
     
     // Get number of panels
-    num_panels = getorders(breaks_array);
-    num_panels = num_panels[1];
+    num_panels = rows(breaks);
     
     // Create variables names
     if varnames $== "";
@@ -246,50 +395,58 @@ proc (0) = plotpdKPSS(data, breaks_array, kpss_tests, dtstart, freq, ...);
             varnames = "Group " $+ ntos(seqa(1, 1, num_panels), 1);
         elseif num_panels > 9;
             varnames = "Group " $+ ntos(seqa(1, 1, 9), 1);
-            varnames = varnames $| ("Group " $+ ntos(seqa(10, 1, (num_panels-9)),2));
+            varnames = varnames $| ("Group " $+ ntos(seqa(10, 1, (num_panels-9)), 2));
         endif;
     endif;
     
-    if dtstart==0 or freq==0;
-        print "Must specify dtstart and frequency for time series plot. XY plot will be generated.";
+    if dtstart == 0 or freq == 0;
+        // Set up x values
+        if ismiss(dt_vec) != 1;
+            x = dt_vec;
+        else;
+            print "Must specify dates, or dtstart and frequency for time series plot. XY plot will be generated.";
+            x = seqa(1, 1, rows(data));
+        endif;
+        
         for i(1, num_panels, 1);
             plotOpenWindow();
-            __pd_kpssXY(data[., i], arraytomat(breaks_array[i, ., .]), kpss_tests[i, .], varnames[i]);
+            if n_dynargs == 4;
+                __pd_kpssXY(x, data[., i], breaks[i, 2:cols(breaks)], kpss_tests[i, .], varnames[i], plt);
+            else;
+                __pd_kpssXY(x, data[., i], breaks[i, 2:cols(breaks)], kpss_tests[i, .], varnames[i]);
+            endif;
+            
         endfor;
     else;
         for i(1, num_panels, 1);
             plotOpenWindow();
-            __pd_kpssTS(data[., i], arraytomat(breaks_array[i, ., .]), kpss_tests[i, .], dtstart, freq, varnames[i]);
+            if n_dynargs == 4;
+                __pd_kpssTS(data[., i], breaks[i, 2:cols(breaks)], kpss_tests[i, .], dtstart, freq, varnames[i], plt);
+            else;
+                __pd_kpssTS(data[., i], breaks[i, 2:cols(breaks)], kpss_tests[i, .], dtstart, freq, varnames[i]);
+            endif;
         endfor;
     endif;
 endp;
 
-proc (0) = __pd_kpssXY(y, breaks_mat, kpss_test, varnames);
-    local num_models, field, prec, fmat, y_line, opt_breaks, grp_title, x;
+proc (0) = __pd_kpssXY(x, y, breaks_mat, kpss_test, varnames, ...);
+    local num_models, field, prec, fmat, grp_title;
     
     // Count number of model
     num_models = rows(breaks_mat);
     
     // Define plot appearance
     struct plotControl pc;
-    pc = plotGetDefaults("xy");
+    pc = dynargsGet(1, plotGetDefaults("xy"));
     
     // Formatting
     field = 1;
     prec = 0;
     fmat = "%*.*lf";
     
-    // Set up x values
-    x = seqa(1, 1, rows(y));
-    
-    // Set up max height of graph
-    y_line = -9999|9999;
-    
-    // Select breaks data
-    opt_breaks = breaks_mat[., kpss_test[2]];
-    
-    // Set up title
-    grp_title = varnames $+ " Number of breaks: " $+ ntos(kpss_test[2], prec);
+    //Set text title
+    grp_title = __pd_kpssTextSet(kpss_test[2]);
+    grp_title = varnames $+ " " $+ grp_title;
     
     // Set title
     plotSetTitle(&pc, grp_title, "Arial", 16);
@@ -305,40 +462,28 @@ proc (0) = __pd_kpssXY(y, breaks_mat, kpss_test, varnames);
     //Plot first graph
     plotXY(pc, x, y);
     
-    for j(1, kpss_test[2], 1);
-        //Set break line format
-        plotSetLineColor(&pc, "black");
-        plotSetLineStyle(&pc, 2);
-        plotSetLineThickness(&pc, 1);
-        
-        //Add break line
-        plotAddXY(pc, reshape(opt_breaks[j], 2, 1), y_line);
-    endfor;
+    if kpss_test[2] > 0;
+        // Set line to be gray, 1 pixel wide
+        // and to have 'dot'=3 style
+        plotSetLinePen(&pc, 3, "gray", 2);
+        plotAddVline(pc, packr(breaks_mat'));
+    endif;
     
 endp;
 
-proc (0) = __pd_kpssTS(y, breaks_mat, kpss_tests, dtstart, freq, varnames);
-    local num_models, y_line, grp_title, x,  opt_breaks;
-    
-    //Count number of model
-    num_models = rows(breaks_mat);
+proc (0) = __pd_kpssTS(y, breaks_mat, kpss_test, dtstart, freq, varnames, ...);
+    local grp_title, x;
     
     //Define plot appearance
     struct plotControl pc;
-    pc = __pd_getKPSStsmtDefaults("xy");
+    pc = dynargsGet(1, __pd_getKPSStsmtDefaults("xy"));
     
     //Set text title
-    grp_title = __pd_kpssTextSet(kpss_tests[2]);
+    grp_title = __pd_kpssTextSet(kpss_test[2]);
     grp_title = varnames $+ " " $+ grp_title;
     
     //Set up x values
     x = seqa(1, 1, rows(y));
-    
-    //Set up max height of graph
-    y_line = -9999|9999;
-    
-    // Select breaks data
-    opt_breaks = breaks_mat[., kpss_tests[2]];
     
     //Set up graph text
     __pd_kpssGraphText(&pc, y, dtstart, grp_title);
@@ -346,13 +491,12 @@ proc (0) = __pd_kpssTS(y, breaks_mat, kpss_tests, dtstart, freq, varnames);
     //Plot first graph
     plotTS(pc, dtstart, freq, y);
     
-    for j(1, kpss_tests[2], 1);
-        
-        __pd_kpssBreakText(&pc);
-        
-        //Add break line
-        plotAddXY(pc, reshape(opt_breaks[j], 2, 1), y_line);
-    endfor;
+    if kpss_test[2] > 0;
+        // Set line to be gray, 1 pixel wide
+        // and to have 'dot'=3 style
+        plotSetLinePen(&pc, 3, "gray", 3);
+        plotAddVline(pc, packr(breaks_mat'));
+    endif;
     
 endp;
 
@@ -440,7 +584,7 @@ proc (0) = __pd_kpssGraphText(struct plotControl *mp, y, dtstart, grp_title);
     plotSetYRange(myPlot, floor(minc(y)), ceil(maxc(y)));
     
     //Place first 'X' tic mark at start and draw every 4 yrs
-//    plotSetXTicInterval(myPlot, 20 , dtstart+5);
+    //    plotSetXTicInterval(myPlot, 20 , dtstart+5);
 endp;
 
 proc (0) = __pd_kpssBreakText(struct plotControl *mp);
@@ -717,9 +861,66 @@ Proc(1) = __pd_dekpss(model, t, tb);
         endo;
         z = ones(t, 1)~seqa(1, 1, t)~du[., 2:m+1]~dt[., 2:m+1];
     else;
-        errorlog("Try to speciy another model");
+        errorlogat( sprintf("'%s': Try to specify another model", currentprocname(2)));
         end;
     endif;
     retp(z);
 endp;
 
+proc (1) = __pd_sim_cv(m_tb_tot, model, bigt, n_reps);
+    local prob_e, m_cv, j, t, m_tb, xreg, i, test, y, e, S, num, den;
+    
+    j = 1;
+    
+    prob_E = 0.99|0.95|0.90;
+
+    m_cv = zeros(rows(m_tb_tot),rows(prob_e));
+
+    
+    do until j>rows(m_tb_tot);
+ 
+        m_tb = m_tb_tot[j,.]; @ Matrix of break points @
+        
+        m_tb = selif(m_tb',m_tb' .ne 0);
+        
+        if model == 1;
+            xreg = ones(bigt, 1); @ Matrix of regressors @
+        elseif model == 2;
+            xreg = ones(bigt, 1)~seqa(1, 1, bigt); @ Matrix of regressors @
+        endif;
+        
+        if ismiss(m_tb) .ne 1; @ We have breaks @
+            i =1 ;
+            
+            do until i>rows(m_tb);
+                xreg = xreg ~ (zeros(m_tb[i], 1)|ones(bigt-m_tb[i], 1)); @ Step dummy variable @
+                if model == 2;
+                    xreg = xreg ~ (zeros(m_tb[i], 1)|seqa(1, 1, bigt-m_tb[i])); @ Dummy for the change in the slope of the trend @
+                endif;
+                i = i + 1;
+            endo;
+        endif;
+        
+        test = zeros(n_reps, 1);
+        
+        i = 1;
+        do until i > n_reps;
+            
+            y = rndn(bigt,1);
+            e = y-xreg*(y/xreg);
+            S = cumsumc(e);
+            num = bigT^(-2)*S'S;
+            den = e'e/bigt;
+            
+            test[i] = num/den;
+            i = i + 1;
+        endo;
+        
+        m_cv[j, .] = quantile(test, prob_e)';
+        
+        j = j + 1;
+        
+    endo;
+    
+    retp(m_cv);
+endp;
