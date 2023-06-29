@@ -5,6 +5,9 @@ library tspdlib_dv;
 
 // Load data
 data = loadd(__FILE_DIR $+ "pd_gdef.gdat");
+dates = data[., "X1"];
+
+tmp = getcoldateformats(dates);
 
 // Print data headers
 varnames = getColNames(data);
@@ -61,9 +64,10 @@ bCtl.estimseq = 0;
 
 /*****************************************************************************/
 /*****************************************************************************/
-{ test_hom, test_het, kpsstest, m_br} = pd_kpss(data[., 2:cols(data)], model, max_brks, kernel, bwl, maxlags, bctl);
+{ test_hom, test_het, kpsstest, m_br} = pd_kpss(data, model, max_brks, kernel, bwl, maxlags, bctl);
 
-plotPDKPSS(data[., 2:cols(data)], m_br, kpsstest, 1995, 1, varnames[2:rows(varnames)]);
+// Plot results
+plotPDKPSS(data, m_br, kpsstest);
 
 
 
