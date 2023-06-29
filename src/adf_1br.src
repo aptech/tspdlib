@@ -294,20 +294,24 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         print;
         print "Critical Values:";
         
-        if multistat_in_cv;
-            sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
-            sprintf(format2, side, cv');
-        else;
-            sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
-            sprintf(tmp1a$+tmp3, "", cv');
+        if isempty(cv) == 0;
+            if multistat_in_cv;
+                sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
+                sprintf(format2, side, cv');
+            else;
+                sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
+                sprintf(tmp1a$+tmp3, "", cv');
+            endif;
         endif;
         print "==============================================================";
     elseif side $=="";
         sprintf(format1, top, "", "", stats);
         print;
-        print "Critical Values:";
-        sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
-        sprintf(tmp1a$+tmp2, "", cv');
+        if isempty(cv) == 0;
+            print "Critical Values:";
+            sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
+            sprintf(tmp1a$+tmp2, "", cv');
+        endif;
         print "==============================================================";
     else;
         if cols(stats)==1;
@@ -322,14 +326,16 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         endif;
         
         print;
-        print "Critical Values:";
+        if isempty(cv) == 0;
+            print "Critical Values:";
         
-        if multistat_in_cv;
-            sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
-            sprintf(format2, side, cv');
-        else;
-            sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
-            sprintf(tmp1a$+tmp3, "", cv');
+            if multistat_in_cv;
+                sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
+                sprintf(format2, side, cv');
+            else;
+                sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
+                sprintf(tmp1a$+tmp3, "", cv');
+            endif;
         endif;
         print "==============================================================";
     endif;
@@ -344,8 +350,10 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
          top$|(side$~(ntos(stats, 4)));
     endif;
     print;
-    print "Critical Values:";
-    ("1%"$~"5%"$~"10%")$|ntos(cv', dec);
+    if isempty(cv) == 0;
+        print "Critical Values:";
+        ("1%"$~"5%"$~"10%")$|ntos(cv', dec);
+    endif;
 #endif;
 
 endp;
