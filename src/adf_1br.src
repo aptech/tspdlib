@@ -241,14 +241,16 @@ proc (2) = __convertbreaks(tb, dt_vec, T);
 endp;
 
     
-proc (0) = _printBreaks(dt_vec, brks, frac);
-    local side, top, brk_str, break_num, fmt1, fmt2;
+proc (0) = _printBreaks(dt_vec, brks, frac, ...);
+    local brk_label, side, top, brk_str, break_num, fmt1, fmt2;
     
     
     break_num = "First"$|"Second"$|"Third"$|"Fourth"$|"Five";
     
+    brk_label = dynargsGet(1, break_num$+" break: ");
+    
     // Header column and row of table
-    side = break_num[1:rows(brks)] $+ " break: ";
+    side = brk_label[1:rows(brks)];
     top = ""$~"Date"$~"Fraction";
     
     // Set up formats
