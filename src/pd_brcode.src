@@ -2191,3 +2191,109 @@ proc __sbur_getdmax(signif, eps1);
     
     retp(cv);
 endp;
+
+/*
+** Procedure to estimate the break points for the model that includes the change in the slope (model 4).
+** We use the procedure in Bai and Perron (1998, Econometrica) on the first difference of the
+** time series.
+**
+** Sintaxis:
+**
+**  {Dx,mean_var,m_estimated_breaks} = Bai_Perron98(x,model,k);
+*/
+proc(1) = sbControlCreate(bigt);
+    
+    // Declare structure
+    struct sbControl bCtl;
+    bCtl.eps1=.15;                  @Value of the trimming (in percentage) for the construction
+    and critical values of the supF ype tests (used in the
+    supF test, the Dmax, the supF(l+1|l) and the sequential
+    procedure). if these test are used, h below should be set
+    at int(eps1*bigt). But if the tests are not required, estimation
+    can be done with an arbitrary h.
+    There are five options: eps1 = .05, .10, .15, .20 or .25.
+    for each option, the maximal value of m above is: 10 for eps1 = .05;
+    8 for eps1 = .10, 5 for eps1 = .15, 3 for eps1 = .20 and 2 for eps1 = .25.@
+    bCtl.h=int(bCtl.eps1*bigt);                         @minimal length of a segment (h >= q). Note: if
+    robust=1, h should be set at a larger value.@
+    /* the following are options if p > 0.
+    ----------------------------------- */
+    
+    bCtl.fixb=0;                     @set to 1 if use fixed initial values for beta@
+    bCtl.betaini=0;                  @if fixb=1, load the initial value of beta.@
+    bCtl.maxi=20;                    @maximum number of iterations for the nonlinear
+    procedure to obtain global minimizers.@
+    bCtl.printd=0;                   @set to 1 if want the output from the iterations
+    to be printed.@
+    bCtl.eps=0.0001;                 @criterion for the convergence.@
+    /*--------------------------------- */
+    
+    bCtl.robust=1;                   @set to 1 if want to allow for heterogeneity
+    and autocorrelation the in residuals, 0 otherwise.
+    The method used is Andrews(1991) automatic
+    bandwidth with AR(1) approximation and the
+    quadratic quernel. Note: Do not set to 1 if
+    lagged dependent variables are included as
+    regressors.@
+    bCtl.prewhit=0;                   @set to 1 if want to apply AR(1) prewhitening
+    prior to estimating the long run covariance
+    matrix@
+    bCtl.hetdat=1;              @Option for the construction of the F-tests.
+    Set to 1 if want to allow different moment matrices of the
+    regressors accross segments. if hetdat = 0, the same
+    moment matrices are assumed for each segment and estimated
+    from the full sample. It is recommended to set hetdat=1.  if p > 0
+    set hetdat = 1.@
+    bCtl.hetvar=0;              @Option for the construction of the F-tests.
+    Set to 1 if want to allow for the variance of the residuals
+    to be different across segments. if hetvar=0, the variance
+    of the residuals is assumed constant across segments
+    and constructed from the full sample. This option is not available
+    when robust = 1.@
+    bCtl.hetomega=1;                @Used in the construction of the confidence
+    intervals for the break dates. if hetomega=0,
+    the long run covariance matrix of zu is assumed
+    identical accross segments (the variance of the
+    errors u if robust = 0).@
+    bCtl.hetq=1;                    @Used in the construction of the confidence
+    intervals for the break dates. if hetq=0,
+    the moment matrix of the data is assumed
+    identical accross segments.@
+    bCtl.doglobal=1;                 @set to 1 if want to call the procedure
+    to obtain global minimizers.@
+    bCtl.dotest=1;                   @set to 1 if want to construct the sup F,
+    UDmax and WDmax tests. doglobal must be set
+    to 1 to run this procedure.@
+    bCtl.dospflp1=1;                 @set to 1 if want to construct the sup(l+1|l)
+    tests where under the null the l breaks are
+    obtained using global minimizers. doglobal
+    must be set to 1 to run this procedure.@
+    bCtl.doorder=1;                  @set to 1 if want to call the procedure that
+    selects the number of breaks using information
+    criteria. doglobal must be set to 1 to run
+    this procedure.@
+    bCtl.dosequa=1;                  @set to 1 if want to estimate the breaks
+    sequentially and estimate the number of
+    breaks using the supF(l+1|l) test.@
+    bCtl.dorepart=1;                @set to 1 if want to modify the
+    break dates obtained from the sequential
+    method using the repartition method of
+    Bai (1995), Estimating breaks one at a time.
+    This is needed for the confidence intervals
+    obtained with estim below to be valid.@
+    bCtl.estimbic=0;                  @set to 1 if want to estimate the model with
+    the number of breaks selected by BIC.@
+    bCtl.estimlwz=0;                  @set to 1 if want to estimate the model with
+    the number of breaks selected by LWZ.@
+    bCtl.estimseq=1;                 @set to 1 if want to estimate the model with
+    the number of breaks selected using the
+    sequential procedure.@
+    bCtl.estimrep=0;                 @set to 1 if want to esimate the model with
+    the breaks selected using the repartition
+    method.@
+    bCtl.estimfix=0;                  @set to 1 if want to estimate the model with
+    a prespecified number of breaks equal to fixn
+    set below.@
+    bCtl.fixn=0;
+    retp(bCtl);
+endp;
