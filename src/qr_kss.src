@@ -33,7 +33,7 @@
 
 proc(1) = QR_KSS(y, model, tau, ...);
     local n, y1, dy, x, p_lags, dy_lags;
-    local qr_beta, rho_tau, tn, delta2, cv, dt_vec, p, _print;
+    local qr_beta, rho_tau, tn, delta2, cv, dt_vec, p, _print, colwidth;
     
     // Data checks
     _checkForMissings(y, "QR_KSS");
@@ -70,10 +70,10 @@ proc(1) = QR_KSS(y, model, tau, ...);
     rho_tau = qr_beta[2]; 
     
     // Get tn stat
-    tn = __get_qr_adf_stat(dy, y1, miss(), x, rho_tau, tau, n, pmax, 1, 1);
+    tn = __get_qr_adf_stat(dy, y1, miss(), x, rho_tau, tau, n, p, 1, 1);
 
     // Get delta2 
-    delta2 = __get_qr_adf_delta2(y, x, dy, tau, qr_beta);
+    delta2 = __get_qr_adf_delta2(dy, x, dy, tau, qr_beta);
    
     // Get critical values
     cv = crit_qr_kss(delta2, model);
@@ -86,18 +86,12 @@ proc(1) = QR_KSS(y, model, tau, ...);
         top = "";
         side = "quantile:"$|"rho(quantile):"$|"delta^2:"$|"KSS(quantile):";
         stats = tau|rho_tau|delta2|tn;
+        dec = 3;
+        colwidth = 15;
 
-        #ifminkernelversion(20)
-            sprintf("%14s %14.3f", side, stats);
-            print;
-            print "Critical Values:";
-            sprintf("%14s", "1%"$~"5%"$~"10%");
-            sprintf("%14.3f", cv);
-            print;
-        #else;
-            side$~(ntos(stats, dec));
-        #endif;
-        
+        // Print stats table
+        _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
+
         // Print conclusions
         _printConclusion(tn, cv', 0, "a unit root");
     endif;
@@ -106,7 +100,7 @@ retp(tn);
 endp;
 
 proc(1) = crit_qr_kss(r2,model);
-    local cra, crt, ca, ct, r210, r2a, r2b, wa;
+    local crt, ct, r210, r2a, r2b, wa;
     
     // See Lee & Park (2018) CADF critical values
     if model == 1;   
