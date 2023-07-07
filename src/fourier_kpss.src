@@ -242,33 +242,34 @@ endp;
 
 /*Selection of optimum k via min SSR*/
 proc(1) = _get_fourier(y, model, kmax);
-    local temp, k, t, sink, cosk, z, betaols, e, ssr;
+    local t, c, trend, sink, cosk, x, b, e, ssr;
+    local keep_ssr, keep_k, f;
     
-    temp = zeros(kmax, 1);
-    k = 1;
-    
-    do while k <= kmax;
-        t = rows(y);
-        
+    t     = rows(y);
+    c     = ones(t, 1);
+    trend = seqa(1, 1, t);
+     
+    keep_ssr = {};
+    keep_k   = {};
+    for k(1, kmax, 1);
         // Get Fourier terms
         { sink, cosk } = _getFourierTerms(t, k);
         
         if model == 1;
-            z = ones(t, 1)~sink~cosk;
+            x  = c ~ sink ~ cosk;
+        elseif model == 2;
+            x  = c ~ trend ~ sink ~ cosk;
         endif;
         
-        if model == 2;
-            z = ones(t, 1)~seqa(1, 1, t)~sink~cosk;
-        endif;
-        
-        betaols = y/z;
-        e = y - z * betaols;
+        b = y / x;
+        e = y - x*b;
         ssr = e'e;
-        temp[k] = ssr;
-        //"ssr";temp;
-        k = k + 1;
-    endo;
+        keep_ssr = keep_ssr | ssr;
+        keep_k   = keep_k | k;
+    endfor;
     
-    k = minindc(temp);
-    retp(k);
+    //keep_k~keep_ssr;
+    f = keep_k[minindc(keep_ssr)];
+    
+    retp(f);
 endp;

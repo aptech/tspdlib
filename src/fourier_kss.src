@@ -1,6 +1,6 @@
 
 /*
-**> fourier_adf and kss
+**> fourier_kss
 **  Reference:
 **  Christopoulos, D. K., & León-Ledesma, M. A. (2010). 
 **  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates. 
@@ -49,16 +49,19 @@ proc(3) = Fourier_KSS(y, model, pmax, fmax, ic, test);
     sicp = zeros(pmax + 1, 1);
     tstatp = zeros(pmax + 1, 1);
     
-   // Constant
+    // Constant
     dc = ones(t, 1);
+    
     // Trend
     dt = seqa(1, 1, t);
+    
     // Get k_star
     {k_star, F_trig, p_val} = _get_kstar(y, model, fmax);
-    // Fourier series
-    sink = sin(2 * pi * k_star * seqa(1, 1, t)/t);
-    cosk = cos(2 * pi * k_star * seqa(1, 1, t)/t);
     
+    // Fourier series
+    // Get Fourier terms
+    { sink, cosk } = _getFourierTerms(t, k_star);
+
     // Residual regression
     if model == 1;
         z = dc ~ sink ~ cosk;
@@ -112,7 +115,7 @@ proc(3) = Fourier_KSS(y, model, pmax, fmax, ic, test);
     retp(tn, p_opt - 1, k_star);
 endp;
 
-// Critical Values (see, Christopoulos, & León-Ledesma , 2010)
+// Critical Values (see, Christopoulos, & Leon-Ledesma , 2010)
 proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
     local test_sim, s, MCr, e0, rho, eps;
     local e, a, dc, dt, sink, cosk, y;
@@ -131,10 +134,13 @@ proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
         // Simulate AR(1) model
         e = recserar(eps, e0, rho);
         
+        // Deterministic terms
         dc   = ones(T, 1);
         dt   = seqa(1, 1, T);
-        sink = sin(2 * pi * k * seqa(1,1,t)/T);
-        cosk = cos(2 * pi * k * seqa(1,1,t)/T);
+        
+        // Get Fourier terms
+        { sink, cosk } = _getFourierTerms(t, k);
+     
         if model == 1;
             y = rndu(1,1)*dc + rndu(1,1)*sink + rndu(1,1)*cosk + e;
         endif;
@@ -244,35 +250,19 @@ endp;
 
 
 proc(3) = _get_kstar(y, model, fmax);
-    local t, c, trend, sink, cosk, x, b, e, ssr;
-    local keep_ssr, keep_k, f, sinf, cosf;
-    local z, zr, F_trig, p_val;
+    local t, c, trend, sinf, cosf;
+    local z, zr, F_trig, p_val, t, c, trend;
     
     t     = rows(y);
     c     = ones(t, 1);
-    trend = seqa(1,1,t);
+    trend = seqa(1, 1, t);
     
-    keep_ssr = {};
-    keep_k   = {};
-    for k(1, fmax, 1);
-        sink  = sin(2 * pi * k * seqa(1, 1, t)/t);
-        cosk  = cos(2 * pi * k * seqa(1, 1, t)/t);
-        if model == 1;
-            x  = c ~ sink ~ cosk;
-        elseif model == 2;
-            x  = c ~ trend ~ sink ~ cosk;
-        endif;
-        b = y / x;
-        e = y - x*b;
-        ssr = e'e;
-        keep_ssr = keep_ssr | ssr;
-        keep_k   = keep_k | k;
-    endfor;
+    // Get optimal fourier 
+    f = _get_fourier(y, model, fmax);
     
-    //keep_k~keep_ssr;
-    f = keep_k[minindc(keep_ssr)];
-    sinf  = sin(2 * pi * f * seqa(1, 1, t)/t);
-    cosf  = cos(2 * pi * f * seqa(1, 1, t)/t);
+    // Get Fourier terms
+    { sinf, cosf } = _getFourierTerms(t, f);
+    
     if model == 1;
         z  = c ~ sinf ~ cosf;
         zr = c;
@@ -281,8 +271,8 @@ proc(3) = _get_kstar(y, model, fmax);
         zr = c ~ trend;
     endif;
     
-    F_trig = _get_Ftest(y,Zr,z);
-    p_val   = cdfFc(F_trig,2,rows(y)-cols(z));
+    F_trig = _get_Ftest(y, Zr, z);
+    p_val   = cdfFc(F_trig, 2, rows(y)-cols(z));
         
     retp(f, F_trig, p_val);
 endp;
