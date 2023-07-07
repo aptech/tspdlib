@@ -96,20 +96,26 @@ endp;
 */
 
 proc(1) = QRADF(y, model, pmax, ic, tau, _print);
-    local n, y1, dy, dyl, x, ADFt, p, cv;
-    local qr_beta, rho_tau, beta_ols, rho_ols, res, ind, phi, cvADF;
-    local w, cov, delta2, crv, h, x1, rq1, rq2, z, mz, q1, q2, fz, xx, px, QURadf, dt_vec;
+    local n, y1, dy, dyl, x, ADFt, p, cv, qr_beta, rho_tau, 
+    beta_ols, rho_ols, cvADF, delta2, crv, QURadf, dt_vec;
     
     { dt_vec, y } =_checkfordate(y);
 
-    n = rows(y);
+    // Transform y
     y1 = lagn(y, 1);
     dy = diff(y, 1);
-    x = y1;
-    
+
     screen off;
+    // Find optimal p
     { ADFt, p, cvADF} = ADF(y, 1, pmax, ic);
-  
+    
+    // Trim y terms
+    y    = trimr(y, p + 1, 0);
+    y1   = trimr(y1, p + 1, 0);
+    dy   = trimr(dy, p + 1, 0);
+    
+    // Start x term
+    x = y1;
     
     if p > 0;
         dyl = zeros(rows(y), p);
@@ -117,104 +123,32 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
         for j(1, p, 1);
             dyl[., j] = lagn(dy, j);
         endfor;
-        
-        y = trimr(y, p + 1 ,0);
-        y1 = trimr(y1, p + 1, 0);
-        dy = trimr(dy, p + 1, 0);
-        dyl = trimr(dyl, p + 1, 0);
-        x = y1~dyl;
+
+        x = x~dyl;
+    else;
+        dyl = miss();
     endif;
+
+    // Get QR regression beta
+    qr_beta = __get_qr_adf_beta(Y, X, tau);
     
-    if p == 0;
-        dy = trimr(dy, p + 1, 0);
-        y = trimr(y, p + 1 ,0);
-        x = trimr(x, p + 1, 0);
-        y1 = trimr(y1, p + 1, 0);
-    endif;
-    
-    // Declare qFitOut structure
-    struct qFitOut qOut1;
-    qOut1 = quantileFit(Y, X, tau);
-    
-    qr_beta = qOut1.beta;
-    
+    // AR term for QR reg
     rho_tau = qr_beta[2];
+    
+    // Get OLS beta
     beta_ols = y/(ones(rows(x), 1)~x);
     rho_ols = beta_ols[2];
     
-    res = y - (ones(rows(x),1)~x) * qr_beta;
-    ind = res .< 0;
-    /*
-    ind=zeros(rows(res),1);
-    for i(1,rows(res),1);
-    if res[i]<0; ind[i]=1; else; ind[i]=0;endif;
-    endfor;
-    */
-    
-    phi = tau - ind;
-    w = dy;
-    cov = sumc((w - meanc(w)) .* (phi - meanc(phi)))/(rows(w) - 1);
-    delta2 = (cov/(stdc(w) * sqrt(tau * (1-tau))))^2;
+    // Get delta2
+    delta2 = __get_qr_adf_delta2(y, x, dy, tau, qr_beta);
     crv = crit_QRadf(delta2, model);
+    
+    // Get h
     n = rows(y);
-    if tau <= 0.5;
-        h = tau/3.5;
-    else;
-        h = (1 - tau)/3.5;
-    endif;
-    
-    h = bandwidth(tau, n, "true", 0.05);
-    if tau <= 0.5 and h > tau;
-        h = bandwidth(tau, n, "false", 0.05);
-        if h > tau;
-            h = tau/1.5;
-        endif;
-    endif;
-    if tau > 0.5 and h > 1-tau;
-        h = bandwidth(tau, n, "false", 0.05);
-        if h > (1 - tau);
-            h = (1-tau)/1.5;
-        endif;
-    endif;
-    
-    x1 = y1;
-    if p > 0;
-        x1 = y1~dyl;
-    endif;
-    
-    // Declare qFitOut structure
-    struct qFitOut qOut2;
-    qOut2 = quantileFit(Y, X1, tau+h);
-    
-    // Extract beta
-    rq1 = qOut2.beta;
-    
-    // Declare qFitOut structure
-    struct qFitOut qOut3;
-    qOut3 = quantileFit(Y, X1, tau-h);
-    
-    // Extract beta
-    rq2 = qOut3.beta;
-    
-    z = ones(rows(x1), 1)~x1;
-    mz = meanc(z);
-    q1 = mz' * rq1;
-    q2 = mz' * rq2;
-    fz = 2 * h/(q1 - q2);
-    if fz < 0;
-        fz = 0.01;
-    endif;
-    
-    xx = ones(rows(x), 1);
-    if p > 0;
-        xx =ones(rows(x), 1)~dyl;
-    endif;
-    
-    PX = eye(rows(xx)) - xx * inv(xx'xx) * xx';
-    
-    QURadf = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau -1);
+    QURadf = __get_qr_adf_stat(y, y1, dyl, x, rho_tau, tau, n, p);
     
     cv = crit_QRadf(delta2, model);
+    
     screen on;
     
     if _print == "true";
@@ -245,6 +179,107 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     retp(QURadf);
 endp;
 
+proc (1) = __get_qr_adf_stat(y, y1, dyl, x, rho_tau, tau, n, p, ...);
+    local z, mz, h, rq1, rq2, q1, q2, fz, xx, PX, qurADF, fourier;
+    
+    fourier = dynargsGet(1, 0);
+    
+    // Get h
+    h = __get_qr_adf_h(tau, n);
+
+    // Get beta from transformed reg
+    rq1 = __get_qr_adf_beta(y, x, tau+h);
+    
+    // Get beta from transformed reg
+    rq2 = __get_qr_adf_beta(y, x, tau-h);
+    
+    z = ones(rows(x), 1)~x;
+    mz = meanc(z);
+    q1 = mz' * rq1;
+    q2 = mz' * rq2;
+    fz = 2 * h/(q1 - q2);
+    if fz < 0;
+        fz = 0.01;
+    endif;
+    
+    xx = ones(rows(x), 1);
+    if fourier;
+        xx = xx~x[.,2:cols(x)];
+    else;
+        if p > 0;
+            xx =ones(rows(x), 1)~dyl;
+        endif;
+    endif;
+    
+    PX = eye(rows(xx)) - xx * inv(xx'xx) * xx';
+    
+    QURadf = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau -1);
+    retp(QURadf);
+    
+endp;
+
+proc (1) = __get_qr_adf_delta2(y, x, w, tau, qr_beta);
+    local res, ind, phi, cov;
+    
+    // Get residuals
+    res = y - (ones(rows(x),1)~x) * qr_beta;
+    
+    // Separate into pos/neg residuals
+    ind = res .< 0;
+
+    // Adjust tau
+    phi = tau - ind;
+
+    // Check w
+    if ismiss(w);
+        w = res;
+    endif;
+    
+    cov = sumc((w - meanc(w)) .* (phi - meanc(phi)))/(rows(w) - 1);
+    retp((cov/(stdc(w) * sqrt(tau * (1-tau))))^2);
+endp;
+
+proc (1) = __get_qr_adf_beta(y, x, tau, ...);
+    
+    // Control struct to turn off printing
+    struct qfitControl qctl;
+    qctl = dynargsGet(1, qfitControlCreate());
+    
+    // Turn off printing
+    qctl.verbose = 0;
+    
+    // Declare qFitOut structure
+    struct qFitOut qOut1;
+    qOut1 = quantileFit(Y, X, tau, qctl);
+    
+    retp(qOut1.beta);
+endp;
+
+proc (1) = __get_qr_adf_h(tau, n);
+    local h;
+    
+    if tau <= 0.5;
+        h = tau/3.5;
+    else;
+        h = (1 - tau)/3.5;
+    endif;
+    
+    h = bandwidth(tau, n, "true", 0.05);
+    if tau <= 0.5 and h > tau;
+        h = bandwidth(tau, n, "false", 0.05);
+        if h > tau;
+            h = tau/1.5;
+        endif;
+    endif;
+    if tau > 0.5 and h > 1-tau;
+        h = bandwidth(tau, n, "false", 0.05);
+        if h > (1 - tau);
+            h = (1-tau)/1.5;
+        endif;
+    endif;
+    
+    retp(h);
+endp;
 
 proc(1) = bandwidth(tau, n, hs, alpha);
     local x0, f0, h;
