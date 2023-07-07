@@ -323,9 +323,9 @@ proc (4) = pd_kpss(data, model, ... );
     
     _printStatsTable(top, side, stats, cv', dec, colwidth, 1);
     print "Homogenous var:";
-    _printConclusion(testd_hom, cv[., 1], 1, "stationarity");
+    _printConclusion(testd_hom, cv, 1, "stationarity");
     print "Heterogenous var:";
-    _printConclusion(testd_het, cv[., 2], 1, "stationarity");
+    _printConclusion(testd_het, cv, 1, "stationarity");
     print "==============================================================";
     print "Individual panel results";
     print "==============================================================";
