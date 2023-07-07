@@ -204,9 +204,9 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
 endp;
 
 proc (1) = __get_qr_adf_stat(y, y1, dyl, x, rho_tau, tau, n, p, ...);
-    local z, mz, h, rq1, rq2, q1, q2, fz, xx, PX, qurADF, fourier;
+    local z, mz, h, rq1, rq2, q1, q2, fz, xx, PX, qurADF, use_fourier, use_kss;
     
-    fourier = dynargsGet(1, 0);
+    { use_fourier, use_kss } = dynargsGet(1|2, 0, 0);
     
     // Get h
     h = __get_qr_adf_h(tau, n);
@@ -227,7 +227,7 @@ proc (1) = __get_qr_adf_stat(y, y1, dyl, x, rho_tau, tau, n, p, ...);
     endif;
     
     xx = ones(rows(x), 1);
-    if fourier;
+    if use_fourier;
         xx = xx~x[.,2:cols(x)];
     else;
         if p > 0;
@@ -237,7 +237,12 @@ proc (1) = __get_qr_adf_stat(y, y1, dyl, x, rho_tau, tau, n, p, ...);
     
     PX = eye(rows(xx)) - xx * inv(xx'xx) * xx';
     
-    QURadf = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau -1);
+    if use_kss;
+       QURadf = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau);
+    else;
+       QURadf = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau -1);
+    endif;
+    
     retp(QURadf);
     
 endp;
