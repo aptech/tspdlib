@@ -97,19 +97,15 @@ endp;
 
 proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
     local n, y1, dy, dyl, x, ADFt, p, cv, qr_beta, rho_tau, 
-    beta_ols, rho_ols, cvADF, delta2, QURadf, dt_vec, fourier, sink, cosk, t, k;
+    beta_ols, rho_ols, cvADF, delta2, QURadf, dt_vec, fourier, sink, cosk, dc, dt, t, k;
     
     { dt_vec, y } =_checkfordate(y);
 
     // Check for fourier
     { fourier, k } = dynargsGet(1|2, 0, 3);
     
-    // Get dimensions
-    t  = rows(y);
-    
-    // Transform y
-    y1 = lagn(y, 1);
-    dy = diff(y, 1);
+    // Get deterministic terms
+    { t, dy, y1, dc, dt } = _getFourierDeterministic(y);
 
     screen off;
     // Find optimal p
@@ -147,7 +143,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
     
     // Add trend
     if model == 2;
-        x = x ~ seqa(1, 1, rows(y1));
+        x = x ~ trimr(dt, pmax+1, 0);
     endif;
     
     // Trim for lags

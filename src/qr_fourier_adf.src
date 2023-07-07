@@ -32,7 +32,7 @@
 
 proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     local n, t, y1, dy, dyl, x, qr_beta, rho_tau, delta2;
-    local tn;
+    local tn, dc, dt;
     local sink, cosk, dt_vec, pmax, k, _print;
     
     // Data checks
@@ -42,12 +42,8 @@ proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     // Get defaults
     { pmax, k, _print } = dynargsGet(1|3, 8, 3, "true");
     
-    // Get dimensions
-    t  = rows(y);
-    
-    // Transform y
-    y1 = lagn(y, 1);
-    dy = diff(y, 1);
+    // Get deterministic terms
+    { t, dy, y1, dc, dt } = _getFourierDeterministic(y);
     
     // Trim y terms
     y    = trimr(y, pmax + 1, 0);
@@ -68,7 +64,7 @@ proc(1) = QR_Fourier_ADF(y, model, tau, ...);
         endfor;
         
         // Trim for lags
-        dyl  = trimr(dyl,  pmax+1, 0);
+        dyl  = trimr(dyl, pmax+1, 0);
         
         // Add to x term
         x = x ~ dyl;
@@ -82,7 +78,7 @@ proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     
     // Add trend
     if model == 2;
-        x = x ~ seqa(1, 1, rows(y1));
+        x = x ~ trimr(dt, pmax+1, 0);
     endif;
     
     // Get QR regression beta
