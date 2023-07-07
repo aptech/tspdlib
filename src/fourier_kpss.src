@@ -54,6 +54,7 @@ proc(3) = Fourier_KPSS(y, model, ...);
     local b, e1, sig2, se, ssr, k;
     local crit, l_dftl, kmax, l, varm,  dt_vec;
     
+    // Missing values
     _checkForMissings(y, "Fourier_KPSS");
     
     t = rows(y);
@@ -76,11 +77,13 @@ proc(3) = Fourier_KPSS(y, model, ...);
         z = ones(t, 1)~seqa(1, 1, t)~sink~cosk;
     endif;
     
+    // Compute ols
     {b, e1, sig2, se, ssr} = myols(y, z);
     
     // Partial sum of residuals
     S = cumsumc(e1);
     
+    // Find LRV
     lrv = _get_lrv_type(varm, ssr, e1, l, 1);
     print;
     
