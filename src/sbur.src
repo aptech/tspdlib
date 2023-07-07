@@ -7,7 +7,7 @@
 **
 ** Sintaxis:
 **
-**      msburOut = msbur_gls(y,  model [,  msburCtl]);
+**      sbOut = sbur_gls(y,  model [,  sburCtl]);
 **
 ** Inputs:
 **
@@ -21,66 +21,66 @@
 **                          structural breaks; the structural break affects both the level and
 **                          the slope of the time trend.
 **
-**     msburCtl     An instance of the pd_msburControl structure containing the following
+**      sbCtl       An instance of the sburControl structure containing the following
 **                  members:
 **
-**                  msburCtl.knownBreaks    Scalar,  specifies if breaks are known or unknown.
+**                  sbCtl.knownBreaks       Scalar,  specifies if breaks are known or unknown.
 **                                          0 when the structural breaks are known,
 **                                          1 when the structural breaks are unknown.
 **                                          Default = 1;
 **
-**                  msburCtl.breakDate      Vector,  when the structural breaks are known,
+**                  sbCtl.breakDate         Vector,  when the structural breaks are known,
 **                                          this collects an (mx1) vector with the break points.
 **
-**                  msburCtl.numberBreaks   Scalar,  when the structural breaks are unknown,
+**                  sbCtl.numberBreaks      Scalar,  when the structural breaks are unknown,
 **                                          this scalar indicates the number of structural breaks
 **                                          that is assumed. Note that,  at the moment,  the procedure is
 **                                          designed for up to m <= 5 structural breaks.
 **
 **
-**                  msburCtl.penalty        Scalar,  indicates the penalty function that defines the information
+**                  sbCtl.penalty           Scalar,  indicates the penalty function that defines the information
 **                                          criteria that is used to determine the number of lags used to estimate
 **                                          the long-run variance. penalty = 0 for maic,  and penalty = 1 for bic.
 **                                          Default = 0.
 **
-**                  msburCtl.kmax           Scalar,  denotes the maximum number of lags that is used to estimate
+**                  sbCtl.kmax              Scalar,  denotes the maximum number of lags that is used to estimate
 **                                          the long-run variance. Default = 4.
 **
-**                  msburCtl.kmin           Scalar,  denotes the minimum number of lags that is used to estimate
+**                  sbCtl.kmin              Scalar,  denotes the minimum number of lags that is used to estimate
 **                                          the long-run variance. Default = 0.
 **
-**	                msburCtl.estimation	    Scalar,  specifying the estimation method:
+**	                sbCtl.estimation	    Scalar,  specifying the estimation method:
 **			                                0 indicates brute force estimation,
 **			                                1,  then it uses the dynamic algorithm.
 **                                          Default = 0;
 **
-**                  msburCtl.maxIters       Scalar,  if dynamic algorithm is used,
+**                  sbCtl.maxIters          Scalar,  if dynamic algorithm is used,
 **                                          this indicates the maximum number of
 **                                          iterations.
 **
 ** Output:
 **
-**      msburOut    An instance of the msburOut structure containing the following
+**      sbOut       An instance of the sburOut structure containing the following
 **                  members:
 **
-**                  msburCtl.pt             Scalar,  the value for the Pt unit root test.
+**                  sbOut.pt             Scalar,  the value for the Pt unit root test.
 **
-**                  msburCtl.mpt            Scalar,  the value for the MPT unit root test.
+**                  sbOut.mpt            Scalar,  the value for the MPT unit root test.
 **
-**                  msburCtl.adf            Scalar,  the value for the ADF unit root test.
+**                  sbOut.adf            Scalar,  the value for the ADF unit root test.
 **
-**                  msburCtl.za             Scalar,  the value for the ZA unit root test.
+**                  sbOut.za             Scalar,  the value for the ZA unit root test.
 **
-**                  msburCtl.mza            Scalar,  the value for the MZA unit root test.
+**                  sbOut.mza            Scalar,  the value for the MZA unit root test.
 **
-**                  msburCtl.msb            Scalar,  the value for the MSB unit root test.
+**                  sbOut.msb            Scalar,  the value for the MSB unit root test.
 **
-**                  msburCtl.mzt            Scalar,  the value for the MZT unit root test.
+**                  sbOut.mzt            Scalar,  the value for the MZT unit root test.
 **
-**                  msburCtl.min_tb         Vector,  the estimated break points.
+**                  sbOut.min_tb         Vector,  the estimated break points.
 **
-**                  msburCtl.cbar           Scalar,  the value of the c_bar parameter
-**                                          that is used in the quasi GLS-detrending.
+**                  sbOut.cbar           Scalar,  the value of the c_bar parameter
+**                                       that is used in the quasi GLS-detrending.
 **
 **  Based on code by Josep Llui­s Carrion-i-Silvestre,  based on the code provided by Serena Ng and Pierre Perron (Econometrica,  2001).
 **  Last modification: July 1st,  2006,  23:47 pm
