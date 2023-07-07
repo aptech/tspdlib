@@ -49,6 +49,9 @@ proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     y    = trimr(y, pmax + 1, 0);
     y1   = trimr(y1, pmax + 1, 0);
     
+    // Update t
+    t = rows(y);
+    
     // Start x term
     x = y1;
     
@@ -164,31 +167,33 @@ proc(2) = QR_Fourier_ADF_bootstrap(y, model, tau, ...);
     
     // Get Fourier Term
     { sink, cosk } = _getFourierTerms(t, k);
-
+    
     if p  > 0;
         p_lags  = seqa(1, 1, p);
         dy_lags = lagn(dy, p_lags);
     endif;
     
     // X under the null hypothesis
+    x = c;
     if model == 1;
-        if p == 0;
-            x = c ~ sink ~ cosk;
-        elseif p > 0;
-            x = c ~ sink ~ cosk ~ dy_lags;
-        endif;
+        // Add Fourier terms
+        x = x ~ sink ~ cosk;
+        
     endif;
     
     if model == 2;
-        if p == 0;
-            x = c ~ trend ~ sink ~ cosk ;
-        elseif p > 0;
-            x = c ~ trend ~ sink ~ cosk ~ dy_lags ;
-        endif;
+        // Add Fourier terms
+        x = x ~ trend ~ sink ~ cosk ;
+    endif;
+    
+    // Add lags
+    if p > 0;
+        x = x ~ dy_lags ;
     endif;
     
     dy = trimr(dy, p+1, 0);
     x  = trimr(x, p+1, 0);
+    y = trimr(y, p+1, 0);
     b  = inv(x'x)*x'y;
     yd = y - x * b;
     yd1= lagn(yd,1);
@@ -209,7 +214,7 @@ proc(2) = QR_Fourier_ADF_bootstrap(y, model, tau, ...);
             ydstar[s]= ydstar[s-1] + mustar[s];
         endfor;
         ystar = ydstar;
-        tn_boot = QR_Fourier_ADF(ystar, model, p, k, tau, "false");
+        tn_boot = QR_Fourier_ADF(ystar, model, tau, p, k, "false");
         test_boot[reps] = tn_boot;
     endfor; //End for replications
     
