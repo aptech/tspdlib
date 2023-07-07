@@ -7,7 +7,6 @@
 **
 **
 **  Format:  qr_f_adf         = QR_Fourier_ADF(y, model, tau [, p, k, _print]);
-**           {test_boot, cv}  = QR_Fourier_ADF_bootstrap(y, model, tau [, p, k, Nboot]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -16,16 +15,13 @@
 **
 **           tau     -  quantile (0.1,...,1)
 **
-**           pmax    -  Optional, number of lags for Dy; 0 = no lags
+**           p       -  Optional, number of lags for Dy; 0 = no lags
 **
 **           k       -  Optional, number of Fourier frequency
 **
 **           _print  -  Optional, print option "true" for printing results
 **
-**           Nboot   -  Optional, number of bootstrapmaxreplications
-**
-**  Output:  tn      - tn statistic for a given quantile
-**			 cv      - 1, 5, and 10 percent bootstrap critical values for tn test
+**  Output:  tn      -  tn statistic 
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
@@ -34,13 +30,6 @@
 **
 */
 
-/* 17 December 2020 */
-
-/*Procedures*/
-
-
-
-/*Procedures*/
 proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     local n, t, y1, dy, dyl, x;
     local qr_beta, rho_tau, res,ind,phi;
@@ -153,9 +142,6 @@ proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     PX = eye(rows(xx))-xx*inv(xx'xx)*xx';       
     tn = fz/sqrt(tau*(1-tau))* sqrt(Y1'*PX*Y1)*( rho_tau-1);
 
-    
-    
-
     if _print=="true";
         _printHeaderTSPDLIB(0, 0, 1, model, 4, 0, "Quantile Fourier ADF", "Unit root", 0);
 
@@ -165,7 +151,7 @@ proc(1) = QR_Fourier_ADF(y, model, tau, ...);
         stats = tau|rho_tau|tn;
         
           #ifminkernelversion(20)
-            sprintf("%14s %14.3f", side, stats);
+            sprintf("%-15s %45.3f", side, stats);
             print;
             print;
         #else;
@@ -176,6 +162,38 @@ retp(tn);
 
 endp;
 
+/*
+**> qr_fourier_adf_bootstrap
+**  Reference:
+**  Li, H., & Zheng, C. (2018). 
+**  Unit root quantile autoregression testing with smooth structural changes. 
+**  Finance Research Letters, 25, 83-89.
+**
+**
+**  Format:  {test_boot, cv}  = QR_Fourier_ADF_bootstrap(y, model, tau [, p, k, Nboot]);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**
+**           model   - 	1 = Model with constant
+**                      2 = Model with constant and trend
+**
+**           tau     -  quantile (0.1,...,1)
+**
+**           p       -  Optional, number of lags for Dy; 0 = no lags
+**
+**           k       -  Optional, number of Fourier frequency
+**
+**           Nboot   -  Optional, number of bootstrapmaxreplications
+**
+**  Output:  test_boot  - test statistic for a given quantile
+**			 cv         - 1, 5, and 10 percent bootstrap critical values for tn test
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
 proc(2) = QR_Fourier_ADF_bootstrap(y, model, p, k, tau, Nboot);
     local t, sink, cosk, c, trend, dy, p_lags, dy_lags, x;
     local b, yd, yd1, fi, mu, replace;
@@ -238,7 +256,7 @@ proc(2) = QR_Fourier_ADF_bootstrap(y, model, p, k, tau, Nboot);
         test_boot[reps] = tn_boot;        
     endfor; //End for replications
     
-    test_boot = sortc(test_boot,1); 
+    test_boot = sortc(test_boot, 1); 
     cv_boot   = test_boot[0.99*Nboot] ~ test_boot[0.95*Nboot] ~ test_boot[0.90*Nboot];
 
 retp( test_boot, cv_boot);
