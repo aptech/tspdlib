@@ -31,13 +31,9 @@
 **
 */
 
-
-/*Procedures*/
 proc(1) = QR_KSS(y, model, tau, ...);
     local n, y1, dy, x, p_lags, dy_lags;
-    local qr_beta, rho_tau, h;
-    local rq1, rq2, z, mz, q1, q2, fz, px, tn;
-    local res, ind, phi, w, cov, delta2, cv, dt_vec, p, _print;
+    local qr_beta, rho_tau, tn, delta2, cv, dt_vec, p, _print;
     
     // Data checks
     _checkForMissings(y, "QR_KSS");
@@ -50,20 +46,19 @@ proc(1) = QR_KSS(y, model, tau, ...);
     y1 = lagn(y^3, 1);
     dy = diff(y, 1);
     
-    if p == 0;
-       x = y1; 
-    elseif p > 0;
+    x = y1;
+    
+    // Add lags
+    if p > 0;
         p_lags  = seqa(1, 1, p);
         dy_lags = lagn(dy, p_lags);
-        x = y1 ~ dy_lags;
+        x = x ~ dy_lags;
     endif;
     
-    if model == 1;
-        x  = trimr(x,  p+1, 0);
-    endif;    
+    // Trim x
+    x = trimr(x,  p+1, 0);   
 
     if model == 2;
-        x = trimr(x,  p+1, 0);
         x = x ~ seqa(1, 1, rows(x));
     endif; 
 
@@ -71,69 +66,16 @@ proc(1) = QR_KSS(y, model, tau, ...);
     y1 = trimr(y1, p+1, 0);
     
     screen off;
-    // Declare qFitControl structure
-    struct qfitControl qctl;
-    qctl = qfitControlCreate();
-    // for print result: qCtl.verbose = 1;
-    qctl.verbose = 0;       
-    // Declare qFitOut structure
-    struct qFitOut qOut1;    
-    qOut1 = quantileFit(DY, X, tau, qctl);
-    
-    qr_beta = qOut1.beta;
+    qr_beta = __get_qr_adf_beta(dy, x, tau, ...);
     rho_tau = qr_beta[2]; 
     
-    h = bandwidth(tau, n, "false", 0.05);    
-    if tau <= 0.5 and h > tau;
-        h = bandwidth(tau, n, "false", 0.05);
-        if h > tau;
-            h = tau/1.5;
-        endif;
-    endif;
-    if tau > 0.5 and h > 1-tau;
-        h = bandwidth(tau, n, "false", 0.05);
-        if h > (1 - tau);
-            h = (1-tau)/1.5;
-        endif;
-    endif;  
+    // Get tn stat
+    tn = __get_qr_adf_stat(dy, y1, miss(), x, rho_tau, tau, n, pmax, 1, 1);
 
-    // Declare qFitOut structure
-    struct qFitOut qOut2;
-    qOut2 = quantileFit(DY, X, tau+h, qctl);
-    // Extract beta
-    rq1 = qOut2.beta;
-    
-    // Declare qFitOut structure
-    struct qFitOut qOut3;
-    qOut3 = quantileFit(DY, X, tau-h, qctl);
-    // Extract beta
-    rq2 = qOut3.beta;
-    
-    z = ones(rows(x), 1)~x;
-    mz = meanc(z);
-    q1 = mz' * rq1;
-    q2 = mz' * rq2;
-    fz = 2 * h/(q1 - q2);
-    if fz < 0;
-        fz = 0.01;
-    endif;
-    
-    if p == 0;
-       x = ones(rows(x), 1);
-    endif;
-    if p > 0;
-        x =ones(rows(x), 1)~x[.,2:cols(x)];
-    endif;
-
-    PX = eye(rows(x)) - x * inv(x'x) * x';
-    tn = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau);
-    
-    res = dy - (ones(rows(x),1)~x) * qr_beta;
-    ind = res .< 0;
-    phi = tau - ind;
-    w = dy;
-    cov = sumc((w - meanc(w)) .* (phi - meanc(phi)))/(rows(w) - 1);
-    delta2 = (cov/(stdc(w) * sqrt(tau * (1-tau))))^2;
+    // Get delta2 
+    delta2 = __get_qr_adf_delta2(y, x, dy, tau, qr_beta);
+   
+    // Get critical values
     cv = crit_qr_kss(delta2, model);
     
     screen on;
