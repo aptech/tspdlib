@@ -5,8 +5,8 @@
 **  Fourier nonlinear quantile unit root test and PPpmaxin Africa. 
 **  Bulletin of Economic Research, 72(4), 451-481.
 **
-**  Format:  {tn}             = QR_Fourier_KSS(y, model, tau [, p, k, _print]);
-**           {test_boot, cv}  = QR_Fourier_KSS_bootstrap(y, model, tau [, p, k, Nboot]);
+**  Format:  tn                 = QR_Fourier_KSS(y, model, tau [, p, k, _print]);
+**           { test_boot, cv }  = QR_Fourier_KSS_bootstrap(y, model, tau [, p, k, Nboot]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -34,19 +34,14 @@
 **
 */
 
-/* 17 December 2020 */
-
-
-/*Procedures*/
-///proc(1) = QR_Fourier_KSS(y, model, p, k, tau, _print);
 proc(1) = QR_Fourier_KSS(y, model, tau, ...);    
     local n, y1, dy, x, p_lags, dy_lags;
     local t, sink, cosk, dt, qr_beta, rho_tau, dt_vec;
-    local h, rq1, rq2, z, mz, q1, q2, fz, px, tn, pmax, k, _print;
+    local tn, pmax, k, _print;
     
     // Data checks
     _checkForMissings(y, "QR_Fourier_KSS");
-    { dt_vec, y } =_checkfordate(y);
+    { dt_vec, y } = _checkfordate(y);
     
     // Get defaults
     { pmax, k, _print } = dynargsGet(1|3, 8, 3, "true");
@@ -86,63 +81,15 @@ proc(1) = QR_Fourier_KSS(y, model, tau, ...);
     y1 = trimr(y1, pmax+1, 0);
     x  = trimr(x, pmax+1, 0);
     
-    // Declare qFitControl structure
-    struct qfitControl qctl;
-    qctl = qfitControlCreate();
-    // for print result: qCtl.verbose = 1;
-    qctl.verbose = 0;       
-    
-    // Declare qFitOut structure
-    struct qFitOut qOut1;    
-    qOut1 = quantileFit(DY, X, tau, qctl);
-    
-    qr_beta = qOut1.beta;
+    // Get QR regression beta
+    qr_beta = __get_qr_adf_beta(DY, X, tau);
+
+    // AR term for QR reg
     rho_tau = qr_beta[2]; 
+    
+    // Compute the tn statistic
     n = rows(y);
-    h = bandwidth(tau, n, "false", 0.05);    
-    if tau <= 0.5 and h > tau;
-        h = bandwidth(tau, n, "false", 0.05);
-        if h > tau;
-            h = tau/1.5;
-        endif;
-    endif;
-    if tau > 0.5 and h > 1-tau;
-        h = bandwidth(tau, n, "false", 0.05);
-        if h > (1 - tau);
-            h = (1-tau)/1.5;
-        endif;
-    endif;  
-
-    // Declare qFitOut structure
-    struct qFitOut qOut2;
-    qOut2 = quantileFit(DY, X, tau+h, qctl);
-    // Extract beta
-    rq1 = qOut2.beta;
-    
-    // Declare qFitOut structure
-    struct qFitOut qOut3;
-    qOut3 = quantileFit(DY, X, tau-h, qctl);
-    // Extract beta
-    rq2 = qOut3.beta;
-    
-    z = ones(rows(x), 1)~x;
-    mz = meanc(z);
-    q1 = mz' * rq1;
-    q2 = mz' * rq2;
-    fz = 2 * h/(q1 - q2);
-    if fz < 0;
-        fz = 0.01;
-    endif;
-    
-    if pmax== 0;
-       x = ones(rows(x), 1);
-    endif;
-    if pmax> 0;
-        x =ones(rows(x), 1)~x[.,2:cols(x)];
-    endif;
-
-    PX = eye(rows(x)) - x * inv(x'x) * x';
-    tn = fz/sqrt(tau * (1 - tau)) * sqrt(Y1' * PX * Y1) * (rho_tau);
+    tn = __get_qr_adf_stat(dy, y1, miss(), x, rho_tau, tau, n, pmax, 1, 1);
 
     if _print == "true";
         _printHeaderTSPDLIB(0, 0, 1, model, 4, 0, "Quantile Fourier KSS", "Unit root", 0);
@@ -153,7 +100,7 @@ proc(1) = QR_Fourier_KSS(y, model, tau, ...);
         stats = tau|rho_tau|tn;
         
           #ifminkernelversion(20)
-            sprintf("%14s %14.3f", side, stats);
+            sprintf("%-15s %45.3f", side, stats);
             print;
             print;
         #else;
@@ -164,18 +111,50 @@ proc(1) = QR_Fourier_KSS(y, model, tau, ...);
 retp(tn);
 endp;
 
-proc(1) = QR_Fourier_KSS_bootstrap(y, model, tau, ...);
+/*
+**> qr_fourier_kss
+**  Reference:
+**  Bahmani-Oskooee, M., Chang, T., Niroomand, F., & Ranjbar, O. (2020). 
+**  Fourier nonlinear quantile unit root test and PPpmaxin Africa. 
+**  Bulletin of Economic Research, 72(4), 451-481.
+**
+**  Format:  { test_boot, cv }  = QR_Fourier_KSS_bootstrap(y, model, tau [, p, k, Nboot]);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**
+**           model   - 	1 = Model with constant
+**                      2 = Model with constant and trend
+**
+**           tau     -  quantile (0.1,...,1)
+**
+**           pmax    -  Optional, number of lags for Dy; 0 = no lags
+**
+**           k       -  Optional, number of Fourier frequency
+**
+**           Nboot   -  Optional, number of bootstrapmaxreplications
+**
+**
+**  Output:  tn      - tn statistic for a given quantile
+**			 cv      - 1, 5, and 10 percent bootstrap critical values for tn test
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+proc(2) = QR_Fourier_KSS_bootstrap(y, model, tau, ...);
     local t, sink, cosk, c, trend, dy, p_lags, dy_lags;
     local x, b, yd, yd1, fi;
     local mu, tt, mustar, ydstar, ystar;
-    local test_boot, tn_boot, replace, dt_vec, pmax, k, Nboot;
+    local test_boot, tn_boot, replace, dt_vec, pmax, k, Nboot, cv_boot;
     
     // Data checks
     _checkForMissings(y, "QR_Fourier_KSS");
-    { dt_vec, y } =_checkfordate(y);
+    { dt_vec, y } = _checkfordate(y);
     
     // Get defaults
-    { pmax, k, Nboot } = dynargsGet(1|3, 8, 3, 100);
+    { pmax, k, Nboot } = dynargsGet(1|3, 8, 3, 20000);
     
     // See Li & Zheng (2018, p.86)
     t     = rows(y);
@@ -215,7 +194,7 @@ proc(1) = QR_Fourier_KSS_bootstrap(y, model, tau, ...);
     yd = dy - x * b;
     yd1= lagn(yd,1);
     yd = trimr(yd, 1, 0);
-    yd1= trimr(yd1,1, 0); 
+    yd1= trimr(yd1, 1, 0); 
     fi = inv(yd1'yd1)*yd1'yd;
     mu = yd - yd1 * fi;     // Residuals from AR(1) model
     mu = mu - meanc(mu);    //Centered residuals
@@ -231,12 +210,13 @@ proc(1) = QR_Fourier_KSS_bootstrap(y, model, tau, ...);
             ydstar[s]= ydstar[s-1] + mustar[s];
         endfor;
         ystar = ydstar;
-        tn_boot = QR_Fourier_KSS(ystar, model, pmax, k, tau, "false");
+        tn_boot = QR_Fourier_KSS(ystar, model, tau, pmax, k, "false");
         test_boot[reps] = tn_boot;
             
     endfor; //End for replications
     
-    test_boot = sortc(test_boot,1); 
+    test_boot = sortc(test_boot, 1); 
+    cv_boot   = test_boot[0.99*Nboot] ~ test_boot[0.95*Nboot] ~ test_boot[0.90*Nboot];
     
-retp(test_boot);
+retp(test_boot, cv_boot);
 endp;
