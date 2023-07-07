@@ -7,9 +7,6 @@ library tspdlib_dv;
 data = loadd(__FILE_DIR $+ "pd_gdef.gdat");
 data = setColDateFormats(data, "%Y", "Year");
 
-// Print data headers
-varnames = getColNames(data);
-
 /*
 ** Calculation of the test with 1 change to the mean
 */
