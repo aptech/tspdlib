@@ -95,12 +95,18 @@ endp;
 **
 */
 
-proc(1) = QRADF(y, model, pmax, ic, tau, _print);
+proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
     local n, y1, dy, dyl, x, ADFt, p, cv, qr_beta, rho_tau, 
-    beta_ols, rho_ols, cvADF, delta2, QURadf, dt_vec;
+    beta_ols, rho_ols, cvADF, delta2, QURadf, dt_vec, fourier, sink, cosk, t, k;
     
     { dt_vec, y } =_checkfordate(y);
 
+    // Check for fourier
+    { fourier, k } = dynargsGet(1|2, 0, 3);
+    
+    // Get dimensions
+    t  = rows(y);
+    
     // Transform y
     y1 = lagn(y, 1);
     dy = diff(y, 1);
@@ -133,6 +139,12 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
         dyl = miss();
     endif;
 
+    if fourier;
+        // Get Fourier Term
+        { sink, cosk } = _getFourierTerms(t, k, pmax);
+        x = x ~ sink ~ cosk;
+    endif;
+    
     // Add trend
     if model == 2;
         x = x ~ seqa(1, 1, rows(y1));
@@ -152,8 +164,12 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     rho_ols = beta_ols[2];
     
     // Get delta2
-    delta2 = __get_qr_adf_delta2(y, x, dy, tau, qr_beta);
-
+    if fourier;
+        delta2 = __get_qr_adf_delta2(y, x, miss(), tau, qr_beta);
+    else;
+        delta2 = __get_qr_adf_delta2(y, x, dy, tau, qr_beta);
+    endif;
+    
     // Get h
     n = rows(y);
     QURadf = __get_qr_adf_stat(y, y1, dyl, x, rho_tau, tau, n, p);
