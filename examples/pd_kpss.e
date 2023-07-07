@@ -5,9 +5,7 @@ library tspdlib_dv;
 
 // Load data
 data = loadd(__FILE_DIR $+ "pd_gdef.gdat");
-dates = data[., "X1"];
-
-tmp = getcoldateformats(dates);
+data = setColDateFormats(data, "%Y", "Year");
 
 // Print data headers
 varnames = getColNames(data);
@@ -24,7 +22,7 @@ model = 4;
 max_brks = 5;
 
 // Set kernel
-kernel = 4;
+kernel = 6;
 
 // Set bandwidth for varm
 bwl = round(4 * (rows(data)/100)^(2/9));
