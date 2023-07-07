@@ -40,7 +40,7 @@ proc(3) = Fourier_KSS(y, model, pmax, fmax, ic, test);
     local dc, dt, z, a, v, dv, v1;
     local p_lags, dv_lags, p, x, dep;
     local LL, n, k, p_opt, tn;
-    local b, e1, sig2, se, ssr, cv;
+    local b, e1, sig2, se, ssr;
     local k_star, F_trig, p_val, sink, cosk;
     
     t    = rows(y);
@@ -62,24 +62,21 @@ proc(3) = Fourier_KSS(y, model, pmax, fmax, ic, test);
     // Get Fourier terms
     { sink, cosk } = _getFourierTerms(t, k_star);
 
-    // Residual regression
+    // Set deterministic components
     if model == 1;
-        z = dc ~ sink ~ cosk;
-        a = y/z;
-        v = y - z * a;
+        z = dc;
     elseif model == 2;
-        z = dc ~ dt ~ sink ~ cosk;
-        a = y/z;
-        v = y - z * a;
+        z = dc ~ dt;
     endif;
     
-    dv = diff(v,1);
-    if test == "FADF";
-        v1 = lagn(v, 1);
-    endif;    
-    if test == "FKSS";
-        v1 = lagn(v^3,1);
-    endif;    
+    // Add Fourier terms
+    z = z ~ sink ~ cosk;
+    
+    // Residual regression
+    a = y/z;
+    v = y - z * a;
+    
+    { dv, v1 } = __get_resid_lags_kss(res, test);
     
     if pmax > 0;
         p_lags  = seqa(1, 1, pmax);
@@ -107,6 +104,7 @@ proc(3) = Fourier_KSS(y, model, pmax, fmax, ic, test);
         sicp[p+1] = (k * ln(n) - 2 * LL)/n;
         tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
     endfor;
+    
     // Check results
     // seqa(0,1,13)~taup;
     p_opt = _get_lag(ic, pmax, aicp, sicp, tstatp);
@@ -115,6 +113,21 @@ proc(3) = Fourier_KSS(y, model, pmax, fmax, ic, test);
     retp(tn, p_opt - 1, k_star);
 endp;
 
+proc(2) = __get_resid_lags_kss(res, model);
+    local dv, v1;
+    
+    dv = diff(res, 1);
+    
+    if model == "FADF";
+        v1 = lagn(res, 1);
+    endif;    
+    if model == "FKSS";
+        v1 = lagn(res^3,1);
+    endif; 
+    
+    retp(dv, v1);
+endp;
+    
 // Critical Values (see, Christopoulos, & Leon-Ledesma , 2010)
 proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
     local test_sim, s, MCr, e0, rho, eps;
