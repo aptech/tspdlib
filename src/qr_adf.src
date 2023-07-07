@@ -137,7 +137,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
 
     if fourier;
         // Get Fourier Term
-        { sink, cosk } = _getFourierTerms(t, k, pmax);
+        { sink, cosk } = _getFourierTerms(t, k);
         x = x ~ sink ~ cosk;
     endif;
     

@@ -73,7 +73,7 @@ proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     endif;
     
     // Get Fourier Term
-    { sink, cosk } = _getFourierTerms(t, k, pmax);
+    { sink, cosk } = _getFourierTerms(t, k);
     x = x ~ sink ~ cosk;
     
     // Add trend
@@ -147,7 +147,7 @@ endp;
 **
 */
 proc(2) = QR_Fourier_ADF_bootstrap(y, model, tau, ...);
-    local t, sink, cosk, c, trend, dy, p_lags, dy_lags, x;
+    local t, sink, cosk, c, trend, dy, y1, p_lags, dy_lags, x;
     local b, yd, yd1, fi, mu, replace;
     local tt, mustar, ydstar, ystar;
     local test_boot, tn_boot, cv_boot, p, k, Nboot, dt_vec;
@@ -159,13 +159,12 @@ proc(2) = QR_Fourier_ADF_bootstrap(y, model, tau, ...);
     { dt_vec, y } =_checkfordate(y);
     
     // See Li & Zheng (2018, p.86)
-    t     = rows(y);
-    sink  = sin(2 * pi * k * seqa(1, 1, t)/t);
-    cosk  = cos(2 * pi * k * seqa(1, 1, t)/t);
-    c     = ones(t, 1);
-    trend = seqa(1,1,t);
-    dy   = diff(y, 1);
+    // Get deterministic terms
+    { t, dy, y1, c, trend } = _getFourierDeterministic(y);
     
+    // Get Fourier Term
+    { sink, cosk } = _getFourierTerms(t, k);
+
     if p  > 0;
         p_lags  = seqa(1, 1, p);
         dy_lags = lagn(dy, p_lags);
