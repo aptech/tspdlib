@@ -98,7 +98,7 @@
 **
 **               bctl.h           Minimum segment size. Default = int(eps1*T).
 **
-**               bctl.fixb        bctl.doglobal    Indicator to perform global test for structural break
+**               bctl.doglobal    Indicator to perform global test for structural break
 **                                and find associated SSR for all break 1 to m. 
 **
 **               bCtl.hetq        Used in the construction of the confidence
@@ -195,7 +195,7 @@ proc (4) = pd_kpss(data, model, ... );
     struct sbControl bCtl;
     // Default bandwidth for var
     bwl_dftl = round(4 * (bigt/100)^(2/9));
-    { m, kernel, bwl, maxlags, bctl } = dynargsGet(1|5, 5, 1, bwl_dftl, 8, sbControlCreate(bigt));
+    { m, bwl, kernel, maxlags, bctl } = dynargsGet(1|5, 5, bwl_dftl, 1, 8, sbControlCreate(bigt));
     
     // Number of countries
     k = cols(data);
