@@ -112,23 +112,30 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print);
     // Trim y terms
     y    = trimr(y, p + 1, 0);
     y1   = trimr(y1, p + 1, 0);
-    dy   = trimr(dy, p + 1, 0);
     
     // Start x term
     x = y1;
     
     if p > 0;
-        dyl = zeros(rows(y), p);
+        // Create lags of dy
+        dyl = zeros(rows(y)+p+1, p);
         
+        // Fill dy matrix
         for j(1, p, 1);
             dyl[., j] = lagn(dy, j);
-        endfor;
-
-        x = x~dyl;
+        endfor;        
+        
+        dyl  = trimr(dyl,  p+1, 0);
+        
+        // Add to x term
+        x = x ~ dyl;
     else;
         dyl = miss();
     endif;
 
+    // Trim for lags
+    dy = trimr(dy, p+1, 0);
+    
     // Get QR regression beta
     qr_beta = __get_qr_adf_beta(Y, X, tau);
     
