@@ -143,7 +143,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
     
     // Add trend
     if model == 2;
-        x = x ~ trimr(dt, pmax+1, 0);
+        x = x ~ trimr(dt, p+1, 0);
     endif;
     
     // Trim for lags
@@ -178,22 +178,16 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
     if _print == "true";
         _printHeaderTSPDLIB(ic, 0, 1, model, 4, 0, "Quantile ADF", "Unit root", 0);
 
-        local top, side, stats, dec;
+        local top, side, stats, dec, colwidth;
         top = "";
         side = "quantile:"$|"rho(quantile):"$|"rho (OLS):"$|"delta^2:"$|"ADF(quantile):";
         stats = tau|rho_tau|rho_ols|delta2|QURadf;
-
-        #ifminkernelversion(20)
-            sprintf("%14s %14.3f", side, stats);
-            print;
-            print "Critical Values:";
-            sprintf("%14s", "1%"$~"5%"$~"10%");
-            sprintf("%14.3f", cv);
-            print;
-        #else;
-            side$~(ntos(stats, dec));
-        #endif;
+        dec = 3;
+        colwidth = 15;
         
+        // Print stats table
+        _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
+
         // Print conclusions
         _printConclusion(QURadf, cv', 0, "a unit root");
         print;
