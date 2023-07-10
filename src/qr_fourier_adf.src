@@ -100,18 +100,17 @@ proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     if _print=="true";
         _printHeaderTSPDLIB(0, 0, 1, model, 4, 0, "Quantile Fourier ADF", "Unit root", 0);
         
-        local top, side, stats, dec;
+        local top, side, stats, dec, colwidth;
         top = "";
         side = "quantile:"$|"rho(quantile):"$|"Fourier QR-ADF:";
-        stats = tau|rho_tau|tn;
+        stats = tau|rho_tau|tn;  
+        dec = 3;
+        colwidth = 15;
+        cv = {};
         
-#ifminkernelversion(20)
-        sprintf("%-15s %45.3f", side, stats);
-        print;
-        print;
-#else;
-        side$~(ntos(stats, dec));
-#endif;
+        // Print stats table
+        _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
+    
     endif;
     retp(tn);
     
