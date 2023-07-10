@@ -294,10 +294,11 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
             sprintf(tmp1b$+tmp1a$+tmp1b$+"%15d", "Frequency:", "", "", fopt);
         endif;
         print;
-        print "Critical Values:";
+        
         
         if isempty(cv) == 0;
-            if multistat_in_cv;
+        print "Critical Values:";
+        if multistat_in_cv;
                 sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
                 sprintf(format2, side, cv');
             else;
