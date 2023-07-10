@@ -6,7 +6,6 @@
 **  Bulletin of Economic Research, 72(4), 451-481.
 **
 **  Format:  tn                 = QR_Fourier_KSS(y, model, tau [, p, k, _print]);
-**           { test_boot, cv }  = QR_Fourier_KSS_bootstrap(y, model, tau [, p, k, Nboot]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -112,7 +111,7 @@ retp(tn);
 endp;
 
 /*
-**> qr_fourier_kss
+**> qr_fourier_kss_bootstrap
 **  Reference:
 **  Bahmani-Oskooee, M., Chang, T., Niroomand, F., & Ranjbar, O. (2020). 
 **  Fourier nonlinear quantile unit root test and PPpmaxin Africa. 
