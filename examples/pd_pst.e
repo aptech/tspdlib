@@ -7,9 +7,9 @@ y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pd_full.csv", ". + date($Date
 
 // Panel stationarity test with level shifts
 model = 1;
-{ Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_ca_fourier(y, model);
+{ Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst(y, model);
 
 // Panel stationarity test with level shifts
 model = 2;
-{ Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_ca_fourier(y, model);
+{ Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst(y, model);
 
