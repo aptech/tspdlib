@@ -88,7 +88,7 @@ proc(11) = coint_hatemiJ(y, x, ...);
         fracADF, fracZa, fracZt, TBadf, TBzt, TBza;
     
     // Error checks
-    _checkForMissings(y~x, "coint_hatemiJ");
+    _checkForMissings(y~x, currentprocname());
     if rows(y) != rows(x);
         errorlog "'coint_hatemiJ': Y and X must have same number of rows";
         end;

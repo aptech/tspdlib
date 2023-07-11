@@ -43,7 +43,7 @@ proc(2) = QR_KSS(y, model, tau, ...);
     endif;
     
     // Data checks
-    _checkForMissings(y, "QR_KSS");
+    _checkForMissings(y, currentprocname());
     { dt_vec, y } =_checkfordate(y);
     
     // Get defaults

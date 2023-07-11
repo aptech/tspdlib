@@ -48,7 +48,7 @@ proc(4) = Fourier_ADF(y, model, ...);
         f, crit, keep_p, opt_lag, pmax, fmax, ic,
         dt_vec, zero_vec;
     
-    _checkForMissings(y, "Fourier_ADF");
+    _checkForMissings(y, currentprocname());
     
     { pmax, fmax, ic } = dynargsGet(1|3, 8, 5, 3);
     

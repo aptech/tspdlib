@@ -30,7 +30,7 @@
 proc (1) = coint_maki(y, m, model, ...);
     local cv, d0, d1, trimm, lagoption, dt_vec, frac;
     
-    _checkForMissings(y, "coint_maki");
+    _checkForMissings(y, currentprocname());
     
     { trimm, lagoption } = dynargsGet(1|2, 0.10, 1);
     

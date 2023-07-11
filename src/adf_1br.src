@@ -45,7 +45,7 @@ proc(4) = ADF_1break(y, model, ...);
     e1, br, ze, b, sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, dt_vec, 
     ic, trimm, frac;
     
-    _checkForMissings(y, "ADF_1break");
+    _checkForMissings(y, currentprocname());
     
     { outlier, pmax, ic, trimm } = dynargsGet(1|4, 1, 8, 3, 0.10);
     

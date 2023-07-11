@@ -45,7 +45,7 @@
 proc (3) = qr_ADF(y, model, tau, ...);
     local dt_vec, pmax, ic, _print;
     
-    _checkForMissings(y, "quantileADF");
+    _checkForMissings(y, currentprocname());
     
     { dt_vec, y } =_checkfordate(y);
     
@@ -59,7 +59,7 @@ endp;
 proc (1) = quantileADF(y, model, tau, ...);
     local dt_vec, pmax, ic, _print, stat, p, cv;
     
-    _checkForMissings(y, "quantileADF");
+    _checkForMissings(y, currentprocname());
     
     { dt_vec, y } =_checkfordate(y);
     

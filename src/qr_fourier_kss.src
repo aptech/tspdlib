@@ -42,7 +42,7 @@ proc(1) = QR_Fourier_KSS(y, model, tau, ...);
     endif;
     
     // Data checks
-    _checkForMissings(y, "QR_Fourier_KSS");
+    _checkForMissings(y, currentprocname());
     { dt_vec, y } = _checkfordate(y);
     
     // Get defaults
@@ -150,7 +150,7 @@ proc(2) = QR_Fourier_KSS_bootstrap(y, model, tau, ...);
     local test_boot, tn_boot, replace, dt_vec, pmax, k, Nboot, cv_boot;
     
     // Data checks
-    _checkForMissings(y, "QR_Fourier_KSS");
+    _checkForMissings(y, currentprocname());
     { dt_vec, y } = _checkfordate(y);
     
     // Get defaults

@@ -64,7 +64,7 @@ proc(18) =  GLS_2breaks(y, model, ...);
     local ADFGLS_min, PT_min, MZa_min, MSB_min, MZt_min, MPT_min;
     local cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa, pmax, ic, dt_vec, modl_str, frac;
    
-    _checkForMissings(y, "GLS_2breaks");
+    _checkForMissings(y, currentprocname());
     
     { pmax, ic } = dynargsGet(1|2, 8, 3);
     { dt_vec, y } =_checkfordate(y);

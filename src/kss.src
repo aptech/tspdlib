@@ -43,7 +43,7 @@ proc(3) = KSS(y, model, pmax, ic);
     local b, e1, sig2, se, ssr, cv, dt_vec;
     
     // Data checks
-    _checkForMissings(y, "kss");
+    _checkForMissings(y, currentprocname());
     { dt_vec, y } =_checkfordate(y);
     
     // Get optional arguments

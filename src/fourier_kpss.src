@@ -55,7 +55,7 @@ proc(3) = Fourier_KPSS(y, model, ...);
     local crit, l_dftl, kmax, l, varm,  dt_vec;
     
     // Missing values
-    _checkForMissings(y, "Fourier_KPSS");
+    _checkForMissings(y, currentprocname());
     
     t = rows(y);
     l_dftl = round(4 * (T/100)^(2/9));

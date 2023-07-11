@@ -51,7 +51,7 @@ proc(4) = Fourier_GLS(y, model, ...);
         b, e1, sig2, se, ssr, keep_p, opt_lag, 
         pmax, fmax, ic,  dt_vec, zero_vec;
     
-    _checkForMissings(y, "Fourier_GLS");
+    _checkForMissings(y, currentprocname());
     
     { pmax, fmax, ic } = dynargsGet(1|3, 8, 5, 3);
     

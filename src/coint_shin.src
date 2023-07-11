@@ -69,7 +69,7 @@ proc(3) = coint_shin(y, x, model, ...);
     bwl_dftl, bwl, varm, q, dt_vec;
     
     // Error checks
-    _checkForMissings(y~x, "coint_shin");
+    _checkForMissings(y~x, currentprocname());
     if rows(y) != rows(x);
         errorlog "'coint_shin': Y and X must have same number of rows";
         end;

@@ -56,7 +56,7 @@ proc(4) = KPSS_2breaks(y, model, ...);
     local tb1, tb2, dc, dt, du1, du2, dt1, dt2, z;
     local ssr, KPSS, cv, bwl_dftl, l, varm, frac, dt_vec;
     
-    _checkForMissings(y, "KPSS_2breaks");
+    _checkForMissings(y, currentprocname());
     
     t = rows(y);
     bwl_dftl = round(4 * (T/100)^(2/9));

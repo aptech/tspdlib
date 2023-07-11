@@ -53,7 +53,7 @@ proc(4) = PP(y, model, ...);
     local tau, g0, lrv, Zt, lambda, mbaryy, Za;
     local b, e, e1, s2, se, ssr, cvZt, cvZa, l_dftl, l, varm, dt_vec;
     
-    _checkForMissings(y, "pp");
+    _checkForMissings(y, currentprocname());
     
     { dt_vec, y } =_checkfordate(y);
     

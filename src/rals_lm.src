@@ -35,7 +35,7 @@ proc (3) = RALSLM(y, ...);
     local tauLM, lag_var, cvLM, t, dc, dt, z, dy, dz, b0, psi, ylm, ds, ly, dep, y1, ldy, lmat, x;
     local j, b, e, sig2, sig2A, se, ssr, e2, e3, m2, m3, w, taurals, p2, cv, pmax, ic, dt_vec;
     
-    _checkForMissings(y, "RALSLM");
+    _checkForMissings(y, currentprocname());
     
     { pmax, ic } = dynargsGet(1|2, 8, 3);
     { dt_vec, y } =_checkfordate(y);

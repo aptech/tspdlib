@@ -52,7 +52,7 @@ proc(5) = LM_1break(y, model, ...);
     local dy, dz, b0, s0, st, ls, dst, ds, lmat, x, tau, lmt, j, p, aicp, sicp, tstatp;
     local lm_k, b, e1, sig2, se, ssr, cv, crit, lambda, opt_lag, pmax, ic, trimm, dt_vec, frac;
     
-    _checkForMissings(y, "LM_1break");
+    _checkForMissings(y, currentprocname());
     
     // Get defaults for optional arguments
     { pmax, ic, trimm } = dynargsGet(1|3, 8, 3, 0.10);

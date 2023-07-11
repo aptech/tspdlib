@@ -78,7 +78,7 @@ proc(6) = coint_cissanso(y, x, model, ...);
     local k, lambda, cv, bwl_dftl, bwl, varm, trimm, q, frac1, frac2, dt_vec;
     
     // Error checks
-    _checkForMissings(y~x, "coint_cissanso");
+    _checkForMissings(y~x, currentprocname());
     if rows(y) != rows(x);
         errorlog "'coint_cissanso': Y and X must have same number of rows";
         end;

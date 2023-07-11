@@ -41,7 +41,7 @@ proc(5) = PDLMtrend(y, model, pmax, ic, trimm, nbreak);
     local tb1, tb2, p, cv;
     local meanp, varp, PD_lm, LMtau, dt_vec, brk1, brk2, y_tst, dt_vec_tst, tmp;
     
-    _checkForMissings(y, "PDLMtrend");
+    _checkForMissings(y, currentprocname());
     
     { dt_vec, y } =_checkfordate(y);
     

@@ -50,7 +50,7 @@ proc(1) = QKS_tests(y, model, test, ...);
     local Un, QKS_stat, indc, QKS_tau, p, k, cv, ic, breaks;
     
     // Data checks
-    _checkForMissings(y, "QKS_tests");
+    _checkForMissings(y, currentprocname());
     
     // Get defaults
     { p, k } = dynargsGet(1|2, 8, 3);
@@ -150,7 +150,7 @@ proc(1) = QKS_bootstrap(y, model, test, ...);
     local QKSboot, QKS_stat, QKS_tau, cv_boot, p, k, Nboot;
     
     // Data checks
-    _checkForMissings(y, "QKS_tests");
+    _checkForMissings(y, currentprocname());
     
     // Get defaults
     { p, k, Nboot } = dynargsGet(1|3, 8, 3, 1000);

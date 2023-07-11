@@ -47,7 +47,7 @@ proc(2) = coint_egranger(y, x, model, ...);
     cv, cvADF, pmax, ic, dt_vec;
     
     // Check for errors
-    _checkForMissings(y~x, "coint_egranger");
+    _checkForMissings(y~x, currentprocname());
     if rows(y) != rows(x);
         errorlog "'coint_egranger': Y and X must have same number of rows";
         end;

@@ -52,7 +52,7 @@ proc(5) = LM_2breaks(y, model, ...);
     local b, e1, sig2, se, ssr, cv, mat_cv1, mat_cv5, mat_cv10 , cv1, cv5, cv10;
     local opt_lag, lam, mat_cv11, mat_cv55, mat_cv1010, pmax, ic, trimm, dt_vec, frac; 
     
-    _checkForMissings(y, "LM_2breaks");
+    _checkForMissings(y, currentprocname());
     
     // Get defaults for optional arguments
     { pmax, ic, trimm } = dynargsGet(1|3, 8, 3, 0.10);

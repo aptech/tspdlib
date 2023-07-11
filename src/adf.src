@@ -43,7 +43,7 @@ proc(3) = ADF(y, model, ...);
     local b, e1, sig2, se, ssr, cv;
     local pmax, ic, dt_vec;
     
-    _checkForMissings(y, "ADF");
+    _checkForMissings(y, currentprocname());
     
     { pmax, ic } = dynargsGet(1|2, 8, 3);
     { dt_vec, y } =_checkfordate(y);

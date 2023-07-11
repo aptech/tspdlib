@@ -60,7 +60,7 @@ proc(4) = coint_pouliaris(y, x, model, ...);
     bwl_dftl, bwl, varm, dt_vec;
     
     // Error checks
-    _checkForMissings(y~x, "coint_pouliaris");
+    _checkForMissings(y~x, currentprocname());
     if rows(y) != rows(x);
         errorlog "'coint_pouliaris': Y and X must have same number of rows";
         end;
