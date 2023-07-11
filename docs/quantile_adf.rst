@@ -1,5 +1,5 @@
 
-quantile_adf
+quantileadf
 ==============================================
 
 Purpose
@@ -9,7 +9,7 @@ Computes the quantile Augmented Dickey-Fuller unit root test.
 
 Format
 ----------------
-.. function:: { tstat, lags, cv } = quantile_adf(y, model, tau, [, pmax, ic])
+.. function:: { tstat, lags, cv } = quantileADF(y, model, tau, [, pmax, ic])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -69,4 +69,4 @@ Source
 
 qr_adf.src
 
-.. seealso:: Functions :func:`adf`, :func:`adf_1br`, :func:`adf_2br`
+.. seealso:: Functions :func:`adf`, :func:`adf_1break`, :func:`adf_2breaks`
