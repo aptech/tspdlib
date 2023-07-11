@@ -161,13 +161,17 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, te
     clm1 = "Test:"$|"Ho:";
     clm2 = test$|null_hyp;
     
+    clm1 = clm1$|"Number of breaks:";
     if breaks;
-        clm1 = clm1$|"Number of breaks:";
         if breaks<3;
             clm2 = clm2$|ntos(breaks, 1);
-        else;
+        elseif breaks == 4;
             clm2 = clm2$|"Unknown";
+        elseif breaks == 5;
+            clm2 = clm2$|"Smooth";
         endif;
+    else;
+        clm2 = clm2$|"None";
     endif;
     
     if ic;
