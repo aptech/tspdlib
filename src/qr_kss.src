@@ -7,7 +7,7 @@
 ** Econometric Reviews, 37(8), 867-892.
 **
 **
-**  Format:  {tn, cv} = QR_KSS(y, model, tau [, pmax, _print]);
+**  Format:  { tn, cv } = QR_KSS(y, model, tau [, p, _print]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -15,7 +15,7 @@
 **                      1 = model with constant
 **                      2 = model with constant and trend
 **
-**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags
+**           p       -  Optional, maximum number of lags for Dy; 0=no lags
 **                      Default = 8;
 **
 **           _print  -  Optional, print option "true" for printing results
@@ -66,7 +66,7 @@ proc(1) = QR_KSS(y, model, tau, ...);
     y1 = trimr(y1, p+1, 0);
     
     screen off;
-    qr_beta = __get_qr_adf_beta(dy, x, tau, ...);
+    qr_beta = __get_qr_adf_beta(dy, x, tau);
     rho_tau = qr_beta[2]; 
     
     // Get tn stat
