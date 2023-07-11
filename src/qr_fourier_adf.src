@@ -6,7 +6,7 @@
 **  Finance Research Letters, 25, 83-89.
 **
 **
-**  Format:  qr_f_adf         = QR_Fourier_ADF(y, model, tau [, p, k, _print]);
+**  Format:  qr_f_adf  = QR_Fourier_ADF(y, model, tau [, p, k, _print]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -158,7 +158,7 @@ proc(2) = QR_Fourier_ADF_bootstrap(y, model, tau, ...);
     local t, sink, cosk, c, trend, dy, y1, p_lags, dy_lags, x;
     local b, yd, yd1, fi, mu, replace;
     local tt, mustar, ydstar, ystar;
-    local test_boot, tn_boot, cv_boot, p, k, Nboot, dt_vec;
+    local test_boot, tn_boot, cv_boot, p, k, Nboot, dt_vec, s;
     
      if rows(tau)>1 or cols(tau)>1;
         s = sprintf("'%s': Only implemented for single tau values. Multiple tau values provided.", currentprocname()); 
