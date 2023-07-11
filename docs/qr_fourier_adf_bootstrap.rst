@@ -9,7 +9,7 @@ Computes bootstrap unit root quantile autoregression testing with smooth structu
 
 Format
 ----------------
-.. function:: qr_f_adf  = QR_Fourier_ADF_bootstrap(y, model, tau [, p, k, _Nboot])
+.. function:: { test_boot, cv }  = QR_Fourier_ADF_bootstrap(y, model, tau [, p, k, _Nboot])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -68,4 +68,4 @@ Source
 
 qr_fourier_adf.src
 
-.. seealso:: Functions :func:`quantileADF`, :func:`adf`, :func:`adf_1break`, :func:`adf_2breaks`
+.. seealso:: Functions :func:`qr_ADF`, :func:`qr_fourier_adf`, :func:`adf_1break`, :func:`adf_2breaks`
