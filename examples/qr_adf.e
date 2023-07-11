@@ -27,9 +27,9 @@ _print= "true";
 
 // With constant
 model = 1;
-stat = quantileADF(y, model, tau); 
+{ stat1, p1, cv1 } = qr_ADF(y, model, tau); 
 
 // With constant and trend
 model = 2;
-stat = quantileADF(y, model, tau); 
+{ stat2, p2, cv2 }  = qr_ADF(y, model, tau); 
 

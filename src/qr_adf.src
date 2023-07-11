@@ -7,7 +7,7 @@
 **  Journal of the American Statistical Association 99, 775-787.
 **
 **
-**  Format:  {QURadf} = quantileADF(y, model, tau [, pmax, ic, _print]);
+**  Format:  { QURadf, p, cv } = qr_ADF(y, model, tau [, pmax, ic, _print]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -28,11 +28,11 @@
 **           _print  -  Optional, print option "true" for printing results
 **                      Default = "true";
 **
-**  Output:  rho(quantile) - the estimated rho parameter for a given quantile
-**			 rho (OLS)    - the estimated rho parameter for usual OLS estimation
-**           delta2       - see equation (10) at page 778
-**           tn(quantile) - quantile unit root statistic (t-ratio for a given quantile)
-**			 cv           - 1%, 5%, 10% critical values for the estimated delta2
+**  Output:  tn(quantile) - quantile unit root statistic (t-ratio for a given quantile)
+**
+**           p            - selected lags
+**
+**			 cv           - 1%, 5%, 10% critical values given the estimated delta2
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
@@ -42,8 +42,7 @@
 */
 
 /* 10 February 2021 */
-
-proc (1) = quantileADF(y, model, tau, ...);
+proc (3) = qr_ADF(y, model, tau, ...);
     local dt_vec, pmax, ic, _print;
     
     _checkForMissings(y, "quantileADF");
@@ -52,8 +51,23 @@ proc (1) = quantileADF(y, model, tau, ...);
     
     // Get defaults
     { pmax, ic, _print } = dynargsGet(1|3, 8, 3, "true");
-    
+
     retp(QRADF(y, model, pmax, ic, tau, _print));
+endp;
+
+
+proc (1) = quantileADF(y, model, tau, ...);
+    local dt_vec, pmax, ic, _print, stat, cv;
+    
+    _checkForMissings(y, "quantileADF");
+    
+    { dt_vec, y } =_checkfordate(y);
+    
+    // Get defaults
+    { pmax, ic, _print } = dynargsGet(1|3, 8, 3, "true");
+    
+    { stat, cv } = QRADF(y, model, pmax, ic, tau, _print);
+    retp(stat);
 endp;
 
 /*
@@ -90,7 +104,7 @@ endp;
 **
 */
 
-proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
+proc(3) = QRADF(y, model, pmax, ic, tau, _print, ...);
     local n, y1, dy, dyl, x, ADFt, p, cv, qr_beta, rho_tau, 
     beta_ols, rho_ols, cvADF, delta2, QURadf, dt_vec, fourier, sink, cosk, dc, dt, t, k;
     
@@ -103,6 +117,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
     { t, dy, y1, dc, dt } = _getFourierDeterministic(y);
 
     screen off;
+    
     // Find optimal p
     { ADFt, p, cvADF} = ADF(y, 1, pmax, ic);
     
@@ -189,7 +204,7 @@ proc(1) = QRADF(y, model, pmax, ic, tau, _print, ...);
         
     endif;
     
-    retp(QURadf);
+    retp(QURadf, p, cv);
 endp;
 
 proc (1) = __get_qr_adf_stat(y, y1, dyl, x, rho_tau, tau, n, p, ...);
