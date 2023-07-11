@@ -15,6 +15,8 @@ y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($
 // With constant
 model = 1;
 qr_kss_stat = QR_Fourier_KSS(y, model, 0.7);
+
+// Bootstrap critical values
 {  test_boot, cv_boot } = QR_Fourier_KSS_bootstrap(y, model, 0.7);
 
 // With constant and trend
