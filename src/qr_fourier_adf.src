@@ -160,7 +160,7 @@ proc(2) = QR_Fourier_ADF_bootstrap(y, model, tau, ...);
     local tt, mustar, ydstar, ystar;
     local test_boot, tn_boot, cv_boot, p, k, Nboot, dt_vec, s;
     
-     if rows(tau)>1 or cols(tau)>1;
+    if rows(tau)>1 or cols(tau)>1;
         s = sprintf("'%s': Only implemented for single tau values. Multiple tau values provided.", currentprocname()); 
         errorlogat s;
         end;

@@ -35,6 +35,13 @@ proc(1) = QR_KSS(y, model, tau, ...);
     local n, y1, dy, x, p_lags, dy_lags;
     local qr_beta, rho_tau, tn, delta2, cv, dt_vec, p, _print, colwidth;
     
+    // Check tau
+    if rows(tau)>1 or cols(tau)>1;
+        s = sprintf("'%s': Only implemented for single tau values. Multiple tau values provided.", currentprocname()); 
+        errorlogat s;
+        end;
+    endif;
+    
     // Data checks
     _checkForMissings(y, "QR_KSS");
     { dt_vec, y } =_checkfordate(y);
