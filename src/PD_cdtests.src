@@ -28,8 +28,6 @@
 **
 **           X	     -  [TxN,k] matrix of independent variales
 **
-**           T       -  Number of time periods
-**
 **           N       -  Number of cross-sections
 **
 **  Output:  LMbp    - LM test of Breusch and Pagan (1980)
@@ -96,6 +94,11 @@ proc(5) = pd_getCDError(y, x, N);
     CDlm    = sqrt(1 / (N*(N-1)))  * cdlm;
     CDlmadj = CDlm - N / (2 * (T-1));
     CD      = sqrt( 2/ (N*(N-1))) * cd; 
+    
+    /*
+    ** Printing
+    */
+//    _printHeaderTSPDLIB(0, varm, 1, model, 0, 0, "PD Stationarity", "Stationarity", 0);
     
     // Printing
     format /rd 8,3;
