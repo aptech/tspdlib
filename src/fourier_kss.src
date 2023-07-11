@@ -2,30 +2,37 @@
 /*
 **> fourier_kss
 **  Reference:
-**  Christopoulos, D. K., & León-Ledesma, M. A. (2010). 
+**  Christopoulos, D. K., & Leon-Ledesma, M. A. (2010). 
 **  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates. 
 **  Journal of International Money and Finance, 29(6), 1076-1093.
 **
-**  Format:  { Ftau, p, k} = Fourier_KSS(y, model, pmax, fmax, ic, test);
+**  Format:  { Ftau, p, k } = Fourier_KSS(y, model, test [, pmax, fmax, ic]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
+**
 **           model   - 	1 = Constant
 **                      2 = Constant and trend
-**           pmax    -  Maximum number of lags for Dy; 0=no lags
-**           fmax    -  Maximumum number of single Fourier frequency
-**                      (upper bound is 5)
-**           ic      -  Information Criterion:
-**                      1 = Akaike
-**                      2 = Schwarz
-**                      3 = t-stat significance
+**
 **           test     - "FADF"
 **                      "FKSS"
-**                     
+**
+**           pmax    -  Optional, Maximum number of lags for Dy; 0=no lags. Default = 8.
+**
+**           fmax    -  Optional, Maximumum number of single Fourier frequency. Default = 3.
+**                      (upper bound is 5)
+**
+**           ic      -  Optional, information Criterion:
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance  
+**                      Default = 3.
 **
 **  Output:  Ftau    - Ftau statistic
+**
 **			 p       - number of lags selected by chosen information criterion
+**
 **           k       - Number of single frequency
-**			 cv      - 1%, 5%, 10% critical values for the chosen model and k
+**
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
 -- for public non-commercial use only.
@@ -35,20 +42,29 @@
 
 /*12 December 2020*/
 
-proc(3) = Fourier_KSS(y, model, pmax, fmax, ic, test);
-    local t, taup, aicp, sicp, tstatp;
+proc(3) = Fourier_KSS(y, model, test, ...); 
+    local pmax, fmax, ic, t, taup, aicp, sicp, tstatp;
     local dc, dt, z, a, v, dv, v1;
     local p_lags, dv_lags, p, x, dep;
     local LL, n, k, p_opt, tn;
     local b, e1, sig2, se, ssr;
     local k_star, F_trig, p_val, sink, cosk;
     
+    // Error checks for missings
+    _checkForMissings(y, currentprocname());
+    
+    // Get optional arguments
+    { pmax, fmax, ic } = dynargsGet(1|3, 8, 5, 3);
+    
+    // Check for dates
+    { dt_vec, y } =_checkfordate(y);
+    
     t    = rows(y);
     taup = zeros(pmax + 1, 1);
     aicp = zeros(pmax + 1, 1);
     sicp = zeros(pmax + 1, 1);
     tstatp = zeros(pmax + 1, 1);
-    
+
     // Constant
     dc = ones(t, 1);
     
@@ -56,7 +72,7 @@ proc(3) = Fourier_KSS(y, model, pmax, fmax, ic, test);
     dt = seqa(1, 1, t);
     
     // Get k_star
-    {k_star, F_trig, p_val} = _get_kstar(y, model, fmax);
+    { k_star, F_trig, p_val } = _get_kstar(y, model, fmax);
     
     // Fourier series
     // Get Fourier terms
@@ -187,19 +203,59 @@ proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
     retp(cv);
 endp;
 
-
-proc(1) = Fourier_KSS_bootstrap(y, model, pmax, kmax, test, Nboot);
+/*
+**> fourier_kss_bootstrap
+**  Reference:
+**  Christopoulos, D. K., & Leon-Ledesma, M. A. (2010). 
+**  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates. 
+**  Journal of International Money and Finance, 29(6), 1076-1093.
+**
+**  Format:  { test_boot, cv_boot } = Fourier_KSS_bootstrap(y, model, test [, pmax, fmax, ic]);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**
+**           model   - 	1 = Constant
+**                      2 = Constant and trend
+**
+**           test     - "FADF"
+**                      "FKSS"
+**
+**           pmax    -  Maximum number of lags for Dy; 0=no lags
+**
+**           kmax    -  Maximumum number of single Fourier frequency
+**                      (upper bound is 5)
+**
+**           ic      -  Information Criterion:
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance                    
+**
+**           Nboot   -  Optional, number of bootstrap replications. Default = 1000.
+**
+**  Output:  test_boot  - test statistic for a given quantile
+**			 cv_boot    - 1, 5, and 10 percent bootstrap critical values for tn test
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+proc(2) = Fourier_KSS_bootstrap(y, model, test, pmax, kmax, ic, Nboot);
     local t, dc, dt, sink, cosk, z, a, v, dv, v1, x, p_lags;
     local dy, b, yd, yd1, fi, mu;
     local tt, mustar, ydstar, ystar;
-    local test_boot, replace;
+    local test_boot, replace, cv_boot;
     
     t    = rows(y);
     dc   = ones(t, 1);
     dt   = seqa(1, 1, t);
-    sink = sin(2 * pi * k * seqa(1, 1, t)/t);
-    cosk = cos(2 * pi * k * seqa(1, 1, t)/t);
     
+    
+    // Fourier series
+    // Get Fourier terms
+    { sink, cosk } = _getFourierTerms(t, k);
+
     // Residual regression
     if model == 1;
         z = dc ~ sink ~ cosk;
@@ -211,7 +267,7 @@ proc(1) = Fourier_KSS_bootstrap(y, model, pmax, kmax, test, Nboot);
         v = y - z * a;
     endif;
     
-    dv = diff(v,1);
+    dv = diff(v, 1);
     if test == "FADF";
         v1 = lagn(v, 1);
     endif;    
@@ -233,14 +289,14 @@ proc(1) = Fourier_KSS_bootstrap(y, model, pmax, kmax, test, Nboot);
     yd = dy - x * b;
     yd1= lagn(yd,1);
     yd = trimr(yd, 1, 0);
-    yd1= trimr(yd1,1, 0); 
+    yd1= trimr(yd1, 1, 0); 
     fi = inv(yd1'yd1)*yd1'yd;
     mu = yd - yd1 * fi;     // Residuals from AR(1) model
     mu = mu - meanc(mu);    //Centered residuals
     
     tt = rows(mu);
-    test_boot = zeros(Nboot,1);
-    for reps(1,Nboot,1);
+    test_boot = zeros(Nboot, 1);
+    for reps(1, Nboot, 1);
         replace = 1;
         mustar = sampleData(mu, tt, replace);
         ydstar = zeros(tt,1);
@@ -251,14 +307,15 @@ proc(1) = Fourier_KSS_bootstrap(y, model, pmax, kmax, test, Nboot);
         ystar = ydstar;
         
         local Ftau_boot, p_temp, k_temp;
-        {Ftau_boot, p_temp, k_temp} = Fourier_KSS(ystar, model, pmax, kmax, ic, test);
+        { Ftau_boot, p_temp, k_temp } = Fourier_KSS(ystar, model, pmax, kmax, ic, test);
         test_boot[reps] = Ftau_boot;
             
     endfor; //End for replications
     
-    test_boot = sortc(test_boot,1); 
+    test_boot = sortc(test_boot, 1); 
+    cv_boot   = test_boot[0.99*Nboot] ~ test_boot[0.95*Nboot] ~ test_boot[0.90*Nboot];
     
-retp(test_boot);
+retp(test_boot, cv_boot);
 endp;
 
 
