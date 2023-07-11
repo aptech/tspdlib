@@ -63,6 +63,6 @@ Examples
 Source
 ------
 
-qr_adf.src
+qr_kss.src
 
 .. seealso:: Functions :func:`qr_adf`, :func:`qr_fourier_kss`

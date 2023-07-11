@@ -75,4 +75,4 @@ Source
 
 qr_adf.src
 
-.. seealso:: Functions :func:`adf`, :func:`adf_1break`, :func:`adf_2breaks`
+.. seealso:: Functions :func:`adf`, :func:`adf_1break`, :func:`adf_2breaks`, :func:`qr_kss`, :func:`qr_fourier_adf`
