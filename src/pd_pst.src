@@ -10,7 +10,7 @@
 **  Stationarity Tests in Heterogeneous Panels,
 **  in Badi H. Baltagi, Thomas B. Fomby, R. Carter Hill (ed.)
 **  Nonstationary Panels, Panel Cointegration, and Dynamic Panels (Advances in Econometrics, Volume 15)
-**  Emerald Group Publishing Limited, pp.275 – 296.
+**  Emerald Group Publishing Limited, pp.275-296.
 **
 **  Nazlioglu, S., Payne, J. E., Lee, J., Rayos-Velazquez, M., & Karul, C. (2021).
 **  Convergence in OPEC carbon dioxide emissions: Evidence from new panel stationarity tests with factors and breaks.
@@ -20,7 +20,7 @@
 **
 **  Input:   Y	     -  TxN matrix, data,
 **
-**           model   - 	Optional, specifies model. 
+**           model   - 	Optional, specifies model.
 **                      Default = 1;
 **                      1 = model with constant
 **                      2 = model with constant and trend
@@ -61,12 +61,19 @@
 */
 
 proc (10) = pst(y, ...);
-    local model, varm, l, N, T, Nkpss, Npval, q, cv, LM, mu, var, W, W_pval;
-    local P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec, bwl_dftl;
+    local model, varm, l, N, T, Nkpss, Npval, q, cv, _LM, mu, var, W, W_pval;
+    local P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec, bwl_dftl, varnames;
     
     // Data checks
     _checkForMissings(y, "pst");
     { dt_vec, y } =_checkfordate(y);
+    
+    // Get group names
+    if hasmetadata(y);
+        varnames = getcolnames(y);
+    else;
+        varnames = "Y" $+ seqa(1, 1, cols(y));
+    endif;
     
     // Get model dimensions
     N = cols(y);
@@ -77,18 +84,18 @@ proc (10) = pst(y, ...);
     // Get dynamic arguments
     bwl_dftl = round(4 * (t/100)^(2/9));
     { model, varm, l } = dynargsGet(1|3, 1, 1, bwl_dftl);
-
+    
     for i(1, N, 1);
-        
+        screen off;
         // Individual KPSS statistics
         { Nkpss[i], cv } = LMkpss(y[.,i], model, l, varm);
-        
+        screen on;
         // Individual p-values
         { Npval[i], q } = _get_pval_kpss(Nkpss[i], T, model);
         
     endfor;
     
-    LM = meanc(Nkpss);
+    _LM = meanc(Nkpss);
     
     if model == 1;
         mu = 1/6;
@@ -101,7 +108,37 @@ proc (10) = pst(y, ...);
     endif;
     
     // Get pvalues
-    { W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval } = _get_pvals(LM, Npval, var, mu, N);
+    { W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval } = _get_pvals(_LM, Npval, var, mu, N);
+    
+    /*
+    ** Printing
+    */
+    _printHeaderTSPDLIB(0, varm, 1, model, 4, 0, "PD Stationarity", "Stationarity", 0);
+    
+    local top, side, stats, dec, colwidth;
+    top = "Stat"$~"P-value";
+    side = "W"$|"P"$|"Pm"$|"Z";
+    stats = (W|P|Pm|Z)~(W_pval|P_pval|Pm_pval|Z_pval);
+    dec = 5;
+    colwidth = 15;
+    cv = {};
+    
+    // Print stats table
+    _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
+    
+    print "==============================================================";
+    print "Individual panel results";
+    print "==============================================================";
+    /*
+    ** Print individual results and critical values
+    */
+    top = "KPSS"$~"P-value";
+    side = varnames;
+    stats = NKpss~Npval;
+    dec = 3;
+    colwidth = 15;
+    
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
     
     retp(Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval);
 endp;
@@ -142,7 +179,7 @@ endp;
 **
 **  Input:   Y	     -  TxN matrix, data,
 **
-**           model   - 	Optional, specifies model. 
+**           model   - 	Optional, specifies model.
 **                      Default = 1;
 **                      1 = model with constant
 **                      2 = model with constant and trend
@@ -165,7 +202,7 @@ endp;
 **           l       -  Optional, bandwidth for spectral window. Default = round(4 * (t/100)^(2/9)).
 **
 **
-**  Output:  
+**  Output:
 **           Nkpss   - KPSS statistics for each cross-section
 **           Npval   - p-value for KPSS statistics for each cross-section
 **			 W       - Panel stationarity statistic by Hadri & Kurozumi (2012)
@@ -185,10 +222,10 @@ endp;
 */
 
 proc (10) = pst_ca(y, ...);
-    local N, T, ca, Nkpss, Npval, 
-          q, LM, mu, var, W, W_pval;
-    local bwl_dftl, model, varm, l, 
-          P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec;
+    local N, T, ca, Nkpss, Npval,
+        q, LM, mu, var, W, W_pval;
+    local bwl_dftl, model, varm, l,
+        P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec;
     
     // Data checks
     _checkForMissings(y, "pst_ca");
@@ -229,33 +266,33 @@ proc (10) = pst_ca(y, ...);
     
     // Get pvalues
     { W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval } = _get_pvals(LM, Npval, var, mu, N);
-
+    
     retp(Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval);
 endp;
 
-proc (8) = _get_pvals(LM, Npval, var, mu, N);
+proc (8) = _get_pvals(_LM, Npval, var, mu, N);
     local W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval;
     
     // Hadri (2000) Standardized mean group statistic
-    { W, W_pval }  = hadriStats(LM, var, mu, N);
+    { W, W_pval }  = hadriStats(_LM, var, mu, N);
     
     // Yin & Wu (2001) combination of p-values statistics
     { P, P_pval } = yw_pval(Npval, N);
     
     // Nazlioglu et al. (2021) combination of p-values statistics
-    { Pm, Z, Pm_pval, Z_pval } = nz_pval(Npval, P, N); 
+    { Pm, Z, Pm_pval, Z_pval } = nz_pval(Npval, P, N);
     
     retp( W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval);
 endp;
 
-proc (2) = hadriStats(LM, var, mu, N);
+proc (2) = hadriStats(_LM, var, mu, N);
     local W;
     
-    W  = sqrt(n)*(LM-mu)/sqrt(var);
+    W  = sqrt(n)*(_LM-mu)/sqrt(var);
     
     retp(W, 1-cdfn(W));
 endp;
-   
+
 proc (1) = _get_ca_deterministic(model, t, ca, ...);
     local sink, cosk, z, s;
     
@@ -276,7 +313,7 @@ proc (1) = _get_ca_deterministic(model, t, ca, ...);
     
     retp(z~ca);
 endp;
-    
+
 proc (1) = ca_kpss(y, model, varm, ca, l);
     local t, z, s, lrv, kpss_ca;
     local b, e1, sig2, se, ssr;
@@ -284,7 +321,7 @@ proc (1) = ca_kpss(y, model, varm, ca, l);
     t = rows(y);
     
     z = _get_ca_deterministic(model, t, ca);
-
+    
     { b, e1, sig2, se, ssr } = myols(y, z);
     
     /*partial sum of residuals*/
@@ -313,7 +350,7 @@ endp;
 **
 **  Input:   Y	     -  TxN matrix, data,
 **
-**           model   - 	Optional, specifies model. 
+**           model   - 	Optional, specifies model.
 **                      Default = 1;
 **                      1 = model with constant
 **                      2 = model with constant and trend
@@ -356,11 +393,11 @@ endp;
 */
 
 proc(10) = pst_ca_fourier(y, ...);
-    local N, T, ca, Nkpss, Npval, q, LM, mu, var, W, W_pval;
+    local N, T, ca, Nkpss, Npval, q, _LM, mu, var, W, W_pval;
     local P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec,  bwl_dftl,
-          model, varm, l, k;
+        model, varm, l, k;
     
-     // Data checks
+    // Data checks
     _checkForMissings(y, "pst_ca");
     { dt_vec, y } =_checkfordate(y);
     
@@ -383,12 +420,12 @@ proc(10) = pst_ca_fourier(y, ...);
         { Npval[i], q } = _get_pval_kpss_fourier(Nkpss[i], T, model, k);
     endfor;
     
-    LM = meanc(Nkpss);
+    _LM = meanc(Nkpss);
     
     { mu, var } = _get_mu_var(model, k);
     
     // Get pvalues
-    { W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval } = _get_pvals(LM, Npval, var, mu, N);
+    { W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval } = _get_pvals(_LM, Npval, var, mu, N);
     
     retp(Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval);
 endp;
@@ -444,7 +481,7 @@ proc(1) = ca_kpss_fourier(y, model, varm, l, ca, k);
     t = rows(y);
     
     { sink, cosk } = _getFourierTerms(t, k);
-
+    
     z = _get_ca_deterministic(model, t, ca, sink, cosk);
     
     { b, e1, sig2, se, ssr } = myols(y, z);
@@ -453,7 +490,7 @@ proc(1) = ca_kpss_fourier(y, model, varm, l, ca, k);
     S = cumsumc(e1);
     
     lrv = _get_lrv_type(varm, ssr, e1, l, 0);
-
+    
     kpss_ca = sumc(s.*s)/(t^2*lrv);
     
     retp(kpss_ca);
@@ -476,7 +513,7 @@ endp;
 **
 **  Input:   Y	     -  TxN matrix, data,
 **
-**           model   - 	Optional, specifies model. 
+**           model   - 	Optional, specifies model.
 **                      Default = 1;
 **                      1 = model with constant
 **                      2 = model with constant and trend
@@ -504,7 +541,7 @@ endp;
 **                      1 = PCp criterion
 **                      2 = ICp criterion
 **                      (See Bai and Ng, 2002)
-**                      
+**
 **  Output:  Nkpss   - KPSS statistics for each cross-section
 **
 **           Npval   - p-value for KPSS statistics for each cross-section
