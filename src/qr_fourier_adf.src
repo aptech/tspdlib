@@ -146,7 +146,7 @@ endp;
 **           Nboot   -  Optional, number of bootstrap replications. Default = 1000.
 **
 **  Output:  test_boot  - test statistic for a given quantile
-**			 cv         - 1, 5, and 10 percent bootstrap critical values for tn test
+**			 cv_boot    - 1, 5, and 10 percent bootstrap critical values for tn test
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
