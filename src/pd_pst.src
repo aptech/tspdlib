@@ -222,14 +222,20 @@ endp;
 */
 
 proc (10) = pst_ca(y, ...);
-    local N, T, ca, Nkpss, Npval,
-        q, LM, mu, var, W, W_pval;
-    local bwl_dftl, model, varm, l,
-        P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec;
+    local N, T, ca, Nkpss, Npval, q, _LM, mu, var, W, W_pval, 
+          bwl_dftl, model, varm, l, P, Pm, Z, P_pval, Pm_pval, 
+          Z_pval, dt_vec, varnames;
     
     // Data checks
     _checkForMissings(y, "pst_ca");
     { dt_vec, y } =_checkfordate(y);
+    
+    // Get group names
+    if hasmetadata(y);
+        varnames = getcolnames(y);
+    else;
+        varnames = "Y" $+ seqa(1, 1, cols(y));
+    endif;
     
     // Dimensions
     N = cols(y);
@@ -253,7 +259,7 @@ proc (10) = pst_ca(y, ...);
         
     endfor;
     
-    LM = meanc(Nkpss);
+    _LM = meanc(Nkpss);
     if model == 1;
         mu = 1/6;
         var = 1/45;
@@ -265,8 +271,37 @@ proc (10) = pst_ca(y, ...);
     endif;
     
     // Get pvalues
-    { W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval } = _get_pvals(LM, Npval, var, mu, N);
+    { W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval } = _get_pvals(_LM, Npval, var, mu, N);
     
+    /*
+    ** Printing
+    */
+    _printHeaderTSPDLIB(0, varm, 1, model, 4, 0, "PD CA Stationarity", "Stationarity with CA", 0);
+    
+    local top, side, stats, dec, colwidth, cv;
+    top = "Stat"$~"P-value";
+    side = "W"$|"P"$|"Pm"$|"Z";
+    stats = (W|P|Pm|Z)~(W_pval|P_pval|Pm_pval|Z_pval);
+    dec = 5;
+    colwidth = 15;
+    cv = {};
+    
+    // Print stats table
+    _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
+    
+    print "==============================================================";
+    print "Individual panel results";
+    print "==============================================================";
+    /*
+    ** Print individual results and critical values
+    */
+    top = "CA KPSS"$~"P-value";
+    side = varnames;
+    stats = NKpss~Npval;
+    dec = 3;
+    colwidth = 15;
+    
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
     retp(Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval);
 endp;
 
