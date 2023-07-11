@@ -18,7 +18,7 @@
 **  Bulletin of Economic Research, 72(4), 451-481.
 **
 **
-**  Format:  {QKS}     = QKS_tests(y, model, test[, p, k]);
+**  Format:  QKS     = QKS_tests(y, model, test[, p, k]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 
@@ -47,7 +47,7 @@
 /* Procedures */
 proc(1) = QKS_tests(y, model, test, ...);
     local qr_tn, tau, tn;
-    local Un, QKS_stat, indc, QKS_tau, p, k;
+    local Un, QKS_stat, indc, QKS_tau, p, k, cv, ic, breaks;
     
     // Data checks
     _checkForMissings(y, "QKS_tests");
@@ -68,7 +68,7 @@ proc(1) = QKS_tests(y, model, test, ...);
             tn = QR_Fourier_ADF(y, model, tau, p, k, "false");
         endif;
         if test == 3;
-            tn = QR_KSS(y, model, tau, p, "false");
+            { tn, cv } = QR_KSS(y, model, tau, p, "false");
         endif;
         if test == 4;
             tn = QR_Fourier_KSS(y, model, tau, p, k, "false");
@@ -84,19 +84,24 @@ proc(1) = QKS_tests(y, model, test, ...);
     // Printing
     local tmp_test;
     
+    ic = 0;
+    breaks = 0;
     if test==1;
         tmp_test = "QR-ADF";
+        ic = 3;
     elseif test==2;
         tmp_test = "QR Fourier ADF";
+        breaks = 5;
     elseif test==3;
         tmp_test = "QR KSS";
     elseif test == 4;
         tmp_test = "QR Fourier KSS";
+        breaks = 5;
     endif;
     
-    _printHeaderTSPDLIB(3, 0, 1, model, 4, 0, "QKS" $+ ": " $+ tmp_test, "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 1, model, breaks, 0, "QKS" $+ ": " $+ tmp_test, "Unit root", 0);
     
-    local top, side, stats, dec, colwidth, cv;
+    local top, side, stats, dec, colwidth;
     top = "";
     side = "QKS tau:"$|"QKS stat:";
     stats = QKS_tau|QKS_stat;
