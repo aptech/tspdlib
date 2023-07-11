@@ -20,11 +20,7 @@
 **
 **           _print  -  Optional, print option "true" for printing results
 **
-**           Nboot   -  Optional, number of bootstrapmaxreplications
-**
-**
 **  Output:  tn      - tn statistic for a given quantile
-**			 cv      - 1, 5, and 10 percent bootstrap critical values for tn test
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
