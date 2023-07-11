@@ -8,7 +8,7 @@
 **  The program tests the hypothesis that the 
 **  z does not cause the y. 
 **
-**  Format:  { Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(y, z [, pos, infocrit, intorder, ln_form, maxlags, bootmaxiter, fullprint] ) ;
+**  Format:  { Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(y, z [, pos, ic, intorder, ln_form, maxlags, bootmaxiter, fullprint] ) ;
 **
 **  Input:   y	              -    TN x 1 vector, data
 **
@@ -19,13 +19,13 @@
 **                                 0 = Negative
 **                                 1 = Positive                               
 **
-**           infocrit         -    Optional, information criteria. Default = 3.
+**           ic               -    Optional, information criteria. Default = 3.
 **                                 1 = AIC
 **                                 2 = AICC
 **                                 3 = SBC
 **                                 4 = HQC
 **                                 5 = HJC
-**                                 6 = Use maxloags
+**                                 6 = Use maxlags
 **           
 **           intorder         -    Optional, order of integration to adjust for 
 **                                 unit roots. 
@@ -80,7 +80,14 @@ proc(4) = asymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter
     local CUMDYZpc, CUMDYZnc, z, addlags, numvars, yT, yLags, xT,
         yS, xS, Rvector1, Rmatrix1, AhatTU, leverageTU, AhatTR, leverageTR,
         AhatSR, leverageSR, Wstat , WCriticalvalsS, Azdsys, ICorder,
-        rejectnullbootS, rejectnullchi, icA, onelA, nocando, top;
+        rejectnullbootS, rejectnullchi, icA, onelA, nocando, top, varnames;
+    
+    // Check for metadata
+    if hasmetadata(y);
+        varnames = getcolnames(y);
+    else;
+        varnames = "X1"$|"X2";
+    endif;
     
     // Find cumulative positive and negative components
     { CUMDYZpc, CUMDYZnc } = cumulativeComp(y, ln_form, fullprint);
@@ -153,7 +160,7 @@ proc(4) = asymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter
     
     
     // Print results
-    _printHeaderASYM(infocrit, pos);
+    _printHeaderASYM(infocrit, pos, varnames);
      local side, stats, dec, colwidth;
     side = "W-stat:";
     stats = Wstat;
@@ -627,8 +634,8 @@ proc (1) = _printICASYM(infocrit);
  
 endp;
 
-proc (0) = _printHeaderASYM(ic, pos);
-    local ic_str, modl_str, fmt, clm1, clm2;
+proc (0) = _printHeaderASYM(ic, pos, varnames);
+    local ic_str, modl_str, fmt, clm1, clm2, s;
     
     // Get information criterion
     ic_str = _printICASYM(ic);
@@ -642,7 +649,8 @@ proc (0) = _printHeaderASYM(ic, pos);
     
     // Set up table columns
     clm1 = "Test:"$|"Ho:";
-    clm2 = "Asymmetric Causality"$|"X2 does not cause X1";
+    s = varnames[2] $+ " does not cause " $+ varnames[1];
+    clm2 = "Asymmetric Causality"$|s;
     
     // Print IC criteria
     clm1 = clm1$|"Lag selection:";
