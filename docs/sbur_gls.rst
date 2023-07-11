@@ -76,10 +76,7 @@ Format
               - Vector, the estimated break points.
             * - sbOut.cbar
               - scalar, the value of the c_bar parameter that is used in the quasi GLS-detrending.
-                  
-    
-                  
-                  
+         
      :rtype sbOut: struct
 
 
