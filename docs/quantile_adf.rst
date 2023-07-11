@@ -25,7 +25,7 @@ Format
     :type model: Scalar
 
     :param tau: The quantile (0.1,...,1)
-    :type pmax: Scalar
+    :type tau: Scalar
 
     :param pmax: Optional, the maximum number of lags for :math:`\Delta y`. Default = 8.
     :type pmax: Scalar
