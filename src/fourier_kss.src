@@ -264,7 +264,7 @@ endp;
 
 proc(3) = _get_kstar(y, model, fmax);
     local t, c, trend, sinf, cosf;
-    local z, zr, F_trig, p_val, t, c, trend;
+    local z, zr, F_trig, p_val;
     
     t     = rows(y);
     c     = ones(t, 1);
