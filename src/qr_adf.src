@@ -71,7 +71,7 @@ proc (1) = quantileADF(y, model, tau, ...);
 endp;
 
 /*
-**> qr_adf
+**> qradf
 **  Reference:
 **  Koenker, R., Xiao, Z., 2004.
 **  Unit root quantile autoregression inference.
