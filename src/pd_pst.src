@@ -113,32 +113,10 @@ proc (10) = pst(y, ...);
     /*
     ** Printing
     */
-    _printHeaderTSPDLIB(0, varm, 1, model, 4, 0, "PD Stationarity", "Stationarity", 0);
+    _printHeaderTSPDLIB(0, varm, 1, model, 0, 0, "PD Stationarity", "Stationarity", 0);
     
-    local top, side, stats, dec, colwidth;
-    top = "Stat"$~"P-value";
-    side = "W"$|"P"$|"Pm"$|"Z";
-    stats = (W|P|Pm|Z)~(W_pval|P_pval|Pm_pval|Z_pval);
-    dec = 5;
-    colwidth = 15;
-    cv = {};
-    
-    // Print stats table
-    _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
-    
-    print "==============================================================";
-    print "Individual panel results";
-    print "==============================================================";
-    /*
-    ** Print individual results and critical values
-    */
-    top = "KPSS"$~"P-value";
-    side = varnames;
-    stats = NKpss~Npval;
-    dec = 3;
-    colwidth = 15;
-    
-    _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
+    // Print stats tables
+    __pst_printing(NKpss, Npval, W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval, varnames);
     
     retp(Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval);
 endp;
@@ -222,9 +200,9 @@ endp;
 */
 
 proc (10) = pst_ca(y, ...);
-    local N, T, ca, Nkpss, Npval, q, _LM, mu, var, W, W_pval, 
-          bwl_dftl, model, varm, l, P, Pm, Z, P_pval, Pm_pval, 
-          Z_pval, dt_vec, varnames;
+    local N, T, ca, Nkpss, Npval, q, _LM, mu, var, W, W_pval,
+        bwl_dftl, model, varm, l, P, Pm, Z, P_pval, Pm_pval,
+        Z_pval, dt_vec, varnames;
     
     // Data checks
     _checkForMissings(y, "pst_ca");
@@ -276,32 +254,11 @@ proc (10) = pst_ca(y, ...);
     /*
     ** Printing
     */
-    _printHeaderTSPDLIB(0, varm, 1, model, 4, 0, "PD CA Stationarity", "Stationarity with CA", 0);
+    _printHeaderTSPDLIB(0, varm, 1, model, 0, 0, "PD CA Stationarity", "Stationarity with CA", 0);
     
-    local top, side, stats, dec, colwidth, cv;
-    top = "Stat"$~"P-value";
-    side = "W"$|"P"$|"Pm"$|"Z";
-    stats = (W|P|Pm|Z)~(W_pval|P_pval|Pm_pval|Z_pval);
-    dec = 5;
-    colwidth = 15;
-    cv = {};
+    // Print stats tables
+    __pst_printing(NKpss, Npval, W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval, varnames);
     
-    // Print stats table
-    _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
-    
-    print "==============================================================";
-    print "Individual panel results";
-    print "==============================================================";
-    /*
-    ** Print individual results and critical values
-    */
-    top = "CA KPSS"$~"P-value";
-    side = varnames;
-    stats = NKpss~Npval;
-    dec = 3;
-    colwidth = 15;
-    
-    _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
     retp(Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval);
 endp;
 
@@ -369,6 +326,33 @@ proc (1) = ca_kpss(y, model, varm, ca, l);
     retp(kpss_ca);
 endp;
 
+proc (0) = __pst_printing(NKpss, Npval, W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval, varnames);
+    
+    local top, side, stats, dec, colwidth, cv;
+    top = "Stat"$~"P-value";
+    side = "W"$|"P"$|"Pm"$|"Z";
+    stats = (W|P|Pm|Z)~(W_pval|P_pval|Pm_pval|Z_pval);
+    dec = 5;
+    colwidth = 15;
+    cv = {};
+    
+    // Print stats table
+    _printStatsTable(top, side, stats, cv', dec, colwidth, 0);
+    
+    print "==============================================================";
+    print "Individual panel results";
+    print "==============================================================";
+    /*
+    ** Print individual results and critical values
+    */
+    top = "CA KPSS"$~"P-value";
+    side = varnames;
+    stats = NKpss~Npval;
+    dec = 3;
+    colwidth = 15;
+    
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
+endp;
 
 /*
 **> PD_pst_ca_fourier (Fourier panel stationarity tests based on CA (cross-section averages approach)
@@ -430,11 +414,18 @@ endp;
 proc(10) = pst_ca_fourier(y, ...);
     local N, T, ca, Nkpss, Npval, q, _LM, mu, var, W, W_pval;
     local P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec,  bwl_dftl,
-        model, varm, l, k;
+        model, varm, l, k, varnames;
     
     // Data checks
     _checkForMissings(y, "pst_ca");
     { dt_vec, y } =_checkfordate(y);
+    
+    // Get group names
+    if hasmetadata(y);
+        varnames = getcolnames(y);
+    else;
+        varnames = "Y" $+ seqa(1, 1, cols(y));
+    endif;
     
     // Model dimensions
     N = cols(y);
@@ -461,6 +452,14 @@ proc(10) = pst_ca_fourier(y, ...);
     
     // Get pvalues
     { W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval } = _get_pvals(_LM, Npval, var, mu, N);
+    
+    /*
+    ** Printing
+    */
+    _printHeaderTSPDLIB(0, varm, 1, model, 4, 0, "PD CA Fourier", "Stationarity with CA", 0);
+    
+    // Print stats tables
+    __pst_printing(NKpss, Npval, W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval, varnames);
     
     retp(Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval);
 endp;
@@ -606,11 +605,18 @@ endp;
 
 proc(10) = pst_panic(y, ...);
     local model, varm, l, kmax, ick, n, t, dx, x, nf, ICp, e, Fhat, Floads, ehat;
-    local Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval, dt_vec, bwl_dftl;
+    local Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval, dt_vec, bwl_dftl, varnames;
     
     // Data checks
     _checkForMissings(y, "pst_panic");
     { dt_vec, y } =_checkfordate(y);
+    
+    // Get group names
+    if hasmetadata(y);
+        varnames = getcolnames(y);
+    else;
+        varnames = "Y" $+ seqa(1, 1, cols(y));
+    endif;
     
     // Dimensions
     N = cols(y);
@@ -619,7 +625,7 @@ proc(10) = pst_panic(y, ...);
     bwl_dftl = round(4 * (t/100)^(2/9));
     
     // Dynamic arguments
-    { model, varm, l, kmax, ick } = dynargsGet(1|3, 1, 1, bwl_dftl, 5, 1);
+    { model, varm, l, kmax, ick } = dynargsGet(1|5, 1, 1, bwl_dftl, 5, 1);
     
     dx = diff(y, 1);
     x  = dx[2:rows(y), .];
@@ -632,7 +638,7 @@ proc(10) = pst_panic(y, ...);
         x = x - meanc(x)';
     endif;
     
-    { nf, ICp } = Fnumber(x, kmax, ick);
+    nf = Fnumber(x, kmax, ick);
     
     // nf is selected with ICp2
     { Fhat, Floads, ehat } = pca(x, nf[2]);
@@ -642,6 +648,15 @@ proc(10) = pst_panic(y, ...);
     N = cols(e);
     
     { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst(e, model, varm, l);
+    
+     /*
+    ** Printing
+    */
+    _printHeaderTSPDLIB(0, varm, 1, model, 0, 0, "PD PANIC", "Stationarity", 0);
+    
+    // Print stats tables
+    __pst_printing(NKpss, Npval, W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval, varnames);
+    
     
     retp(Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval);
 endp;
