@@ -16,7 +16,7 @@
 **  Convergence in OPEC carbon dioxide emissions: Evidence from new panel stationarity tests with factors and breaks.
 **  Economic Modelling, 100, 105498.
 **
-**  Format:  { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst(y, model, varm, l);
+**  Format:  { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst(y [, model, varm, l]);
 **
 **  Input:   Y	     -  TxN matrix, data,
 **
@@ -24,6 +24,12 @@
 **                      Default = 1;
 **                      1 = model with constant
 **                      2 = model with constant and trend
+**
+**           test    -  Optional, string, specifies type of panel stationarity test to run. 
+**                      "st"              Stationary tests, no modifications. (Default)
+**                      "ca"              Based on CA (cross-section averages approach)
+**                      "fourier"         CA approach with smooth breaks (fourier approach)
+**                      "panic"           Based on PANIC approach
 **
 **           varm    -  Optional, Long-run consistent variance estimation method.
 **                      Default = 1.
@@ -42,6 +48,13 @@
 **
 **           l       -  Optional, bandwidth for spectral window. Default = round(4 * (t/100)^(2/9)).
 **
+**           kmax    -  Optional, maximum number of factors. Default =5.
+**
+**           ick     -  Information Criterion for optimal number of factors. Default = 1.
+**                      1 = PCp criterion
+**                      2 = ICp criterion
+**                      (See Bai and Ng, 2002)
+**
 **  Output:  Nkpss   - KPSS statistics for each cross-section
 **           Npval   - p-value for KPSS statistics for each cross-section
 **			 W       - Panel stationarity statistic by Hadri (2000)
@@ -59,6 +72,38 @@
 -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 **
 */
+proc (5) = pd_stationary(y, ...);
+    local model, test, varm, l, T, kmax, ick, Nkpss, Npval, W, W_pval;
+    local P, Pm, Z, P_pval, Pm_pval, Z_pval, bwl_dftl;
+    
+    
+    
+    // Get dynamic arguments
+    t = rows(y);
+    bwl_dftl = round(4 * (t/100)^(2/9));
+    
+    { model, test, varm, l, kmax, ick } = dynargsGet(1|6, 1, "st", 1, bwl_dftl, 5, 1);
+    
+    if test $== "st";
+        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst(y, model, varm, l);
+    elseif test $== "ca";
+        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_ca(y, model, varm, l);
+    elseif test $== "fourier";
+        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_ca_fourier(y, model, varm, l, kmax);
+    elseif test $== "panic";
+        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_panic(y, model, varm, l, kmax, ick);
+    endif;
+    
+    // Transform output to dataframes
+    Nkpss = asDF(NKpss~Npval, "NKpss", "p-value");
+    W = asDF(W~W_pval, "W", "p-value");
+    P = asDF(P~P_pval, "P", "p-value");
+    Pm = asDF(Pm~Pm_pval, "Pm", "p-value");
+    Z = asDF(Z~Z_pval, "Z", "p-value");
+    
+    retp(NKpss, W, P, Pm, Z);
+endp;
+
 
 proc (10) = pst(y, ...);
     local model, varm, l, N, T, Nkpss, Npval, q, cv, _LM, mu, var, W, W_pval;
@@ -139,7 +184,7 @@ proc (4) = nz_pval(Npval, P, N);
 endp;
 
 /*
-**> PD_pst_ca (panel stationarity tests based on CA (cross-section averages approach)
+**> pst_ca (panel stationarity tests based on CA (cross-section averages approach)
 **  Reference:
 **  Hadri, K. and E. Kurozumi (2011),
 **  A Locally Optimal Test for No Unit Root in Cross-Sectionally Dependent Panel Data,
@@ -345,7 +390,7 @@ proc (0) = __pst_printing(NKpss, Npval, W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_
     /*
     ** Print individual results and critical values
     */
-    top = "CA KPSS"$~"P-value";
+    top = "KPSS"$~"P-value";
     side = varnames;
     stats = NKpss~Npval;
     dec = 3;
@@ -355,7 +400,7 @@ proc (0) = __pst_printing(NKpss, Npval, W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_
 endp;
 
 /*
-**> PD_pst_ca_fourier (Fourier panel stationarity tests based on CA (cross-section averages approach)
+**> pst_ca_fourier (Fourier panel stationarity tests based on CA (cross-section averages approach)
 **  Reference:
 **  Nazlioglu, S., Karul, C. (2017),
 **  "The panel stationary test with gradual shifts: an application to international commodity price shocks",
@@ -411,6 +456,7 @@ endp;
 **
 */
 
+
 proc(10) = pst_ca_fourier(y, ...);
     local N, T, ca, Nkpss, Npval, q, _LM, mu, var, W, W_pval;
     local P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec,  bwl_dftl,
@@ -456,7 +502,7 @@ proc(10) = pst_ca_fourier(y, ...);
     /*
     ** Printing
     */
-    _printHeaderTSPDLIB(0, varm, 1, model, 4, 0, "PD CA Fourier", "Stationarity with CA", 0);
+    _printHeaderTSPDLIB(0, varm, 1, model, 5, 0, "PD CA Fourier", "Stationarity with CA", 0);
     
     // Print stats tables
     __pst_printing(NKpss, Npval, W, W_pval, P, P_pval, Pm, Z, Pm_pval, Z_pval, varnames);
@@ -532,7 +578,7 @@ endp;
 
 
 /*
-**> PD_pst_panic (panel stationarity tests based on PANIC approach)
+**> pst_panic (panel stationarity tests based on PANIC approach)
 **  Reference:
 **  Bai, J., and S. Ng (2005),
 **  A New Look at Panel Testing of Stationarity and the PPP Hypothesis,
@@ -604,7 +650,7 @@ endp;
 */
 
 proc(10) = pst_panic(y, ...);
-    local model, varm, l, kmax, ick, n, t, dx, x, nf, ICp, e, Fhat, Floads, ehat;
+    local model, varm, l, kmax, ick, n, t, dx, x, nf, e, Fhat, Floads, ehat;
     local Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval, dt_vec, bwl_dftl, varnames;
     
     // Data checks
