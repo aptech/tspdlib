@@ -16,9 +16,9 @@ y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($
 
 // With constant
 model = 1;
-test = "FADF";
-{ KSS_stat, k, cv } = Fourier_KSS(y, model, test);
+{ KSS_stat1, p, k } = Fourier_KSS(y, model);
+{ test_boot, cv_boot } = Fourier_KSS_bootstrap(y, model); 
 
 // With constant and trend
 model = 2;
-{ KSS_stat, k, cv } = Fourier_KSS(y, model, test);
+{ KSS_stat2, p, k } = Fourier_KSS(y, model);
