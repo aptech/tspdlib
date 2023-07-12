@@ -260,14 +260,14 @@ proc(2) = Fourier_KSS_bootstrap(y, model, ...);
     local t, dc, dt, sink, cosk, z, a, v, dv, v1, x, p_lags;
     local dy, b, yd, yd1, fi, mu;
     local tt, mustar, ydstar, ystar, dt_vec;
-    local test_boot, replace, cv_boot, k_star, F_trig, p_val, test, pmax, kmax, ic, Nboot;
+    local test_boot, replace, cv_boot, k_star, F_trig, p_val, test, p, kmax, ic, Nboot;
     
     // Data checks
     _checkForMissings(y, currentprocname());
     { dt_vec, y } = _checkfordate(y);
     
     // Get optional arguments
-    { test, pmax, kmax, ic, Nboot } = dynargsGet(1|5, "FKSS", 8, 5, 3, 1000);
+    { test, p, kmax, ic, Nboot } = dynargsGet(1|5, "FKSS", 8, 5, 3, 1000);
     
     t    = rows(y);
     dc   = ones(t, 1);
