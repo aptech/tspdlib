@@ -2,8 +2,8 @@
 /*
 **> fourier_kss
 **  Reference:
-**  Christopoulos, D. K., & Leon-Ledesma, M. A. (2010). 
-**  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates. 
+**  Christopoulos, D. K., & Leon-Ledesma, M. A. (2010).
+**  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates.
 **  Journal of International Money and Finance, 29(6), 1076-1093.
 **
 **  Format:  { Ftau, p, k } = Fourier_KSS(y, model, test [, pmax, fmax, ic]);
@@ -25,7 +25,7 @@
 **           ic      -  Optional, information Criterion:
 **                      1 = Akaike
 **                      2 = Schwarz
-**                      3 = t-stat significance  
+**                      3 = t-stat significance
 **                      Default = 3.
 **
 **  Output:  Ftau    - Ftau statistic
@@ -43,7 +43,7 @@
 
 /*12 December 2020*/
 
-proc(3) = Fourier_KSS(y, model,...); 
+proc(3) = Fourier_KSS(y, model,...);
     local pmax, fmax, ic, t, taup, aicp, sicp, tstatp;
     local dc, dt, z, a, v, dv, v1;
     local p_lags, dv_lags, p, x, dep;
@@ -65,7 +65,7 @@ proc(3) = Fourier_KSS(y, model,...);
     aicp = zeros(pmax + 1, 1);
     sicp = zeros(pmax + 1, 1);
     tstatp = zeros(pmax + 1, 1);
-
+    
     // Constant
     dc = ones(t, 1);
     
@@ -78,7 +78,7 @@ proc(3) = Fourier_KSS(y, model,...);
     // Fourier series
     // Get Fourier terms
     { sink, cosk } = _getFourierTerms(t, k_star);
-
+    
     // Set deterministic components
     if model == 1;
         z = dc;
@@ -100,9 +100,9 @@ proc(3) = Fourier_KSS(y, model,...);
         dv_lags = lagn(dv, p_lags);
     endif;
     
-    for p(0, pmax, 1);        
+    for p(0, pmax, 1);
         if p == 0;
-           x = v1; 
+            x = v1;
         elseif p > 0;
             x = v1 ~ dv_lags[., 1:p];
         endif;
@@ -115,7 +115,7 @@ proc(3) = Fourier_KSS(y, model,...);
         k = cols(x);
         
         // Log-likelihood
-        LL = -n/2 * (1 + ln(2*pi) + ln(e1'e1/n));     
+        LL = -n/2 * (1 + ln(2*pi) + ln(e1'e1/n));
         
         aicp[p+1] = (2 * k-2 * LL)/n;
         sicp[p+1] = (k * ln(n) - 2 * LL)/n;
@@ -127,18 +127,18 @@ proc(3) = Fourier_KSS(y, model,...);
     p_opt = _get_lag(ic, pmax, aicp, sicp, tstatp);
     tn    = taup[p_opt];
     
-         _printHeaderTSPDLIB(ic, 0, 1, model, 5, 0, test, "Unit root", 0);
-        
-        local top, side, stats, dec, colwidth, cv;
-        top = "";
-        side = "tau";
-        stats = tn;  
-        dec = 3;
-        colwidth = 15;
-        cv = {};
-        
-        // Print stats table
-        _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
+    _printHeaderTSPDLIB(ic, 0, 1, model, 5, 0, test, "Unit root", 0);
+    
+    local top, side, stats, dec, colwidth, cv;
+    top = "";
+    side = "tau";
+    stats = tn;
+    dec = 3;
+    colwidth = 15;
+    cv = {};
+    
+    // Print stats table
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
     
     retp(tn, p_opt - 1, k_star);
 endp;
@@ -150,15 +150,15 @@ proc(2) = __get_resid_lags_kss(res, model);
     
     if model $== "FADF";
         v1 = lagn(res, 1);
-    endif;    
+    endif;
     if model $== "FKSS";
         v1 = lagn(res^3,1);
-    endif; 
+    endif;
     
     
     retp(dv, v1);
 endp;
-    
+
 // Critical Values (see, Christopoulos, & Leon-Ledesma , 2010)
 proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
     local test_sim, s, MCr, e0, rho, eps;
@@ -184,7 +184,7 @@ proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
         
         // Get Fourier terms
         { sink, cosk } = _getFourierTerms(t, k);
-     
+        
         if model == 1;
             y = rndu(1,1)*dc + rndu(1,1)*sink + rndu(1,1)*cosk + e;
         endif;
@@ -204,10 +204,10 @@ proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
         dv = diff(v,1);
         if test $== "FADF";
             v1 = lagn(v, 1);
-        endif;    
+        endif;
         if test $== "FKSS";
             v1 = lagn(v^3,1);
-        endif;   
+        endif;
         dv = trimr(dv, 1, 0);
         v1 = trimr(v1, 1, 0);
         {b, e1, sig2, se, ssr} = myols(dv, v1);
@@ -221,8 +221,8 @@ endp;
 /*
 **> fourier_kss_bootstrap
 **  Reference:
-**  Christopoulos, D. K., & Leon-Ledesma, M. A. (2010). 
-**  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates. 
+**  Christopoulos, D. K., & Leon-Ledesma, M. A. (2010).
+**  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates.
 **  Journal of International Money and Finance, 29(6), 1076-1093.
 **
 **  Format:  { test_boot, cv_boot } = Fourier_KSS_bootstrap(y, model, test [, pmax, fmax, ic]);
@@ -243,7 +243,7 @@ endp;
 **           ic      -  Information Criterion:
 **                      1 = Akaike
 **                      2 = Schwarz
-**                      3 = t-stat significance                    
+**                      3 = t-stat significance
 **
 **           Nboot   -  Optional, number of bootstrap replications. Default = 1000.
 **
@@ -271,7 +271,7 @@ proc(2) = Fourier_KSS_bootstrap(y, model, ...);
     
     t    = rows(y);
     dc   = ones(t, 1);
-    dt   = seqa(1, 1, t);    
+    dt   = seqa(1, 1, t);
     
     // Get k_star
     { k_star, F_trig, p_val } = _get_kstar(y, model, kmax);
@@ -279,7 +279,7 @@ proc(2) = Fourier_KSS_bootstrap(y, model, ...);
     // Fourier series
     // Get Fourier terms
     { sink, cosk } = _getFourierTerms(t, k_star);
-
+    
     // Residual regression
     if model == 1;
         z = dc ~ sink ~ cosk;
@@ -294,14 +294,14 @@ proc(2) = Fourier_KSS_bootstrap(y, model, ...);
     dv = diff(v, 1);
     if test $== "FADF";
         v1 = lagn(v, 1);
-    endif;    
+    endif;
     if test $== "FKSS";
         v1 = lagn(v^3,1);
     endif;
-
-    // X under the null hypothesis rho*v(t-1)    
+    
+    // X under the null hypothesis rho*v(t-1)
     if p == 0;
-       x = lagn(dv, 1); 
+        x = lagn(dv, 1);
     elseif p > 0;
         p_lags  = seqa(1, 1, p);
         x = lagn(dv, p_lags);
@@ -313,7 +313,7 @@ proc(2) = Fourier_KSS_bootstrap(y, model, ...);
     yd = dy - x * b;
     yd1= lagn(yd,1);
     yd = trimr(yd, 1, 0);
-    yd1= trimr(yd1, 1, 0); 
+    yd1= trimr(yd1, 1, 0);
     fi = inv(yd1'yd1)*yd1'yd;
     mu = yd - yd1 * fi;     // Residuals from AR(1) model
     mu = mu - meanc(mu);    //Centered residuals
@@ -325,7 +325,7 @@ proc(2) = Fourier_KSS_bootstrap(y, model, ...);
         mustar = sampleData(mu, tt, replace);
         ydstar = zeros(tt,1);
         ydstar[1] = mustar[1];
-        for s(2,tt,1); 
+        for s(2,tt,1);
             ydstar[s]= ydstar[s-1] + mustar[s];
         endfor;
         ystar = ydstar;
@@ -333,13 +333,13 @@ proc(2) = Fourier_KSS_bootstrap(y, model, ...);
         local Ftau_boot, p_temp, k_temp;
         { Ftau_boot, p_temp, k_temp } = Fourier_KSS(ystar, model, test, p, kmax, ic);
         test_boot[reps] = Ftau_boot;
-            
+        
     endfor; //End for replications
     
-    test_boot = sortc(test_boot, 1); 
+    test_boot = sortc(test_boot, 1);
     cv_boot   = test_boot[0.99*Nboot] ~ test_boot[0.95*Nboot] ~ test_boot[0.90*Nboot];
     
-retp(test_boot, cv_boot);
+    retp(test_boot, cv_boot);
 endp;
 
 
@@ -351,7 +351,7 @@ proc(3) = _get_kstar(y, model, fmax);
     c     = ones(t, 1);
     trend = seqa(1, 1, t);
     
-    // Get optimal fourier 
+    // Get optimal fourier
     f = _get_fourier(y, model, fmax);
     
     // Get Fourier terms
@@ -367,6 +367,6 @@ proc(3) = _get_kstar(y, model, fmax);
     
     F_trig = _get_Ftest(y, Zr, z);
     p_val   = cdfFc(F_trig, 2, rows(y)-cols(z));
-        
+    
     retp(f, F_trig, p_val);
 endp;
