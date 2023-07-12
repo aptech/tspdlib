@@ -158,8 +158,12 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, te
     endif;
     
     // Set up table columns
-    clm1 = "Test:"$|"Ho:";
-    clm2 = test$|null_hyp;
+    clm1 = "Test:";
+    clm2 = test;
+    if null_hyp;
+        clm1 = clm1$|"Ho:";
+        clm2 = clm2$|null_hyp;
+    endif;
     
     clm1 = clm1$|"Number of breaks:";
     if breaks;
@@ -169,6 +173,8 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, te
             clm2 = clm2$|"Unknown";
         elseif breaks == 5;
             clm2 = clm2$|"Smooth";
+        elseif breaks >5;
+            clm2 = clm2$|itos(breaks);
         endif;
     else;
         clm2 = clm2$|"None";
