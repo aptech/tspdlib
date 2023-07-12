@@ -95,6 +95,7 @@ proc(5) = pd_getCDError(y, x, N);
     CDlmadj = CDlm - N / (2 * (T-1));
     CD      = sqrt( 2/ (N*(N-1))) * cd; 
     
+
     /*
     ** Printing
     */
@@ -110,5 +111,13 @@ proc(5) = pd_getCDError(y, x, N);
     "CDlmadj (Baltagi et al., 2012)    ";; CDlmadj ;; 2*cdfnc(abs(CDlmadj));    // Two-sided p-value
     "CD      (Pesaran, 2004 & 2020)    ";; CD      ;; 2*cdfnc(abs(CD));         // Two-sided p-value
 
+    
+    // Set up dataframes 
+    LMbp = asDF(LMbp~cdfchic(LMbp,N*(N-1)/2), "LMbp", "P-value");
+    LMadj = asDF(LMadj~2*cdfnc(abs(LMadj)), "LMadj", "P-value");
+    CDlm  = asDF(CDlm~2*cdfnc(abs(CDlm)), "CDlm", "P-value");
+    CDlmadj = asDF(CDlmadj~2*cdfnc(abs(CDlmadj)), "CDlmadj", "P-value");
+    CD = asDF(CD~2*cdfnc(abs(CD)), "CD", "P-value");
+    
 retp(LMbp, LMadj ,CDlm, CDlmadj, CD);
 endp;
