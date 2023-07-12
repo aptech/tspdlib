@@ -64,17 +64,20 @@ Format
       
     :type kmax: Scalar
         
-    :return test_hom: Panel test statistic assuming homogenous variance.
-    :rtype test_hom: scalar
+    :return Nkpss: Contains the KPSS statistics for each cross-section and the corresponding p-values.
+    :rtype Nkpss: Dataframe
 
-    :return test_het: Panel test statistic assuming heterogenous variance.
-    :rtype test_het: scalar
+    :return W: Panel stationarity statistic by Hadri (2000) and the corresponding p-value.
+    :rtype W: Dataframe
 
-    :return m_lee_est: Contains results for each individual group. First column contains KPSS test statistic, second column contains the optimal number of lags selected using the mlwz criteria.
-    :rtype m_lee_est: Matrix
+    :return P: Panel stationarity statistic by Yin & Wu (2001) and the corresponding p-value.
+    :rtype P: Dataframe
 
-    :return brks: Estimated breaks. Breaks for each individual group are contained in separate rows.
-    :rtype brks: Scalar
+    :return Pm: Panel stationarity statistic by Nazlioglu et al. (2021) and the corresponding p-value.
+    :rtype Pm: Dataframe
+
+    :return Z: Panel stationarity statistic by Nazlioglu et al. (2021) and the corresponding p-value.
+    :rtype Z: Dataframe
 
 Examples
 --------
