@@ -1,6 +1,104 @@
 
 /*
-**> PD_pst (panel stationarity tests)
+**> pd_stationary (panel stationarity tests)
+**  Reference:
+**  Hadri, K. (2000),
+**  Testing for Unit Roots in Heterogeneous Panel Data,
+**  Econometrics Journal, 3(2), 148-161.
+**
+**  Yin, Y. and S. Wu (2001),
+**  Stationarity Tests in Heterogeneous Panels,
+**  in Badi H. Baltagi, Thomas B. Fomby, R. Carter Hill (ed.)
+**  Nonstationary Panels, Panel Cointegration, and Dynamic Panels (Advances in Econometrics, Volume 15)
+**  Emerald Group Publishing Limited, pp.275-296.
+**
+**  Nazlioglu, S., Payne, J. E., Lee, J., Rayos-Velazquez, M., & Karul, C. (2021).
+**  Convergence in OPEC carbon dioxide emissions: Evidence from new panel stationarity tests with factors and breaks.
+**  Economic Modelling, 100, 105498.
+**
+**  Format:  { Nkpss, W, P, Pm, Z } = pd_stationary(y [, model, test, varm, l, kmax, ICk]);
+**
+**  Input:   Y	     -  TxN matrix, data,
+**
+**           model   - 	Optional, specifies model.
+**                      Default = 1;
+**                      1 = model with constant
+**                      2 = model with constant and trend
+**
+**           test    -  Optional, string, specifies type of panel stationarity test to run. 
+**                      "st"              Stationary tests, no modifications. (Default)
+**                      "ca"              Based on CA (cross-section averages approach)
+**                      "fourier"         CA approach with smooth breaks (fourier approach)
+**                      "panic"           Based on PANIC approach
+**
+**           varm    -  Optional, Long-run consistent variance estimation method.
+**                      Default = 1.
+**                      1 = iid;
+**                      2 = Bartlett
+**                      3 = Quadratic Spectral (QS);
+**                      4 = SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+**                      5 = SPC with QS;
+**                      6 = Kurozumi with Bartlett
+**                      7 = Kurozumi with QS
+**                      Updated from Carrion-i-Silvestre & Sanso (2007) GAUSS codes.
+**                      See:
+**                      Carrion-i-Silvestre, J. L., & Sanso, A. (2006).
+**                      A guide to the computation of stationarity tests.
+**                      Empirical Economics, 31(2), 433.
+**
+**           l       -  Optional, bandwidth for spectral window. Default = round(4 * (t/100)^(2/9)).
+**
+**           kmax    -  Optional, maximum number of factors. Default =5.
+**
+**           ick     -  Optional, Information Criterion for optimal number of factors. Default = 1.
+**                      1 = PCp criterion
+**                      2 = ICp criterion
+**                      (See Bai and Ng, 2002)
+**
+**  Output:  Nkpss   - Dataframe containing the KPSS statistics for each cross-section and the corresponding p-values.
+**			 W       - Dataframe containing panel stationarity statistic by Hadri (2000) and the corresponding p-value.
+**			 P       - Dataframe containing panel stationarity statistic by Yin & Wu (2001) and the corresponding p-value.
+**			 Pm      - Dataframe containing panel stationarity statistic by Nazlioglu et al. (2021) and the corresponding p-value.
+**			 Z       - Dataframe containing panel stationarity statistic by Nazlioglu et al. (2021) and the corresponding p-value. 
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+proc (5) = pd_stationary(y, ...);
+    local model, test, varm, l, T, kmax, ick, Nkpss, Npval, W, W_pval;
+    local P, Pm, Z, P_pval, Pm_pval, Z_pval, bwl_dftl;
+    
+    // Get dynamic arguments
+    t = rows(y);
+    bwl_dftl = round(4 * (t/100)^(2/9));
+    
+    { model, test, varm, l, kmax, ick } = dynargsGet(1|6, 1, "st", 1, bwl_dftl, 5, 1);
+    
+    if test $== "st";
+        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst(y, model, varm, l);
+    elseif test $== "ca";
+        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_ca(y, model, varm, l);
+    elseif test $== "fourier";
+        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_ca_fourier(y, model, varm, l, kmax);
+    elseif test $== "panic";
+        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_panic(y, model, varm, l, kmax, ick);
+    endif;
+    
+    // Transform output to dataframes
+    Nkpss = asDF(NKpss~Npval, "NKpss", "p-value");
+    W = asDF(W~W_pval, "W", "p-value");
+    P = asDF(P~P_pval, "P", "p-value");
+    Pm = asDF(Pm~Pm_pval, "Pm", "p-value");
+    Z = asDF(Z~Z_pval, "Z", "p-value");
+    
+    retp(NKpss, W, P, Pm, Z);
+endp;
+
+/*
+**> pd_stationary (panel stationarity tests)
 **  Reference:
 **  Hadri, K. (2000),
 **  Testing for Unit Roots in Heterogeneous Panel Data,
@@ -48,13 +146,6 @@
 **
 **           l       -  Optional, bandwidth for spectral window. Default = round(4 * (t/100)^(2/9)).
 **
-**           kmax    -  Optional, maximum number of factors. Default =5.
-**
-**           ick     -  Information Criterion for optimal number of factors. Default = 1.
-**                      1 = PCp criterion
-**                      2 = ICp criterion
-**                      (See Bai and Ng, 2002)
-**
 **  Output:  Nkpss   - KPSS statistics for each cross-section
 **           Npval   - p-value for KPSS statistics for each cross-section
 **			 W       - Panel stationarity statistic by Hadri (2000)
@@ -72,39 +163,6 @@
 -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 **
 */
-proc (5) = pd_stationary(y, ...);
-    local model, test, varm, l, T, kmax, ick, Nkpss, Npval, W, W_pval;
-    local P, Pm, Z, P_pval, Pm_pval, Z_pval, bwl_dftl;
-    
-    
-    
-    // Get dynamic arguments
-    t = rows(y);
-    bwl_dftl = round(4 * (t/100)^(2/9));
-    
-    { model, test, varm, l, kmax, ick } = dynargsGet(1|6, 1, "st", 1, bwl_dftl, 5, 1);
-    
-    if test $== "st";
-        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst(y, model, varm, l);
-    elseif test $== "ca";
-        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_ca(y, model, varm, l);
-    elseif test $== "fourier";
-        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_ca_fourier(y, model, varm, l, kmax);
-    elseif test $== "panic";
-        { Nkpss, Npval, W, W_pval, P, P_pval, Pm, Pm_pval, Z, Z_pval } = pst_panic(y, model, varm, l, kmax, ick);
-    endif;
-    
-    // Transform output to dataframes
-    Nkpss = asDF(NKpss~Npval, "NKpss", "p-value");
-    W = asDF(W~W_pval, "W", "p-value");
-    P = asDF(P~P_pval, "P", "p-value");
-    Pm = asDF(Pm~Pm_pval, "Pm", "p-value");
-    Z = asDF(Z~Z_pval, "Z", "p-value");
-    
-    retp(NKpss, W, P, Pm, Z);
-endp;
-
-
 proc (10) = pst(y, ...);
     local model, varm, l, N, T, Nkpss, Npval, q, cv, _LM, mu, var, W, W_pval;
     local P, Pm, Z, P_pval, Pm_pval, Z_pval, dt_vec, bwl_dftl, varnames;
