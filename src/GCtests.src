@@ -50,7 +50,7 @@
 **
 **           pmax    -  Maximum number of lags. Default = 8.
 **
-**           ic      -  Information Criterion for optimal lag selection
+**           ic      -  Optional, Information Criterion for optimal lag selection. Default = 1.
 **                      1 = Akaike
 **                      2 = Schwarz
 **
@@ -100,7 +100,7 @@ proc(1)= granger(data, test, ...);
 #endif;
     
     // Set defaults
-    { pmax, ic, Nboot, vnames } = dynargsGet(1|4, 8, 2, 1000, vnames_dflt);
+    { pmax, ic, Nboot, vnames } = dynargsGet(1|4, 8, 1, 1000, vnames_dflt);
     
     retp(GC_tests(data, vnames, pmax, ic, test, Nboot));
     

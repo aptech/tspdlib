@@ -22,8 +22,8 @@ Format
 
         =========== ==============
         1           Akaike.
-        1           Schwarz.
-        2           t-stat significance.
+        2           Schwarz.
+        3           t-stat significance.
         =========== ==============
 
     :type ic: Scalar
