@@ -14,7 +14,7 @@
 **
 ** Input:
 **
-**      e        (Tx1)-vector of zero meam stochastic process to be analysed
+**      e        (Tx1)-vector of zero mean stochastic process to be analysed
 **
 **      test     Optional, the test to be conducted:
 **                  test = 0 for the Inclan-Tiao test (Default)
