@@ -1,0 +1,105 @@
+/*
+**> pd_cause
+**
+**  Purpose: Computes tests for Granger causality in heterogeneous 
+**           mixed panels with bootstrap critical values.
+**
+**  References:
+**  Emirmahmutoglu, F., Kose, N. (2011)
+**  Testing for Granger causality in heterogeneous mixed panels,
+**  Economic Modelling 28 (2011) 870-876.
+**
+**  Konya, L.(2006).
+**  Exports and growth: Granger causality analysis on OECD Countries with a panel data approach.
+**  Economic Modelling 23: 978-992.
+**
+**  Dumitrescu, E., Hurlin, C. (2012).
+**  Testing for Granger non-causality in heterogeneous panels,
+**  Economic Modelling 29 (2012) 1450-1460.
+**
+**  When you use this code, please cite:
+**  Kar, M., Nazlioglu, S., Agir, H. (2011)
+**  "Financial Development and Economic Growth Nexus in the MENA Countries: Bootstrap Panel Granger Causality Analysis".
+**  Economic Modelling 28(1-2): 685-693.
+**
+**  Menyah, K., Nazlioglu, S., Wolde-Rufael, Y. (2014)
+**  "Financial Development, Trade Openness and Economic Growth in African Countries: New Insights from a Panel Causality Approach".
+**  Economic Modelling 37: 386-394.
+**
+**  Format:  Fisher = pd_cause(data, Ncross, test [, pmax, dmax, ic, Nboot, varnames]);
+**
+**
+**  Input:   data	 -  (TxN,k) data matrix
+**                      k is number of endogenous variables in VAR model
+**
+**           Ncross  -  Number of cross sections
+**           
+**           test    -  Test to be implemented
+**                   "fisher"         Fisher test
+**                   "zhnc"           Panel Zhnc statistic
+**                   "surwald"        Panel SUR Wald statistic.
+**
+**           pmax    -  Optional, Maximum number of lags. Default = 8.
+**
+**           dmax    -  Optional, Maximum integration degree of variables. Default = 1.
+**
+**           ic      -  Optional, Information Criterion for optimal lag selection. Default = 1.
+**                      1 = Akaike
+**                      2 = Schwarz
+**
+**           Nboot   -  Optional, Number of bootstrap replications. Default = 1000.
+
+**           vnames  -  Optional, Variable names.
+**                      vnames = "CPI"$|"EXCR"$|"INTR"; as an example for 3 variable          
+**
+**  Output:    stat  -  Dataframe, Panel  stats.
+**                      Prints individual results and bootstrap critical values
+**
+
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+**
+*/
+proc(1) = pd_cause(data, Ncross, test, ...);
+   local vnames_dflt, vnames, pmax, dmax, ic, Nboot, ret;
+    
+    // Default varnames
+    if hasmetadata(data);
+        vnames_dflt = getcolnames(data);
+    else;
+        vnames_dflt = "X" $+ itos(seqa(1, 1, cols(data)));
+    endif;
+    
+    // Get optional arguments
+    { pmax, dmax, ic, Nboot, vnames} = dynargsGet(1|5, 8, 1, 1, 1000, vnames_dflt);
+    
+    // Run specific test
+    if lower(test) $== "fisher";
+        local fisher;
+        
+        fisher = Panel_Fisher(data, vnames, pmax, dmax, ic, Nboot, Ncross);
+        ret = asDF(fisher, "Fisher");
+    elseif lower(test) $== "zhnc";
+        local Znt, Zn;
+    
+        { Znt, Zn } = Panel_Zhnc(data, vnames, pmax, ic, Nboot, Ncross);
+        ret = asDF(Znt~Zn, "Znt", "Zn");
+    elseif lower(test) $== "surwald";
+        local SURwald;
+        
+        SURwald = Panel_SURwald(data, vnames, pmax, ic, Nboot, Ncross);
+        ret = asDF(SURwald, "SURwald");
+        
+    else;
+        local s;
+        s = sprintf("'%s': Invalid test input. Options include: `fisher`, `zhnc`, or `surwald`.");
+        errorlogat s;
+        end;
+    endif;
+    
+    retp(ret);
+endp;
+
+    
