@@ -4,7 +4,7 @@ coint_shin
 Purpose
 ----------------
 
-A residual-based test for the null of cointegration using a structural single equation model.
+Computes a residual based test for the null of cointegration using a structural single equation model.
 
 Format
 ----------------

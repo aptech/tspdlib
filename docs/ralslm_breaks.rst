@@ -5,7 +5,7 @@ ralslm_breaks
 Purpose
 ----------------
 
-Computes the Augmented Dickey Fuller unit root test with 1 or 2 breaks and the RALS technique for non-normal errors.
+Computes the Augmented Dickey-Fuller unit root test with 1 or 2 breaks and the RALS technique for non-normal errors.
 
 Format
 ----------------

@@ -5,7 +5,7 @@ qr_fourier_adf
 Purpose
 ----------------
 
-Performs KSS unit root quantile testing with smooth structural changes.
+Computes the quantile KSS unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------

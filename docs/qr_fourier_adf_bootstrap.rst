@@ -5,7 +5,7 @@ qr_fourier_adf_bootstrap
 Purpose
 ----------------
 
-Computes bootstrap unit root quantile autoregression testing with smooth structural changes critical values.
+Computes bootstrap critical values for the quantile Augmented Dickey-Fuller unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------

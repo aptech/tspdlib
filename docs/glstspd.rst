@@ -37,7 +37,7 @@ Format
 
     :type ic: Scalar
 
-    :return GLStau: Dickey Fuller GLS test statistic.
+    :return GLStau: Dickey-Fuller GLS test statistic.
     :rtype GLStau: Scalar
 
     :return lags: Number of lags selected by chosen information criterion.

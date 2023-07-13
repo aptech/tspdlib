@@ -5,7 +5,7 @@ bng_panicnew
 Purpose
 ----------------
 
-Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Pooled Pa, Pb, and PMSB tests in Bai & Ng (2010).
+Computes the pooled Pa, Pb, and PMSB tests in Bai & Ng (2010) using panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity.
 
 Format
 ----------------

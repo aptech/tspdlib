@@ -40,7 +40,7 @@ Format
 
     :type ic: Scalar
 
-    :return qr_tstat: Quantile, Dickey Fuller test statistic.
+    :return qr_tstat: Quantile, Dickey-Fuller test statistic.
     :rtype qr_tstat: Scalar
 
     :return p: Chosen number of lags.

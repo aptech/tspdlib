@@ -4,7 +4,7 @@ fourier_adf
 Purpose
 ----------------
 
-Augmented Dickey-Fuller unit root test with flexible Fourier form structural breaks.
+Computes the Augmented Dickey-Fuller unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------

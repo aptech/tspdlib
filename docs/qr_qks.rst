@@ -5,7 +5,7 @@ qr_qks
 Purpose
 ----------------
 
-Computes the Quantile Kolmogorovâ Smirnov (QKS) tests.
+Computes the quantile Kolmogorovâ-Smirnov (QKS) tests.
 
 Format
 ----------------

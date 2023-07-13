@@ -5,7 +5,7 @@ coint_pouliaris
 Purpose
 ----------------
 
-Asymptotic critical values for residual based tests for cointegration.
+Computes residual based tests for cointegration with asymptotic critical values.
 
 Format
 ----------------

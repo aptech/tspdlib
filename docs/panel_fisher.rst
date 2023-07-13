@@ -4,7 +4,7 @@ panel_fisher
 Purpose
 ----------------
 
-Testing for Granger causality in heterogeneous mixed panels with bootstrap critical values.
+Computes tests for Granger causality in heterogeneous mixed panels with bootstrap critical values.
 
 Format
 ----------------

@@ -4,7 +4,7 @@ coint_cissano
 Purpose
 ----------------
 
-Lagrange Multiplier‐type statistic to test the null hypothesis of cointegration allowing for the possibility of a structural break.
+Computes a Lagrange Multiplier‐type statistic to test the null hypothesis of cointegration allowing for the possibility of a structural break.
 
 Format
 ----------------

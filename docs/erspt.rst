@@ -5,7 +5,7 @@ erspt
 Purpose
 ----------------
 
-Computes ERS point optimal unit root test.
+Computes the ERS point optimal unit root test.
 
 Format
 ----------------

@@ -5,7 +5,7 @@ qr_fourier_kss_bootstrap
 Purpose
 ----------------
 
-Computes bootstrap KSS unit root quantile autoregression testing with smooth structural changes critical values.
+Computes bootstrap critical values for the quantile KSS unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------

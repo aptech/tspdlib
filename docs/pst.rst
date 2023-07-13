@@ -5,7 +5,7 @@ pd_stationary
 Purpose
 ----------------
 
-Procedure to compute the panel data KPSS test. 
+Computes panel data stationarity tests. 
 
 Format
 ----------------

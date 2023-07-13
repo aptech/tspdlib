@@ -5,7 +5,7 @@ jwr_panicca
 Purpose
 ----------------
 
-Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Pooled Pa, Pb, and PMSB tests in Westerlund & Reese (2016).
+Computes the Pooled Pa, Pb, and PMSB tests in Westerlund & Reese (2016) using panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. 
 
 Format
 ----------------

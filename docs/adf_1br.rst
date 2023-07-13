@@ -5,7 +5,7 @@ adf_1break
 Purpose
 ----------------
 
-Computes the Augmented Dickey Fuller unit root test with one structural break.
+Computes the Augmented Dickey-Fuller unit root test with one structural break.
 
 Format
 ----------------

@@ -5,7 +5,7 @@ pd_getcderror
 Purpose
 ----------------
 
-Procedure to error cross-section dependecy tests.
+Computes error cross-section dependecy tests.
 
 Format
 ----------------

@@ -5,7 +5,7 @@ sbvar_icss
 Purpose
 ----------------
 
-Procedure to compute the Iterated Cumulative Sums of Squares (ICSS) algorithm of Inclan and Tiao (JASA, 1994).
+Identifies structural breaks in variance using the Iterated Cumulative Sums of Squares (ICSS) algorithm for of Inclan and Tiao (JASA, 1994).
 
 Format
 ----------------

@@ -5,7 +5,7 @@ adf
 Purpose
 ----------------
 
-Computes the Augmented Dickey Fuller unit root test.
+Computes the Augmented Dickey-Fuller unit root test.
 
 Format
 ----------------
@@ -38,7 +38,7 @@ Format
 
     :type ic: Scalar
 
-    :return tstat: Dickey Fuller test statistic.
+    :return tstat: Dickey-Fuller test statistic.
 
     :rtype tstat: Scalar
 

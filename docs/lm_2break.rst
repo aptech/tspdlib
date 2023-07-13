@@ -5,11 +5,11 @@ lm_2break
 Purpose
 ----------------
 
-Computes the minimum LM unit root test with one structural break.
+Computes the minimum LM unit root test with two structural breaks.
 
 Format
 ----------------
-.. function:: { lm_tstat, tb1, tb2, lags, cv } = LM_2break(y, model[, pmax, ic, trimm])
+.. function:: { lm_tstat, tb1, tb2, lags, cv } = LM_2breaks(y, model[, pmax, ic, trimm])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -69,11 +69,11 @@ Examples
 
   // Break in level
   model = 1;
-  { LM_min, tb1, tb2, p, cv } = LM_2break(y, model);
+  { LM_min, tb1, tb2, p, cv } = LM_2breaks(y, model);
 
   // Break in level and trend
   model = 2;
-  { LM_min, tb1, tb2, p, cv } = LM_2break(y, model);
+  { LM_min, tb1, tb2, p, cv } = LM_2breaks(y, model);
 
 Source
 ------

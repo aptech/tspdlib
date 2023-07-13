@@ -5,7 +5,7 @@ bng_panic
 Purpose
 ----------------
 
-Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Pe test on ADF p-values found in Bai & Ng (2004).
+Computes the Pe test on ADF p-values found in Bai & Ng (2004) using panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity.
 
 Format
 ----------------

@@ -4,7 +4,7 @@ coint_egranger
 Purpose
 ----------------
 
-Engle-Granger test of the null hypothesis of no cointegration against the alternative of cointegration.
+Computes the Engle-Granger test of the null hypothesis of no cointegration against the alternative of cointegration.
 
 Format
 ----------------

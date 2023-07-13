@@ -4,7 +4,7 @@ gc_tests
 Purpose
 ----------------
 
-Tests for Granger causality of specified variables. 
+Computes the tests for Granger causality of specified variables. 
 
 Format
 ----------------

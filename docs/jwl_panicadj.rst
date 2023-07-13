@@ -5,7 +5,7 @@ jwl_panicadj
 Purpose
 ----------------
 
-Panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. Computes the Ze and Ze+ tests in Westerlund & Larsson (2009).
+Computes the Ze and Ze+ tests in Westerlund & Larsson (2009) using panel analysis of idiosyncratic and common components (PANIC) test of nonstationarity. 
 
 Format
 ----------------

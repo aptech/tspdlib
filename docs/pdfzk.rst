@@ -5,7 +5,7 @@ pdfzk
 Purpose
 ----------------
 
-Panel stationary test with gradual shifts.
+Computes the panel stationary test with gradual shifts.
 
 Format
 ----------------

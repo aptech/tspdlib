@@ -4,7 +4,7 @@ fourier_kss
 Purpose
 ----------------
 
-KSS unit root test with flexible Fourier form structural breaks.
+Computes the KSS unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------

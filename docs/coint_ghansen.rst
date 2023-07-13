@@ -4,7 +4,7 @@ coint_ghansen
 Purpose
 ----------------
 
-Tests for the null of no cointegration against the alternative of cointegration with a structural break in the mean.
+Computes the tests for the null of no cointegration against the alternative of cointegration with a structural break in the mean.
 
 Format
 ----------------

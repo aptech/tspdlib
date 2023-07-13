@@ -5,7 +5,7 @@ pd_kpss
 Purpose
 ----------------
 
-Procedure to compute the panel data KPSS test. 
+Computes the panel data KPSS test. 
 
 Format
 ----------------

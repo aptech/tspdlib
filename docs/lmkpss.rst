@@ -5,7 +5,7 @@ lmkpss
 Purpose
 ----------------
 
-Performs the Kwiatkowski, Phillips, Schmidt, and Shin (KPSS) stationarity test.
+Computes the Kwiatkowski, Phillips, Schmidt, and Shin (KPSS) stationarity test.
 
 Format
 ----------------

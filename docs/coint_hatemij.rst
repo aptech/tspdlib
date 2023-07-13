@@ -5,7 +5,7 @@ coint_hatemij
 Purpose
 ----------------
 
-Test of the null hypothesis of no cointegration against the alternative of cointegration with two regime shifts.
+Computes the test of the null hypothesis of no cointegration against the alternative of cointegration with two regime shifts.
 
 Format
 ----------------

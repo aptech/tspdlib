@@ -5,7 +5,7 @@ coint_tsongetal
 Purpose
 ----------------
 
-Test of the null of cointegration allowing for structural breaks of unknown form in deterministic trend by using the Fourier form.
+Computes the test of the null of cointegration allowing for structural breaks of unknown form in deterministic trend by using the Fourier form.
 
 Format
 ----------------

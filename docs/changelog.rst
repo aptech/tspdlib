@@ -4,6 +4,23 @@ Change Log
 
 The following is a list of changes from the previous version of tspdlib.
 
+3.0.0
+-----
+#. New procedures:
+      - asymCause - Runs the asymmetric causality tests of the hypothesis that z does not cause y. Based on original code provided by Abdulnasser Hatemi-J.
+      - fourier_kss - KSS unit root test with flexible Fourier form structural breaks.
+      - pd_kpss - Procedure to compute the panel data KPSS test.
+      - pd_stationary - Procedure to compute the panel data stationarity test.
+      - qr_ADF - Computes the quantile Augmented Dickey-Fuller unit root test.
+      - 
+#. Bug Fix: Fix critical values printing bug in rals_lm_break.
+#. Bug Fix: Fix printing error for pd_lttrend and pd_iltlevel for case with no date vector.
+#. Added examples:
+      - pd_getCDError.e
+      - rals_lm_breaks.e
+#. Added function:
+      - pd_getCDError
+
 2.1.0
 -----
 #. Bug Fix: Fixed incorrect printing of model type for coint_maki.

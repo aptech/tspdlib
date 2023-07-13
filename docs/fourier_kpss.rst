@@ -4,7 +4,7 @@ fourier_kpss
 Purpose
 ----------------
 
-KPSS stationarity test with flexible Fourier form structural breaks.
+Computes the KPSS stationarity test with flexible Fourier form structural breaks.
 
 Format
 ----------------

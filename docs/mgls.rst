@@ -5,7 +5,7 @@ mgls
 Purpose
 ----------------
 
-Performs the MGLS unit root test.
+Computes the MGLS unit root test.
 
 Format
 ----------------

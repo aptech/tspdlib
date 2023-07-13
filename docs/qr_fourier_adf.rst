@@ -5,7 +5,7 @@ qr_fourier_adf
 Purpose
 ----------------
 
-Performs unit root quantile autoregression testing with smooth structural changes.
+Computes the quantile Augmented Dickey-Fuller unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------

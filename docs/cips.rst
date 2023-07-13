@@ -5,7 +5,7 @@ cips
 Purpose
 ----------------
 
-A simple unit root test in the presence of cross-section dependence.
+Computes a panel data unit root test in the presence of cross-section dependence.
 
 Format
 ----------------

@@ -5,7 +5,7 @@ coint_maki
 Purpose
 ----------------
 
-Test of the null hypothesis of no cointegration against the alternative of cointegration with an unknown number of breaks.
+Computes the test of the null hypothesis of no cointegration against the alternative of cointegration with an unknown number of breaks.
 
 Format
 ----------------

@@ -4,7 +4,7 @@ fourier_lm
 Purpose
 ----------------
 
-LM unit root test with flexible Fourier form structural breaks.
+Computes the LM unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------

@@ -5,7 +5,7 @@ sbur_gls
 Purpose
 ----------------
 
-Procedure to estimate the structural breaks in a GLS-detrended framework. This procedure returns the unit root statistics.
+Computes the unit root stratistics with structural breaks in a GLS-detrended framework. 
 
 Format
 ----------------
