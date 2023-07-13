@@ -9,7 +9,7 @@ Computes the quantile Augmented Dickey-Fuller unit root test with flexible Fouri
 
 Format
 ----------------
-.. function:: qr_f_adf  = QR_Fourier_ADF(y, model, tau [, p, k, _print])
+.. function:: qr_f_adf  = qr_fourier_adf(y, model, tau [, p, f, _print])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -24,14 +24,14 @@ Format
 
     :type model: Scalar
 
-    :param tau: The quantile (0.1,...,1)
+    :param tau: The quantile (:math:`0 \lt  \tau \lt 1`).
     :type tau: Scalar
 
     :param p: Optional, the number of lags used for :math:`\Delta y`. Default = 8.
     :type p: Scalar
 
-    :param k: Optional, the Fourier frequency. Default = 3.
-    :type k: Scalar
+    :param f: Optional, the Fourier frequency. Default = 3.
+    :type f: Scalar
 
     :param _print: Optional, print option "true" for printing results. Default = "true".
     :type _print: String
@@ -44,8 +44,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
@@ -58,7 +56,7 @@ Examples
   tau = 0.7;
 
   // Run test
-  qr_adf_stat = QR_Fourier_ADF(y, model, 0.7);
+  qr_adf_stat = qr_fourier_adf(y, model, 0.7);
 
 Source
 ------

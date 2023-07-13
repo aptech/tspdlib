@@ -25,7 +25,7 @@ Format
     :type model: Scalar
 
     :nbreaks: Number of breaks (1 or 2).
-    :type : Scalar
+    :type nbreaks: Scalar
 
     :param pmax: Optional, the maximum number of lags for :math:`\Delta y`. Default = 8.
     :type pmax: Scalar
@@ -83,4 +83,4 @@ Source
 
 rals_lm_breaks.src
 
-.. seealso:: Functions :func:`lmkpss`, :func:`lm_1break`, :func:`lm_2break`, :func:`ralslm`
+.. seealso:: Functions :func:`lmkpss`, :func:`lm_1break`, :func:`lm_2breaks`, :func:`ralslm`

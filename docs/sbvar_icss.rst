@@ -53,8 +53,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load S&P data

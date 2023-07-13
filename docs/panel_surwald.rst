@@ -46,7 +46,6 @@ Examples
 
 ::
 
-  new;
   library tspdlib;
 
   // Load panel data

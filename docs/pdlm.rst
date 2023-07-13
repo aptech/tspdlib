@@ -15,7 +15,7 @@ Format
     :param y: Time series data to be tested.
     :type y: Nx1 matrix
 
-    :param model: Model to be implemented.
+    :param model: Model to be implemented. Default = 0.
 
         =========== =============================
         1           Level break model.
@@ -72,16 +72,11 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
   y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pd_full.csv",
-                               "Y1 + Y2 + Y3 + Y4 + Y5 + Y6 + Y7 + Y8 +
-                                Y9 + Y10 + Y11 + Y12 + Y13 + Y14 + Y15 +
-                                Y16 + Y17 + Y18 + Y19 + Y20 + Y21 + Y22 +
-                                Y23 + Y24 + date($Date, '%b-%y')");
+                                ". + date($Date, '%b-%y')");
 
   // Run panel LM test with level shifts
   // No breaks
@@ -95,4 +90,4 @@ Source
 
 pd_iltlevel.src
 
-.. seealso:: Functions :func:`adf`, :func:`lmkpss`
+.. seealso:: Functions :func:`pd_kpss`, :func:`pdfzk`

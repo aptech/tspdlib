@@ -49,7 +49,6 @@ Examples
 
 ::
 
-  new;
   library tspdlib;
 
   // Load panel data
@@ -81,4 +80,4 @@ Source
 
 pdcause_zhnc.src
 
-.. seealso:: Functions :func:`granger`, :func:`panel_fisher`, :func:`panel_surwald`
+.. seealso:: Functions :func:`granger`, :func:`pd_cause`, :func:`panel_fisher`, :func:`panel_surwald`

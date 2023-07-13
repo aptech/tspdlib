@@ -24,7 +24,7 @@ Format
 
     :type model: Scalar
 
-    :param tau: The quantile (0.1,...,1)
+    :param tau: The quantile (:math:`0 \lt  \tau \lt 1`).
     :type tau: Scalar
 
     :param pmax: Optional, the maximum number of lags for :math:`\Delta y`. Default = 8.
@@ -34,8 +34,8 @@ Format
 
         =========== ====================
         1           Akaike.
-        1           Schwarz.
-        2           t-stat significance.
+        2           Schwarz.
+        3           t-stat significance.
         =========== ====================
 
     :type ic: Scalar
@@ -54,8 +54,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file

@@ -22,7 +22,7 @@ library tspdlib_dv;
 data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pdcause.dat");
 
 // Number of cross-sections
-N    = 9;  
+N = 9;  
 
 /*
 ** Run Fisher test

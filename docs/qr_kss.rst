@@ -9,7 +9,7 @@ Computes the quantile KSS unit root test.
 
 Format
 ----------------
-.. function:: { qr_kss_t, cv } = qr_KSS(y, model, tau, [, p, _print])
+.. function:: { qr_kss_t, cv } = qr_kss(y, model, tau, [, p, _print])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -24,7 +24,7 @@ Format
 
     :type model: Scalar
 
-    :param tau: The quantile (0.1,...,1)
+    :param tau: The quantile (:math:`0 \lt  \tau \lt 1`).
     :type tau: Scalar
 
     :param p: Optional, the maximum number of lags for :math:`\Delta y`. Default = 8.
@@ -44,8 +44,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
@@ -58,7 +56,7 @@ Examples
   tau = 0.7;
 
   // Run test
-  stat = qr_KSS(y, model, tau);
+  stat = qr_kss(y, model, tau);
 
 Source
 ------

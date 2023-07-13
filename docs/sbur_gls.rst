@@ -28,33 +28,34 @@ Format
     :param nbreak: Optional, number of breaks to consider (up to 5). Default = 5.
     :type  nbreak: Scalar
 
-    :param sbCtl: Optional, an instance of the sburControl structure, containing the following members:
+    :param sburCtl: Optional, an instance of the sburControl structure, containing the following members:
        
         .. list-table::
             :widths: auto
 
-            * - sbctl.knownBreaks
+            * - sburCtl.knownBreaks
               - scalar, specifies if breaks are known or unknown. 0 for known breaks, 1 for unknown breaks. Default = 1.
-            * - sbctl.breakDate
+            * - sburCtl.breakDate
               - vector, holds an known breaks dates. Default = none specified. 
-            * - sbctl.numberBreaks
+            * - sburCtl.numberBreaks
               - scalar, when the structural breaks are unknown, this scalar indicates the number of structural breaks that is assumed. Note that,  at the moment,  the procedure is designed for up to m <= 5 structural breaks.
-            * - sbctl.penalty
+            * - sburCtl.penalty
               - scalar, indicates the penalty function that defines the information criteria that is used to determine the number of lags used to estimate the long-run variance. penalty = 0 for maic,  and penalty = 1 for bic. Default = 0.
-            * - sbctl.kmax
+            * - sburCtl.kmax
               - scalar, denotes the maximum number of lags that is used to estimate the long-run variance. Default = 4.
-            * - sbctl.kmin
+            * - sburCtl.kmin
               - scalar, denotes the minimum number of lags that is used to estimate the long-run variance. Default = 0.
-            * - sbCtl.estimation
+            * - sburCtl.estimation
               - scalar, specifying the estimation method. 0 indicates brute force estimation, 1, uses the dynamic algorithm. Default = 0;
-            * - sbCtl.prewhit
+            * - sburCtl.prewhit
               - scalar, Set to 1 if want to apply AR(1) prewhitening prior to estimating the long run covariance matrix. Default = 0.
-            * - sbCtl.maxIters
+            * - sburCtl.maxIters
               - scalar, if dynamic algorithm is used, this indicates the maximum number of iterations. Default = 100;
                   
     :type sbCtl: struct
                   
     :return sbOut: An instance of the sburOut structure, containing the following members:
+                  
         .. list-table::
             :widths: auto
 
@@ -85,24 +86,21 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load data
   data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
-  data = setColDateFormats(data, "%Y", "Year");
-  
+
   /*
   ** This section sets parameters 
   ** for testing.
   */
   // Set up control structure
-  struct sburControl msburCtl; 
-  msburCtl = sburControlCreate();
+  struct sburControl sburCtl; 
+  sburCtl = sburControlCreate();
 
   // Number of breaks
-  msburCtl.numberBreaks = 2;
+  sburCtl.numberBreaks = 2;
 
   // Model to use
   model = 3;
@@ -112,12 +110,12 @@ Examples
   ** when = 1 we use the algorithm, 
   ** and = 0 brut force
   */
-  msburCtl.estimation = 1;
-  msburCtl.maxIters = 20;
+  sburCtl.estimation = 1;
+  sburCtl.maxIters = 20;
 
   // Output structure
-  struct sburOut msOut;
-  msOut = sbur_gls(y, model, msburCtl);
+  struct sburOut sbOut;
+  sbOut = sbur_gls(data[., "Y"], model, sburCtl);
 
 Source
 ------

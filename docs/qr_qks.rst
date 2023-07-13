@@ -1,5 +1,5 @@
 
-qr_qks
+qks_tests
 ==============================================
 
 Purpose
@@ -9,7 +9,7 @@ Computes the quantile Kolmogorovâ-Smirnov (QKS) tests.
 
 Format
 ----------------
-.. function:: QKS = qr_qks(y, model, test, [, p, k])
+.. function:: QKS = qks_tests(y, model, test, [, p, f])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -27,8 +27,8 @@ Format
     :param p: Optional, the maximum number of lags for :math:`\Delta y`. Default = 8.
     :type p: Scalar
 
-    :param k: Optional, the Fourier frequency. Default = 3.
-    :type k: Scalar
+    :param f: Optional, the Fourier frequency. Default = 3.
+    :type f: Scalar
 
     :return qks: QKS tau-statistic
     :rtype qks: Scalar
@@ -39,8 +39,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file

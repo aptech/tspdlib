@@ -62,7 +62,7 @@ Format
         2           ICp criterion.
         =========== ================================
       
-    :type kmax: Scalar
+    :type ick: Scalar
         
     :return Nkpss: Contains the KPSS statistics for each cross-section and the corresponding p-values.
     :rtype Nkpss: Dataframe

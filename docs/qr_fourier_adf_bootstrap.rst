@@ -9,7 +9,7 @@ Computes bootstrap critical values for the quantile Augmented Dickey-Fuller unit
 
 Format
 ----------------
-.. function:: { test_boot, cv }  = QR_Fourier_ADF_bootstrap(y, model, tau [, p, k, _Nboot])
+.. function:: { test_boot, cv_boot }  = qr_fourier_adf_bootstrap(y, model, tau [, p, f, _Nboot])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -24,14 +24,14 @@ Format
 
     :type model: Scalar
 
-    :param tau: The quantile (0.1,...,1)
+    :param tau: The quantile (:math:`0 \lt  \tau \lt 1`).
     :type tau: Scalar
 
     :param p: Optional, the number of lags used for :math:`\Delta y`. Default = 8.
     :type p: Scalar
 
-    :param k: Optional, the Fourier frequency. Default = 3.
-    :type k: Scalar
+    :param f: Optional, the Fourier frequency. Default = 3.
+    :type f: Scalar
 
     :param _Nboot: Optional, number of iterations. Default = 1000.
     :type _NBoot: Scalar
@@ -39,16 +39,14 @@ Format
     :return test_boot:  Bootstrapped ADF test statistic with smooth structural change for the given quantile.
     :rtype test_boot: Vector
         
-    :return cv:  1, 5, and 10 percent bootstrap critical values for the ADF test statistic with smooth structural change.
-    :rtype cv: Vector
+    :return cv_boot:  1, 5, and 10 percent bootstrap critical values for the ADF test statistic with smooth structural change.
+    :rtype cv_boot: Vector
 
 Examples
 --------
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file

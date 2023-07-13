@@ -41,8 +41,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib_dv;
 
   // Number of cross-sections

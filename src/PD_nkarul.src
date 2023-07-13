@@ -7,14 +7,14 @@
 **  an application to international commodity price shocks",
 ** Economic Modelling 61 (2017). pp.181-192.
 **
-**  Format:  { Nkpss, FZk, pval } = PDfzk(y, model, k[, varm]);
+**  Format:  { Nkpss, FZk, pval } = PDfzk(y, model, f [, varm]);
 **
 **  Input:   Y	     -  TxN matrix, data,
 **
 **           model   - 	1 = level shift model
 **                      2 = level and trend shift model
 **
-**           k       -  number of single frequency
+**           f       -  number of single frequency
 **
 **           varm    -  Long-run consistent variance estimation method
 **                      1 = iid;

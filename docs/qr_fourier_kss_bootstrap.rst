@@ -9,7 +9,7 @@ Computes bootstrap critical values for the quantile KSS unit root test with flex
 
 Format
 ----------------
-.. function:: { test_boot, cv } = QR_Fourier_KSS_bootstrap(y, model, tau [, p, k, _Nboot])
+.. function:: { test_boot, cv } = qr_fourier_kss_bootstrap(y, model, tau [, p, f, _Nboot])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -24,14 +24,14 @@ Format
 
     :type model: Scalar
 
-    :param tau: The quantile (0.1,...,1)
+    :param tau: The quantile (:math:`0 \lt  \tau \lt 1`).
     :type tau: Scalar
 
     :param p: Optional, the number of lags used for :math:`\Delta y`. Default = 8.
     :type p: Scalar
 
-    :param k: Optional, the Fourier frequency. Default = 3.
-    :type k: Scalar
+    :param f: Optional, the Fourier frequency. Default = 3.
+    :type f: Scalar
 
     :param _Nboot: Optional, number of iterations. Default = 1000.
     :type _NBoot: Scalar
@@ -47,8 +47,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
@@ -61,11 +59,11 @@ Examples
   tau = 0.7;
 
   // Run test
-  { tn_boot, cv } = QR_Fourier_KSS_bootstrap(y, model, 0.7);
+  { tn_boot, cv } = qr_fourier_kss_bootstrap(y, model, 0.7);
 
 Source
 ------
 
 qr_fourier_KSS.src
 
-.. seealso:: Functions :func:`qr_KSS`, :func:`qr_fourier_kss`
+.. seealso:: Functions :func:`qr_KSS`, :func:`qr_fourier_kss`, :func:`qr_adf`, :func:`qr_fourier_adf`, :func:`qr_fourier_adf_bootstrap`
