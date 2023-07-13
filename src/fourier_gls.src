@@ -8,7 +8,7 @@
 **  De-trended Unit Root Tests."
 **  Oxford Bulletin of Economics and Statistics,74,5(2012),736-759.
 **
-**  Format:  { GLSk, k, p, cv[k,.] } = Fourier_GLS(y, model[, pmax, kmax, ic]);
+**  Format:  { GLSk, k, p, cv[k,.] } = Fourier_GLS(y, model[, pmax, fmax, ic]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -17,7 +17,7 @@
 **
 **           pmax    -  Optional, maximum number of lags for Dy; 0=no lags. Default = 8.
 **
-**           kmax    -  Optional, maximumum number of single Fourier frequency. Default = 5.
+**           fmax    -  Optional, maximumum number of single Fourier frequency. Default = 5.
 **                      (upper bound is 5)
 **
 **           ic      -  Optional, information criterion. Default = 3.:

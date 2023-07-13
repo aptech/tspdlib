@@ -9,7 +9,7 @@ Computes the KPSS stationary test with two structural breaks.
 
 Format
 ----------------
-.. function:: { kpss_stat, tb, lambda, cv } = KPSS_2break(y, model[, bwl, varm, trimm])
+.. function:: { kpss_stat, tb1, tb2, cv } = KPSS_2breaks(y, model[, bwl, varm, trimm])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -18,8 +18,10 @@ Format
     :param model: Model to be implemented.
 
           =========== ===========================
-          1           Break in level.
-          2           Break in level and trend.
+          1           Level shift without trend.
+          2           Level shift with trend.
+          3           Trend shift.
+          4           Level and trend shift.
           =========== ===========================
 
     :type model: Scalar
@@ -50,8 +52,8 @@ Format
     :return tb1: Location of the first break.
     :rtype tb1: Scalar
 
-    :return tb1: Location of the second break.
-    :rtype tb1: Scalar
+    :return tb2: Location of the second break.
+    :rtype tb2: Scalar
 
     :return cv: 1%, 5%, and 10% critical values for :func:`kpss_2break` statistic.
     :rtype cv: Vector
@@ -61,8 +63,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
@@ -72,13 +72,9 @@ Examples
   model = 1;
   { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model);
 
-  // Break in level and trend
-  model = 2;
-  { KPSS, tb1, tb2, cv } = KPSS_2breaks(y, model);
-
 Source
 ------
 
 kpss_1br.src
 
-.. seealso:: Functions :func:`lmkpss`, :func:`kpss_2break`
+.. seealso:: Functions :func:`lmkpss`, :func:`kpss_1break`

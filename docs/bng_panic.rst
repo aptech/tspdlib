@@ -9,7 +9,7 @@ Computes the Pe test on ADF p-values found in Bai & Ng (2004) using panel analys
 
 Format
 ----------------
-.. function:: { ADFe, pval, lags, Pe, n_factors } = bng_panic(y, model[, pmax, ic_lags, kmax, ic_lags])
+.. function:: { ADFe, pval, lags, Pe, n_factors } = bng_panic(y, model[, pmax, ic_lags, kmax, ic_factors])
     :noindexentry:
 
     :param y: Panel data to be tested.
@@ -37,7 +37,7 @@ Format
 
     :type ic_lags: Scalar
 
-    :param kmax: Maximum number of factors. Maximum = Default = 5.
+    :param kmax: Maximum number of factors. Default = 5.
     :type kmax: Scalar
 
     :param ic_factors: Information Criterion for optimal number of factors. Default = 1.
@@ -92,4 +92,4 @@ Source
 
 pd_panic.src
 
-.. seealso:: Functions :func:`bng_panicnew`, :func:`jwl_panicadj`, :func:`jwr_panicca`
+.. seealso:: Functions :func:`bng_panicnew`, :func:`jwl_panicadj`, :func:`jwr_panicca`, :func:`pd_stationary`

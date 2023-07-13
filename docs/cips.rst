@@ -58,8 +58,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // CADF and Modified CADF tests

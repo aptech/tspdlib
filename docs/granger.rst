@@ -1,4 +1,4 @@
-gc_tests
+granger
 ==============================================
 
 Purpose
@@ -54,9 +54,6 @@ Examples
 --------
 
 ::
-
-  new;
-  cls;
 
   library tspdlib;
 

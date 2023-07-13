@@ -9,7 +9,7 @@ Computes panel data stationarity tests.
 
 Format
 ----------------
-.. function:: { Nkpss, W, P, Pm, Z } = pd_stationary(y [, model, test, varm, bwl, kmax, ICk])
+.. function:: { Nkpss, W, P, Pm, Z } = pd_stationary(y [, model, test, varm, bwl, fmax, ICk])
     :noindexentry:
 
     :param y: Wide format panel data.
@@ -52,8 +52,8 @@ Format
     :param bwl: Optional, bandwidth for the spectral window. Default = round(4 * (T/100)^(2/9)).
     :type  bwl: Scalar
 
-    :param kmax: Optional, maximum number of single Fourier frequency (upper bound is 5). Default = 5.
-    :type kmax: Scalar
+    :param fmax: Optional, maximum number of single Fourier frequency (upper bound is 5). Default = 5.
+    :type fmax: Scalar
     
     :param ICk: Optional, Information Criterion for optimal number of factors. Default = 1.
   
@@ -87,8 +87,6 @@ Standard tests
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
@@ -110,8 +108,6 @@ Cross-section approach panel stationarity test
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file

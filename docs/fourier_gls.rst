@@ -8,7 +8,7 @@ Computes the local GLS unit root test with flexible Fourier form structural brea
 
 Format
 ----------------
-.. function:: { GLSk, k, p, cv } = fourier_gls(y, model[, pmax, fmax, ic])
+.. function:: { GLSk, f, p, cv } = fourier_gls(y, model[, pmax, fmax, ic])
     :noindexentry:
 
     :param y: Dependent variable.
@@ -23,10 +23,10 @@ Format
 
     :type model: Scalar
 
-    :param pmax: Maximum number of lags for :math:`\Delta y`; 0=no lag.
+    :param pmax: Optional, maximum number of lags for :math:`\Delta y`; 0=no lag. Default = 8. 
     :type pmax: Scalar
 
-    :param fmax: Maximum number of single Fourier frequency (upper bound is 5).
+    :param fmax: Optional, maximum number of single Fourier frequency (upper bound is 5). Default = 5.
     :type fmax: Scalar
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
@@ -42,8 +42,8 @@ Format
     :return GLSk: GLS(k) statistic.
     :rtype GLSk: Scalar
 
-    :return k: Number of single frequency.
-    :rtype k: Scalar
+    :return f: Number of single frequency.
+    :rtype f: Scalar
 
     :return p: number of lags selected by chosen information criterion
     :rtype p: Scalar
@@ -56,8 +56,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file

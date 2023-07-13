@@ -49,7 +49,7 @@ Format
     :return lags: Number of lags selected by chosen information criterion.
     :rtype lags: Scalar
 
-    :return cv: 1%, 5%, and 10% critical values for :func:`adf_1br` :math:`\tau`-stat..
+    :return cv: 1%, 5%, and 10% critical values for :func:`adf_1break` :math:`\tau`-stat..
     :rtype cv: Vector
 
 Examples
@@ -73,4 +73,4 @@ Source
 
 adf_1br.src
 
-.. seealso:: Functions :func:`adf`, :func:`adf_2br`
+.. seealso:: Functions :func:`adf`, :func:`adf_2breaks`

@@ -9,7 +9,7 @@ Computes the Augmented Dickey-Fuller unit root test with two structural breaks.
 
 Format
 ----------------
-.. function:: { tstat, tb1, tb2, lags, cv } = adf_2br(y, model [, pmax, ic, trimm])
+.. function:: { tstat, tb1, tb2, lags, cv } = adf_2breaks(y, model [, pmax, ic, trimm])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -53,7 +53,7 @@ Format
     :return lags: Number of lags selected by chosen information criterion.
     :rtype lags: Scalar
 
-    :return cv: 1%, 5%, and 10% critical values for :func:`adf_2br` t-stat.
+    :return cv: 1%, 5%, and 10% critical values for :func:`adf_2breaks` t-stat.
     :rtype cv: Vector
 
 Examples
@@ -66,7 +66,6 @@ Examples
   // Load date file
   y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
 
-
   // Break in level
   model = 1;
 
@@ -78,4 +77,4 @@ Source
 
 adf_2br.src
 
-.. seealso:: Functions :func:`adf`, :func:`adf_1br`
+.. seealso:: Functions :func:`adf`, :func:`adf_1break`

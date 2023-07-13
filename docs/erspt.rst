@@ -55,8 +55,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file

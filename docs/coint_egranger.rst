@@ -50,13 +50,11 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load dataset
   data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_coint.csv",
-                            "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
+                                   ". + date($Date, '%b-%y')");
 
   // Define y and x matrix
   y = data[., 1];
@@ -74,4 +72,4 @@ Source
 
 coint_egranger.src
 
-.. seealso:: Functions :func:`coint_ghansen`, :func:`coint_hatemij`, :func:`coint_maki`
+.. seealso:: Functions :func:`coint_cissanso`, :func:`coint_ghansen`, :func:`coint_hatemij`, :func:`coint_maki`

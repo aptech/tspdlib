@@ -6,7 +6,7 @@
 **  "A Stationary Test in the Presence of an Unknown Number of Smooth Breaks"
 **  Journal of Time Series Analysis,27,3(2006),381-409
 **
-**  Format:  {KPSSk, k, cv[k,.]} = Fourier_KPSS(y,model,kmax,l,varm);
+**  Format:  {KPSSk, k, cv[k,.]} = Fourier_KPSS(y, model [, fmax, bwl, varm]);
 **
 **
 **  Input:   Y	     -  Nx1 matrix, data,
@@ -14,10 +14,10 @@
 **           model   - 	1 = Constant
 **                      2 = Constant and trend
 **
-**           kmax    -  Optional, Maximumum number of single Fourier frequency. Default = 5.
+**           fmax    -  Optional, Maximumum number of single Fourier frequency. Default = 5.
 **                      (upper bound is 5)
 **
-**           l       -  Optional, bandwidth for spectral window. Default = round(4 * (T/100)^(2/9)).
+**           bwl       -  Optional, bandwidth for spectral window. Default = round(4 * (T/100)^(2/9)).
 **
 **           varm    -  Optional, long-run consistent variance estimation method.
 **                      Default = 1.

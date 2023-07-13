@@ -29,11 +29,11 @@ Format
 
     :param ic: Optional, the information criterion used for choosing lags. Default = 3.
 
-    =========== ======================
-    1           Akaike.
-    2           Schwarz.
-    3           t-stat significance.
-    =========== ======================
+       =========== ======================
+       1           Akaike.
+       2           Schwarz.
+       3           t-stat significance.
+       =========== ======================
 
     :type ic: Scalar
 
@@ -60,12 +60,11 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
-  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
+  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", 
+                             "Y + date($Date, '%b-%y')");
 
   // Break in level
   model = 1;
@@ -80,4 +79,4 @@ Source
 
 lm_1br.src
 
-.. seealso:: Functions :func:`lmkpss`, :func:`lm_2break`
+.. seealso:: Functions :func:`lmkpss`, :func:`lm_2breaks`

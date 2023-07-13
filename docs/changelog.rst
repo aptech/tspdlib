@@ -7,12 +7,22 @@ The following is a list of changes from the previous version of tspdlib.
 3.0.0
 -----
 #. New procedures:
-      - asymCause - Runs the asymmetric causality tests of the hypothesis that z does not cause y. Based on original code provided by Abdulnasser Hatemi-J.
-      - fourier_kss - KSS unit root test with flexible Fourier form structural breaks.
-      - pd_kpss - Procedure to compute the panel data KPSS test.
-      - pd_stationary - Procedure to compute the panel data stationarity test.
+      - asymCause - Computest the asymmetric causality tests of the hypothesis that z does not cause y. Based on original code provided by Abdulnasser Hatemi-J.
+      - fourier_kss - Computest the KSS unit root test with flexible Fourier form structural breaks.
+      - pd_getcderror - Computes error cross-section dependecy tests.
+      - pd_kpss - Computes the panel data KPSS test.
+      - pd_stationary - Computes the panel data stationarity test.
       - qr_ADF - Computes the quantile Augmented Dickey-Fuller unit root test.
-      - 
+      - qr_fourier_adf - Computes the quantile Augmented Dickey-Fuller unit root test with flexible Fourier form structural breaks.
+      - qr_fourier_adf_bootstrap - Bootstraps critical values for the quantile Augmented Dickey-Fuller unit root test with flexible Fourier form structural breaks.
+      - qr_fourier_kss - Computes the quantile KSS unit root test with flexible Fourier form structural breaks.
+      - qr_fourier_kss_bootstrap - Bootstraps critical values for the quantile KSS unit root test with flexible Fourier form structural breaks.
+      - qr_kss - Computes the quantile KSS unit root test.
+      - qs
+      - sbur_gls - Computes the unit root stratistics with structural breaks in a GLS-detrended framework. 
+      - sbvar_icss - Identifies structural breaks in variance using the Iterated Cumulative Sums of Squares (ICSS) algorithm for of Inclan and Tiao (JASA, 1994).
+      - spc_bartlett
+      - spc_qs
 #. Bug Fix: Fix critical values printing bug in rals_lm_break.
 #. Bug Fix: Fix printing error for pd_lttrend and pd_iltlevel for case with no date vector.
 #. Added examples:

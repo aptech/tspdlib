@@ -20,9 +20,9 @@ Format
     :param model: Model to be implemented.
 
         =========== ==============
-        1           C   (level shift)
-        2           C/T (level shift with trend)
-        3           C/S (regime shift)
+        1           Level shift (C)
+        2           Level shift with trend (C/T)
+        3           Regime shift (C/S)
         4           Regime and trend shift
         =========== ==============
 
@@ -97,8 +97,7 @@ Examples
 
   // Load dataset
   data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_coint.csv",
-                            "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
-
+                            ". + date($Date, '%b-%y')");
 
   // Define y and x matrix
   y = data[., 1];
@@ -116,4 +115,4 @@ Source
 
 coint_ghansen.src
 
-.. seealso:: Functions :func:`coint_egranger`, :func:`coint_hatemij`, :func:`coint_maki`
+.. seealso:: Functions :func:`coint_cissanso`, :func:`coint_egranger`, :func:`coint_hatemij`, :func:`coint_maki`

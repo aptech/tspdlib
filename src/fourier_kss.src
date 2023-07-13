@@ -6,7 +6,7 @@
 **  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates.
 **  Journal of International Money and Finance, 29(6), 1076-1093.
 **
-**  Format:  { Ftau, p, k } = Fourier_KSS(y, model, test [, pmax, fmax, ic]);
+**  Format:  { Ftau, p, f } = Fourier_KSS(y, model, test [, pmax, fmax, ic]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
@@ -30,9 +30,9 @@
 **
 **  Output:  Ftau    - Ftau statistic
 **
-**			 p       - number of lags selected by chosen information criterion
+**           f       - chosen Number of single frequency
 **
-**           k       - chosen Number of single frequency
+**			 p       - number of lags selected by chosen information criterion
 **
 **  Author: Saban Nazlioglu
 -- The author makes no performance guarantees.
@@ -140,7 +140,7 @@ proc(3) = Fourier_KSS(y, model,...);
     // Print stats table
     _printStatsTable(top, side, stats, cv, dec, colwidth, 0);
     
-    retp(tn, p_opt - 1, k_star);
+    retp(tn, k_star, p_opt - 1);
 endp;
 
 proc(2) = __get_resid_lags_kss(res, model);

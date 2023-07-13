@@ -70,12 +70,11 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
-  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
+  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", 
+                                "Y + date($Date, '%b-%y')");
 
   // With constant
   model = 1;

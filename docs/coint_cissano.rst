@@ -4,7 +4,7 @@ coint_cissano
 Purpose
 ----------------
 
-Computes a Lagrange Multiplier‐type statistic to test the null hypothesis of cointegration allowing for the possibility of a structural break.
+Computes a LM-type statistic to test the null hypothesis of cointegration allowing for the possibility of a structural break.
 
 Format
 ----------------
@@ -78,8 +78,7 @@ Examples
 
   // Load dataset
   data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_coint.csv",
-                            "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
-
+                                   ". + date($Date, '%b-%y')");
 
   // Define y and x matrix
   y = data[., 1];
@@ -97,4 +96,4 @@ Source
 
 coint_cissano.src
 
-.. seealso:: Functions :func:`coint_egranger`
+.. seealso:: Functions :func:`coint_egranger`, :func:`coint_ghansen`, :func:`coint_hatemij`, :func:`coint_maki`

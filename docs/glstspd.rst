@@ -51,8 +51,6 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
@@ -62,9 +60,6 @@ Examples
   model = 1;
   { GLStau, GLSp, cvGLS } = DFGLS(y, model);
 
-  // With constant and trend
-  model = 2;
-  { GLStau, GLSp, cvGLS } = DFGLS(y, model);
 
 Source
 ------

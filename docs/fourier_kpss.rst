@@ -8,7 +8,7 @@ Computes the KPSS stationarity test with flexible Fourier form structural breaks
 
 Format
 ----------------
-.. function:: { KPSSk, k, cv } = fourier_kpss(y, model[, fmax, bwl, varm])
+.. function:: { KPSSk, f, cv } = fourier_kpss(y, model[, fmax, bwl, varm])
     :noindexentry:
 
     :param y: Dependent variable.
@@ -46,8 +46,8 @@ Format
     :return KPSSk: KPSS(k) statistic.
     :rtype KPSSk: Scalar
 
-    :return p: number of lags selected by chosen information criterion
-    :rtype p: Scalar
+    :return f: Number of single frequency.
+    :rtype f: Scalar
 
     :return cv: 1%, 5%, 10% critical values for the chosen model
     :rtype cv: Vector
@@ -57,18 +57,17 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
-  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
+  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", 
+                              "Y + date($Date, '%b-%y')");
 
   // With constant
   model = 1;
 
   // Call test
-  { KPSS, k, cv } = Fourier_KPSS(y, model);
+  { KPSS, f, cv } = Fourier_KPSS(y, model);
 
 Source
 ------

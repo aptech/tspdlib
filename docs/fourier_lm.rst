@@ -8,7 +8,7 @@ Computes the LM unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { LMk, k, p, cv } = Fourier_LM(y[, pmax, fmax, ic])
+.. function:: { LMk, f, p, cv } = Fourier_LM(y[, pmax, fmax, ic])
     :noindexentry:
 
     :param y: Dependent variable.
@@ -33,8 +33,8 @@ Format
     :return lmk: LM(k) statistic.
     :rtype lmk: Scalar
 
-    :return k: Number of single frequency.
-    :rtype k: Scalar
+    :return f: Number of single frequency.
+    :rtype f: Scalar
 
     :return p: number of lags selected by chosen information criterion
     :rtype p: Scalar
@@ -47,19 +47,17 @@ Examples
 
 ::
 
-  new;
-  cls;
   library tspdlib;
 
   // Load date file
   y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
 
   // Call test
-  { LMstat, f, p, cv} = Fourier_LM(y);
+  { LMstat, f, p, cv } = Fourier_LM(y);
 
 Source
 ------
 
 fourier_lm.src
 
-.. seealso:: Functions :func:`fourier_adf`, :func:`fourier_gls`, :func:`fourier_kpss`
+.. seealso:: Functions :func:`fourier_adf`, :func:`fourier_gls`, :func:`fourier_kpss`, :func:`fourier_kss`

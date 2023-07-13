@@ -38,7 +38,7 @@ Format
 
     :type ic_lags: Scalar
 
-    :param kmax: Maximum number of factors. Maximum = Default = 5.
+    :param kmax: Maximum number of factors (upper bound is 5). Default = 5.
     :type kmax: Scalar
 
     :param ic_factors: Information Criterion for optimal number of factors. Default = 1.

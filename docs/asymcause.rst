@@ -9,7 +9,7 @@ Performcs the asymmetric causality tests of the hypothesis that z does not cause
 
 Format
 ----------------
-.. function:: { Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(y, z [, pos, infocrit, intorder, ln_form, maxlags, bootmaxiter, fullprint] )
+.. function:: { Wstat, Wcv, ICOrder, Azdsys } = asymCause(y, z [, pos, infocrit, intorder, ln_form, maxlags, bootmaxiter, fullprint] )
     :noindexentry:
 
     :param y: Panel data variable of interest to be tested.
@@ -64,8 +64,8 @@ Format
     :return Wstat: Wald statistic.
     :rtype Wstat: Scalar
 
-    :return Wcriticalvals: Bootstrap 1%, 5%, and 10% critical values for the Wald statistic.
-    :rtype Wcriticalvals: Vector
+    :return Wcv: Bootstrap 1%, 5%, and 10% critical values for the Wald statistic.
+    :rtype Wcv: Vector
 
     :return ICOrder: Number of lags selected by chosen information criterion.
     :rtype ICOrder: Scalar
@@ -84,7 +84,7 @@ Examples
   YZlevel = packr(loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/nelsonplosser.dta", "m + bnd"));
 
   // Run test
-  { Wstat, WcriticalvalsS, ICOrder, Azdsys } = asymCause(YZlevel[., "m"], YZlevel[., "bnd"]);
+  { Wstat, Wcv, ICOrder, Azdsys } = asymCause(YZlevel[., "m"], YZlevel[., "bnd"]);
 
 Source
 ------

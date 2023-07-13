@@ -8,7 +8,7 @@ Computes the KSS unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { Ftau, p, k } = Fourier_kss(y, model, test [, pmax, fmax, ic])
+.. function:: { Ftau, p, f } = Fourier_kss(y, model, test [, pmax, fmax, ic])
     :noindexentry:
 
     :param y: Dependent variable.
@@ -48,8 +48,8 @@ Format
     :return p: number of lags selected by chosen information criterion
     :rtype p: Scalar
     
-    :return k: Chosen number of single frequency.
-    :rtype k: Scalar
+    :return f: Chosen number of single frequency.
+    :rtype f: Scalar
 
 Examples
 --------
@@ -59,18 +59,18 @@ Examples
   library tspdlib;
 
   // Load date file
-  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
-
+  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", 
+                                "Y + date($Date, '%b-%y')");
 
   // With constant
   model = 1;
 
   // Call test
-  { Ftau, p, k, cv } = Fourier_KSS(y, model, "FKSS");
+  { Ftau, f, p } = Fourier_KSS(y, model);
 
 Source
 ------
 
 fourier_kss.src
 
-.. seealso:: Functions :func:`fourier_adf`, :func:`fourier_gls`, :func:`fourier_kpss`, :func:`fourier_lm`   
+.. seealso:: Functions :func:`fourier_kss_bootstrap`, :func:`fourier_adf`, :func:`fourier_gls`, :func:`fourier_kpss`, :func:`fourier_lm`   

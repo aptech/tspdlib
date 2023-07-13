@@ -51,10 +51,10 @@ Format
     :return Za: Phillips & Ouliaris (1989) Za test
     :rtype Za:  Scalar
 
-    :return cvZt: 1%, 5%, 10% critical values for ADF and Zt test statistics.
+    :return cvZt: 1%, 5%, 10% critical values for Zt test statistic.
     :rtype cvZt: Scalar
 
-    :return cvZa:  1%, 5%, 10% critical values for Za test statistics.
+    :return cvZa:  1%, 5%, 10% critical values for Za test statistic.
     :rtype cvZa: Scalar
 
 

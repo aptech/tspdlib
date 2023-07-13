@@ -54,9 +54,6 @@ Examples
 
 ::
 
-  new;
-  cls;
-
   library tspdlib;
 
   // Number of bootstrap replications
@@ -84,6 +81,7 @@ Examples
   // Toda & Yamamoto test
   test = 1;
 
+  // Run Granger tests
   GC_out = GC_tests(data, vnames, pmax, ic, test, Nboot);
 
 Source

@@ -8,7 +8,7 @@ Computes the Augmented Dickey-Fuller unit root test with flexible Fourier form s
 
 Format
 ----------------
-.. function:: { ADFk, k, p, cv } = Fourier_ADF(y, model[, pmax, fmax, ic])
+.. function:: { ADFk, f, p, cv } = Fourier_ADF(y, model[, pmax, fmax, ic])
     :noindexentry:
 
     :param y: Dependent variable.
@@ -42,8 +42,8 @@ Format
     :return ADF: ADF(k) statistic.
     :rtype ADF: Scalar
 
-    :return k: Number of single frequency.
-    :rtype k: Scalar
+    :return f: Number of single frequency.
+    :rtype f: Scalar
 
     :return p: number of lags selected by chosen information criterion
     :rtype p: Scalar

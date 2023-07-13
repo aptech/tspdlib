@@ -6,7 +6,7 @@
 **  The KPSS test with two structural breaks,
 **  Spanish Economic Review, 9, 2, 105-127.
 **
-**  Format:  { stat, tb1, tb2, cv } = KPSS_2breaks(y, model[, l, varm]);
+**  Format:  { stat, tb1, tb2, cv } = KPSS_2breaks(y, model[, bwl, varm]);
 **           {cv}           = cv_kpss2(model,t,tb1,tb2);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
@@ -16,7 +16,7 @@
 **                      3 = BB (Trend shift);
 **                      4 = CC (Level and trend shift)
 **
-**           l       -  Optional, Bandwidth for spectral window.
+**           bwl       -  Optional, Bandwidth for spectral window.
 **                      Default = round(4 * (T/100)^(2/9)).                      
 **
 **           varm    -  Long-run consistent variance estimation method
