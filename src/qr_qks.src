@@ -45,7 +45,7 @@
 
 
 /* Procedures */
-proc(1) = QKS_tests(y, model, test, ...);
+proc(1) = qks_tests(y, model, test, ...);
     local qr_tn, tau, tn;
     local Un, QKS_stat, indc, QKS_tau, p, k, cv, ic, breaks;
     

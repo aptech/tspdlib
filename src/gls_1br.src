@@ -58,7 +58,7 @@
 /*05 May 2020*/
 
 
-proc(16) =  GLS_1break(y, model, ...);
+proc(16) =  gls_1break(y, model, ...);
     local t, tb1_min, ssra_min, tb1, dc, dt, du1, dt1, z, cbar, lambda;
     local ygls, y1, SSRa, SSR1, ADF_GLS, p, cv_temp, s2, PT, MZa, MSB, MZt, MPT;
     local ADFGLS_min, PT_min, MZa_min, MSB_min, MZt_min, MPT_min;
