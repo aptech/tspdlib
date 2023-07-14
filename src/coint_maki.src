@@ -148,7 +148,8 @@ proc (2) = pf(datap, m, model, tp, lagoption);
         d1=sortc(bp1|bp2|bp3|bp4|bp5,1);
         
     else;
-        errorlogat "invalid input: 'mbctest' currently supports up to 5 breaks. '"$+ntos(m)$+"' breaks requested.";
+        s = currentprocname(1) $+ " invalid input: test currently supports up to 5 breaks, '"$+ntos(m)$+"' breaks requested."; 
+        errorlogat s;
         end;
     endif;
     

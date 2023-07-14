@@ -168,10 +168,7 @@ proc (2) = fourierGLSFTest(y, model, k, p);
     cbar = _getCbar(model, k);
     
     // Check number of columns of y
-    if cols(y) > 1;
-        errorlogat "Cannot run test, y must be single column.";
-        end;
-    endif;
+    __error_check_single_y_column(y, 0);
     
     // Get Fourier terms
     { sink, cosk } = _getFourierTerms(t, k);

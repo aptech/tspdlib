@@ -115,10 +115,8 @@ proc (2) = fourierKPSSFTest(y, model, k);
     t = rows(y);
     
     // Check number of columns of y
-    if cols(y) > 1;
-        errorlogat "Cannot run test, y must be single column.";
-        end;
-    endif;
+    // Check number of columns of y
+    __error_check_single_y_column(y, 0);
     
     // Get Fourier terms
     { sink, cosk } = _getFourierTerms(t, k);

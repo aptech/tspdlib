@@ -873,7 +873,7 @@ Proc(1) = __pd_dekpss(model, t, tb);
         endo;
         z = ones(t, 1)~seqa(1, 1, t)~du[., 2:m+1]~dt[., 2:m+1];
     else;
-        errorlogat( sprintf("'%s': Try to specify another model", currentprocname(2)));
+        errorlogat( sprintf("'%s': Invalid model input. Support models 1-4.", currentprocname(2)));
         end;
     endif;
     retp(z);

@@ -240,15 +240,22 @@ proc (1) = _getFourierADFCrit(T, model);
     retp(crit);
 endp;
 
+proc (1) = __error_check_single_y_column(y, level);
+    
+    if cols(y) > 1;
+        local s;
+        s = sprintf("'%s': Cannot run test, y must be a single column", currentprocname(level));
+        errorlogat "Cannot run test, y must be single column.";
+        end;
+    endif;
+endp;
+
 proc (2) = fourierADFFTest(y, model, k, p);
     local t, dy, ly, dc, dt, dep, y1, ldy, sbt,
         trnd, sinp, cosp, z1, z2, f_stat, cv_fstat;
     
     // Check number of columns of y
-    if cols(y) > 1;
-        errorlogat "Cannot run test, y must be single column.";
-        end;
-    endif;
+    __error_check_single_y_column(y, 0);
     
     { t, dy, ly, dc, dt } = _getFourierDeterministic(y);
     

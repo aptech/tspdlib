@@ -29,7 +29,7 @@
 **  Format:  Fisher = pd_cause(data, Ncross, test [, pmax, dmax, ic, Nboot, varnames]);
 **
 **
-**  Input:   data	 -  (TxN,k) data matrix
+**  Input:   data	 -  (TxN, k) data matrix
 **                      k is number of endogenous variables in VAR model
 **
 **           Ncross  -  Number of cross sections
@@ -94,7 +94,7 @@ proc(1) = pd_cause(data, Ncross, test, ...);
         
     else;
         local s;
-        s = sprintf("'%s': Invalid test input. Options include: `fisher`, `zhnc`, or `surwald`.");
+        s = sprintf("'%s': Invalid test input. Options include: `fisher`, `zhnc`, or `surwald`.", currentprocname(0));
         errorlogat s;
         end;
     endif;

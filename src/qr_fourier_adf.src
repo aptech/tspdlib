@@ -33,13 +33,9 @@
 proc(1) = QR_Fourier_ADF(y, model, tau, ...);
     local n, t, y1, dy, dyl, x, qr_beta, rho_tau, delta2;
     local tn, dc, dt;
-    local sink, cosk, dt_vec, pmax, k, _print,s ;
+    local sink, cosk, dt_vec, pmax, k, _print;
     
-    if rows(tau)>1 or cols(tau)>1;
-        s = sprintf("'%s': Only implemented for single tau values. Multiple tau values provided.", currentprocname()); 
-        errorlogat s;
-        end;
-    endif;
+    __check_single_tau(tau);
     
     // Data checks
     _checkForMissings(y, currentprocname());
@@ -233,4 +229,16 @@ proc(2) = QR_Fourier_ADF_bootstrap(y, model, tau, ...);
     cv_boot   = test_boot[0.99*Nboot] ~ test_boot[0.95*Nboot] ~ test_boot[0.90*Nboot];
     
     retp( test_boot, cv_boot);
+endp;
+
+proc (0) = __check_single_tau(tau, ...);
+    local level;
+    
+    level = dynargsGet(1, 0);
+    
+    if rows(tau)>1 or cols(tau)>1;
+        s = sprintf("'%s': Only implemented for single tau values. Multiple tau values provided.", currentprocname(level)); 
+        errorlogat s;
+        end;
+    endif;
 endp;

@@ -398,7 +398,7 @@ proc (1) = _get_ca_deterministic(model, t, ca, ...);
     if model == 2;
         z = z~seqa(1, 1, t);
     elseif model != 1;
-        s = sprintf("Accepts 'model' options 1 or 2. Found %d.", model);
+        s = sprintf("'%s': Invalid 'model' input. Accepts options 1 or 2. Found %d.", currentprocname(4), model);
         errorlogat s;
     endif;
     
