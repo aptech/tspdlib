@@ -1,15 +1,15 @@
 
-gls_1break
+gls_2breaks
 ==============================================
 
 Purpose
 ----------------
 
-Computes the GLS unit root test with one structural break.
+Computes the GLS unit root test with two structural break.
 
 Format
 ----------------
-.. function:: { ADFGLS_min, p, PT_min, MZa_min, MZt_min, MSB_min, MPT_min, s2, tb1_min, lambda, cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa } = gls_1break(y, model [, pmax, ic])
+.. function:: { ADFGLS_min, p, PT_min, MZa_min, MZt_min, MSB_min, MPT_min, s2, tb1_min, tb2_min, lambda1, lambda2, cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa } = gls_1break(y, model [, pmax, ic])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -62,11 +62,17 @@ Format
     :return s2: Long-run variance based on autoregressive spectral estimate.
     :rtype s3: Scalar
     
-    :return tb: Location of the break.
-    :rtype tb: Scalar
+    :return tb1: Location of the first break.
+    :rtype tb1: Scalar
     
-    :return lambda: Fraction of break (tb/T)
-    :rtype lambda: Scalar
+    :return tb2: Location of the second break.
+    :rtype tb2: Scalar
+    
+    :return lambda1: Fraction of the first break (tb/T)
+    :rtype lambda1: Scalar
+        
+    :return lambda2: Fraction of the second break (tb/T)
+    :rtype lambda2: Scalar
     
     :return cvPT: 1%, 5%, and 10% critical values for the PT statistic.
     :rtype cvPT: Vector
@@ -96,15 +102,15 @@ Examples
 
   // Break in level
   model = 1;
-  call gls_1break(y, model);
+  call gls_2breaks(y, model);
 
   // Break in level and trend
   model = 2;
-  call gls_1break(y, model);
+  call gls_2breaks(y, model);
 
 Source
 ------
 
-gls_1br.src
+gls_2br.src
 
-.. seealso:: Functions :func:`gls_2breaks`
+.. seealso:: Functions :func:`gls_1break`
