@@ -24,7 +24,7 @@ Format
 
     :type model: Scalar
 
-    :param kmax: Maximum number of factors. Maximum = Default = 5.
+    :param kmax: Maximum number of factors. Default = 5.
     :type kmax: Scalar
 
     :param ic_factors: Information Criterion for optimal number of factors. Default = 1.
@@ -51,6 +51,8 @@ Examples
 
 ::
 
+  library tspdlib;
+  
   // Load date file
   y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/PDe.dat");
 
@@ -69,4 +71,4 @@ Source
 
 pd_panic.src
 
-.. seealso:: Functions :func:`bng_panic`, :func:`jwr_panicca`, :func:`jwl_panicadj`
+.. seealso:: Functions :func:`bng_panic`, :func:`jwr_panicca`, :func:`jwl_panicadj`, :func:`pd_stationary`

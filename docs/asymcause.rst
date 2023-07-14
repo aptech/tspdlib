@@ -5,7 +5,7 @@ asymcause
 Purpose
 ----------------
 
-Performcs the asymmetric causality tests of the hypothesis that z does not cause y. Based on original code provided by Abdulnasser Hatemi-J.
+Performs the asymmetric causality tests of the hypothesis that z does not cause y. Based on original code provided by Abdulnasser Hatemi-J.
 
 Format
 ----------------
