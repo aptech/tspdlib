@@ -5,9 +5,47 @@
 ** The code can be used freely as long as proper reference is given. No performance
 ** guarantee is made. Bug reports are welcome.
 */
-proc (3) = pd_coint_wedgerton(y, x, mod, ...);
-    local dt_vec, frac_dts, t, mod_str, nbrks, trimm, p, q, 
-    grp_names, dft_p, brks, max_f, lmn, nf;
+/*
+**  pd_coint_wedgerton
+**
+**
+**  Format:  { brks, lmn, nf } = pd_coint_wedgerton(y, x, modelel [, p, q, trimm, kmax]);
+**
+**  Input:
+**           Y	     -  TxN matrix, dependent variable
+**
+**           X       -  Tx(NxK) matrix, independent variables
+**
+**           model   - 	The modelel to implement.
+**                      0                   No shift
+**                      1                   Level shift
+**                      2                   Regime shift
+**
+**           p       -  Optional, the number of autoregressive lags to include. 
+**                      Default = int(4*(t/100)^(2/9)).
+**
+**           q       -  Optional, number of lags to include in the long-run variance estimation. 
+**                      Default = int(4*(t/100)^(2/9)).
+**
+**          trimm    -   Optional, trimming rate. Default [0.10,0.90] as in GH (1996)
+**
+**          kmax     -   Optional, the maximum number of factors to include. Default = 5.
+**
+**  Output:
+**          brks    -   Vector, break dates.
+**
+**          lmn     -   Test statistics.
+**
+**          nf      -   Number of factors.
+**
+**  Author: Saban Nazlioglu
+-- The author makes no performance guarantees.
+-- for public non-commercial use only.
+-- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
+*/
+proc (3) = pd_coint_wedgerton(y, x, ...);
+    local dt_vec_y, dt_vec_x, frac_dts, t, model_str, nbrks, trimm, p, q, 
+    grp_names, dft_p, brks, kmax, lmn, nf;
     
     t = rows(y);
     
@@ -15,7 +53,8 @@ proc (3) = pd_coint_wedgerton(y, x, mod, ...);
     _checkForMissings(y, currentprocname());
     
     // Check for date in y data
-    { dt_vec, y } =_checkfordate(y);
+    { dt_vec_y, y } =_checkfordate(y);
+    { dt_vec_x, x } =_checkfordate(x);
     
     // Default grp_names
     grp_names = "Group " $+ itos(seqa(1, 1, cols(y)));
@@ -24,17 +63,17 @@ proc (3) = pd_coint_wedgerton(y, x, mod, ...);
     dft_p  = int(4*(t/100)^(2/9));
     
     // Get dynamic arguments
-    { p, q, trimm, max_f } = dynargsGet(1|4, dft_p, dft_p, 0.1, 5);
+    { p, q, trimm, kmax } = dynargsGet(1|4, dft_p, dft_p, 0.1, 5);
     
     // Find break points
-    if mod > 0;
-        brks  = __pd_coint_wedgerton_br(y, x, trimm, mod);
+    if model > 0;
+        brks  = __pd_coint_wedgerton_br(y, x, trimm, model);
     else;
         brks = zeros(cols(y), 1);
     endif;
     
     // Estimate test statistic
-    { lmn, nf } = __pd_coint_wedgerton_fact(y, x, brks, p, q, mod, max_f);
+    { lmn, nf } = __pd_coint_wedgerton_fact(y, x, brks, p, q, model, kmax);
     
     /*
     ** Printing results
@@ -43,17 +82,17 @@ proc (3) = pd_coint_wedgerton(y, x, mod, ...);
     /*
     ** Print header
     */
-    if mod == 0;
-        mod_str = "No break";
+    if model == 0;
+        model_str = "No break";
         nbrks = 0;
-    elseif mod == 1;
-        mod_str = "Level Shift";
+    elseif model == 1;
+        model_str = "Level Shift";
         nbrks = 1;
-    elseif mod == 2;
-        mod_str = "Regime shift";
+    elseif model == 2;
+        model_str = "Regime shift";
         nbrks = 1;
     endif;
-    _printHeaderTSPDLIB(0, 0, 0, mod_str, nbrks, trimm, "Westerlund-Edgerton", "Cointegration", 0);
+    _printHeaderTSPDLIB(0, 0, 0, model_str, nbrks, trimm, "Westerlund-Edgerton", "Cointegration", 0);
     
     /*
     ** Print statistics
@@ -72,22 +111,22 @@ proc (3) = pd_coint_wedgerton(y, x, mod, ...);
     /*
     ** Print breaks
     */
-    if mod > 0;
+    if model > 0;
         // Convert break dates 
-        { frac_dts, brks  } = __convertbreaks(brks', dt_vec, rows(y));
+        { frac_dts, brks  } = __convertbreaks(brks', dt_vec_y, rows(y));
     endif;
     
     sprintf("%s", "Break dates:");
     print "==============================================================";
     // Print break dates
-    _printBreaks(dt_vec, brks, frac_dts, grp_names);
+    _printBreaks(dt_vec_y, brks, frac_dts, grp_names);
     print;
     
     retp(brks, lmn, nf);
 endp;
 
 
-proc (1) = __pd_coint_wedgerton_br(y, x, trimm, mod);
+proc (1) = __pd_coint_wedgerton_br(y, x, trimm, model);
     local t, n, i, br, t1, t2, j, ssr;
     
     t = rows(y);
@@ -102,7 +141,7 @@ proc (1) = __pd_coint_wedgerton_br(y, x, trimm, mod);
         j   = t1;
         ssr = zeros(t, 1);
         do while j <= t2;
-            ssr[j] = __pd_coint_ssr(y[., i], x[., i],  j,  mod);
+            ssr[j] = __pd_coint_ssr(y[., i], x[., i],  j,  model);
             j      = j + 1;
         endo;
         
@@ -115,7 +154,7 @@ proc (1) = __pd_coint_wedgerton_br(y, x, trimm, mod);
 endp;
 
 
-proc (2) = __pd_coint_wedgerton_fact(y, x, br, p, q, mod, max);
+proc (2) = __pd_coint_wedgerton_fact(y, x, br, p, q, model, max);
     local t, n, i, de, z, dz, dy, dx, nf, f, l, d, s0, sl, ds, v, u, v0, vl, zt, za;
     
     t = rows(y);
@@ -125,7 +164,7 @@ proc (2) = __pd_coint_wedgerton_fact(y, x, br, p, q, mod, max);
     de = zeros(t-1,n);
     do while i <= n;
         
-        z       = __pd_coint_dum(x[.,i], br[i], mod);
+        z       = __pd_coint_dum(x[.,i], br[i], model);
         dz      = __pd_diff_west(z, 1);
         dy      = __pd_diff_west(y[.,i], 1);
         dx      = (__pd_diff_west(x[.,i], 1)~dz);
@@ -148,7 +187,7 @@ proc (2) = __pd_coint_wedgerton_fact(y, x, br, p, q, mod, max);
     endif;
     do while i <= n;
         
-        z  = __pd_coint_dum(x[.,i], br[i], mod);
+        z  = __pd_coint_dum(x[.,i], br[i], model);
         dz = __pd_diff_west(z, 1);
         dx = (__pd_diff_west(x[.,i],1)~dz);
         dy = __pd_diff_west(y[., i], 1);
@@ -224,7 +263,7 @@ proc (2) = __pd_coint_prin(e, nf);
 endp;
 
 
-proc (1) = __pd_coint_detm(x, br, model);
+proc (1) = __pd_coint_detm(x, br, modelel);
     local t, d, z;
     
     t = rows(x);
@@ -237,8 +276,8 @@ proc (1) = __pd_coint_detm(x, br, model);
         d = (zeros(br, 1)|ones(t-br, 1));
     endif;
     
-    // Add dummies for model two
-    if model eq 2;
+    // Add dummies for modelel two
+    if modelel eq 2;
         if br ne 0;
             z = z~(d.*x);
         endif;
@@ -247,7 +286,7 @@ proc (1) = __pd_coint_detm(x, br, model);
     retp(z);
 endp;
 
-proc (1) = __pd_coint_dum(x, br, model);
+proc (1) = __pd_coint_dum(x, br, modelel);
     local t, d, z;
     
     t = rows(x);
@@ -261,9 +300,9 @@ proc (1) = __pd_coint_dum(x, br, model);
     
     
     if br ne 0;
-        if model eq 1;
+        if modelel eq 1;
             z = z~d;
-        elseif model eq 2;
+        elseif modelel eq 2;
             z =  z~d~(d.*x);
         endif;
     endif;
@@ -272,12 +311,12 @@ proc (1) = __pd_coint_dum(x, br, model);
 endp;
 
 
-proc (1) = __pd_coint_ilt(y, x, br, p, model);
+proc (1) = __pd_coint_ilt(y, x, br, p, modelel);
     local d, u, za, zt, t, dy, dx, v, z, dz, s0, sl, ds, v0, vl;
     
     t = rows(y);
     
-    z  = __pd_coint_dum(x, br, model);
+    z  = __pd_coint_dum(x, br, modelel);
     dz = __pd_diff_west(z, 1);
     dx = (__pd_diff_west(x, 1)~dz);
     dy = __pd_diff_west(y, 1);
@@ -298,12 +337,12 @@ proc (1) = __pd_coint_ilt(y, x, br, p, model);
     retp(zt~za);
 endp;
 
-proc (1) = __pd_coint_ssr(y, x, br, model);
+proc (1) = __pd_coint_ssr(y, x, br, modelel);
     local d, u, t, dy, dx, z, dz;
     
     t = rows(y);
     
-    z  = __pd_coint_dum(x, br, model);
+    z  = __pd_coint_dum(x, br, modelel);
     dz = __pd_diff_west(z, 1);
     dx = (__pd_diff_west(x, 1)~dz);
     dy = __pd_diff_west(y, 1);
