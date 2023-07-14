@@ -237,7 +237,7 @@ endp;
 **
 **           pmax    -  Maximum number of lags for Dy; 0=no lags
 **
-**           kmax    -  Maximumum number of single Fourier frequency
+**           fmax    -  Maximumum number of single Fourier frequency
 **                      (upper bound is 5)
 **
 **           ic      -  Information Criterion:

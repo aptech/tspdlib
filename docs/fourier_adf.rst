@@ -73,4 +73,4 @@ Source
 
 fourier_adf.src
 
-.. seealso:: Functions :func:`coint_egranger`
+.. seealso:: Functions :func:`fourier_kss`, :func:`fourier_gls`, :func:`fourier_kpss`, :func:`fourier_lm`

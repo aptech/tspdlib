@@ -67,7 +67,7 @@ Examples
   model = 1;
 
   // Call test
-  { KPSS, f, cv } = Fourier_KPSS(y, model);
+  { KPSSk, f, cv } = Fourier_KPSS(y, model);
 
 Source
 ------

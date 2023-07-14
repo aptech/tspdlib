@@ -8,7 +8,7 @@ Computes the KSS unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { Ftau, p, f } = Fourier_kss(y, model, test [, pmax, fmax, ic])
+.. function:: { Ftau, f, p } = Fourier_kss(y, model, test [, pmax, fmax, ic])
     :noindexentry:
 
     :param y: Dependent variable.
@@ -45,12 +45,12 @@ Format
     :return Ftau: F-tau statistic,
     :rtype Ftau: Scalar
 
+    :return f: Chosen number of single frequency.
+    :rtype f: Scalar
+        
     :return p: number of lags selected by chosen information criterion
     :rtype p: Scalar
     
-    :return f: Chosen number of single frequency.
-    :rtype f: Scalar
-
 Examples
 --------
 
