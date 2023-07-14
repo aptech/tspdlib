@@ -66,4 +66,4 @@ Source
 
 qr_fourier_KSS.src
 
-.. seealso:: Functions :func:`qr_KSS`, :func:`qr_fourier_kss`, :func:`qr_adf`, :func:`qr_fourier_adf`, :func:`qr_fourier_adf_bootstrap`
+.. seealso:: Functions :func:`qr_KSS`, :func:`qr_fourier_kss`, :func:`qr_adf`, :func:`qr_fourier_adf`

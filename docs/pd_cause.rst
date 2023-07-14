@@ -61,9 +61,6 @@ Examples
 
   library tspdlib;
 
-  // Load panel data
-  data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pdcause.dat");
-
   // Load data
   data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pdcause.dat");
 

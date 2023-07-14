@@ -1,4 +1,4 @@
-coint_cissano
+pd_coint_wedgerton
 ==============================================
 
 Purpose

@@ -63,4 +63,4 @@ Source
 
 qr_fourier_adf.src
 
-.. seealso:: Functions :func:`quantileADF`, :func:`adf`, :func:`adf_1break`, :func:`adf_2breaks`
+.. seealso:: Functions func:`qr_fourier_adf_bootstrap`, :func:`quantileADF`, :func:`adf`, :func:`adf_1break`, :func:`adf_2breaks`
