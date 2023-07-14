@@ -179,7 +179,7 @@ proc(6) = coint_cissanso(y, x, model, ...);
     lambda= tb2_min/rows(y);
     {cv} = cv_coint_cissanso(model, lambda, k);
     
-     _printHeaderTSPDLIB(0, varm, 3, model, 2, trimm, "Carrion-i-Silvestre & Sanso", "Cointegration", 0);
+     _printHeaderTSPDLIB(0, varm, 3, model, 1, trimm, "Carrion-i-Silvestre & Sanso", "Cointegration", 0);
     
     // Print results
     local top, side, stats, tmp1, tmp2, dec, colwidth;
