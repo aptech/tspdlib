@@ -1,0 +1,53 @@
+
+/*
+** This code was written by Mucahit Aydin, Department of Econometrics, Sakarya University.
+** mail: aydinm@sakarya.edu.tr
+** The Saban Nazlioglu's tspdlib library was used for FADF methodology.
+** When you use this code, please cite:
+
+Aydin, M. &  Pata, U. K., (2020)
+"Are Shocks to Disaggregated Renewable Energy Consumption Permanent or Temporary for the US?
+Wavelet-Based Unit Root Test with Smooth Structural Shifts. Energy."
+
+Aydin, M. (2020)
+"A New Nonlinear Wavelet-Based Unit Root Test with Structural Breaks.
+Munich Personal RePEc Archive."
+
+** No performance guarantee is made. Bug reports are welcome. */
+
+proc (3) = fourier_wadf(y, model, ...);
+    local pmax, fmax, ic, wavelet, dt_vec, d1, yt, FWADF, f, p, cv;
+    
+    _checkForMissings(y, currentprocname());
+    
+    // Optional arguments
+    { pmax, fmax, ic, wavelet } = dynargsGet(1|4, 8, 5, 3, 0);
+    
+    // Check for dates
+    { dt_vec, y } =_checkfordate(y);
+    
+    // Wavelet Transformation
+    { d1, yt } = __wavelet_transform(y);
+
+    // FWADF Test
+    screen off;
+    { FWADF, f, p, cv } = Fourier_ADF(yt, model, pmax, fmax, ic, 1);
+    screen on;
+    
+    _printHeaderTSPDLIB(ic, 0, 2, model, 5, 0, "Fourier WADF", "Unit root", 0);
+    
+    // Print results & Critical values
+    local top, side, stats, dec, colwidth;
+    side = "WADF-stat:";
+    top = "";
+    stats = FWADF;
+    dec = 3;
+    colwidth = 15;
+    cv = {};
+    
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0, p, f);
+//    _printConclusion(FWADF, crit[f, .], 0, "unit root");
+    
+    retp(FWADF, f, p );
+    
+endp;
