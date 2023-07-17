@@ -43,14 +43,13 @@
 
 proc(4) = Fourier_ADF(y, model, ...);
     local t, p, taup, aicp, sicp, tstatp, ssrp, ssrk, tauk,
-        k, dy, ly, dc, dt, sink, cosk, lmat, dep, y1, ldy,
-        sbt, trnd, sinp, cosp, z, adf,
-        f, crit, keep_p, opt_lag, pmax, fmax, ic,
-        dt_vec, zero_vec;
+        k, dy, ly, dc, dt, sink, cosk, lmat, dep, ldy,
+        adf, f, crit, keep_p, opt_lag, pmax, fmax, ic,
+        dt_vec, zero_vec, wavelet, z;
     
     _checkForMissings(y, currentprocname());
     
-    { pmax, fmax, ic } = dynargsGet(1|3, 8, 5, 3);
+    { pmax, fmax, ic, wavelet } = dynargsGet(1|4, 8, 5, 3, 0);
     
     // Check for dates
     { dt_vec, y } =_checkfordate(y);
@@ -83,7 +82,6 @@ proc(4) = Fourier_ADF(y, model, ...);
         do while p <= pmax;
             
             dep = trimr(dy, p + 1, 0);
-            y1 = trimr(ly, p + 1, 0);
             
             // Get lags of y
             ldy = trimr(zero_vec, p+1, 0);
@@ -92,30 +90,13 @@ proc(4) = Fourier_ADF(y, model, ...);
                 ldy = trimr(lmat[., 1:p], p+1, 0)~ldy;
             endif;
             
-            sbt = trimr(dc, p + 1, 0);
-            trnd = trimr(dt, p + 1, 0);
-            
-            sinp = trimr(sink, p + 1, 0);
-            cosp = trimr(cosk, p + 1, 0);
-            
-            if p == 0;
-                if model == 1;
-                    z = y1~sbt~sinp~cosp;
-                endif;
-                
-                if model == 2;
-                    z = y1~sbt~trnd~sinp~cosp;
-                endif;
-                
-            elseif p > 0;
-                if model == 1;
-                    z = y1~sbt~sinp~cosp~ldy[., 1:p];
-                endif;
-                if model == 2;
-                    z = y1~sbt~trnd~sinp~cosp~ldy[., 1:p];
-                endif;
+            // Get independent variables
+            if wavelet;
+                z = __get_model_x(ly, p, model, ldy, 0, dc, dt, sink);
+            else;
+                z = __get_model_x(ly, p, model, ldy, 0, dc, dt, sink, cosk);
             endif;
-            
+            // Run OLS
             { taup[p+1], aicp[p+1], sicp[p+1], tstatp[p+1], ssrp[p+1] } = _runFourierOLS(dep, z, k);
             
             p = p + 1;
@@ -123,6 +104,7 @@ proc(4) = Fourier_ADF(y, model, ...);
         
         // Find optimal lag
         p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
+        
         keep_p[k] = p;
         ssrk[k] = ssrp[p];
         tauk[k] = taup[p];
@@ -136,7 +118,7 @@ proc(4) = Fourier_ADF(y, model, ...);
     // Critical Values (see, Enders & Lee, 2012, Table 1b)
     crit = _getFourierADFCrit(T, model);
     
-    _printHeaderTSPDLIB(ic, 0, 2, model, 4, 0, "Fourier ADF", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 2, model, 5, 0, "Fourier ADF", "Unit root", 0);
     
     // Print results & Critical values
     local top, side, stats, dec, colwidth;
@@ -452,4 +434,63 @@ proc (2) = _getCumFourierTerms(t, k, ...);
     endif;
     
     retp(sinp, cosp);
+endp;
+
+proc (1) = __get_model_x(yt, p, model, ldy, ...);
+    local t, f_det, lagy, sink, cosk, c, trend, x;
+    
+    // Get length
+    t = rows(yt);
+    
+    // Get optional arguments
+    { lagy, c, trend, sink, cosk } = dynargsGet(1|5, 0, ones(t, 1),  seqa(1, 1, t), miss(), miss());
+    
+    // Set fourier terms
+    f_det = {};
+    if ismiss(sink) == 0;
+        f_det = sink;
+    endif;
+    
+    if ismiss(cosk) == 0;
+        f_det = f_det ~ cosk;
+    endif;
+   
+    // Lag y option
+    if lagy;
+        yt = lag1(yt);
+    endif;
+    
+    if ismiss(sink) and ismiss(cosk);
+        // Set i
+        x = yt~c;
+        
+        // Add trend
+        if model == 2;
+            x = trimr(x~trend, p + 1, 0);
+        else;
+            x = trimr(x, p + 1, 0);
+        endif;
+        
+        if p > 0;
+            x = x~ldy[., 1:p];
+        endif;
+    else;
+        
+        // Set i
+        x = yt~c~f_det;
+        
+        // Add trend
+        if model == 2;
+            x = trimr(x~trend, p + 1, 0);
+        else;
+            x = trimr(x, p + 1, 0);
+        endif;
+        
+        if p > 0;
+            x = x~ldy[., 1:p];
+        endif;
+  
+    endif;
+    
+    retp(x);
 endp;
