@@ -92,7 +92,7 @@ proc(3) = Fourier_KPSS(y, model, ...);
     // Critical Values (see, Becker, Enders & Lee, 2006, Table 1)
     crit = _getFourierKPSSCrit(T, model);
     
-    _printHeaderTSPDLIB(0, varm, 2, model, 4, 0, "Fourier KPSS", "Stationarity", 0);
+    _printHeaderTSPDLIB(0, varm, 2, model, 5, 0, "Fourier KPSS", "Stationarity", 0);
     
     // Print results & Critical values
     local top, side, stats, dec, colwidth;

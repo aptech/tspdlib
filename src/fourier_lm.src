@@ -134,7 +134,7 @@ proc(4) = Fourier_LM(y, ...);
     // Critical Values (see, Enders & Lee, 2012, Table 1)
     crit = _getFourierLMCrit(T);
     
-    _printHeaderTSPDLIB(ic, 0, 0, 0, 4, 0, "Fourier LM", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 0, 0, 5, 0, "Fourier LM", "Unit root", 0);
     
     "Fourier LM test (Enders & Lee, 2012)";
     // Print results & Critical values

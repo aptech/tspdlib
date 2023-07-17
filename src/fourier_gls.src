@@ -142,7 +142,7 @@ proc(4) = Fourier_GLS(y, model, ...);
     // Critical Values (see,  Rodrigues & Taylor,  2012,  Table 2)
     crit = _getFourierGLSCrit(T, model);
     
-    _printHeaderTSPDLIB(ic, 0, 2, model, 4, 0, "Fourier GLS", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 2, model, 5, 0, "Fourier GLS", "Unit root", 0);
     
     // Print results & Critical values
     local top, side, stats, dec, colwidth;
