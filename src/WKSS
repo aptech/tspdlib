@@ -1,0 +1,101 @@
+new; cls;
+/*
+** This code was written by Mucahit Aydin, Department of Statistics, Sakarya University.
+** mail: aydinm@sakarya.edu.tr
+** The Saban Nazlioglu's tspdlib library was used for KSS methodology. 
+** When you use this code, please cite:
+
+Aydin, M. (2020)
+"A New Nonlinear Wavelet-Based Unit Root Test with Structural Breaks. 
+Munich Personal RePEc Archive."
+
+** No performance guarantee is made. Bug reports are welcome. */
+
+load data[] =data.txt;  
+case=3;                                         /*  Case;                     1= Raw ,      2= Demeaned Data,  3=Detrended Data    */
+inc=2;                                          /*  Information Criteria;     1= Akaike ,   2= Schwarz                             */
+pmax=8;                                        /*   Maximum number of lag length               */
+ 
+if case==1;
+dety=data;
+elseif case==2;
+dety=data - meanc(data);
+elseif case==3;
+y1=trimr(data-lag1(data),1,0);
+y2=y1-meanc(y1);
+y3=cumsumc(y2);
+y4=y3-meanc(y3);
+dety=y4;
+endif;
+
+
+t1=rows(dety);
+t2=1;
+n1=1;
+d1=zeros(t1/2,1);
+yt=zeros(t1/2,1);
+
+/*Wavelet Transformation*/
+do while t2<=t1 and n1<=t1/2;
+    d1[n1]=(dety[t2+1,.]-dety[t2,.])/sqrt(2);                     
+    yt[n1]=(dety[t2+1,.]+dety[t2,.])/sqrt(2);                    
+    t2=t2+2;
+    n1=n1+1;
+endo;
+
+/*WKSS Test*/
+
+    t    = rows(yt);
+    taup = zeros(pmax + 1, 1);
+    tstatp = zeros(pmax + 1, 1);
+    sinc = zeros(pmax + 1, 1);
+    ainc = zeros(pmax + 1, 1);
+    ssrp = zeros(pmax + 1, 1);
+    ly = lag1(yt);    
+    dy = yt-ly;
+     k = 1;
+    
+    p = 0;
+    do while p <= pmax;
+        lmat = zeros(rows(dy), p + 1);
+        j = 1;
+        do while j <= p;
+            lmat[., j] = lagn(dy, j);
+            j = j + 1;
+        endo;
+        dep = trimr(dy, p + 1, 0);
+        ldy = trimr(lmat, p + 1, 0);
+       
+        if p == 0;
+                x = trimr(lag1(yt^3), p + 1, 0);
+        elseif p > 0;
+                x = trimr(lag1(yt^3), p + 1, 0)~ldy[., 1:p];
+        endif;
+        
+        invxx = inv(x'x);
+		b = invxx*x'dep;
+		res = dep-x*b;
+		ssr=res'res; 
+        s2 = res'res/(rows(x)-cols(x));
+        taup[p+1] = b[1]/sqrt(s2*invxx[1,1]);
+         n = rows(x);
+         k= cols(x);
+        
+        ainc[p+1] = ln(res'res/rows(x)) + 2 * (k + 2)/rows(x);
+        sinc[p+1] = ln(res'res/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
+        
+        p = p + 1;
+    endo;
+
+     if  inc == 1;
+        p = minindc(ainc);
+    else; 
+        p = minindc(sinc);
+    endif;  
+         tau = taup[p];
+     
+    
+"*********************************************************";
+"Chosen lag length:" "           " p-1;
+"WKSS Test Statistic: "   "         " tau;
+"*********************************************************";
