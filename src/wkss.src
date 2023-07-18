@@ -1,0 +1,129 @@
+
+/*
+**> kss
+**  Reference:
+
+** When you use this code, please cite:
+** 
+** Aydin, M. (2020)
+** "A New Nonlinear Wavelet-Based Unit Root Test with Structural Breaks. 
+** Munich Personal RePEc Archive."
+**
+**  Format:  { WKSS_stat, p } = WKSS(y, model [, pmax, ic]);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**
+**           model   - 	Optional, model selection. 
+**                      0 = Zero-mean & no-trend
+**                      1 = De-meaned data
+**                      2 = De-meaned and de-trended data
+**
+**           pmax    -  Optional, maximum number of lags for Dy. Default = 8.
+**
+**           ic      -  Optional, information criterion.
+**                      Default = 3.
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
+**
+**  Output:  WKSS_stat    - Non-linear tau-statistic
+**			 p            - number of lags selected by chosen information criterion
+**
+**  Author: Mucahit Aydin
+** This code was written by Mucahit Aydin, Department of Statistics, Sakarya University.
+** mail: aydinm@sakarya.edu.tr
+** The Saban Nazlioglu's tspdlib library was used for KSS methodology. 
+** No performance guarantee is made. Bug reports are welcome. 
+*/
+
+proc(2) = WKSS(y, model, ...);
+    local pmax, ic, t, taup, aicp, sicp, tstatp;
+    local dc, dt, z, a, v, dv, v1;
+    local p_lags, dv_lags, p, x, dep;
+    local LL, n, k, p_opt, t_nl;
+    local d1, yt, ssrp, b, e1, sig2, se, ssr, cv, dt_vec, model_str;
+    
+    // Data checks
+    _checkForMissings(y, currentprocname());
+    { dt_vec, y } =_checkfordate(y);
+    
+    // Get optional arguments
+    { pmax, ic } = dynargsGet(1|2, 8, 3);
+    
+    // Zero-mean & no-trend
+    if model == 0;
+        v = y;
+        model_str = "Zero-mean, no trend";
+        // De-meaned data
+    elseif model == 1;
+        v = y - meanc(y);
+        model_str = "De-meaned, no trend";
+        // De-meaned and de-trended data
+    elseif model == 2;
+        model_str = "De-meaned, de-trended";
+        dc = ones(T, 1);
+        dt = seqa(1, 1, T);
+        z = dc ~ dt;
+        a = y/z;
+        v = y - z * a;
+    endif;
+    
+    // Wavelet Transformation
+    { d1, yt } = __wavelet_transform(v);
+    
+    // Model dimensions
+    t    = rows(y);
+    taup = zeros(pmax + 1, 1);
+    aicp = zeros(pmax + 1, 1);
+    sicp = zeros(pmax + 1, 1);
+    tstatp = zeros(pmax + 1, 1);
+    ssrp = zeros(pmax + 1, 1);
+    
+    
+    dv = diff(v, 1);
+    v1 = lagn(v^3, 1);
+    
+    if pmax > 0;
+        p_lags  = seqa(1, 1, pmax);
+        dv_lags = lagn(dv, p_lags);
+    endif;
+    
+    for p(0, pmax, 1);
+        
+        if p == 0;
+            x = v1;
+        elseif p > 0;
+            x = v1 ~ dv_lags[., 1:p];
+        endif;
+        
+        dep = trimr(dv, p+1, 0);
+        x   = trimr(x, p+1, 0);
+        { b, e1, sig2, se, ssr } = myols(dep, x);
+        taup[p+1] = b[1]/se[1];
+        n = rows(x);
+        k = cols(x);
+        
+        // Log-likelihood
+        LL = -n/2 * (1 + ln(2*pi) + ln(e1'e1/n));
+        
+        aicp[p+1] = (2 * k-2 * LL)/n;
+        sicp[p+1] = (k * ln(n) - 2 * LL)/n;
+        tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
+    endfor;
+    
+    p_opt = _get_lag(ic, pmax, aicp, sicp, tstatp);
+    t_nl  = taup[p_opt];
+   
+    _printHeaderTSPDLIB(ic, 0, 0, model_str, 0, 0, "WKSS", "Unit root", 0);
+    
+    local side, stats, dec, colwidth;
+    side = "WKSS-stat:";
+    stats = t_nl;
+    dec = 3;
+    colwidth = 15;
+    cv = {};
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0, p_opt-1);
+//    _printConclusion(t_nl, cv, 0, "a unit root");
+
+    retp(t_nl, p_opt - 1);
+endp;

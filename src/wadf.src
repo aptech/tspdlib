@@ -21,10 +21,10 @@
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
-**           model   - 	Optional, specifies level of demeaning.
-**                      0 = No demeaning or detrending.
-**                      1 = Demeaning and no detrending.
-**                      2 = Demeaning and detrending.
+**           model   - 	Specifies deterministic components.
+**                      0 = none
+**                      1 = model with constant
+**                      2 = model with constant and trend
 **
 **           pmax    -  Optional, maximum number of lags for Dy; 0 = no lags
 **
@@ -35,7 +35,7 @@
 **
 **  Output:  WADF_stat   - WADF tau
 **
-**			 p       - number of lags selected by chosen information criterion
+**			 p           - number of lags selected by chosen information criterion
 **
 ** No performance guarantee is made. Bug reports are welcome. 
 */
