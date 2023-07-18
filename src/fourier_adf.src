@@ -466,7 +466,7 @@ proc (1) = __get_model_x(yt, p, model, ldy, ...);
     t = rows(yt);
     
     // Get optional arguments
-    { lagy, c, trend, kss, sink, cosk } = dynargsGet(1|5, 0, ones(t, 1),  seqa(1, 1, t), 0, miss(), miss());
+    { lagy, c, trend, sink, cosk } = dynargsGet(1|5, 0, ones(t, 1),  seqa(1, 1, t), 0, miss(), miss());
     
     // Set fourier terms
     f_det = {};
@@ -482,12 +482,7 @@ proc (1) = __get_model_x(yt, p, model, ldy, ...);
     if lagy;
         yt = lag1(yt);
     endif;
-    
-    // Start x
-    if kss;
-        yt = lag1(yt^3);
-    endif;
-    
+
     if ismiss(sink) and ismiss(cosk);
         
         // Add constant

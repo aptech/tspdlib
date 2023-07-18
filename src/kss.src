@@ -11,15 +11,15 @@
 **
 **  Input:   Y	     -  Nx1 matrix, data,
 **
-**           model   - 	Optional, model selection. Default = 1.
-**                      0 = none
-**                      1 = model with constant
-**                      2 = model with constant and trend
+**           model   - 	Optional, model selection. 
+**                      0 = Zero-mean & no-trend
+**                      1 = De-meaned data
+**                      2 = De-meaned and de-trended data
 **
 **           pmax    -  Optional, maximum number of lags for Dy. Default = 8.
 **
 **           ic      -  Optional, information criterion.
-**                      Default = 1.
+**                      Default = 3.
 **                      1 = Akaike
 **                      2 = Schwarz
 **                      3 = t-stat significance
@@ -35,19 +35,19 @@
 **
 */
 
-proc(3) = KSS(y, model, pmax, ic);
-    local t, taup, aicp, sicp, tstatp;
+proc(3) = KSS(y, model, ...);
+    local pmax, ic, t, taup, aicp, sicp, tstatp;
     local dc, dt, z, a, v, dv, v1;
     local p_lags, dv_lags, p, x, dep;
     local LL, n, k, p_opt, t_nl;
-    local b, e1, sig2, se, ssr, cv, dt_vec;
+    local b, e1, sig2, se, ssr, cv, dt_vec, model_str;
     
     // Data checks
     _checkForMissings(y, currentprocname());
     { dt_vec, y } =_checkfordate(y);
     
     // Get optional arguments
-    { model, pmax, ic } = dynargsGet(1, 8, 1);
+    { pmax, ic } = dynargsGet(1|2, 8, 3);
     
     // Model dimensions
     t    = rows(y);
@@ -59,11 +59,14 @@ proc(3) = KSS(y, model, pmax, ic);
     // Zero-mean & no-trend
     if model == 0;
         v = y;
+        model_str = "Zero-mean, no trend";
         // De-meaned data
     elseif model == 1;
         v = y - meanc(y);
+        model_str = "De-meaned, no trend";
         // De-meaned and de-trended data
     elseif model == 2;
+        model_str = "De-meaned, de-trended";
         dc = ones(T, 1);
         dt = seqa(1, 1, T);
         z = dc ~ dt;
@@ -80,6 +83,7 @@ proc(3) = KSS(y, model, pmax, ic);
     endif;
     
     for p(0, pmax, 1);
+        
         if p == 0;
             x = v1;
         elseif p > 0;
@@ -106,6 +110,16 @@ proc(3) = KSS(y, model, pmax, ic);
     
     cv = _get_kss_cv(model);
     
+    _printHeaderTSPDLIB(ic, 0, 0, 0, model_str, 0, "KSS", "Unit root", 0);
+    
+    local side, stats, dec, colwidth;
+    side = "KSS-stat:";
+    stats = t_nl;
+    dec = 3;
+    colwidth = 15;
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0, p_opt-1);
+    _printConclusion(t_nl, cv, 0, "a unit root");
+
     retp(t_nl, p_opt - 1, cv');
 endp;
 
