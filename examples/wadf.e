@@ -12,5 +12,5 @@ y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y");
 */
 
 // Set model to demean data
-model = 1;                  
-{ WADFtau, WADFp } = WADF(y, model);
+model = 2;                  
+{ WADFtau, WADFp } = WADF(y, model, 0);

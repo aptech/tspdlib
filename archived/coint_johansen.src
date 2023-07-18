@@ -10,14 +10,14 @@
 **  Oxford Bulletin of Eco- nomics and Statistics 52(2), 169–210.
 **
 **
-**  Format:  {JHlambda, JHtrace, cv_Trace, logL, eigen_value} = Johansen(x, model, k);
+**  Format:  {JHlambda, JHtrace, cv_Trace, logL, eigen_value} = coint_Johansen(x, model, k);
 **
 **
 **  Input:   
 **          x	   - [T,m] endogenous variables matrix
 **
 **          model  - 1 = None
-**                   2 = Resctricted constant (RC) model
+**                   2 = Restricted constant (RC) model
 **                   3 = Unrestricted constant model
 **                   4 = Restricted Trend model
 **                   5 = Unrestricted Trend model
@@ -43,7 +43,7 @@
 -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 */
 
-proc(5) = Johansen(x, model, k);
+proc(5) = coint_Johansen(x, model, k);
     local m, t, dx, dt, z, r0, r1, a, d, 
     lr1, lr2, cv_lr1, logL, eig_val;
     
@@ -64,7 +64,7 @@ proc(5) = Johansen(x, model, k);
     { r0, r1 } = _getCointRegResiduals(z, dx, dt, k);
     
     // Get eigenvalues
-    { eig_val, a, d } = _getJohansenEigval(r1, r0);
+    { eig_val, a, d } = _getJohansenEigval(r1, r0, m);
     
     // Order the eigenvalues and eigenvectors
     { a, d } = _reorderEig(a, d);
@@ -81,24 +81,21 @@ proc(5) = Johansen(x, model, k);
     cv_lr1 = rev(cv_lr1');
     
     // Print results
-    _printHeaderTSPDLIB(0, 0, 5, model, 0, 0, "Johansen Cointegration", "No cointegrating equations", long);
+    _printHeaderTSPDLIB(0, 0, 5, model, 0, 0, "Johansen Cointegration", "No cointegrating equations", 1);
     
     // Print results & Critical values
-    local side, stats, dec, colwidth;
-    side = "VAR number of lags:";
-    stats = k;
+    local side, stats, dec, colwidth, cv, top;
+    top = "Rank"$~"Eigenvalue"$~"Lambda"$~"Trace"$~"cv (5%)"$~"Log-likelihood";
+    side = itos(seqa(0, 1, cols(x)+1));
+    stats = (miss(1,1)|eig_val)~(miss(1,1)|lr2)~(miss(1,1)|lr1)~(miss(1,1)|cv_lr1)~(miss(1,1)|logL);
     dec = 3;
     colwidth = 15;
+    cv = {};
     
     // Print stats 
-    _printStatsTable("", side, stats, cv, dec, colwidth, 0);
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0, k);
 
-    // Results table
-    sprintf("%-15s", "Rank"$~"Eigenvalue"$~"Lambda"$~"Trace"$~"cv (5%)"$~"Log-likelihood");
-    "--------------------------------------------------------------------------------------------------"
-    sprintf("%15d%15.3f", seqa(0,1,cols(x)+1), (miss(1,1)|eigen_value)~(miss(1,1)|JHlambda)~(miss(1,1)|JHtrace)~(miss(1,1)|cv_Trace)~logL);
-    
-    retp(lr2, lr1, cv_lr1, logL, eig_val);
+    retp(eig_val, lr2, lr1, cv_lr1, logL);
 endp;
 
 proc (2) = _transformX(x, k);

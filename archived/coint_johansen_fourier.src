@@ -10,7 +10,7 @@
 **
 **
 **  Input:
-**          x	   - [T,m] endogenous variables matrix
+**          x	   - [T, m] endogenous variables matrix
 **
 **          model  - 1 = Constant model
 **                   2 = Trend model
@@ -39,26 +39,26 @@
 -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 */
 
-// Printing
-"         Johansen-Fourier Co-integration Tests         ";
-"=======================================================";
-" #var.  =";;
-m;
-" Model  =";;
-model;
-" Freq.  =";;
-f;
-" Option =";;
-option;
-" VAR(k) =";;
-k;
-" VECM(k)=";;
-k-1;
-"           Fourier  Fourier  cv(5%)    cv(5%)    Log-  ";
-"   Rank    Lambda    Trace   Lambda    Trace  Likelihood";
-"--------------------------------------------------------";;
-format /rd 8,3;
-seqa(0,1,m+1)~(miss(1,1)|Flambda)~(miss(1,1)|Ftrace)~(miss(1,1)|cv_Flambda)~(miss(1,1)|cv_Ftrace)~logL;
+//// Printing
+//"         Johansen-Fourier cointegration Tests         ";
+//"=======================================================";
+//" #var.  =";;
+//m;
+//" Model  =";;
+//model;
+//" Freq.  =";;
+//f;
+//" Option =";;
+//option;
+//" VAR(k) =";;
+//k;
+//" VECM(k)=";;
+//k-1;
+//"           Fourier  Fourier  cv(5%)    cv(5%)    Log-  ";
+//"   Rank    Lambda    Trace   Lambda    Trace  Likelihood";
+//"--------------------------------------------------------";;
+//format /rd 8,3;
+//seqa(0,1,m+1)~(miss(1,1)|Flambda)~(miss(1,1)|Ftrace)~(miss(1,1)|cv_Flambda)~(miss(1,1)|cv_Ftrace)~logL;
 
 
 
@@ -93,7 +93,7 @@ proc(5) = Johansen_Fourier(x, model, k, f, option);
     { r0, r1 } = _getCointRegResiduals(z, dx, dt, k);
     
     // Get eigenvalues
-    { eig_val, a, d } = _getJohansenEigval(r1, r0);
+    { eig_val, a, d } = _getJohansenEigval(r1, r0, m);
     
     // Order the eigen values and eigen vectors
     { a, d } = _reorderEig(a, d);
@@ -122,13 +122,12 @@ proc (1) = _getJohansenLogL(r1, r0, model, T, k);
     if model == 2 or model == 4;
         lam = 0|rev(trimr(eigh(Li*r1'r0*invpd(r0'r0)*r0'r1*Li'),1,0));
     endif;
-    
-    k = cols(dx/z);  
+   
     retp( -(T/2)*(k*(1+ln(2*pi)) + ln(det(r0'r0/T))+ cumsumc(ln(1-lam))));
 endp;
 
     
-proc (3) = _getJohansenEigval(r1, r0);
+proc (3) = _getJohansenEigval(r1, r0, m);
     local skk, sk0, s00, sig, a, b, c, d, eig_val;
     
     skk = r1'r1/rows(r1) ;
@@ -214,7 +213,7 @@ proc (2) = _getFourierModelSetup(x, model, T, ... );
             x  = x;
         endif;   
     endif;
-        retp(dt,x);
+        retp(dt, x);
 endp;
 
 proc (2) = _reorderEig(a, d);
