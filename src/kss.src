@@ -110,7 +110,7 @@ proc(3) = KSS(y, model, ...);
     
     cv = _get_kss_cv(model);
     
-    _printHeaderTSPDLIB(ic, 0, 0, 0, model_str, 0, "KSS", "Unit root", 0);
+    _printHeaderTSPDLIB(ic, 0, 0, model_str, 0, 0, "KSS", "Unit root", 0);
     
     local side, stats, dec, colwidth;
     side = "KSS-stat:";
@@ -123,7 +123,7 @@ proc(3) = KSS(y, model, ...);
     retp(t_nl, p_opt - 1, cv');
 endp;
 
-proc (3) = _get_kss_cv(model);
+proc (1) = _get_kss_cv(model);
     local cv;
     
     if model == 0;
