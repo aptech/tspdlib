@@ -228,7 +228,7 @@ proc(2) = QR_Fourier_ADF_bootstrap(y, model, tau, ...);
 endp;
 
 proc (0) = __check_single_tau(tau, ...);
-    local level;
+    local level, s;
     
     level = dynargsGet(1, 1);
     
