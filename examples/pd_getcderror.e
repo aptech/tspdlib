@@ -1,6 +1,6 @@
 new;
 cls;
-library tspdlib_dv;
+library tspdlib;
 
 // Number of cross-sections
 N = 9;      

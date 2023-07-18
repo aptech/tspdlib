@@ -1,6 +1,6 @@
 new;
 cls;
-library tspdlib_dv;
+library tspdlib;
 
 // Load data matrix
 GCdata = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/TScaus.dat");

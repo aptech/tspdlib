@@ -1,5 +1,5 @@
 new;
-library tspdlib_dv;
+library tspdlib;
 
 // Load data
 dat = loadd(__FILE_DIR $+ "pd_brics.gdat");

@@ -1,5 +1,5 @@
 new;
-library tspdlib_dv;
+library tspdlib;
 
 // Load S&P data
 FRED_API_KEY = "7a756a099f64c52f4657b4accc942137";

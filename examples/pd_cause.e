@@ -16,7 +16,7 @@
 
 new;
 cls;
-library tspdlib_dv;
+library tspdlib;
 
 // Load data
 data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pdcause.dat");

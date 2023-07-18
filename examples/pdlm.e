@@ -11,7 +11,7 @@
 
 new;
 cls;
-library tspdlib_dv;
+library tspdlib;
 
 // Load date file
 y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pd_full.csv", ". + date($Date, '%b-%y')");

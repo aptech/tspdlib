@@ -1,7 +1,7 @@
 new;
 cls;
 
-library tspdlib_dv;
+library tspdlib;
 
 // Load data
 data = loadd(__FILE_DIR $+ "pd_gdef.gdat");

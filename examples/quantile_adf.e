@@ -1,6 +1,6 @@
 new;
 cls;
-library tspdlib_dv;
+library tspdlib;
 
 // Load date file
 y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/TSe.dat");

@@ -4,7 +4,7 @@
 */
 new;
 cls; 
-library tspdlib_dv;
+library tspdlib;
 
 // Load dataset
 data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_coint.csv", 

@@ -1,7 +1,7 @@
 new;
 cls;
 
-library tspdlib_dv;
+library tspdlib;
 
 /*
 ** This section loads data
