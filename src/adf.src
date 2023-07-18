@@ -37,7 +37,7 @@
 
 
 proc(3) = ADF(y, model, ...);
-    local t, p, taup, ssrp;
+    local t, p, ssrp;
     local dy, ly, dc, dt, tau, cv;
     local pmax, ic, dt_vec;
     

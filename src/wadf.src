@@ -1,4 +1,23 @@
-proc (2) = wadf();
+proc (2) = wadf(y, model, ...);
+    local pmax, ic, dt_vec, d1, yt, WADF_stat, p, 
+          ssrp, t, dy, ly, dc, dt;
+    
+    _checkForMissings(y, currentprocname());
+    
+    // Optional arguments
+    { pmax, ic } = dynargsGet(1|2, 8, 5);
+    
+    // Check for dates
+    { dt_vec, y } =_checkfordate(y);
+    
+    // Wavelet Transformation
+    { d1, yt } = __wavelet_transform(y);
+    
+    // Get deterministic terms
+    { t, dy, ly, dc, dt } = _getFourierDeterministic(yt);
+    
+    // Lag selection loop
+    { p, WADF_stat, ssrp } = __lag_selection_loop(yt, pmax, ic, model, ly, dc, dt);
     
     
     retp(WADF_stat, p);
