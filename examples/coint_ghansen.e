@@ -4,7 +4,7 @@ library tspdlib_dv;
 
 // Load dataset
 data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_coint.csv", 
-                            "Y1 + Y2 + Y3 + Y4 + date($Date, '%b-%y')");
+                            ". + date($Date, '%b-%y')");
 
 // Define y and x matrix
 y = data[., 1];
