@@ -134,7 +134,7 @@ proc(2) = coint_egranger(y, x, model, ...);
     colwidth = 15;
     
     _printStatsTable(top, "", stats, cvADF, dec, colwidth, 0);
-    _printConclusion(tau, cvADF, 0, "no co-integration");
+    _printConclusion(tau, cvADF, 0, "no cointegration");
     
     retp(tau, cvADF);
 endp;

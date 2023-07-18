@@ -115,10 +115,10 @@ proc(3) = coint_shin(y, x, model, ...);
     lrv2 = _get_lrv_type(varm, ssr2, e2, bwl, 0);
     screen on;
     
-    // Co-integration test based on OLS
+    // cointegration test based on OLS
     C1 = T^(-2) * (St1'St1)/lrv1;
     
-    // Co-integration test based on DOLS
+    // cointegration test based on DOLS
     C2 = T^(-2) * (St2'St2)/lrv2;
     
     // Critical values

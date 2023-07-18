@@ -62,7 +62,7 @@ proc (1) = coint_maki(y, m, model, ...);
     
     _printBreaks(dt_vec, d1, frac);
    
-    _printConclusion(stats, cv, 0, "no co-integration");
+    _printConclusion(stats, cv, 0, "no cointegration");
     
     retp(d0);
 endp;

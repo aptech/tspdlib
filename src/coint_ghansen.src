@@ -209,15 +209,15 @@ proc(8) = coint_ghansen(y, x, model, ...);
     print;
     
     print "ADF test results:";
-    _printConclusion(ADF_min, cvADFZt, 0, "no co-integration");
+    _printConclusion(ADF_min, cvADFZt, 0, "no cointegration");
      print "==============================================================";
     // Print break dates
     print "Zt test results:";
-     _printConclusion(Zt_min, cvADFZt, 0, "no co-integration");
+     _printConclusion(Zt_min, cvADFZt, 0, "no cointegration");
     print "==============================================================";
     // Print break dates
     print "Za test results:";
-     _printConclusion(Za_min, cvZa, 0, "no co-integration");
+     _printConclusion(Za_min, cvZa, 0, "no cointegration");
     
     retp(ADF_min, TBadf, Zt_min, TBzt, Za_min, TBza, cvADFZt, cvZa);
 endp;

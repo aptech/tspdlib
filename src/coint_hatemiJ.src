@@ -241,13 +241,13 @@ proc(11) = coint_hatemiJ(y, x, ...);
     print;
     
     print "ADF test results:";
-    _printConclusion(ADF_min, cvADFZt, 0, "no co-integration");
+    _printConclusion(ADF_min, cvADFZt, 0, "no cointegration");
     print "==============================================================";
     print "Zt test results:";
-    _printConclusion(Zt_min, cvADFZt, 0, "no co-integration");
+    _printConclusion(Zt_min, cvADFZt, 0, "no cointegration");
     print "==============================================================";
     print "Za test results:";
-    _printConclusion(Za_min, cvZa, 0, "no co-integration");
+    _printConclusion(Za_min, cvZa, 0, "no cointegration");
     print "==============================================================";
     
     retp(ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa);

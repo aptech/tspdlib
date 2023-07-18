@@ -215,9 +215,9 @@ proc(6) = coint_cissanso(y, x, model, ...);
     print;
     
     print "OLS cointegration conclusion:";
-    _printConclusion(SC1_min, cv, 1, "co-integration");
+    _printConclusion(SC1_min, cv, 1, "cointegration");
      print "DOLS cointegration conclusion:";
-    _printConclusion(SC2_min, cv, 1, "co-integration");
+    _printConclusion(SC2_min, cv, 1, "cointegration");
 
     retp(SC1_min, tb1_min, SC2_min, tb2_min, lambda, cv);
 endp;

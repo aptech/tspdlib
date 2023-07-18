@@ -204,10 +204,10 @@ proc(4) = coint_pouliaris(y, x, model, ...);
     _printStatsTable(top, side, stats, cvZt~cvZa, dec, colwidth, 0);
 
     print "Zt test results:";
-    _printConclusion(Zt, cvZt, 0, "no co-integration");
+    _printConclusion(Zt, cvZt, 0, "no cointegration");
     print "==============================================================";
     print "Za test results:";
-    _printConclusion(Za, cvZa, 0, "no co-integration");
+    _printConclusion(Za, cvZa, 0, "no cointegration");
     print "==============================================================";
 
     if k<6;
