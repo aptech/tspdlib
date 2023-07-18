@@ -230,10 +230,10 @@ endp;
 proc (0) = __check_single_tau(tau, ...);
     local level, s;
     
-    level = dynargsGet(1, 1);
+    level = dynargsGet(1, 0);
     
     if rows(tau)>1 or cols(tau)>1;
-        s = sprintf("'%s': Only implemented for single tau values. Multiple tau values provided.", currentprocname(level)); 
+        s = sprintf("'%s': Only implemented for single tau values. Multiple tau values provided.", currentprocname(level+1)); 
         errorlogat s;
         end;
     endif;

@@ -48,10 +48,7 @@ proc(2) = coint_egranger(y, x, model, ...);
     
     // Check for errors
     _checkForMissings(y~x, currentprocname());
-    if rows(y) != rows(x);
-        errorlog "'coint_egranger': Y and X must have same number of rows";
-        end;
-    endif;
+    __error_check_single_y_column(y);
     
     { pmax, ic } = dynargsGet(1|2, 8, 2);
     { dt_vec, x } =_checkfordate(x);

@@ -248,10 +248,13 @@ proc (1) = _getFourierADFCrit(T, model);
 endp;
 
 proc (0) = __error_check_single_y_column(y, level);
+    local level;
+    
+    level = dynargsGet(1, 0);
     
     if cols(y) > 1;
         local s;
-        s = sprintf("'%s': Cannot run test, y must be a single column", currentprocname(level));
+        s = sprintf("'%s': Cannot run test, y must be a single column", currentprocname(level+1));
         errorlogat "Cannot run test, y must be single column.";
         end;
     endif;
