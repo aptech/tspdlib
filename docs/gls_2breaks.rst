@@ -9,7 +9,7 @@ Computes the GLS unit root test with two structural break.
 
 Format
 ----------------
-.. function:: { ADFGLS_min, p, PT_min, MZa_min, MZt_min, MSB_min, MPT_min, s2, tb1_min, tb2_min, lambda1, lambda2, cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa } = gls_1break(y, model [, pmax, ic])
+.. function:: { ADFGLS_min, p, PT_min, MZa_min, MZt_min, MSB_min, MPT_min, s2, tb1_min, tb2_min, lambda1, lambda2, cvPT, cvMPT, cvMZt, cvDFGLS, cvMSB, cvMZa } = gls_2breaks(y, model [, pmax, ic])
     :noindexentry:
 
     :param y: Time series data to be tested.
