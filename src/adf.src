@@ -14,7 +14,7 @@
 **  Format:  {tstat, p, cv} = ADF(y, model[, pmax, ic]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
-**           model   - 	Optional, specifies deterministic components.
+**           model   - 	Specifies deterministic components.
 **                      0 = none
 **                      1 = model with constant
 **                      2 = model with constant and trend
@@ -154,6 +154,7 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, te
     endif;
     
     clm1 = clm1$|"Number of breaks:";
+    
     if breaks;
         if breaks<3;
             clm2 = clm2$|ntos(breaks, 1);
