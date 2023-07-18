@@ -1,0 +1,148 @@
+
+/*
+**> fourier_kss
+**  Reference:
+**  Christopoulos, D. K., & Leon-Ledesma, M. A. (2010).
+**  Smooth breaks and non-linear mean reversion: Post-Bretton Woods real exchange rates.
+**  Journal of International Money and Finance, 29(6), 1076-1093.
+**
+**  Format:  { Ftau, p, f } = Fourier_WKSS(y, model, [, pmax, fmax, ic]);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**
+**           model   - 	Scalar, sets the model type.
+**                      1 = Constant
+**                      2 = Constant and trend
+
+**           pmax    -  Optional, Maximum number of lags for Dy; 0=no lags. Default = 8.
+**
+**           fmax    -  Optional, Maximumum number of single Fourier frequency. Default = 3.
+**                      (upper bound is 5)
+**
+**           ic      -  Optional, information Criterion:
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
+**                      Default = 3.
+**
+**  Output:  FWKSS   - FWKSS tau statistic
+**
+**           f       - chosen Number of single frequency
+**
+**			 p       - number of lags selected by chosen information criterion
+**
+** This code was written by Mucahit Aydin, Department of Statistics, Sakarya University.
+** mail: aydinm@sakarya.edu.tr
+** The Saban Nazlioglu's tspdlib library was used for FKSS methodology. 
+** When you use this code, please cite:
+** No performance guarantee is made. Bug reports are welcome.
+*/
+
+proc(3) = Fourier_WKSS(y, model,...);
+    local d1, yt, pmax, fmax, ic, p, k_star, dt_vec, FWKSS;
+    
+    // Error checks for missings
+    _checkForMissings(y, currentprocname());
+    
+    // Get optional arguments
+    { pmax, fmax, ic } = dynargsGet(1|3, 8, 5, 3);
+    
+    // Check for dates
+    { dt_vec, y } =_checkfordate(y);
+    
+    // Wavelet Transformation
+    { d1, yt } = __wavelet_transform(y);
+    
+    // Run Fourier KSS
+    { FWKSS, k_star, p } = Fourier_KSS(yt, model, "FKSS", pmax, fmax, ic);
+    
+    _printHeaderTSPDLIB(ic, 0, 1, model, 5, 0, "FWKSS", "Unit root", 0);
+    
+    local top, side, stats, dec, colwidth, cv;
+    top = "";
+    side = "FWKSS";
+    stats = FWKSS;
+    dec = 3;
+    colwidth = 15;
+    cv = {};
+    
+    // Print stats table
+    _printStatsTable(top, side, stats, cv, dec, colwidth, 0, p, k_star);
+    
+    retp(FWKSS, k_star, p);
+endp;
+
+proc(2) = __get_resid_lags_kss(res, model);
+    local dv, v1;
+    
+    dv = diff(res, 1);
+    
+    if model $== "FADF";
+        v1 = lagn(res, 1);
+    endif;
+    if model $== "FKSS";
+        v1 = lagn(res^3,1);
+    endif;
+    
+    
+    retp(dv, v1);
+endp;
+
+// Critical Values (see, Christopoulos, & Leon-Ledesma , 2010)
+proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
+    local test_sim, s, MCr, e0, rho, eps;
+    local e, a, dc, dt, sink, cosk, y;
+    local z, v, dv, v1, cv;
+    local b, e1, sig2, se, ssr;
+    
+    MCr  = 10000;
+    test_sim = zeros(MCr, 1);
+    for s(1, MCr, 1);
+        // Starting value for the time series
+        e0 = 0;
+        // AR(1) parameter
+        rho = 1;
+        // Innovations
+        eps = rndn(T, 1);
+        // Simulate AR(1) model
+        e = recserar(eps, e0, rho);
+        
+        // Deterministic terms
+        dc   = ones(T, 1);
+        dt   = seqa(1, 1, T);
+        
+        // Get Fourier terms
+        { sink, cosk } = _getFourierTerms(t, k);
+        
+        if model == 1;
+            y = rndu(1,1)*dc + rndu(1,1)*sink + rndu(1,1)*cosk + e;
+        endif;
+        if model == 2;
+            y = rndu(1,1)*dc + rndu(1,1)*dt + rndu(1,1)*sink + rndu(1,1)*cosk + e;
+        endif;
+        
+        // Residual regression
+        if model == 1;
+            z = sink ~ cosk ~ dc;
+        endif;
+        if model == 2;
+            z = sink ~ cosk ~ dc ~ dt;
+        endif;
+        a  = y / z;
+        v  = y - z * a;
+        dv = diff(v,1);
+        if test $== "FADF";
+            v1 = lagn(v, 1);
+        endif;
+        if test $== "FKSS";
+            v1 = lagn(v^3,1);
+        endif;
+        dv = trimr(dv, 1, 0);
+        v1 = trimr(v1, 1, 0);
+        {b, e1, sig2, se, ssr} = myols(dv, v1);
+        test_sim[s] = b[1]/se[1];
+    endfor;
+    test_sim = sortc(test_sim,1);
+    cv = test_sim[0.01*MCr] ~ test_sim[0.05*MCr] ~ test_sim[0.10*MCr];
+    retp(cv);
+endp;

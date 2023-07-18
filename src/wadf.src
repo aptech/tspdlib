@@ -17,6 +17,7 @@
 ** Eroïlu, B. A., & Soybilgen, B. (2018).
 ** "On the Performance of Wavelet Based Unit Root Tests. 
 ** Journal of Risk and Financial Management, 11(3), 47."
+**
 **  Format:  { WADF_stat, p } = WADF(y, model[, pmax, ic]);
 **
 **  Input:   Y	     -  Nx1 matrix, data,
@@ -61,6 +62,18 @@ proc (2) = wadf(y, model, ...);
     // Lag selection loop
     { p, WADF_stat, ssrp } = __lag_selection_loop(yt, pmax, ic, model, ly, dc, dt);
  
+       
+    _printHeaderTSPDLIB(ic, 0, 1, model, 0, 0, "WADF", "Unit root", 0);
+    
+    local side, stats, dec, colwidth, cv;
+    side = "WADF-stat:";
+    stats = WADF_stat;
+    dec = 3;
+    colwidth = 15;
+    cv = {};
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0, p-1);
+
+
     retp(WADF_stat, p);
 endp;
     

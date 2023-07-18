@@ -123,7 +123,6 @@ proc(2) = WKSS(y, model, ...);
     colwidth = 15;
     cv = {};
     _printStatsTable("", side, stats, cv, dec, colwidth, 0, p_opt-1);
-//    _printConclusion(t_nl, cv, 0, "a unit root");
 
     retp(t_nl, p_opt - 1);
 endp;

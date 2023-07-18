@@ -1,19 +1,45 @@
-
 /*
-** This code was written by Mucahit Aydin, Department of Econometrics, Sakarya University.
+**  fourier_wadf
+**  Reference:
+**  Aydin, M. (2020)
+**  "A New Nonlinear Wavelet-Based Unit Root Test with Structural Breaks. 
+**  Munich Personal RePEc Archive."
+
+**  Aydin, M. &  Pata, U. K., (2020) 
+**  "Are Shocks to Disaggregated Renewable Energy Consumption Permanent or Temporary for the US? 
+**  Wavelet-Based Unit Root Test with Smooth Structural Shifts. Energy."
+**  
+**
+**  Format:  { FWADF, f, p, cv[k, .] } = Fourier_ADF(y, model[, pmax, fmax, ic]);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**
+**           model   - 	1 = Constant
+**                      2 = Constant and trend
+**
+**           pmax    -  Optional, maximum number of lags for Dy; 0=no lags. Default = 8.
+**
+**           fmax    -  Optional, Maximumum number of single Fourier frequency. Default  5.
+**                      (upper bound is 5)
+
+**           ic      -  Optional, information criterion. Default = 3:
+**                      1=Akaike
+**                      2=Schwarz
+**                      3=t-stat significance
+**
+**  Output:  FWADF   - FWADF statistic
+**
+**           f       - Number of single frequency
+**
+**			 p       - number of lags selected by chosen information criterion
+**
+** This code was written by Mucahit Aydin, Department of Statistics, Sakarya University.
 ** mail: aydinm@sakarya.edu.tr
-** The Saban Nazlioglu's tspdlib library was used for FADF methodology.
+** The Saban Nazlioglu's tspdlib library was used for FKSS methodology. 
 ** When you use this code, please cite:
-
-Aydin, M. &  Pata, U. K., (2020)
-"Are Shocks to Disaggregated Renewable Energy Consumption Permanent or Temporary for the US?
-Wavelet-Based Unit Root Test with Smooth Structural Shifts. Energy."
-
-Aydin, M. (2020)
-"A New Nonlinear Wavelet-Based Unit Root Test with Structural Breaks.
-Munich Personal RePEc Archive."
-
-** No performance guarantee is made. Bug reports are welcome. */
+** No performance guarantee is made. Bug reports are welcome.
+**
+*/
 
 proc (3) = fourier_wadf(y, model, ...);
     local pmax, fmax, ic, wavelet, dt_vec, d1, yt, FWADF, f, p, cv;
@@ -46,8 +72,7 @@ proc (3) = fourier_wadf(y, model, ...);
     cv = {};
     
     _printStatsTable(top, side, stats, cv, dec, colwidth, 0, p, f);
-//    _printConclusion(FWADF, crit[f, .], 0, "unit root");
-    
+
     retp(FWADF, f, p );
     
 endp;

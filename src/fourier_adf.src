@@ -138,8 +138,10 @@ proc(4) = Fourier_ADF(y, model, ...);
     retp(ADF, f, opt_lag-1, crit[f, .]);
 endp;
 
-proc (5) = _runFourierOLS(dep, z, k, fourier);
-    local b, e1, sig2, se, ssr, taup, aicp, sicp, tstatp, ssrp, LL, n;
+proc (5) = _runFourierOLS(dep, z, k, ...);
+    local fourier, b, e1, sig2, se, ssr, taup, aicp, sicp, tstatp, ssrp, LL, n;
+    
+    fourier = dynargsGet(1, 0);
     
     {b, e1, sig2, se, ssr} = myols(dep, z);
     taup = b[1]/se[1];
@@ -466,7 +468,7 @@ proc (1) = __get_model_x(yt, p, model, ldy, ...);
     t = rows(yt);
     
     // Get optional arguments
-    { lagy, c, trend, sink, cosk } = dynargsGet(1|5, 0, ones(t, 1),  seqa(1, 1, t), 0, miss(), miss());
+    { lagy, c, trend, sink, cosk } = dynargsGet(1|5, 0, ones(t, 1),  seqa(1, 1, t), miss(), miss());
     
     // Set fourier terms
     f_det = {};
@@ -483,6 +485,8 @@ proc (1) = __get_model_x(yt, p, model, ldy, ...);
         yt = lag1(yt);
     endif;
 
+    x = yt;
+    
     if ismiss(sink) and ismiss(cosk);
         
         // Add constant
