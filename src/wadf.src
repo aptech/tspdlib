@@ -1,3 +1,45 @@
+/*
+**> wadf
+**  Reference:
+** This code was written by Mucahit Aydin, Department of Statistics, Sakarya University.
+** mail: aydinm@sakarya.edu.tr
+** The Saban Nazlioglu's tspdlib library was used for FADF methodology. 
+** When you use this code, please cite:
+** 
+** Aydin, M. &  Pata, U. K., (2020) 
+** "Are Shocks to Disaggregated Renewable Energy Consumption Permanent or Temporary for the US? 
+** Wavelet-Based Unit Root Test with Smooth Structural Shifts. Energy."
+** 
+** Aydin, M. (2020)
+** "A New Nonlinear Wavelet-Based Unit Root Test with Structural Breaks. 
+** Munich Personal RePEc Archive."
+** 
+** Eroïlu, B. A., & Soybilgen, B. (2018).
+** "On the Performance of Wavelet Based Unit Root Tests. 
+** Journal of Risk and Financial Management, 11(3), 47."
+**  Format:  { WADF_stat, p } = WADF(y, model[, pmax, ic]);
+**
+**  Input:   Y	     -  Nx1 matrix, data,
+**
+**           model   - 	Optional, specifies level of demeaning.
+**                      0 = No demeaning or detrending.
+**                      1 = Demeaning and no detrending.
+**                      2 = Demeaning and detrending.
+**
+**           pmax    -  Optional, maximum number of lags for Dy; 0 = no lags
+**
+**           ic      -  Optional, information criterion:
+**                      1 = Akaike
+**                      2 = Schwarz
+**                      3 = t-stat significance
+**
+**  Output:  WADF_stat   - WADF tau
+**
+**			 p       - number of lags selected by chosen information criterion
+**
+** No performance guarantee is made. Bug reports are welcome. 
+*/
+
 proc (2) = wadf(y, model, ...);
     local pmax, ic, dt_vec, d1, yt, WADF_stat, p, 
           ssrp, t, dy, ly, dc, dt;
@@ -18,8 +60,7 @@ proc (2) = wadf(y, model, ...);
     
     // Lag selection loop
     { p, WADF_stat, ssrp } = __lag_selection_loop(yt, pmax, ic, model, ly, dc, dt);
-    
-    
+ 
     retp(WADF_stat, p);
 endp;
     
