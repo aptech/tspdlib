@@ -55,7 +55,7 @@
         "pd_cips.src",
         "pd_fixedT.src",
         "pd_iltlevel.src",
-        "pd_kpss",
+        "pd_kpss.src",
         "pd_lttrend.src",
         "pd_nkarul.src",
         "pd_panic.src",
