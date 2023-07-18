@@ -247,7 +247,7 @@ proc (1) = _getFourierADFCrit(T, model);
     retp(crit);
 endp;
 
-proc (0) = __error_check_single_y_column(y, level);
+proc (0) = __error_check_single_y_column(y, ...);
     local level;
     
     level = dynargsGet(1, 0);
