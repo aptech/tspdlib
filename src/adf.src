@@ -37,80 +37,24 @@
 
 
 proc(3) = ADF(y, model, ...);
-    local t, p, j, taup, aicp, sicp, tstatp;
-    local dy, ly, dc, dt, lmat, dep, y1, ldy;
-    local sbt, trnd, x, tau, LL, n, k;
-    local b, e1, sig2, se, ssr, cv;
+    local t, p, taup, ssrp;
+    local dy, ly, dc, dt, tau, cv;
     local pmax, ic, dt_vec;
     
+    // Check for missings
     _checkForMissings(y, currentprocname());
     
+    // Get otpional arguments
     { pmax, ic } = dynargsGet(1|2, 8, 3);
+    
+    // Check for dates
     { dt_vec, y } =_checkfordate(y);
     
-    t    = rows(y);
-    taup = zeros(pmax + 1, 1);
-    aicp = zeros(pmax + 1, 1);
-    sicp = zeros(pmax + 1, 1);
-    tstatp = zeros(pmax + 1, 1);
+    // Get deterministic terms
+    { t, dy, ly, dc, dt } = _getFourierDeterministic(y);
     
-    dy = diff(y, 1);
-    ly = lagn(y, 1);
-    dc = ones(t, 1);       /*Deterministic term=constant*/
-    dt = seqa(1, 1, t);     /*Deterministic term=trend*/
-    
-    p = 0;
-    do while p <= pmax;
-        lmat = zeros(rows(dy), p + 1);
-        j = 1;
-        do while j <= p;
-            lmat[., j] = lagn(dy, j);
-            j = j + 1;
-        endo;
-        dep = trimr(dy, p + 1, 0);
-        y1 = trimr(ly, p + 1, 0);
-        ldy = trimr(lmat, p + 1, 0);
-        sbt = trimr(dc, p + 1, 0);
-        trnd = trimr(dt, p + 1, 0);
-        
-        if p == 0;
-            if model == 0;
-                x = y1;
-            endif;
-            if model == 1;
-                x = y1~sbt;
-            endif;
-            if model == 2;
-                x = y1~sbt~trnd;
-            endif;
-        elseif p > 0;
-            if model == 0;
-                x = y1~ldy[., 1:p];
-            endif;
-            if model == 1;
-                x = y1~sbt~ldy[., 1:p];
-            endif;
-            if model == 2;
-                x = y1~sbt~trnd~ldy[., 1:p];
-            endif;
-        endif;
-        
-        {b, e1, sig2, se, ssr} = myols(dep, x);
-        taup[p+1] = b[1]/se[1];
-        n = rows(x);
-        k = cols(x);
-        
-        // Log-likelihood
-        LL = -n/2 * (1 + ln(2*pi) + ln(e1'e1/n));
-        
-        aicp[p+1] = (2 * k-2 * LL)/n;
-        sicp[p+1] = (k * ln(n) - 2 * LL)/n;
-        tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
-        p = p + 1;
-    endo;
-    
-    p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
-    tau = taup[p];
+    // Lag selection loop
+    { p, tau, ssrp } = __lag_selection_loop(dy, pmax, ic, model, ly, dc, dt);
     
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_ADFrsf(model, T-p , p);
@@ -122,10 +66,54 @@ proc(3) = ADF(y, model, ...);
     stats = tau;
     dec = 3;
     colwidth = 15;
-    _printStatsTable("", side, stats, cv, dec, colwidth, 0, p-1);    
+    _printStatsTable("", side, stats, cv, dec, colwidth, 0, p-1);
     _printConclusion(tau, cv, 0, "a unit root");
     
     retp(tau, p - 1, cv');
+endp;
+
+proc (3) = __lag_selection_loop(dy, pmax, ic, model, ly, dc, dt);
+    local lmat, zero_vec, tau, taup, aicp, sicp, tstatp, ssrp, p, dep, ldy, x;
+    
+    // Lag y variable
+    lmat = lagn(dy, seqa(1, 1, pmax));
+    
+    // Zero vector
+    zero_vec = zeros(rows(dy), 1);
+    
+    // Storage matrices
+    taup = zeros(pmax + 1, 1);
+    aicp = zeros(pmax + 1, 1);
+    sicp = zeros(pmax + 1, 1);
+    tstatp = zeros(pmax + 1, 1);
+    ssrp = zeros(pmax + 1, 1);
+    
+    p = 0;
+    do while p <= pmax;
+        
+        dep = trimr(dy, p + 1, 0);
+        
+        // Get lags of y
+        ldy = trimr(zero_vec, p+1, 0);
+        
+        if p>0;
+            ldy = trimr(lmat[., 1:p], p+1, 0)~ldy;
+        endif;
+      
+        // Get independent variables
+        x = __get_model_x(ly, p, model, ldy, 0, dc, dt);
+     
+        // Run OLS
+        { taup[p+1], aicp[p+1], sicp[p+1], tstatp[p+1], ssrp[p+1] } = _runFourierOLS(dep, x, cols(x), 0);
+        
+        p = p + 1;
+    endo;
+    
+    // Final lag
+    p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
+    tau = taup[p];
+    
+    retp(p, tau, ssrp);
 endp;
 
 proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, test, null_hyp, long);
@@ -203,7 +191,7 @@ proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, te
     endif;
     
     // Print table
-
+    
     if long;
         fmt = "%-30s%30s%30s";
         sprintf(fmt, clm1, "",clm2);
@@ -357,5 +345,5 @@ proc (0) = _checkForMissings(data, functionname);
         errorlog msg;
         end;
     endif;
-
+    
 endp;
