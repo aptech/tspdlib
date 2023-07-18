@@ -23,6 +23,7 @@
         "coint_pouliaris.src",
         "coint_shin.src",
         "coint_tsongetal.src",
+        "pd_coint_wedgerton.src",
         "diff.src",
         "fourier_adf.src",
         "fourier_gls.src",
