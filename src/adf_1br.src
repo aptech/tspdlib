@@ -293,10 +293,9 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         if not ismiss(fopt);
             sprintf(tmp1b$+tmp1a$+tmp1b$+"%15d", "Frequency:", "", "", fopt);
         endif;
-        print;
-        
-        
+ 
         if isempty(cv) == 0;
+        print;
         print "Critical Values:";
         if multistat_in_cv;
                 sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
@@ -309,8 +308,8 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         print "==============================================================";
     elseif side $=="";
         sprintf(format1, top, "", "", stats);
-        print;
         if isempty(cv) == 0;
+            print;
             print "Critical Values:";
             sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
             sprintf(tmp1a$+tmp2, "", cv');
@@ -326,12 +325,11 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         elseif cols(stats)==3;
             sprintf(tmp1b$+tmp1a, "", top);
             sprintf(tmp1b$+tmp3, side, stats);
-        endif;
+        endif;        
         
-        print;
         if isempty(cv) == 0;
+            print;
             print "Critical Values:";
-        
             if multistat_in_cv;
                 sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
                 sprintf(format2, side, cv');
