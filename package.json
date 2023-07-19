@@ -78,7 +78,6 @@
         "sbur.src",
         "sbvar_icss.src",
         "tspdlib.sdf",
-        "wadf.src",
         "wkss.src"
     ],
     "version": "3.0.0"
