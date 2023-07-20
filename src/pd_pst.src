@@ -46,7 +46,7 @@
 **                      A guide to the computation of stationarity tests.
 **                      Empirical Economics, 31(2), 433.
 **
-**           l       -  Optional, bandwidth for spectral window. Default = round(4 * (t/100)^(2/9)).
+**           bwl     -  Optional, bandwidth for spectral window. Default = round(4 * (t/100)^(2/9)).
 **
 **           kmax    -  Optional, maximum number of factors. Default =5.
 **
