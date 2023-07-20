@@ -1,4 +1,4 @@
-fourier_kss
+fourier_wkss
 ==============================================
 
 Purpose
