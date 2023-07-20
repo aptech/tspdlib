@@ -5,11 +5,11 @@ kss
 Purpose
 ----------------
 
-Computes the KSS unit root test.
+Computes the WKSS unit root test.
 
 Format
 ----------------
-.. function:: { kss_t, p, cv } = kss(y, model [, pmax, ic])
+.. function:: { wkss_t, p } = wkss(y, model [, pmax, ic])
     :noindexentry:
 
     :param y: Time series data to be tested.
@@ -38,14 +38,12 @@ Format
 
     :type ic: Scalar
         
-    :return kss_t: KSS tau-statistic
-    :rtype kss_t: Scalar
+    :return wkss_t: wKSS tau-statistic
+    :rtype wkss_t: Scalar
         
     :return p: Chosen number of lags.
     :rtype p: Scalar
-     
-    :return cv: 1, 5, and 10 percent critical values for KSS tau-stat based on response surfaces.
-    :rtype cv: Vector
+
 
 Examples
 --------
@@ -61,11 +59,11 @@ Examples
   model = 1;
 
   // Run test
-  stat = kss(y, model);
+  stat = wkss(y, model);
 
 Source
 ------
 
-kss.src
+wkss.src
 
 .. seealso:: Functions :func:`adf`, :func:`kss` :func:`qr_fourier_kss`

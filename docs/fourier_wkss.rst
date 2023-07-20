@@ -1,14 +1,14 @@
-fourier_adf
+fourier_kss
 ==============================================
 
 Purpose
 ----------------
 
-Computes the Augmented Dickey-Fuller unit root test with flexible Fourier form structural breaks.
+Computes the FWKSS unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { FADF, f, p, cv } = Fourier_ADF(y, model[, pmax, fmax, ic])
+.. function:: { FWKSS, f, p } = Fourier_wkss(y, model, [, pmax, fmax, ic])
     :noindexentry:
 
     :param y: Dependent variable.
@@ -39,18 +39,15 @@ Format
 
     :type ic: Scalar
 
-    :return FADF: FADF(k) statistic.
-    :rtype FADF: Scalar
+    :return FWKSS: F-tau statistic,
+    :rtype Ftau: Scalar
 
-    :return f: Number of single frequency.
+    :return f: Chosen number of single frequency.
     :rtype f: Scalar
-
+        
     :return p: number of lags selected by chosen information criterion
     :rtype p: Scalar
-
-    :return cv: 1%, 5%, 10% critical values for the chosen model
-    :rtype cv: Vector
-
+    
 Examples
 --------
 
@@ -59,18 +56,18 @@ Examples
   library tspdlib;
 
   // Load date file
-  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", "Y + date($Date, '%b-%y')");
-
+  y = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/ts_examples.csv", 
+                                "Y + date($Date, '%b-%y')");
 
   // With constant
   model = 1;
 
   // Call test
-  { FADF, f, p, cv } = Fourier_ADF(y, model);
+  { FWKSS, f, p } = Fourier_WKSS(y, model);
 
 Source
 ------
 
-fourier_adf.src
+fourier_wkss.src
 
-.. seealso:: Functions :func:`fourier_kss`, :func:`fourier_gls`, :func:`fourier_kpss`, :func:`fourier_lm`
+.. seealso:: Functions :func:`fourier_kss_bootstrap`, :func:`fourier_adf`, :func:`fourier_gls`, :func:`fourier_kpss`, :func:`fourier_lm`   

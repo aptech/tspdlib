@@ -8,7 +8,7 @@ Computes the KSS unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { Ftau, f, p } = Fourier_kss(y, model, test [, pmax, fmax, ic])
+.. function:: { FKSS, f, p } = Fourier_kss(y, model, test [, pmax, fmax, ic])
     :noindexentry:
 
     :param y: Dependent variable.
