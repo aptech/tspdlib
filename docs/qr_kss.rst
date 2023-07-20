@@ -9,7 +9,7 @@ Computes the quantile KSS unit root test.
 
 Format
 ----------------
-.. function:: { qr_kss_t, cv } = qr_kss(y, model, tau, [, p, _print])
+.. function:: { qr_kss_t, cv } = qr_kss(y, model, tau [, p, _print])
     :noindexentry:
 
     :param y: Time series data to be tested.

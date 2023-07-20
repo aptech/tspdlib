@@ -9,7 +9,7 @@ Computes the quantile Augmented Dickey-Fuller unit root test.
 
 Format
 ----------------
-.. function:: { qr_tstat, lags, cv } = qr_ADF(y, model, tau, [, pmax, ic])
+.. function:: { qr_tstat, lags, cv } = qr_ADF(y, model, tau [, pmax, ic])
     :noindexentry:
 
     :param y: Time series data to be tested.

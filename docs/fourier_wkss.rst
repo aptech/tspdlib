@@ -8,7 +8,7 @@ Computes the FWKSS unit root test with flexible Fourier form structural breaks.
 
 Format
 ----------------
-.. function:: { FWKSS, f, p } = Fourier_wkss(y, model, [, pmax, fmax, ic])
+.. function:: { FWKSS, f, p } = Fourier_wkss(y, model [, pmax, fmax, ic])
     :noindexentry:
 
     :param y: Dependent variable.

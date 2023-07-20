@@ -9,7 +9,7 @@ Computes the quantile Kolmogorovâ-Smirnov (QKS) tests.
 
 Format
 ----------------
-.. function:: QKS = qks_tests(y, model, test, [, p, f])
+.. function:: QKS = qks_tests(y, model, test [, p, f])
     :noindexentry:
 
     :param y: Time series data to be tested.
