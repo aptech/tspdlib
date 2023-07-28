@@ -22,7 +22,7 @@
 **  A Lagrange Multiplier test for cross-sectional dependence in a fixed effects panel data model. 
 **  Journal of Econometrics, 170(1), 164-177.
 **
-**  Format:  {LMbp, LM_adj, CDlm, CDlm_adj, CD} = _get_cd_error(y, x, T, N);
+**  Format:  {LMbp, LM_adj, CDlm, CDlm_adj, CD} = pd_getCDerror(y, x, N);
 **
 **  Input:   Y	     -  [TxN,1] vector of dependent variable
 **
@@ -85,7 +85,7 @@ proc(5) = pd_getCDError(y, x, N);
             lmbp  = lmbp  + T*pij^2;
             lmadj = lmadj + (((T-k)*(pij^2) - mu)/sqrt(v2));
             cdlm  = cdlm  + (T*pij^2-1);
-            cd    = cd    + T*pij;
+            cd    = cd    + pij;
 
         endfor;
     endfor;
@@ -93,7 +93,7 @@ proc(5) = pd_getCDError(y, x, N);
     LMadj   = sqrt(2 / (N*(N-1)))  * lmadj;
     CDlm    = sqrt(1 / (N*(N-1)))  * cdlm;
     CDlmadj = CDlm - N / (2 * (T-1));
-    CD      = sqrt( 2/ (N*(N-1))) * cd; 
+    CD      = sqrt( 2*T/ (N*(N-1))) * cd; 
     
 
     /*
