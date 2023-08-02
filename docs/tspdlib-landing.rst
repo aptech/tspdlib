@@ -8,7 +8,7 @@ Includes extensive coverage of testing in the presence of structural breaks.
 
 Installation
 --------------
-The GAUSS Time Series and Panel data tests library can be installed and updated directly in GAUSS using the `GAUSS package manager <https://www.aptech.com/blog/gauss-package-manager-basics/>`_. It requires a working copy of GAUSS 21+.
+The GAUSS Time Series and Panel data tests library can be installed and updated directly in GAUSS using the `GAUSS package manager <https://www.aptech.com/blog/gauss-package-manager-basics/>`_. It requires a working copy of GAUSS 23+.
 
 Commands
 ------------------------------
