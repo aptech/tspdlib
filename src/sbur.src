@@ -156,18 +156,21 @@ proc (1) = sbur_gls(y, model,  ...);
     // Set model type
     if model[1] == 0 or model[1] == 1;
         model_type = 1;
-        model = model + 1;
+        model[1] = model[1] + 1;
     else;
         model_type = 2;
-        model = model - 1;
+        model[1] = model[1] - 1;
     endif;
+    
+    local nbreaks;
+    nbreaks = rows(mOut.min_tb) + 5;
     
     /*
     ** Printing results
     */
     
     // Print header
-    _printHeaderTSPDLIB(0, 0, model_type, model[1], model[3], 0, "MSB", "Unit Root", 0);
+    _printHeaderTSPDLIB(0, 0, model_type, model[1], nbreaks, 0, "MSB", "Unit Root", 0);
     
     // Print statistics
     local top, side, stats, dec, colwidth, cv;
@@ -181,12 +184,12 @@ proc (1) = sbur_gls(y, model,  ...);
     _printStatsTable(top, side, stats, cv', dec, colwidth, 1);
     
     // Convert break dates 
-    { frac_dts, min_tb } = __convertbreaks(mOut.min_tb, dt_vec, rows(y));
+    { frac_dts, mOut.min_tb } = __convertbreaks(mOut.min_tb, dt_vec, rows(y));
 
     sprintf("%s", "Break dates:");
     print "==============================================================";
     // Print break dates
-    _printBreaks(dt_vec, min_tb, frac_dts);
+    _printBreaks(dt_vec, mOut.min_tb, frac_dts);
     print;
  
     /*
