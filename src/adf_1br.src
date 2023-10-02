@@ -235,6 +235,7 @@ proc (2) = __convertbreaks(tb, dt_vec, T);
     // Convert to date format
     if ismiss(dt_vec) != 1;
         tb = dt_vec[tb];
+        tb = copymetadata(tb, dt_vec);
     endif;
     
     retp(frac, tb);
