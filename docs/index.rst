@@ -13,6 +13,7 @@ Econometric package for Time Series and Panel Data Methods covering unit root, c
     adf_1br
     adf_2br
     adftspd
+    asymcause
     bng_panic
     bng_panicnew
     changelog
@@ -29,6 +30,7 @@ Econometric package for Time Series and Panel Data Methods covering unit root, c
     fourier_adf
     fourier_gls
     fourier_kpss
+    fourier_kss
     fourier_lm
     gc_tests
     granger
@@ -47,7 +49,13 @@ Econometric package for Time Series and Panel Data Methods covering unit root, c
     pdfzk
     pdlm
     pp
-    quantile_adf
+    qr_adf
+    qr_fourier_adf
+    qr_fourier_adf_bootstrap
+    qr_fourier_kss 
+    qr_fourier_kss_bootstrap
+    qr_kss 
     ralsadf
     ralslm
     ralslm_breaks
+    sbur_gls 
