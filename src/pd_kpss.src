@@ -47,7 +47,7 @@
 **               in the estimation of the AR(p) model for lrvar. The final number of
 **               lags is chosen using the BIC criterion. Default = 8
 **
-**    bCtl       An instance of the sbControl structure, containing controls for structural
+**    bCtl       An instance of the breakControl structure, containing controls for structural
 **               estimation. Contains the following members:
 **
 **
@@ -192,10 +192,10 @@ proc (4) = pd_kpss(data, model, ... );
     endif;
     
     // Structure
-    struct sbControl bCtl;
+    struct breakControl bCtl;
     // Default bandwidth for var
     bwl_dftl = round(4 * (bigt/100)^(2/9));
-    { m, bwl, kernel, maxlags, bctl } = dynargsGet(1|5, 5, bwl_dftl, 1, 8, sbControlCreate(bigt));
+    { m, bwl, kernel, maxlags, bctl } = dynargsGet(1|5, 5, bwl_dftl, 1, 8, breakControlCreate(bigt));
     
     // Number of countries
     k = cols(data);

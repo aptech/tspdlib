@@ -2,7 +2,7 @@
 
 @November 19, 1999 version@
 @Copyrigth, Pierre Perron (1998, 1999).@
-proc(9) = structural_break(bigt, y, z, x, p, q, m, struct sbControl bCtl);
+proc(9) = structural_break(bigt, y, z, x, p, q, m, struct breakControl bCtl);
     
     local datevec, bigvec, global, i, supfl, ndat, mbic, mlwz, ssrzero, nbreak;
     local dateseq, ftest, wftest, cv, repartda, zz, siglev, j, nbr, datese, cvm, reparv, ii;
@@ -1768,7 +1768,7 @@ proc(1) = __sbur_cvg(eta, phi1s, phi2s);
     retp(cvec);
 endp;
 
-proc(3) = __sbur_nldat(bigt, y, z, x, p, q, m, struct sbControl bCtl);
+proc(3) = __sbur_nldat(bigt, y, z, x, p, q, m, struct breakControl bCtl);
     local qq,zz,xbar,zbar,teta,delta1,beta1,ssr1,i,mi,length,globnl;
     local datenl,teta1,ssrn,global,datevec,bigvec;
     global=zeros(m,1);
@@ -2201,10 +2201,10 @@ endp;
 **
 **  {Dx,mean_var,m_estimated_breaks} = Bai_Perron98(x,model,k);
 */
-proc(1) = sbControlCreate(bigt);
+proc(1) = breakControlCreate(bigt);
     
     // Declare structure
-    struct sbControl bCtl;
+    struct breakControl bCtl;
     bCtl.eps1=.15;                  @Value of the trimming (in percentage) for the construction
     and critical values of the supF ype tests (used in the
     supF test, the Dmax, the supF(l+1|l) and the sequential

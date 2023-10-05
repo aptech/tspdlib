@@ -1,4 +1,4 @@
-struct sbControl {
+struct breakControl {
     
 scalar h;
 scalar eps1;

@@ -31,11 +31,11 @@ maxlags = 5;
 ** Settings for structural break estimation
 */
 // Declare structural break control structure
-struct sbControl bCtl;
+struct breakControl bCtl;
 
 // Set control structure members
 // to default values
-bCtl = sbControlCreate(rows(data));
+bCtl = breakControlCreate(rows(data));
 
 // Set to print the output from the iterations
 bCtl.printd = 1;
