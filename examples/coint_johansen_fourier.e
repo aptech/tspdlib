@@ -2,7 +2,7 @@ new;
 cls;
 library tspdlib;
 
-data = loadd("coint_data.gdat");
+data = loadd(__FILE_DIR $+ "coint_data.gdat");
 
 dates = data[.,1];
 x1 = data[.,2];
