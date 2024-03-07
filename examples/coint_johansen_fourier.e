@@ -1,8 +1,8 @@
 new;
 cls;
-library tspdlib_dv;
+library tspdlib;
 
-data = xlsReadM("example_data.xlsx","a2");
+data = loadd("coint_data.gdat");
 
 dates = data[.,1];
 x1 = data[.,2];

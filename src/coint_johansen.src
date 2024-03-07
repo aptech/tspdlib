@@ -61,7 +61,7 @@ proc(5) = coint_Johansen(x, model, k);
 
     // Residuals from regression of DX on Z
     // an regression of X(t-k) on Z
-    { r0, r1 } = _getCointRegResiduals(z, dx, dt, k);
+    { r0, r1 } = _getCointRegResiduals(x, z, dx, dt, k);
     
     // Get eigenvalues
     { eig_val, a, d } = _getJohansenEigval(r1, r0, m);
@@ -84,20 +84,42 @@ proc(5) = coint_Johansen(x, model, k);
     _printHeaderTSPDLIB(0, 0, 5, model, 0, 0, "Johansen Cointegration", "No cointegrating equations", 1);
     
     // Print results & Critical values
-    local side, stats, dec, colwidth, cv, top;
+    local side, stats, top, opt_r;
     top = "Rank"$~"Eigenvalue"$~"Lambda"$~"Trace"$~"cv (5%)"$~"Log-likelihood";
-    side = itos(seqa(0, 1, cols(x)+1));
-    stats = (miss(1,1)|eig_val)~(miss(1,1)|lr2)~(miss(1,1)|lr1)~(miss(1,1)|cv_lr1)~(miss(1,1)|logL);
-    dec = 3;
-    colwidth = 15;
-    cv = {};
-    
-    // Print stats 
-    _printStatsTable(top, side, stats, cv, dec, colwidth, 0, k);
+    side = "r <= " $+ itos(seqa(0, 1, m));
+    stats = eig_val~lr2[1:m]~lr1[1:m]~cv_lr1~logL[1:m];
 
+    
+    // Print stats
+    sprintf("%15s", top);
+    sprintf("%15s%15.3f", side, stats);
+    print "=======================================================================================================";
+    
+    // Find conclusion
+    opt_r = __get_rank(lr1[1:m], cv_lr1);
+    
+    sprintf("Trace test indicates %d cointegrating equations at the 0.05 level.", opt_r);
+    
     retp(eig_val, lr2, lr1, cv_lr1, logL);
 endp;
 
+proc (1) = __get_rank(trace_vec, cv_vec);
+    local r, tmp, tmp2;
+    
+    
+    // Check for trace > cv;
+    tmp = trace_vec .> cv_vec;
+    
+    // Get rank
+    tmp2 = seqa(1, 1, rows(trace_vec)).*tmp;
+    
+    // Opt rank
+    r = maxc(tmp2);
+    
+    retp(r);
+endp;
+
+    
 proc (2) = _transformX(x, k);
     local dx, q , z;
     

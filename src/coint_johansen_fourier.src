@@ -39,29 +39,6 @@
 -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 */
 
-//// Printing
-//"         Johansen-Fourier cointegration Tests         ";
-//"=======================================================";
-//" #var.  =";;
-//m;
-//" Model  =";;
-//model;
-//" Freq.  =";;
-//f;
-//" Option =";;
-//option;
-//" VAR(k) =";;
-//k;
-//" VECM(k)=";;
-//k-1;
-//"           Fourier  Fourier  cv(5%)    cv(5%)    Log-  ";
-//"   Rank    Lambda    Trace   Lambda    Trace  Likelihood";
-//"--------------------------------------------------------";;
-//format /rd 8,3;
-//seqa(0,1,m+1)~(miss(1,1)|Flambda)~(miss(1,1)|Ftrace)~(miss(1,1)|cv_Flambda)~(miss(1,1)|cv_Ftrace)~logL;
-
-
-
 proc(5) = Johansen_Fourier(x, model, k, f, option);
     local m, t, dx, sink, cosk, dt, z, 
     r0, r1, a, d, lr1, lr2, logL, eig_val;
@@ -90,7 +67,7 @@ proc(5) = Johansen_Fourier(x, model, k, f, option);
     
     // Residuals from regression of DX on Z
     // an regression of X(t-k) on Z
-    { r0, r1 } = _getCointRegResiduals(z, dx, dt, k);
+    { r0, r1 } = _getCointRegResiduals(x, z, dx, dt, k);
     
     // Get eigenvalues
     { eig_val, a, d } = _getJohansenEigval(r1, r0, m);
@@ -105,12 +82,34 @@ proc(5) = Johansen_Fourier(x, model, k, f, option);
     k = cols(dx/z);  
     logL = _getJohansenLogL(r1, r0, model, T, k);
     
+    // Print results
+    _printHeaderTSPDLIB(0, 0, 5, model, 5, 0, "Fourier Johansen Cointegration", "No cointegrating equations", 1);
+    
     // Get critical values
     local cv_lr1, cv_lr2;
     cv_lr1 = _get_cv_Fourier_Trace(option, model, f, m);
     cv_lr2 = _get_cv_Fourier_Lambda(option, model, f, m);
     cv_lr1 = rev(cv_lr1');
     cv_lr2 = rev(cv_lr2');
+    
+    // Print results & Critical values
+    local side, stats, top, opt_r_T, opt_r_L;
+    top = "Rank"$~"Eigenvalue"$~"Lambda"$~"cv (5%)"$~"Trace"$~"cv (5%)";
+    side = "r <= " $+ itos(seqa(0, 1, m));
+    stats = eig_val~lr2[1:m]~cv_lr2~lr1[1:m]~cv_lr1;
+
+    
+    // Print stats
+    sprintf("%15s", top);
+    sprintf("%15s%15.3f", side, stats);
+    print "=======================================================================================================";
+    
+    // Find conclusion
+    opt_r_T = __get_rank(lr1[1:m], cv_lr1);
+    opt_r_l = __get_rank(lr2[1:m], cv_lr2);
+    sprintf("Fourier trace test indicates %d cointegrating equations at the 0.05 level.", opt_r_T);
+    sprintf("Fourier Lambda max test indicates %d cointegrating equations at the 0.05 level.", opt_r_L);
+    
     retp(lr2, lr1, cv_lr2, cv_lr1, logL);
 endp;
 
@@ -144,7 +143,7 @@ proc (3) = _getJohansenEigval(r1, r0, m);
     retp(eig_val, a, d);
 endp;
 
-proc (2) = _getCointRegResiduals(z, dx, dt, k);
+proc (2) = _getCointRegResiduals(x, z, dx, dt, k);
     local lx, r0, r1;
     
     z  = z ~ dt;

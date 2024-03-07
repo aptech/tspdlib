@@ -1,6 +1,6 @@
 new;
 cls;
-library tspdlib_dv;
+library tspdlib;
 
 data = loadd(__FILE_DIR $+ "coint_data.gdat");
 
