@@ -20,6 +20,8 @@
         "coint_egranger.src",
         "coint_ghansen.src",
         "coint_hatemiJ.src",
+        "coint_johansen.src",
+        "coint_johansen_fourier.src",
         "coint_pouliaris.src",
         "coint_shin.src",
         "coint_tsongetal.src",
@@ -80,5 +82,5 @@
         "tspdlib.sdf",
         "wkss.src"
     ],
-    "version": "3.0.0"
+    "version": "3.0.2"
 }
