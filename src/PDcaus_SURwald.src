@@ -96,6 +96,8 @@ proc(1) = Panel_SURwald(data, vnames, pmax, ic, Nboot, Ncross);
             {y, yl}  = _get_SURdata(y1, y2, p, n);
             
             {SURWald,sur_out,aic,sbc}  = _get_sur_wald(y, yl, n, p);
+//            print ("Coefficient"$~"SE"$~"T-stat");
+//            sur_out;
             
             {SURwald_boot, cvboot} = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
         
@@ -122,7 +124,8 @@ proc(4) = _get_sur_wald(y,yl,n,p);
     local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi;
     local cove,IT,xx,bsur, omega, covb, vsur,sesur,tsur;
     local aic,sbc,sur_out, surwald;
-    
+    local xxt, omega_i, omega_d, ln_omega_d, coveIT, coveIT_i;
+  
     t = rows(yl)/n;
     x = ones(n*t,1)~yl;
     
@@ -155,14 +158,26 @@ proc(4) = _get_sur_wald(y,yl,n,p);
         i=i+1;
     endo;
     
-    bsur = inv(xx'*inv(cove.*.IT)*xx)*xx'*inv(cove.*.IT)*y;
-    omega= (cove.*.IT);
-    covb = inv(xx'*inv(omega)*xx);
+    // Get constants for the computations
+    local tmp;
+    xxt = xx';
+    coveIT = (cove.*.IT);
+    coveIT_i = inv(coveIT);
+    
+    bsur = inv(xxt*coveIT_i*xx)*xxt*coveIT_i*y;
+    omega = coveIT;
+    
+    // Get determinant
+    omega_i = inv(omega);
+    omega_d = detl;
+    ln_omega_d = ln(omega_d);
+    
+    covb = inv(xxt*omega_i*xx);
     vsur = diag(covb);
     sesur= sqrt(vsur);
     tsur = bsur./sesur;
-    aic  = ln(det(omega))+(2*N*k*p/T);
-    sbc  = ln(det(omega))+(N*k*p/T)*ln(T);
+    aic  = ln_omega_d+(2*N*k*p/T);
+    sbc  = ln_omega_d+(N*k*p/T)*ln(T);
     
     sur_out = bsur~sesur~tsur;
     
@@ -172,7 +187,7 @@ proc(4) = _get_sur_wald(y,yl,n,p);
 endp;
 
 proc(1) = _get_SURwald(b_sur, covb, N, p);
-    local surwald, R;
+    local surwald, R, Rbsur;
     
     surwald = {};
     for i(1, N, 1);
@@ -181,7 +196,8 @@ proc(1) = _get_SURwald(b_sur, covb, N, p);
         else;
             R = zeros(p, (i-1)*(2*p + 1) + p + 1) ~ eye(p);
         endif;
-        surwald = surwald | (R*b_sur)'*inv(R*covb*R')*(R*b_sur);
+        Rbsur = R*b_sur;
+        surwald = surwald | Rbsur'*inv(R*covb*R')*Rbsur;
     endfor;
     
 
@@ -194,7 +210,7 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
     local cove, IT, xx, bsur, esur, NeH0, bH0;
     local Waldboot, s, ustar, ystar, Wboot, aic, sbc;
     local cvboot, Wb, cv1, cv5, cv10, sur_out;
-    local xxH0, zhat;
+    local xxH0, zhat, xxt, coveIT, coveIT_i;
     
     t = rows(yl)/n;
     x = ones(n*t,1)~yl[.,1];
@@ -219,7 +235,7 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
     
     //e=reshape(e,t,n);
     
-    cove= e'e/t;
+    cove = e'e/t;
     IT  = eye(t);
     xx  = zeros(t*n,n*k);
     i = 1;
@@ -228,7 +244,12 @@ proc(2) = _get_SURwald_bootstrap(y, yl, y2, p, Nboot, N);
         i=i+1;
     endo;
     
-    bsur = inv(xx'*inv(cove.*.IT)*xx)*xx'*inv(cove.*.IT)*y;
+    // Get constants for computations
+    xxt = xx';
+    coveIT = cove.*.IT;
+    coveIT_i = inv(coveIT);
+    
+    bsur = inv(xxt*coveIT_i *xx)*xxt*coveIT_i*y;
     esur = y-xx*bsur;
     
     NeH0 = (reshape(esur,n,t))';
@@ -437,8 +458,10 @@ proc(5) = _get_sur_wald_mod(y,yl,n,p);
     local t, x, e, k, bols, sols, i, yi, xi, bi, ei, vi;
     local cove,IT,xx,bsur, omega, covb, vsur,sesur,tsur;
     local aic,sbc,sur_out, surwald;
+    local xxt, omega_i, omega_d, ln_omega_d, coveIT, coveIT_i;
     
     t = rows(yl)/n;
+   
     x = ones(n*t,1)~yl;
     
     e = zeros(t,n);
@@ -470,14 +493,22 @@ proc(5) = _get_sur_wald_mod(y,yl,n,p);
         i=i+1;
     endo;
     
-    bsur = inv(xx'*inv(cove.*.IT)*xx)*xx'*inv(cove.*.IT)*y;
-    omega= (cove.*.IT);
-    covb = inv(xx'*inv(omega)*xx);
+    // Constants for computations
+    xxt = xx';
+    omega_i = inv(omega);
+    omega_d = detl;
+    ln_omega_d = ln(omega_d);
+    coveIT = cove.*.IT;
+    coveIT_i = inv(coveIT);
+    
+    bsur = inv(xxt*coveIT_i*xx)*xxt*coveIT_i*y;
+    omega= coveIT;
+    covb = inv(xxt*omega_i*xx);
     vsur = diag(covb);
     sesur= sqrt(vsur);
     tsur = bsur./sesur;
-    aic  = ln(det(omega))+(2*N*k*p/T);
-    sbc  = ln(det(omega))+(N*k*p/T)*ln(T);
+    aic  = ln_omega_d+(2*N*k*p/T);
+    sbc  = ln_omega_d+(N*k*p/T)*ln(T);
     
     sur_out = bsur~sesur~tsur;
     
