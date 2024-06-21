@@ -17,7 +17,10 @@
 **
 **           X       -  NxK matrix, independent variables
 **
-**           model   - 	3 = C/S (regime shift)
+**           model   - 	1 = Constant with level shift
+**                      2 = Constant and trend with level shift
+**                      3 = Constant and coefficient shift (regime shift)
+**
 **
 **           bwl     -  Optional, bandwidth for long-run variance computations.
 **                      Default = round(4 * (T/100)^(2/9)).
@@ -85,7 +88,7 @@ proc(11) = coint_hatemiJ(y, x, ...);
     local T1, T2, T3, DF, Za, Zt, lagadf, tb1, tb2, du1, du2, x1, stat1, stat2, stat3;
     local b, e1, sig2, se, ssr, cvADFZt, cvZa, k;
     local cv0, cv1, cv2, bwl_dftl, bwl, ic, pmax, varm, trimm, model, dt_vec,
-        fracADF, fracZa, fracZt, TBadf, TBzt, TBza;
+        fracADF, fracZa, fracZt, TBadf, TBzt, TBza, prnt_model;
     
     // Error checks
     _checkForMissings(y~x, currentprocname());
@@ -135,11 +138,18 @@ proc(11) = coint_hatemiJ(y, x, ...);
             du2 =zeros(tb2,1)|ones(n-tb2,1);
             
             if model==3;
-                x1=ones(n,1)~du1~du2~x~du1.*x~du2.*x;
+                x1 = ones(n, 1)~du1~du2~x~du1.*x~du2.*x;
+                prnt_model = "Regime Change";
+            elseif model==2;
+                x1 = ones(n, 1)~du1~du2~x~seqa(1, 1, n);
+                prnt_model = "Constant and Trend";
+            elseif model==1;
+                x1 = ones(n, 1)~du1~du2~x;
+                prnt_model = "Constant";
             else;
                 "Error: Only Model 3 is available";
             endif;
-            {b,e1,sig2,se,ssr}    = myols(y,x1);
+            { b, e1, sig2, se, ssr }    = myols(y,x1);
             
             screen off;
             {DF[tb1-T1+1,tb2-T1*2+1],lagadf[tb1-T1+1,tb2-T1*2+1], cv0}  = adf(e1,0,pmax,ic);
@@ -198,7 +208,7 @@ proc(11) = coint_hatemiJ(y, x, ...);
     { cvADFZt, cvZa } = cv_coint_hatemiJ(k);
         
     // Printing   
-    _printHeaderTSPDLIB(0, varm, 1, "Regime shift", 2, trimm, "Hatemi-J", "No cointegration", 0);
+    _printHeaderTSPDLIB(0, varm, 1, prnt_model, 2, trimm, "Hatemi-J", "No cointegration", 0);
 
     // Print results
     local side, top, stats, dec, colwidth;
