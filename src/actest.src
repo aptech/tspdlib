@@ -15,9 +15,13 @@
 **           z                -    TN x 1 vector, data 
 **
 **           pos              -    Optional, specifies whether to use positive or 
-**                                 negative component. Default = 1.
+**                                 negative component. If scalar, same sign component
+**                                 used for all variables. If vector, different direction
+**                                 may be specified for each variable. Length of vector
+**                                 must be same length as number of variables. Default = 1.
 **                                 0 = Negative
-**                                 1 = Positive                               
+**                                 1 = Positive  
+**                                                  
 **
 **           ic               -    Optional, information criteria. Default = 3.
 **                                 1 = AIC
@@ -92,12 +96,29 @@ proc(4) = asymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter
     // Find cumulative positive and negative components
     { CUMDYZpc, CUMDYZnc } = cumulativeComp(y, ln_form, fullprint);
     
-    if pos;
-        // Allows for causality test between positive components.
-        z=CUMDYZpc;
+    // Check length of pos input
+    if rows(pos) == 1;
+        if pos;
+            // Allows for causality test between positive components.
+            z=CUMDYZpc;
+        else;
+            // Allows for causality test between negative components.
+            z=CUMDYZnc;
+        endif;
     else;
-        // Allows for causality test between negative components.
-        z=CUMDYZnc;
+        local pos_indx, neg_indx;
+        if rows(pos) != cols(y);
+            errorlogat "'asymCause': Number of component specifications do not match number of rows.";
+            end;
+        endif;
+        
+        pos_indx = indexcat(pos, 0|1);
+        neg_indx = setdif(seqa(1, 1, cols(y)), pos_indx);
+        z = zeros(rows(CUMDYZpc), cols(y));
+        z[., pos_indx] = CUMDYZpc[., pos_indx];
+        if neg_indx != miss();
+            z[., neg_indx] = CUMDYZnc[., neg_indx];
+        endif;
     endif;
     
     // Add lag for integrated model
@@ -641,10 +662,18 @@ proc (0) = _printHeaderASYM(ic, pos, varnames);
     ic_str = _printICASYM(ic);
  
     // Get model specification
-    if pos;
-      modl_str = "Positive components";
+    if rows(pos)>1;
+        local tmp_str;
+        tmp_str = reclassify(pos, 1|0, "+"$|"-");
+        
+        modl_str = varnames$+tmp_str;
+        modl_str = modl_str[1] $+ "/" $+ modl_str[2];
     else;
-      modl_str = "Negative components";
+        if pos;
+            modl_str = "Positive components";
+        else;
+            modl_str = "Negative components";
+        endif;
     endif;
     
     // Set up table columns

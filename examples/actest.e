@@ -54,7 +54,7 @@ intorder = 1;
 // This sets whether to use the positive components 
 // Set to 1 use positive components
 // 0 to use negative components
-pos = 1;
+pos = {0, 1};
 
 // Call for asymetric test
 // { Wstat, WcriticalvalsS, ICOrder, Azdsys } = 
