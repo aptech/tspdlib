@@ -115,7 +115,9 @@ proc(4) = asymCasualitytest(y, ln_form, maxlags, infocrit, intorder, bootmaxiter
         pos_indx = indexcat(pos, 0|1);
         neg_indx = setdif(seqa(1, 1, cols(y)), pos_indx);
         z = zeros(rows(CUMDYZpc), cols(y));
-        z[., pos_indx] = CUMDYZpc[., pos_indx];
+        if pos_indx != miss();
+            z[., pos_indx] = CUMDYZpc[., pos_indx];
+        endif;
         if neg_indx != miss();
             z[., neg_indx] = CUMDYZnc[., neg_indx];
         endif;
@@ -664,6 +666,7 @@ proc (0) = _printHeaderASYM(ic, pos, varnames);
     // Get model specification
     if rows(pos)>1;
         local tmp_str;
+
         tmp_str = reclassify(pos, 1|0, "+"$|"-");
         
         modl_str = varnames$+tmp_str;
