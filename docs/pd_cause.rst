@@ -11,8 +11,8 @@ Format
 .. function:: pd_stat = pd_cause(data, Ncross, test [, pmax, dmax, ic, Nboot, vnames])
     :noindexentry:
 
-    :param data: Data to be tested with k individual variables each in a separate column.
-    :type data: Txk matrix
+    :param data: Data to be tested with 2 individual variables each in a separate column. Data should be long format panel data. 
+    :type data: (N*T)x2 matrix
 
     :param Ncross: Number of cross sections.
     :type Ncross: Scalar
@@ -61,7 +61,10 @@ Examples
 
   library tspdlib;
 
-  // Load data
+  /* Load data
+  ** This data is long format panel data. It contains observations for 
+  ** two variables across 9 different cross-sections. 
+  */
   data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pdcause.dat");
 
   // Number of cross-sections
