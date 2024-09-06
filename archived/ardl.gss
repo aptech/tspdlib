@@ -1,0 +1,167 @@
+new;
+cls;
+library qardl;
+
+// Read data from Excel file
+file  = "veri.xlsx";
+range = "B3:G68"; 
+sheet = 2;
+data  = xlsReadM(file, range, sheet);
+
+// Read variable names from Excel file
+range = "B2:G2"; 
+sheet = 2;
+vname = xlsReadSA(file, range, sheet);
+
+// Log transformation
+lndata = ln(data);
+
+// y is all rows of 1.column
+y = lndata[.,1];         
+
+// Xs are all rows from 2. to last column
+x = lndata[.,2:cols(data)];
+
+// Define variable (X) names
+yname  = "TUFE";
+xnames = "Faiz"$|"Kur"$|"Kredi"$|"Kamu"$|"Petrol";
+
+// Model
+// 1: Constant
+// 2: Consant and trend
+model = 1;
+// Maximum value of p orders
+p_max = 4;
+// Maximum value of q orders
+q_max = 4;
+{out_cecm, out_lr, out_ecm} = ardl_ecm(y, x, p_max, q_max, model, yname, xnames);
+
+proc(3) = ardl_ecm(y, x, p_max, q_max, model, yname, xnames);
+    local p, q, k, dy, dy_lags, plags, qlags, dx, dx_lags, y1, x1, tr, dy_p, dx_q;
+    local reg_x, reg_y, b, e, df, sig2, v_b, s_b, t_b, p_b;
+    local phi, bx, blr, d_blr1, d_blr2, d_blr, v_blr, s_blr, t_blr, p_blr;
+    local str_y1, str_dy, str_x1, str_dx, str_dx_j, str_vnames, str_ecm;
+    local out_cecm, out_lr, out_ecm;
+
+    // Get optimal p and q
+    {p, q} = pqorder(y~x, p_max, q_max);
+    if p == 1; p = 2; else; p = p; endif;
+    if q == 1; q = 2; else; q = q; endif; 
+        p = 2;
+        q = 4;
+    "ARDL"$+"("$+sprintf("%2d", p~q)$+")";  
+    k  = cols(x);
+    // Generate Diffence of y (Dy)
+    dy = y - lag1(y);
+    // Generate p-1 lags Dy
+    dy_lags = {};
+    plags = seqa(1, 1, p-1);
+    dy_lags = lagn(dy, plags);
+    // Generate difference of (Dx)
+    dx = x - lag1(x);
+    // Generate q-1 lags Dx
+    qlags = seqa(1, 1, q-1);
+    dx_lags = {};
+    for i(1,cols(x),1);
+        dx_lags = dx_lags ~ (dx[.,i]~lagn(dx[.,i], qlags));
+    endfor;
+    // Generate y_(t-1)
+    y1 = lag1(y);
+    // Generate x_(t-1)
+    x1 = lag1(x);
+    
+    // Adjust all series for p and q
+    tr = maxc(p|q);
+    y1 = trimr(y1, tr, 0);
+    x1 = trimr(x1, tr, 0);
+    dy = trimr(dy, tr, 0);
+    dx = trimr(dx, tr, 0);
+    dy_p = trimr(dy_lags, tr, 0);
+    dx_q = trimr(dx_lags, tr, 0);
+    
+    // Define x matrix for Conditional Error Correction Model
+    if model == 1;
+        reg_x = y1 ~ x1 ~ dy_p ~ dx_q ~ ones(rows(x1),1);
+    endif;
+    if model == 2;
+        reg_x = y1 ~ x1 ~ dy_p ~ dx_q ~ ones(rows(x1),1) ~ seqa(1, 1, rows(x1));
+    endif;
+    // Define dependendent variable
+    reg_y = dy;
+    // Estimate Conditional Error Correction Model
+    b = reg_y/reg_x;
+    // Estimated residuals
+    e = (reg_y - reg_x*b);
+    // Estimate residual variance: e'e/(T-k)
+    df = rows(reg_y)-cols(reg_x);
+    sig2 = e'e/df;
+    // Variance-covariance matrix for b: sig2*inv(x'x)
+    v_b = sig2.*invpd(reg_x'reg_x);
+    // Standard error of b
+    s_b = sqrt(diag(v_b));
+    // t-statistic of b
+    t_b  = b./s_b;
+    // p-values for t-stats
+    p_b =  2*cdftc(abs(t_b),df);
+    
+    // Get error-correction parameter
+    phi = b[1];
+    // Estimate long-run parameters (blr)
+    bx  =  b[2:k+1];
+    blr = -bx./phi;
+    // Apply Delta method
+    d_blr1 = bx./(phi^2);
+    d_blr2 = -(1/phi).*eye(k);
+    d_blr  = d_blr1~d_blr2;
+    // Variance-covariance matrix for blr
+    v_blr = d_blr*v_b[1:k+1,1:k+1]*d_blr';
+    // Standard error of blr
+    s_blr = sqrt(diag(v_blr));
+    // t-statistic of blr
+    t_blr  = blr./s_blr;
+    // p-values for t-stats
+    p_blr =  2*cdftc(abs(t_blr),df);
+    
+    str_y1 = yname$+"("$+ftocv(-seqa(1,1,1),1,0)$+")";
+    str_dy = "D"$+yname$+"("$+ftocv(-seqa(1,1,p-1),1,0)$+")";
+    str_x1 = xnames$+"("$+ftocv(-seqa(1,1,1),1,0)$+")";
+    str_dx = {};
+    for j(1,rows(xnames),1);
+        str_dx_j = "D"$+xnames[j]$|
+            "D"$+xnames[j]$+"("$+ftocv(-seqa(1,1,q-1),1,0)$+")";
+        str_dx = str_dx $| str_dx_j;
+    endfor;
+    str_vnames = str_y1 $| str_x1 $| str_dy $|str_dx;
+    
+    if model == 1;
+        // xnames= vnames[1:k]$|"Intercept"$|vnames[k+1:rows(vnames)];
+        str_vnames = str_vnames$|"Intercept";
+    endif;
+    
+    if model == 2;
+        str_vnames = str_vnames$|"Intercept"$|"Trend";
+    endif;
+    
+    "Conditional Error Correction Model            ";
+    "      Variables      Coeff.      se       t-stat    p-val.";
+    "----------------------------------------------------------";;
+    out_cecm = b~s_b~t_b~p_b;
+    str_vnames$~sprintf("%10.3f", out_cecm);
+    
+    "";
+    "Levels Equation (Long-run Parameters)         ";
+    "      Variables      Coeff.      se       t-stat    p-val.";
+    "----------------------------------------------------------";;
+    out_lr = blr~s_blr~t_blr~p_blr;
+    str_x1$~sprintf("%10.3f", out_lr);
+    
+    
+    "";
+    "Error Correction Model                       ";
+    "      Variables      Coeff.      se       t-stat    p-val.";
+    "----------------------------------------------------------";;
+    out_ecm = out_cecm[1,.]|out_cecm[k+2:rows(out_cecm),.];
+    str_ecm = "ECT"$|str_vnames[k+2:rows(str_vnames)];
+    str_ecm$~sprintf("%10.3f", out_ecm);
+    retp(out_cecm, out_lr, out_ecm);
+endp;

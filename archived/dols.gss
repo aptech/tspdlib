@@ -1,0 +1,486 @@
+new;
+cls;
+
+
+// Read data from Excel file
+file  = "veri.xlsx";
+range = "B3:G68"; 
+sheet = 2;
+data  = xlsReadM(file, range, sheet);
+
+// Read variable names from Excel file
+range = "B2:G2"; 
+sheet = 2;
+vname = xlsReadSA(file, range, sheet);
+
+// Log transformation
+lndata = ln(data);
+
+// y is all rows of 1.column
+y = lndata[.,1];         
+
+// Xs are all rows from 2. to last column
+x = lndata[.,2:cols(data)];
+
+// Define variable (X) names
+vnames = "Faiz"$|"Kur"$|"Kredi"$|"Kamu"$|"Petrol";
+
+// Model specification for deterministic term
+model = 1;      // 1 = constant, 2 = constant & trend
+
+// Lead and lag order for DOLS estimation
+q = 2;
+
+// HAC standard errors options
+hac_se = 2;     // 0 = iid, 1 = White , 2 = Newey - West 
+
+// Kernel options for Newey - West HAC standard errors
+kernel = "Bartlett";
+bw = round(4*(rows(y)/100)^(2/9));      // Newey - West Fixed
+
+// Printing options
+p_out = 1;      // 0 = non-print, 1 = print
+
+{b_dols, se_dols, t_dols} = cointreg_dols(y, x, model, vnames, q, hac_se, kernel, bw, p_out);
+
+
+proc(3) = cointreg_dols(y, x, model, vnames, q, hac_se, kernel, bw, p_out);
+    local t, k, dx, dx_lags, dx_leads, i, j, dx_dols;
+    local const, trend, x_d, x_dols, y_dols, d_names, xnames, r;
+    local b_dols, se_dols, t_dols, pval;
+
+    k = cols(x);
+    t = rows(x);
+    
+    //Difference of x
+    Dx = x - lag1(x);
+
+    dx_lags = {};
+    dx_leads= {};
+    for i(1,cols(x),1);
+        for j(1,q,1);
+            dx_lags  = dx_lags~lagn(dx[.,i], j);
+            dx_leads = dx_leads~lagn(dx[.,i], -j);
+        endfor;
+    endfor;
+
+    dx_dols= {};
+    for j(1, k, 1);
+    dx_dols = dx_dols ~ 
+              dx_lags[.,(q*(j-1)+1):j*q] ~ 
+              dx[.,j] ~ 
+              dx_leads[.,(q*(j-1)+1):j*q];
+    endfor;
+
+    
+    const = ones(T, 1);    
+    trend = seqa(1, 1, T);
+    
+    if model == 1;
+            x_d = x ~ const  ~ dx_dols;
+    endif;    
+
+    if model == 2;
+            x_d = x ~ const ~ trend~ dx_dols;
+    endif;  
+    
+    // Trim data for q lags & leads
+    x_dols = trimr(x_d, q+1, q);   
+    y_dols = trimr(y, q+1, q);
+
+
+    for j(1,k,1);
+    d_names= "D"$+vnames[j]$+"("$+ftocv(-seqa(1,1,q),1,0)$+")"$|
+             "D"$+vnames[j]$|
+             "D"$+vnames[j]$+"("$+ftocv(seqa(1,1,q),1,0)$+")";   
+    vnames = vnames$|d_names;
+    endfor;
+
+    if model == 1; 
+        // xnames= vnames[1:k]$|"Intercept"$|vnames[k+1:rows(vnames)];
+        xnames= vnames[1:k]$|"Intercept";
+    endif;
+
+    if model == 2; 
+        xnames= vnames[1:k]$|"Intercept"$|"Trend";
+    endif;
+                                   
+    {b_dols, se_dols, t_dols, pval} = ols_eviews(y_dols, x_dols, xnames, hac_se, kernel, bw, 0, 0);
+    
+
+    if p_out == 1;
+        "Dynamic Least Squares (DOLS)";
+        "Model              ";; if model == 1; "Constant"; endif;
+                            if model == 2; "Constant and Trend"; endif;
+        "Observations       " rows(y_dols);
+        "Standard Errors    ";; if hac_se == 0; "i.i.d standard errors"; endif;
+                            if hac_se == 1; "White heteroscedasticiy-consistent standard errors"; endif;
+                            if hac_se == 2; "Newey & West HAC standard errors"; 
+                                            "Kernel    " kernel;
+                                            "Bandwidth " bw;   
+                            endif;
+        "      Variables     Coefficient    Std.Error     t-stat      p-value ";
+        "---------------------------------------------------------------------";;
+        r = rows(xnames);                    
+        xnames$~sprintf("%13.6f", b_dols[1:r] ~ se_dols[1:r] ~ t_dols[1:r] ~ pval[1:r]);
+                         
+   endif;                        
+retp(b_dols, se_dols, t_dols);
+endp;
+
+    
+proc(4) = ols_eviews(y, x, xnames, hac_se, kernel, bw, p_out, d_out);
+    local t, b_ols, e, df, s2, vcov, vb, seb, tb, pval;
+    local ybar, tkt, rss, r2, r2adj, s, l, k ;
+    local f, probf, sy, aic, sbc, hqc, e1, de, dw;
+    local hts_bpg, hts_harvey, hts_glejser, hts_arch, hts_white;
+    local pmax, porder, sc_bg, sc_bg_pval;
+    
+    // Get OLS coefficients
+    b_ols = inv(x'x)*x'y;
+
+    // Get OLS residuals
+    e = y-x*b_ols;
+
+    // Get residual variance
+    df = (rows(e)-cols(x));
+    s2 = e'e/df;
+
+    // Get b_ols variance and co-variance matrix
+    vcov = s2*inv(x'x);
+
+    // Get b_ols variance 
+    vb = diag(vcov);
+
+    if hac_se == 0;
+        // Get b_ols standard errors
+        seb = sqrt(vb);
+    endif;
+
+   if hac_se == 1;
+       // White heteroscedasticiy consistent standard errors (with df adjustment)
+        seb   = white_se(y, x, 1);
+   endif;
+
+   if hac_se == 2;
+       // Newey & West heteroscedasticiy and autocorrelation consistent standard errors (with df adjustment)"
+        seb   = nw_se(y, x, kernel, bw, 1);
+   endif;
+   
+   // Get b_ols t-stats
+   tb = b_ols./seb;   
+   
+   // Get p-values for t-stats
+   pval =  2*cdftc(abs(tb),df);
+   
+    // Get R-square
+    ybar = meanc(y);
+    tkt  = (y-ybar)'(y-ybar);
+    rss  = e'e;
+    r2   =  1-(rss/tkt);
+
+    // Get Adjusted R-square
+    t = rows(e);
+    r2adj = 1-(1-r2)*(t-1)/df;
+
+    // Get standard error of regression
+    s = sqrt(s2);
+
+    // Get Log-likelihood
+    l = -t/2*(1 + ln(2*pi) + ln((e'e)/t));
+
+    // Get F-statistic
+    k = cols(x);
+    F = (r2/(k-1)) / ((1-r2) / df);
+
+    probF = cdfFc(F, k-1, df);
+
+    // Get standard deviation of dependent variable
+    sy = sqrt(tkt / (t-1));
+
+    // Get information criterions
+    AIC = -2*l / t + 2*k / t;
+    SBC = -2*l / t + (k*ln(t)) / t;
+    HQC = - 2*l/ t + 2*k*ln(ln(t))/ t;
+
+    // Get Durbin-Watson stat.
+    // Get lag of e : e(t-1)
+    e1 = lagn(e,1);
+  
+    //Get e - e(t-1)
+    de = e - e1;
+  
+    // Remove missing observation
+    de = de[2:rows(de)];
+    
+    // Durbin-Watson stat.
+    DW = de'de / rss;
+    
+    // Get heteroscedasticity tests
+    {hts_bpg, hts_harvey, hts_glejser, hts_arch, hts_white} = heteroscedasticity(y, x);
+
+    // Get Serial Correlation LM Tests up to pmax
+    pmax = round(4*(rows(y)/100)^(2/9)); 
+    SC_bg      = zeros(pmax,1);
+    SC_bg_pval = zeros(pmax,1);
+    for p(1, pmax, 1);
+        SC_bg[p]      = serial_correlation(y, x, p); 
+        SC_bg_pval[p] = cdfChic(SC_bg[p], p);
+    endfor; 
+
+     
+    if p_out ==  1;
+        //out_ols;
+        "      Variables     Coefficient    Std.Error     t-stat      p-value ";
+        "      ---------------------------------------------------------------";;       
+
+            // iid standard errors (with df adjustment)
+            xnames$~sprintf("%13.6f", b_ols ~ seb ~ tb ~ pval);
+    endif;
+    
+    if d_out == 1;
+            "";
+            format /rd 10, 6;
+            " R-squared             ";; r2;
+            " Adjusted R-squared    ";; r2adj;
+            " S.E. of regression    ";; s;
+            " Sum squared resid     ";; rss;
+            format /rd 10, 3;
+            " Log likelihood        ";; l;
+            " F-statistic           ";; f;
+            format /rd 10, 6;
+            " Prob(F-statistic)     ";; probF;
+            " Mean dependent var    ";; ybar;
+            " S.D. dependent var    ";;	sy; 
+            " Akaike info criterion ";; aic;
+            " Schwarz criterion     ";; sbc;
+            " Hannan-Quinn criter.  ";;	hqc;
+            " Durbin-Watson stat.   ";; dw;
+            "";
+            " Heteroscedasticity Tests";
+            "  White                ";; hts_white; 
+            "  p-value              ";; cdfChic(hts_white, k-1); 
+            "  Breusch-Pagan-Godfrey";; hts_bpg;   
+            "  p-value              ";; cdfChic(hts_bpg, k-1);    
+            "  Harvey               ";; hts_harvey;   
+            "  p-value              ";; cdfChic(hts_harvey, k-1); 
+            "  Glejser              ";; hts_glejser;   
+            "  p-value              ";; cdfChic(hts_glejser, k-1);                
+            "  ARCH(1)              ";; hts_arch;   
+            "  p-value              ";; cdfChic(hts_arch, 1); 
+            "";
+            " Serial Correlation LM-Tests";
+            "        Lags           LM-stat      pvalue";;
+            "  Resid(-"$+(ftocv(seqa(1,1,pmax),1,0))$+")"$~sprintf("%13.5f", SC_bg ~ SC_bg_pval);
+    endif;    
+        
+retp(b_ols, seb, tb, pval);
+endp;
+
+proc(5) = heteroscedasticity(y, x);
+    local resid, r2, obs;
+    local e_bpg, r2_BPG;
+    local e_harvey, r2_harvey;
+    local e_glejser, r2_glejser;
+    local resid2, x_arch, e_arch, r2_arch;
+    local e_white, r2_white;
+    local LMbpg, LMharvey, LMglejser, LMarch, LMwhite;  
+    
+    {resid, r2}             = _get_resid_r2(y, x);
+    {e_bpg, r2_bpg}         = _get_resid_r2(resid^2, x);
+    {e_harvey, r2_harvey}   = _get_resid_r2(ln(resid^2), x);
+    {e_glejser, r2_glejser} = _get_resid_r2(abs(resid), x);
+        resid2  = trimr(resid^2, 1, 0);
+        x_arch  = ones(rows(resid2),1) ~ trimr(lag1(resid^2), 1, 0);
+    {e_arch, r2_arch}       = _get_resid_r2(resid2, x_arch); 
+    {e_white, r2_white}     = _get_resid_r2(resid^2, x^2);  
+    obs       = rows(resid);
+    LMbpg     = obs * r2_BPG;
+    LMharvey  = obs * r2_harvey;
+    LMglejser = obs * r2_glejser;
+    LMarch    = rows(resid2) * r2_arch;
+    LMwhite   = obs * r2_white; 
+retp(LMbpg, LMharvey, LMglejser, LMarch, LMwhite);
+endp;
+
+proc(1) = serial_correlation(y, x, pmax);
+    local resid, r2, lag_resid, lag_mat, p, x_sc, e_sc, r2_sc, SC_bg; 
+    
+    {resid, r2} = _get_resid_r2(y, x);  
+    
+    lag_mat = {};
+    for p(1,pmax,1);
+        lag_resid = lagn(resid, p, 0);
+        lag_mat   = lag_mat ~lag_resid;
+    endfor; 
+    x_sc  = x ~ lag_mat;
+    {e_sc, r2_sc}   = _get_resid_r2(resid, x_sc);
+   
+    SC_bg = rows(resid) * r2_sc;
+    
+retp(SC_bg);
+endp;    
+
+proc(2) = _get_resid_r2(y, x);
+    local b_ols, e;
+    local ybar, tkt, rss, r2;
+    
+    // Get OLS coefficients
+    b_ols = inv(x'x)*x'y;
+
+    // Get OLS residuals
+    e = y-x*b_ols;
+
+    // Get R-square
+    ybar = meanc(y);
+    tkt  = (y-ybar)'(y-ybar);
+    rss  = e'e;
+    r2   =  1-(rss/tkt);
+    
+retp(e, r2);
+endp;
+
+    
+proc(1) = white_se(y,x, df_adj);
+    local e, r2, t, k, omega, white, se_w, adj;
+    
+    {e, r2} = _get_resid_r2(y, x);  
+    
+    t = rows(e);
+    k = cols(x);
+    
+    //White heteroscedasticity-consistent covariance matrix
+    omega  = x'((e^2).*x);
+
+    if df_adj == 0;
+        white  = pinv(x'x)*omega*pinv(x'x); 
+    endif;
+
+    if df_adj == 1;
+        adj    = t/(t-k);
+        white  = adj*pinv(x'x)*omega*pinv(x'x);
+    endif;
+    
+    se_w = sqrt(diag(white));
+    
+retp(se_w);
+endp;    
+
+proc(1) = nw_se(y, x, kernel, bw, df_adj);
+    local e, r2, t, k, z, omega, gama0, gamas;
+    local j,  kx, adj, nw, se_nw;
+    
+    {e, r2} = _get_resid_r2(y, x);
+    t  = rows(e);
+    k  = cols(x);
+    z  = e.*x;      
+
+    omega = 0;
+    gama0 = (z'z); 
+    gamas = 0;
+
+    for j(1, bw, 1);
+        gamas = (z[j+1:t,.])'(z[1:t-j,.]);
+        //omega = omega + (1-s/(bw+1))*(gamas+gamas');
+        kx = kernel_weight(kernel, j, bw);
+        omega = omega + kx*(gamas+gamas');       
+    endfor;
+
+    omega = (gama0+omega);
+    
+    if df_adj == 0;
+        NW  = pinv(x'x)*omega*pinv(x'x); 
+    endif;
+
+    if df_adj == 1;
+        adj = t/(t-k);
+        NW  = adj*pinv(x'x)*omega*pinv(x'x);
+    endif;
+    
+    se_nw = sqrt(diag(NW));
+
+retp(se_nw);
+endp;
+
+/* As in Eviews */
+proc (1)= kernel_weight(kernel, j, bw);
+    local kx, x, x2;
+    
+    x = j / bw;  
+    
+    if kernel == "Bartlett";     
+        if    abs(x) <= 1; 
+              kx = 1 - abs(x);
+        else; kx = 0;
+        endif; 
+    endif;
+    
+    if kernel == "Bohman"; 
+        if    abs(x) <= 1; 
+              kx = (1 - abs(x))*cos(pi*x) + sin(pi*abs(x))/pi;
+        else; kx = 0;
+        endif; 
+    endif;
+
+    if kernel == "Daniell";
+        kx = sin(pi*x)/(pi*x);
+    endif;
+
+    if kernel == "Parzen";     
+        if    0 <= abs(x) and abs(x) <= 0.5; 
+              kx = 1 - 6*x^2*(1 - abs(x));
+        elseif 0.5 < abs(x) and abs(x) <= 1;
+              kx = 2*(1-abs(x))^3;
+        else; kx = 0;
+        endif; 
+    endif;
+
+    if kernel == "Parzen_R";     
+        if    abs(x) <= 1; 
+              kx = 1 - x^2;
+        else; kx = 0;
+        endif; 
+    endif;
+    
+    if kernel == "Parzen_G";     
+        if    abs(x) <= 1; 
+              kx = 1 / (1 + abs(x));
+        else; kx = 0;
+        endif; 
+    endif;   
+
+    if kernel == "qs";
+        x2 = 6*pi*x/5;
+        kx = (25/(12*(pi*x)^2))*(sin(x2)/x2 - cos(x2));
+    endif;
+
+    if kernel == "Tukey_Hm";     
+        if    abs(x) <= 1; 
+              kx = 0.54 +  0.46 * cos(pi*x);
+        else; kx = 0;
+        endif; 
+    endif;  
+
+    if kernel == "Tukey_Hn";     
+        if    abs(x) <= 1; 
+              kx = 0.50 +  0.50 * cos(pi*x);
+        else; kx = 0;
+        endif; 
+    endif;  
+
+    if kernel == "Tukey_P";     
+        if    abs(x) <= 1; 
+              kx = 0.436 + 0.566 * cos(pi*x);
+        else; kx = 0;
+        endif; 
+    endif; 
+    
+    if kernel == "Trunc";
+        if abs(x) <= 1;
+              kx = 1 ;
+        else; kx= 0;
+        endif; 
+    endif;
+    
+retp(kx);
+endp;  

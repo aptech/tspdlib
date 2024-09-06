@@ -63,5 +63,4 @@ run -r rals_lm.e;
 run -r rals_lm_breaks.e;
 run -r sbur.e;
 run -r sbvar_icss.e;
-run -r wadf.e;
 run -r wkss.e;

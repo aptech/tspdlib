@@ -1,0 +1,246 @@
+new;
+cls;
+
+// Read data from Excel file
+file  = "veri.xlsx";
+range = "B3:G68"; 
+sheet = 2;
+data  = xlsReadM(file, range, sheet);
+
+// Read variable names from Excel file
+range = "B2:G2"; 
+sheet = 2;
+vname = xlsReadSA(file, range, sheet);
+
+// Log transformation
+lndata = ln(data);
+
+// y is all rows of 1.column
+y = lndata[.,1];         
+
+// Xs are all rows from 2. to last column
+x = lndata[.,2:cols(data)];
+
+// Variable names
+vnames = "Faiz"$|"Kur"$|"Kredi"$|"Kamu"$|"Petrol";
+
+// Define deterministic terms
+model = 1;  // 1 = Constant, 2 = Constant and trend
+
+// Kernel options for Newey - West HAC standard errors
+kernel = "Bartlett";
+bw = round(4*(rows(y)/100)^(2/9));      // Newey - West Fixed
+
+// Printing options
+p_out = 1;      // 0 = non-print, 1 = print
+
+{b_fmols, se_fmols, t_fmols, pval} = cointreg_fmols(y, x, model, vnames, kernel, bw, p_out);
+
+
+proc(4) = cointreg_fmols(y, x, model, vnames, kernel, bw, p_out);
+    local k, t, d1, z, b1, u1, b2, e2, u2, u, tu, p1, p2, p, j, kx;
+    local sigma,  gama, lambda, omega, w12, o22, g, l12, l22, lg, k1, bg;
+    local y_fm, w11, w21, df, lrv, vcov, fm_b, fm_se, fm_t, pval, xnames;
+ 
+    
+    k  = cols(x);
+    t  = rows(x);
+
+    @ Construct deterministic regressors in Yt and Xt equations @
+    if model == 1; 
+        d1 = ones(t,1);
+    endif;
+
+    if model == 2;
+        d1 = ones(t,1) ~ seqa(1,1,t);
+    endif;
+
+    z  = x ~ d1;    // z = (x, d1)
+
+    @ Construct u1 @
+    // Get OLS coefficients from y on z = (x,d1)
+    b1 = inv(z'z)*z'y;
+    // Get OLS residuals
+    u1 = y - z*b1;
+
+    @ Construct u2 @
+    // Get OLS coefficients from x on d1
+    b2 = inv(d1'd1)*d1'x;
+    // Get OLS residuals
+    e2 = x - d1*b2;
+    // Difference of e2
+    u2 = e2 - lag1(e2);
+    
+    @  Construct u @
+    u  = u1 ~ u2;
+    u  = u[2:T, .];
+    tu = rows(u);
+
+    // Comtemporaneous co-variance matrix 
+    sigma = u'u;
+
+    // One-sided long-run co-variance matrix
+    p1 = cols(y);
+    p2 = cols(x);
+    p  = p1 + p2;
+    gama = zeros(p,p);
+    for j(1, tu - 1, 1);
+        kx   = kernel_weight(kernel, j, bw);
+        gama = gama + kx*(u[1:tu-j,.]'(u[j+1:tu,.]));   
+    endfor;
+
+    lambda = sigma + gama;
+
+    // Co-variance matrix
+    //omega = lambda + lambda' - sigma;
+      omega = sigma + gama + gama';                                                                                                                                       
+ 
+    // Endogeneity correction terms
+    w12 = omega[2:p,1];
+    o22 = omega[2:p,2:p];
+    g   = w12 / o22;
+
+    // Modified y
+    y_fm = y - u2 * g;
+
+    // Bias correction terms
+    l12 = lambda[2:p,1];
+    l22 = lambda[2:p,2:p];
+    lg  = l12 - l22 * g;
+    k1  = cols(d1);
+    bg  = lg|zeros(k1,p1);
+    // FM-OLS estimator
+    y_fm = trimr(y_fm ,1, 0);
+    z    = trimr(z, 1, 0);
+
+    fm_b = inv(z'z)*(z'y_fm - bg);
+    // Get residual long-run variance 
+    w11 = omega[1,1];
+    w21 = omega[1,2:p];
+    // df adjustment as in Eviews
+    df  = rows(y_fm) - cols(z);
+    lrv = (w11 - w21*g) / df;
+
+    // Get variance and co-variance matrix
+    vcov  = lrv * inv(z'z);
+    fm_se = sqrt(diag(vcov));
+    fm_t  = fm_b ./ fm_se;
+
+    // Get p-values for t-stats
+    pval =  2*cdftc(abs(fm_t),df);
+    
+    // Define varianle names for print out results
+    if model == 1; 
+        xnames= vnames$|"Intercept";
+    endif;
+
+    if model == 2; 
+        xnames= vnames$|"Intercept"$|"Trend";
+    endif;
+    
+    if p_out == 1;
+        "";
+        "Fully Modified Least Squares (FMOLS)";
+        "Model              " model;
+        "Sample             " t-1;
+        "Kernel             " kernel;
+        "Bandwidth          " bw;
+        "Long-run variance  " lrv;;
+        "";
+        "      Variables     Coefficient    Std.Error     t-stat      p-value ";
+        "---------------------------------------------------------------------";; 
+ 
+        //xnames$~sprintf("%13.6f", fm_b ~ fm_se ~ fm_t ~ pval);
+        #IFMINKERNELVERSION(20)
+            sprintf("%16s %13.6f", xnames, fm_b ~ fm_se ~ fm_t ~ pval); 
+        #ELSE
+            print "";
+            call printfm(satocv(xnames)~fm_b~fm_se~fm_t~pval, 0~1~1~1~1, ("*.*lf"~17~8)|reshape("*.*lf" ~ 13 ~ 6,3,3,3));
+        #ENDIF  
+    endif;
+    
+retp (fm_b, fm_se, fm_t, pval);
+endp;
+
+/* As in Eviews */
+proc (1)= kernel_weight(kernel, j, bw);
+    local kx, x, x2;
+    
+    x = j / bw;  
+    
+    if kernel == "Bartlett";     
+        if    abs(x) <= 1; 
+              kx = 1 - abs(x);
+        else; kx = 0;
+        endif; 
+    endif;
+    
+    if kernel == "Bohman"; 
+        if    abs(x) <= 1; 
+              kx = (1 - abs(x))*cos(pi*x) + sin(pi*abs(x))/pi;
+        else; kx = 0;
+        endif; 
+    endif;
+
+    if kernel == "Daniell";
+        kx = sin(pi*x)/(pi*x);
+    endif;
+
+    if kernel == "Parzen";     
+        if    0 <= abs(x) and abs(x) <= 0.5; 
+              kx = 1 - 6*x^2*(1 - abs(x));
+        elseif 0.5 < abs(x) and abs(x) <= 1;
+              kx = 2*(1-abs(x))^3;
+        else; kx = 0;
+        endif; 
+    endif;
+
+    if kernel == "Parzen_R";     
+        if    abs(x) <= 1; 
+              kx = 1 - x^2;
+        else; kx = 0;
+        endif; 
+    endif;
+    
+    if kernel == "Parzen_G";     
+        if    abs(x) <= 1; 
+              kx = 1 / (1 + abs(x));
+        else; kx = 0;
+        endif; 
+    endif;   
+
+    if kernel == "qs";
+        x2 = 6*pi*x/5;
+        kx = (25/(12*(pi*x)^2))*(sin(x2)/x2 - cos(x2));
+    endif;
+
+    if kernel == "Tukey_Hm";     
+        if    abs(x) <= 1; 
+              kx = 0.54 +  0.46 * cos(pi*x);
+        else; kx = 0;
+        endif; 
+    endif;  
+
+    if kernel == "Tukey_Hn";     
+        if    abs(x) <= 1; 
+              kx = 0.50 +  0.50 * cos(pi*x);
+        else; kx = 0;
+        endif; 
+    endif;  
+
+    if kernel == "Tukey_P";     
+        if    abs(x) <= 1; 
+              kx = 0.436 + 0.566 * cos(pi*x);
+        else; kx = 0;
+        endif; 
+    endif; 
+    
+    if kernel == "Trunc";
+        if abs(x) <= 1;
+              kx = 1 ;
+        else; kx= 0;
+        endif; 
+    endif;
+    
+retp(kx);
+endp;  

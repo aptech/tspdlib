@@ -18,11 +18,17 @@ new;
 cls;
 library tspdlib;
 
-// Load data
-data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pdcause.dat");
+//// Load data
+//data = loadd(getGAUSSHome() $+ "pkgs/tspdlib/examples/pdcause.dat");
 
-// Number of cross-sections
-N = 9;  
+//// Number of cross-sections
+//N = 9;  
+
+// Load data
+data = loadd(__FILE_DIR $+ "pd_brics.gdat");
+
+// This panel has 5 countries
+N = 5;
 
 /*
 ** Run Fisher test
@@ -30,7 +36,8 @@ N = 9;
 test = "fisher";
 
 // Call test
-cause_stat = pd_cause(data, N, test);
+cause_stat = pd_cause(data[., 4:5], N, test);
+end;
 
 /*
 ** Run Zh and Zn test
@@ -38,7 +45,7 @@ cause_stat = pd_cause(data, N, test);
 test = "zhnc";
 
 // Call test
-cause_stat = pd_cause(data, N, test);
+cause_stat = pd_cause(data[., 4:5], N, test);
 
 /*
 ** Run SURwald test
@@ -46,4 +53,4 @@ cause_stat = pd_cause(data, N, test);
 test = "surwald";
 
 // Call test
-cause_stat = pd_cause(data, N, test);
+cause_stat = pd_cause(data[., 4:5], N, test);
