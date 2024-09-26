@@ -1,0 +1,84 @@
+new;
+cls;
+library tspdlib;
+
+// Load date file
+y = loadd(__FILE_DIR $+ "TSe.dat");
+t = rows(y);
+
+// bandwidth lag
+bwl = round(4 * (T/100)^(2/9));
+
+format /m1 /rd 8,4;
+
+// Set model type
+// 1 = Constant
+// 2 = Constant and trend
+model = 2;
+
+// Set long-run variance computation type
+// 1           iid.
+// 2           Bartlett.
+// 3           Quadratic Spectral (QS).
+// 4           SPC with Bartlett /see (Sul, Phillips & Choi, 2005)
+// 5           SPC with QS
+// 6           Kurozumi with Bartlett
+// 7           Kurozumi with QS
+varm = 7;
+for i(1, 7, 1);
+    varm = i;
+    
+    print "LR Variance estimation method";
+    if varm == 1;
+        print "iid";
+    endif;
+    if varm == 2;
+        print "Bartlett";
+    endif;
+    if varm == 3;
+        print "Quadratic Spectral (QS)";
+    endif;
+    if varm == 4;
+        print "SPC with Bartlett /see (Sul, Phillips & Choi, 2005)";
+    endif;
+    if varm == 5;
+        print "SPC with QS";
+    endif;
+    if varm == 6;
+        print "Kurozumi with Bartlett";
+    endif;
+    if varm == 7;
+        print "Kurozumi with QS";
+    endif;
+    
+	"KPSS test (Kwiatkowski, D., Phillips, P. C., Schmidt, P., & Shin, Y. (1992).)";
+	
+    /*
+    ** 1=Model : Constant
+    ** 2=Model : Constant and trend
+    */
+    model = 1;
+    
+   if model == 1; "--------Constant----------------------"; endif;
+   if model == 2; "--------Constant & trend--------------"; endif;
+ 
+	
+  { kpss, cvKPSS } = lmkpss(y, model, bwl, varm);
+  "kpss        ";;kpss;
+  "cvKPSS      ";;cvKPSS;
+  
+  /*
+    ** 1=Model : Constant
+    ** 2=Model : Constant and trend
+    */
+    model = 2;
+    
+   if model == 1; "--------Constant----------------------"; endif;
+   if model == 2; "--------Constant & trend--------------"; endif;
+    
+	
+  { kpss, cvKPSS } = lmkpss(y, model, bwl, varm);
+  "kpss        ";;kpss;
+  "cvKPSS      ";;cvKPSS;
+ "";
+endfor;
