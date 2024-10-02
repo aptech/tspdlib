@@ -231,7 +231,7 @@ proc(1) = QKS_bootstrap(y, model, test, ...);
         endfor;
         
         
-        {QKS_stat, QKS_tau} = QKS_tests(ystar, model, test, p, k, "false");
+        QKS_stat = QKS_tests(ystar, model, test, p, k, "false");
         
         QKSboot[reps] = QKS_stat;
     endfor; //End for replications
