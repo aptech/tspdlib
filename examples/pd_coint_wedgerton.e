@@ -2,25 +2,34 @@ new;
 library tspdlib;
 
 // Load data
-dat = loadd(__FILE_DIR $+ "pd_brics.gdat");
-
-// This panel has 5 countries
-N = 5;
+data = loadd(getGAUSSHome("pkgs/tspdlib/examples/pd_brics.gdat"));
 
 /*
-** Note that the data needs 
-** to be wide format so we 
+** Note that the data needs
+** to be wide format so we
 ** need to reshape the data
 */
-// Get x data
-y = reshape(dat[., "lco2"], N, rows(dat)/N)';
+// Set up dfwider conversion for 'lco2' variable
+names_from = "Country";
+values_from = "lco2";
 
-// Separate y
-x = reshape(dat[., "ly"], N, rows(dat)/N)';
+// Get y data
+y = dfwider(data[., "Year" "Country" "lco2"], names_from, values_from);
+y = asDate(y, "%Y", "Year");
 
-// Get year
-year = asDate(unique(dat[., "Year"]), "%Y");
+/*
+** The independent variable is 'ly' and we need to
+** select all columns that contain ly data
+*/
+// Set up dfwider conversion for 'lco2' variable
+names_from = "Country";
+values_from = "ly";
 
+// Separate x and convert to wide data
+// using same "Country" and names_from
+// as 'ly' variable as values_from
+x = dfwider(data[., "Year" "Country" "ly"], names_from, values_from);
+x = delcols(x, 1);
 
 // Deterministic component
 // 0 = no shift,
@@ -29,6 +38,6 @@ year = asDate(unique(dat[., "Year"]), "%Y");
 model = 1;
 
 // Estimate breaks and test for cointegration
-{ brks, lmn, nf } = pd_coint_wedgerton(year~y, x, model);
+{ brks, lmn, nf } = pd_coint_wedgerton(y, x, model);
 
 
