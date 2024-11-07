@@ -40,10 +40,10 @@
 
 
 proc(4) = ADF_1break(y, model, ...);
-    local t, tb1_min, ADF_min, T1, T2, tb1, dc, dt, du1, dt1, br1, 
-    taup, aicp, sicp, tstatp, p,  dy, y1, dep, z, x, stat, de, brlag, 
-    e1, br, ze, b, sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, dt_vec, 
-    ic, trimm, frac;
+    local t, tb1_min, ADF_min, T1, T2, tb1, dc, dt, du1, dt1, br1,
+        taup, aicp, sicp, tstatp, p,  dy, y1, dep, z, x, stat, de, brlag,
+        e1, br, ze, b, sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, dt_vec,
+        ic, trimm, frac;
     
     _checkForMissings(y, currentprocname());
     
@@ -57,10 +57,10 @@ proc(4) = ADF_1break(y, model, ...);
     
     T1 = maxc((3 + pmax)|ceil(trimm * t));
     T2 = minc((t - 3 -pmax)|floor((1 - trimm) * t));
-
-
+    
+    
     if T1 < (pmax + 2);
-       T1 = pmax + 3;
+        T1 = pmax + 3;
     endif;
     
     tb1 = T1;
@@ -76,22 +76,22 @@ proc(4) = ADF_1break(y, model, ...);
         du1 = zeros(tb1-1, 1)|ones(t - tb1 + 1, 1);
         dt1 = zeros(tb1-1, 1)|seqa(1, 1, (t - tb1 + 1));
         br1 = zeros(tb1-1, 1)|ones(1, 1)|zeros(t-tb1, 1);
-
+        
         taup = zeros(pmax + 1, 1);
         aicp = zeros(pmax + 1, 1);
         sicp = zeros(pmax + 1, 1);
-        tstatp = zeros(pmax + 1, 1);     
-  
-        if outlier == 1; 
+        tstatp = zeros(pmax + 1, 1);
+        
+        if outlier == 1;
             
             for p(0, pmax, 1);
                 
-                if model == 1; 
+                if model == 1;
                     z = dc ~ du1 ~ br1;
                 endif;
                 
-                if model == 2; 
-                    z = dc ~ dt ~ du1 ~ dt1 ~ br1; 
+                if model == 2;
+                    z = dc ~ dt ~ du1 ~ dt1 ~ br1;
                 endif;
                 
                 if p > 0;
@@ -103,38 +103,38 @@ proc(4) = ADF_1break(y, model, ...);
                 endif;
                 
                 y1  = trimr(lagn(y, 1), p + 1, 0);
-                dep = trimr(y,  p + 1, 0); 
+                dep = trimr(y,  p + 1, 0);
                 z   = trimr(z,  p + 1, 0);
-
+                
                 if p == 0;
                     x   = y1 ~ z;
-                endif; 
+                endif;
                 
                 if p > 0;
                     x   = y1 ~ z ~ dy;
-                endif; 
+                endif;
                 
-                    {b, e1, sig2, se, ssr} = myols(dep, x);
-            
+                {b, e1, sig2, se, ssr} = myols(dep, x);
+                
                 taup[p+1] = (b[1]-1)/se[1];
                 aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
                 sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
                 tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
-            endfor; 
-        endif;    
- 
+            endfor;
+        endif;
+        
         if outlier == 2;
             
-            if model == 1; 
-               x = dc ~ du1;
+            if model == 1;
+                x = dc ~ du1;
             endif;
             
-            if model == 2; 
+            if model == 2;
                 x = dc ~ dt ~ du1 ~ dt1;
             endif;
             
             {b, resid, sig2, se, ssr} = myols(y, x);
-
+            
             for p(0, pmax, 1);
                 
                 if p > 0;
@@ -142,49 +142,49 @@ proc(4) = ADF_1break(y, model, ...);
                     for j(1,p,1);
                         de[., j] = diff(lagn(resid, j),1);
                     endfor;
-            
+                    
                     brlag = zeros(rows(br1), p);
                     for j(1,p,1);
                         brlag[., j] = lagn(br1, j);
                     endfor;
                     
                     de = trimr(de, p + 1, 0);
-                    br = br1 ~ brlag; 
-                    ze = trimr(br,  p + 1, 0);    
+                    br = br1 ~ brlag;
+                    ze = trimr(br,  p + 1, 0);
                 endif;
                 
                 e1 = trimr(lagn(resid, 1), p + 1, 0);
-                e  = trimr(resid,  p + 1, 0); 
+                e  = trimr(resid,  p + 1, 0);
                 
                 if p == 0;
                     x = e1;
-                endif;  
+                endif;
                 
                 if p > 0;
                     x = e1 ~ ze ~ de;
-                endif;  
+                endif;
                 
-                    {b, e1, sig2, se, ssr} = myols(e, x);
-                   
+                {b, e1, sig2, se, ssr} = myols(e, x);
+                
                 taup[p+1] = (b[1]-1)/se[1];
                 aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
                 sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
                 tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
             endfor;
         endif;
-
+        
         p = _get_lag(ic, pmax, aicp, sicp, tstatp);
         stat = taup[p];
         
-        if  stat < ADF_min;    
+        if  stat < ADF_min;
             // Break date
-            tb1_min = tb1;   
+            tb1_min = tb1;
             
             // t-statistic with break
-            ADF_min = stat; 
+            ADF_min = stat;
             
             // Optimal lag
-            opt_lag = p;                 
+            opt_lag = p;
         endif;
         
         tb1 = tb1 + 1;
@@ -206,7 +206,7 @@ proc(4) = ADF_1break(y, model, ...);
     
     // Convert breaks for date format
     { frac, tb1_min } = __convertbreaks(tb1_min, dt_vec, rows(y));
-
+    
     // Print results & Critical values
     local side, stats, dec, colwidth;
     side = "ADF-stat:";
@@ -214,9 +214,9 @@ proc(4) = ADF_1break(y, model, ...);
     dec = 3;
     colwidth = 15;
     
-    // Print stats 
+    // Print stats
     _printStatsTable("", side, stats, cv, dec, colwidth, 0, opt_lag-1);
-
+    
     // Print break dates
     _printBreaks(dt_vec, tb1_min, frac);
     
@@ -241,7 +241,7 @@ proc (2) = __convertbreaks(tb, dt_vec, T);
     retp(frac, tb);
 endp;
 
-    
+
 proc (0) = _printBreaks(dt_vec, brks, frac, ...);
     local brk_label, side, top, brk_str, break_num, fmt1, fmt2;
     
@@ -263,15 +263,20 @@ proc (0) = _printBreaks(dt_vec, brks, frac, ...);
     if ismiss(dt_vec);
         brk_str = ntos(brks, 2);
     else;
-        brk_str = posixtostrc(brks, getcoldateformats(dt_vec));
+        local tmp_fmt;
+        tmp_fmt = getcoldateformats(dt_vec);
+        if ismiss(tmp_fmt);
+            tmp_fmt = "%F";
+        endif;
+        brk_str = posixtostrc(brks, tmp_fmt);
     endif;
     
     // Print break dates
     print "Estimated break dates:";
-  
+    
     sprintf(fmt1, "", "", "Date", "Fraction");
     sprintf(fmt2, side, "", brk_str, frac);
-     print "==============================================================";
+    print "==============================================================";
 endp;
 
 proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv, ...);
@@ -294,11 +299,11 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         if not ismiss(fopt);
             sprintf(tmp1b$+tmp1a$+tmp1b$+"%15d", "Frequency:", "", "", fopt);
         endif;
- 
+        
         if isempty(cv) == 0;
-        print;
-        print "Critical Values:";
-        if multistat_in_cv;
+            print;
+            print "Critical Values:";
+            if multistat_in_cv;
                 sprintf(tmp1a, ""$~"1%"$~"5%"$~"10%");
                 sprintf(format2, side, cv');
             else;
@@ -326,7 +331,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         elseif cols(stats)==3;
             sprintf(tmp1b$+tmp1a, "", top);
             sprintf(tmp1b$+tmp3, side, stats);
-        endif;        
+        endif;
         
         if isempty(cv) == 0;
             print;
@@ -342,14 +347,14 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         print "==============================================================";
     endif;
     print;
-
+    
 #else;
     if top $== "";
         side$~(ntos(stats, dec));
     elseif side $=="";
         top$|(ntos(stats, dec));
     else;
-         top$|(side$~(ntos(stats, 4)));
+        top$|(side$~(ntos(stats, 4)));
     endif;
     print;
     if isempty(cv) == 0;
@@ -357,7 +362,7 @@ proc (0) = _printStatsTable(top, side, stats, cv, dec, colwidth, multistat_in_cv
         ("1%"$~"5%"$~"10%")$|ntos(cv', dec);
     endif;
 #endif;
-
+    
 endp;
 
 proc (0) = _printConclusion(stat, cv, test_type, null_hypothesis);
@@ -411,16 +416,16 @@ proc (2) = _checkfordate(data);
         
         // Check for dates
         date_chk = sumc((type_chk));
-         
+        
         if date_chk > 0;
             // Get date columns
             date_indices = indexcat(df_type, 3);
             
             // Get date column
             dt_col = data[., date_indices];
-        
+            
             // Get new data
-            data_new = delcols(data, date_indices);           
+            data_new = delcols(data, date_indices);
         else;
             retp(error(30), data);
         endif;
