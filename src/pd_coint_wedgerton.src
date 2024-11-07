@@ -9,7 +9,7 @@
 **  pd_coint_wedgerton
 **
 **
-**  Format:  { brks, lmn, nf } = pd_coint_wedgerton(y, x, modelel [, p, q, trimm, kmax]);
+**  Format:  { brks, lmn, nf } = pd_coint_wedgerton(y, x, model [, p, q, trimm, kmax]);
 **
 **  Input:
 **           Y	     -  TxN matrix, dependent variable
@@ -43,7 +43,7 @@
 -- for public non-commercial use only.
 -- for any bugs, please send e-mail to snazlioglu@pau.edu.tr
 */
-proc (3) = pd_coint_wedgerton(y, x, ...);
+proc (3) = pd_coint_wedgerton(y, x, model, ...);
     local dt_vec_y, dt_vec_x, frac_dts, t, model_str, nbrks, trimm, p, q, 
     grp_names, dft_p, brks, kmax, lmn, nf;
     
