@@ -51,10 +51,21 @@ proc(4) = ADF_1break(y, model, ...);
     
     { dt_vec, y } =_checkfordate(y);
     
+    /*
+    ** Set deterministic components
+    */
     t = rows(y);
+    // Deterministic term=constant
+    dc = ones(t, 1);
+    
+    // Deterministic term=trend
+    dt = seqa(1, 1, t);
+    
+    
     tb1_min = 0;
     ADF_min = 1000;
     
+    // Implement trimming for testing
     T1 = maxc((3 + pmax)|ceil(trimm * t));
     T2 = minc((t - 3 -pmax)|floor((1 - trimm) * t));
     
@@ -64,37 +75,33 @@ proc(4) = ADF_1break(y, model, ...);
     endif;
     
     tb1 = T1;
+    
+    // Get start break vectors
+    // Break dummies
+    du1 = zeros(tb1-1, 1)|ones(t - tb1 + 1, 1);
+    dt1 = zeros(tb1-1, 1)|seqa(1, 1, (t - tb1 + 1));
+    br1 = zeros(tb1-1, 1)|ones(1, 1)|zeros(t-tb1, 1);
+    
     do while tb1 <= T2;
         
-        // Deterministic term=constant
-        dc = ones(t, 1);
-        
-        // Deterministic term=trend
-        dt=seqa(1, 1, t);
-        
-        // Break dummies
-        du1 = zeros(tb1-1, 1)|ones(t - tb1 + 1, 1);
-        dt1 = zeros(tb1-1, 1)|seqa(1, 1, (t - tb1 + 1));
-        br1 = zeros(tb1-1, 1)|ones(1, 1)|zeros(t-tb1, 1);
-        
+        // Storage matrices
         taup = zeros(pmax + 1, 1);
         aicp = zeros(pmax + 1, 1);
         sicp = zeros(pmax + 1, 1);
         tstatp = zeros(pmax + 1, 1);
         
         if outlier == 1;
+            if model == 1;
+                z = __get_break_z(dc, miss(), du1, miss(), br1);
+            endif;
             
+            if model == 2;
+                z = __get_break_z(dc, dt, du1, dt1, br1);
+            endif;
             for p(0, pmax, 1);
                 
-                if model == 1;
-                    z = dc ~ du1 ~ br1;
-                endif;
-                
-                if model == 2;
-                    z = dc ~ dt ~ du1 ~ dt1 ~ br1;
-                endif;
-                
                 if p > 0;
+                    // Get lags
                     dy   = zeros(rows(y), p);
                     for j(1,p,1);
                         dy[., j] = diff(lagn(y, j),1);
@@ -102,9 +109,12 @@ proc(4) = ADF_1break(y, model, ...);
                     dy = trimr(dy, p + 1, 0);
                 endif;
                 
-                y1  = trimr(lagn(y, 1), p + 1, 0);
+                // Get model y
                 dep = trimr(y,  p + 1, 0);
-                z   = trimr(z,  p + 1, 0);
+                
+                // Get model x
+                y1  = trimr(lagn(y, 1), p + 1, 0);
+                z   = trimr(z, 1, 0);
                 
                 if p == 0;
                     x   = y1 ~ z;
@@ -114,7 +124,12 @@ proc(4) = ADF_1break(y, model, ...);
                     x   = y1 ~ z ~ dy;
                 endif;
                 
-                {b, e1, sig2, se, ssr} = myols(dep, x);
+                // Run OLS
+                if ENFORCE_SAMPLE_SIZE;
+                    dep = trimr(dep, pmax-p, 0);
+                    x = trimr(x, pmax-p, 0);
+                endif;
+                { b, e1, sig2, se, ssr } = myols(dep, x);
                 
                 taup[p+1] = (b[1]-1)/se[1];
                 aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
@@ -164,7 +179,12 @@ proc(4) = ADF_1break(y, model, ...);
                     x = e1 ~ ze ~ de;
                 endif;
                 
-                {b, e1, sig2, se, ssr} = myols(e, x);
+                // Run OLS
+                if ENFORCE_SAMPLE_SIZE;
+                    e = trimr(e, pmax-p, 0);
+                    x = trimr(x, pmax-p, 0);
+                endif;
+                { b, e1, sig2, se, ssr } = myols(e, x);
                 
                 taup[p+1] = (b[1]-1)/se[1];
                 aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
@@ -187,7 +207,11 @@ proc(4) = ADF_1break(y, model, ...);
             opt_lag = p;
         endif;
         
+        // Increment values
         tb1 = tb1 + 1;
+        du1 = shiftr(du1', 1, 0)';
+        dt1 = shiftr(dt1', 1, 0)';
+        br1 = shiftr(br1', 1, 0)';
     endo;
     
     if model == 1;
@@ -439,3 +463,51 @@ proc (2) = _checkfordate(data);
     
     retp(dt_col, data_new);
 endp;
+
+proc(1) = __get_break_z(dc, dt, du1, dt1, br1, ...);
+    local z, du2, dt2;
+    
+    // Get optional second break terms
+    { du2, dt2 } = dynargsGet(1|2);
+    
+    z = {};
+    
+    // Constant
+    if not ismiss(dc);
+        z = z~dc;
+    endif;
+    
+    // Trend
+    if not ismiss(dt);
+        z = z~dt;
+    endif;
+    
+    // Break one
+    if not ismiss(du1);
+        z = z~du1;
+    endif;
+    
+    // Trend break one
+    if not ismiss(dt1);
+        z = z~dt1;
+    endif;
+    
+    // Break two
+    if not ismiss(du2);
+        z = z~du2;
+    endif;
+    
+    // Trend break two
+    if not ismiss(dt2);
+        z = z~dt2;
+    endif;
+    
+    if not ismiss(br1);
+        z = z~br1;
+    endif;
+    
+    retp(z);
+endp;
+
+
+
