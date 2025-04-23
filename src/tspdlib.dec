@@ -1,0 +1,5 @@
+/* Version info:  major version | minor version | revision */
+declare matrix _tspdlib_ver = { 4, 0, 0 };
+
+declare matrix ENFORCE_SAMPLE_SIZE = 1;
+
