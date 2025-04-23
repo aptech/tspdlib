@@ -248,12 +248,12 @@ proc (1) = cv_coint_tsongetal(model, k, p);
         retp(cv1|cv5|cv10);
     else;
         if p>4;
-            print "Tsong, et al. cointegration test critical values unavailable for more than 4 independent variables";
+            print "Tsong, et al. cointegration test critical values unavailable \nfor more than 4 independent variables";
         endif;
         if k>3;
-            print "Tsong, et al. cointegration test critical values unavailable for more than 3 Fourier frequencies";
+            print "Tsong, et al. cointegration test critical values unavailable \nfor more than 3 Fourier frequencies";
         endif;
-        retp(error(0));
+        retp(miss()|miss()|miss());
     endif;
     
 endp;
