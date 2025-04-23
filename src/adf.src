@@ -36,6 +36,7 @@
 */
 
 
+#define diagnostic_print 0
 proc(3) = ADF(y, model, ...);
     local t, p, ssrp;
     local dy, ly, dc, dt, tau, cv;
@@ -104,8 +105,18 @@ proc (3) = __lag_selection_loop(dy, pmax, ic, model, ly, dc, dt);
         x = __get_model_x(ly, p, model, ldy, 0, dc, dt);
      
         // Run OLS
+        if ENFORCE_SAMPLE_SIZE;
+            dep = trimr(dep, pmax-p, 0);
+            x = trimr(x, pmax-p, 0);
+        endif;
         { taup[p+1], aicp[p+1], sicp[p+1], tstatp[p+1], ssrp[p+1] } = _runFourierOLS(dep, x, cols(x), 0);
         
+        // Diagnostic printing
+        if diagnostic_print;
+            print "Current p:" p;
+            print "Rows in lag selection regression:"; rows(dep);
+            print "Corresponding aic:" aicp[p+1];
+        endif;
         p = p + 1;
     endo;
     
