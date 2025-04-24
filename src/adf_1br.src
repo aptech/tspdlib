@@ -40,10 +40,10 @@
 
 
 proc(4) = ADF_1break(y, model, ...);
-    local t, tb1_min, ADF_min, T1, T2, tb1, dc, dt, du1, dt1, br1,
-        taup, aicp, sicp, tstatp, p,  dy, y1, dep, z, x, stat, de, brlag,
-        e1, br, ze, b, sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, dt_vec,
-        ic, trimm, frac;
+    local t, ly, lmat, tb1_min, ADF_min, T1, T2, tb1, dc, dt, du1, dt1, br1,
+        taup, ssrp, aicp, sicp, tstatp, p,  dy, z, x, stat, de, e1, ze, b, 
+        sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, dt_vec,
+        ic, trimm, frac, zero_vec, brmat, tau_full_p, p_opt, b_full, se_full;
     
     _checkForMissings(y, currentprocname());
     
@@ -54,14 +54,8 @@ proc(4) = ADF_1break(y, model, ...);
     /*
     ** Set deterministic components
     */
-    t = rows(y);
-    // Deterministic term=constant
-    dc = ones(t, 1);
-    
-    // Deterministic term=trend
-    dt = seqa(1, 1, t);
-    
-    
+    { t, dy, ly, dc, dt } = _getFourierDeterministic(y);
+
     tb1_min = 0;
     ADF_min = 1000;
     
@@ -78,94 +72,69 @@ proc(4) = ADF_1break(y, model, ...);
     
     // Get start break vectors
     // Break dummies
+    // For constant
     du1 = zeros(tb1-1, 1)|ones(t - tb1 + 1, 1);
-    dt1 = zeros(tb1-1, 1)|seqa(1, 1, (t - tb1 + 1));
+    
+    //  For time trend
+    if model == 2;
+        dt1 = zeros(tb1-1, 1)|seqa(1, 1, (t - tb1 + 1));
+    else;
+        dt = miss();
+        dt1 = miss();
+    endif;
+    
     br1 = zeros(tb1-1, 1)|ones(1, 1)|zeros(t-tb1, 1);
     
     do while tb1 <= T2;
-        
-        // Storage matrices
-        taup = zeros(pmax + 1, 1);
-        aicp = zeros(pmax + 1, 1);
-        sicp = zeros(pmax + 1, 1);
-        tstatp = zeros(pmax + 1, 1);
+  
+        // Regression independent variables
+        // depends on outlier setting
+        if outlier == 1;
+            z = __get_break_z(dc, dt, du1, dt1, br1);
+        else;
+            z = __get_break_z(dc, dt, du1, dt1, miss());
+        endif;
         
         if outlier == 1;
-            if model == 1;
-                z = __get_break_z(dc, miss(), du1, miss(), br1);
-            endif;
-            
-            if model == 2;
-                z = __get_break_z(dc, dt, du1, dt1, br1);
-            endif;
-            for p(0, pmax, 1);
-                
-                if p > 0;
-                    // Get lags
-                    dy   = zeros(rows(y), p);
-                    for j(1,p,1);
-                        dy[., j] = diff(lagn(y, j),1);
-                    endfor;
-                    dy = trimr(dy, p + 1, 0);
-                endif;
-                
-                // Get model y
-                dep = trimr(y,  p + 1, 0);
-                
-                // Get model x
-                y1  = trimr(lagn(y, 1), p + 1, 0);
-                z   = trimr(z, 1, 0);
-                
-                if p == 0;
-                    x   = y1 ~ z;
-                endif;
-                
-                if p > 0;
-                    x   = y1 ~ z ~ dy;
-                endif;
-                
-                // Run OLS
-                if ENFORCE_SAMPLE_SIZE;
-                    dep = trimr(dep, pmax-p, 0);
-                    x = trimr(x, pmax-p, 0);
-                endif;
-                { b, e1, sig2, se, ssr } = myols(dep, x);
-                
-                taup[p+1] = (b[1]-1)/se[1];
-                aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
-                sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
-                tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
-            endfor;
+            // Select lags
+            // This uses standard sample size to select lags
+            // Then returns taup and ssrp for full sample 
+            // size at optimal p
+            { p_opt, taup, ssrp } = __lag_selection_loop(dy, pmax, ic, 1, ly, z);
+            stat = taup;
         endif;
         
         if outlier == 2;
+
+            // Storage matrices
+            tau_full_p = zeros(pmax + 1, 1);
+            taup = zeros(pmax + 1, 1);
+            aicp = zeros(pmax + 1, 1);
+            sicp = zeros(pmax + 1, 1);
+            tstatp = zeros(pmax + 1, 1);
             
-            if model == 1;
-                x = dc ~ du1;
-            endif;
-            
-            if model == 2;
-                x = dc ~ dt ~ du1 ~ dt1;
-            endif;
-            
-            {b, resid, sig2, se, ssr} = myols(y, x);
-            
+            // First round OLS
+            {b, resid, sig2, se, ssr} = myols(y, z);
+        
+            // Select lags
+            local tmp;
+            tmp = miss();
+            e1 = diff(resid, 1);
+
             for p(0, pmax, 1);
                 
+                // Check 
+                lmat = lagn(diff(resid, 1), seqa(1, 1, pmax));
+    
+                // Zero vector
+                zero_vec = zeros(rows(resid), 1);
+                
+                // Get br_lags
+                brmat = br1~lagn(br1, seqa(1, 1, pmax)); 
+   
                 if p > 0;
-                    de = zeros(rows(resid), p);
-                    for j(1,p,1);
-                        de[., j] = diff(lagn(resid, j),1);
-                    endfor;
-                    
-                    brlag = zeros(rows(br1), p);
-                    for j(1,p,1);
-                        brlag[., j] = lagn(br1, j);
-                    endfor;
-                    
-                    de = trimr(de, p + 1, 0);
-                    br = br1 ~ brlag;
-                    ze = trimr(br,  p + 1, 0);
+                    de = trimr(lmat[., 1:p], p+1, 0);
+                    ze = trimr(brmat[., 1:p+1], p+1, 0);
                 endif;
                 
                 e1 = trimr(lagn(resid, 1), p + 1, 0);
@@ -179,7 +148,11 @@ proc(4) = ADF_1break(y, model, ...);
                     x = e1 ~ ze ~ de;
                 endif;
                 
-                // Run OLS
+                // Run OLS at full sample size
+                { b_full, e1, sig2, se_full, ssr } = myols(e, x);
+                tau_full_p[p+1] = (b_full[1]-1)/se_full[1];
+                
+                // Restrict sample size to select lags
                 if ENFORCE_SAMPLE_SIZE;
                     e = trimr(e, pmax-p, 0);
                     x = trimr(x, pmax-p, 0);
@@ -191,10 +164,11 @@ proc(4) = ADF_1break(y, model, ...);
                 sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
                 tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
             endfor;
+            
+            p_opt = _get_lag(ic, pmax, aicp, sicp, tstatp);
+            
+            stat = tau_full_p[p_opt];
         endif;
-        
-        p = _get_lag(ic, pmax, aicp, sicp, tstatp);
-        stat = taup[p];
         
         if  stat < ADF_min;
             // Break date
@@ -204,13 +178,15 @@ proc(4) = ADF_1break(y, model, ...);
             ADF_min = stat;
             
             // Optimal lag
-            opt_lag = p;
+            opt_lag = p_opt;
         endif;
         
         // Increment values
         tb1 = tb1 + 1;
         du1 = shiftr(du1', 1, 0)';
-        dt1 = shiftr(dt1', 1, 0)';
+        if not ismiss(dt1);
+            dt1 = shiftr(dt1', 1, 0)';
+        endif;
         br1 = shiftr(br1', 1, 0)';
     endo;
     
@@ -289,7 +265,7 @@ proc (0) = _printBreaks(dt_vec, brks, frac, ...);
     else;
         local tmp_fmt;
         tmp_fmt = getcoldateformats(dt_vec);
-        if ismiss(tmp_fmt);
+        if isempty(tmp_fmt);
             tmp_fmt = "%F";
         endif;
         brk_str = posixtostrc(brks, tmp_fmt);
@@ -487,16 +463,16 @@ proc(1) = __get_break_z(dc, dt, du1, dt1, br1, ...);
         z = z~du1;
     endif;
     
-    // Trend break one
-    if not ismiss(dt1);
-        z = z~dt1;
-    endif;
-    
     // Break two
     if not ismiss(du2);
         z = z~du2;
     endif;
     
+    // Trend break one
+    if not ismiss(dt1);
+        z = z~dt1;
+    endif;
+
     // Trend break two
     if not ismiss(dt2);
         z = z~dt2;

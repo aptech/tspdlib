@@ -73,16 +73,30 @@ proc(3) = ADF(y, model, ...);
     retp(tau, p - 1, cv');
 endp;
 
-proc (3) = __lag_selection_loop(dy, pmax, ic, model, ly, dc, dt);
-    local lmat, zero_vec, tau, taup, aicp, sicp, tstatp, ssrp, p, dep, ldy, x;
+proc (3) = __lag_selection_loop(dy, pmax, ic, model, ly, ...);
+    local brmat, br_x, br, lmat, zero_vec, tau, taup, aicp, sicp, tstatp, ssrp, p, 
+    dep, ldy, x, dc, dt, sink, cosk, tau_full_p, fourier, p_opt;
+    
+    // Check for dt
+    local tmp;
+    tmp = miss();
+    { dc, dt, br, sink, cosk } = dynargsGet(1|5, tmp, tmp, tmp, tmp, tmp);
+    
+    // Fourier flag
+    fourier = not ismiss(sink);
     
     // Lag y variable
     lmat = lagn(dy, seqa(1, 1, pmax));
+    
+    if not ismiss(br);
+        brmat = lagn(br, seqa(1, 1, pmax)); 
+    endif;
     
     // Zero vector
     zero_vec = zeros(rows(dy), 1);
     
     // Storage matrices
+    tau_full_p = zeros(pmax + 1, 1);
     taup = zeros(pmax + 1, 1);
     aicp = zeros(pmax + 1, 1);
     sicp = zeros(pmax + 1, 1);
@@ -99,17 +113,26 @@ proc (3) = __lag_selection_loop(dy, pmax, ic, model, ly, dc, dt);
         
         if p>0;
             ldy = trimr(lmat[., 1:p], p+1, 0)~ldy;
+            if not ismiss(br);
+                br_x = trimr(br~brmat[., 1:p], p+1, 0);
+            endif;
+            ldy = ldy; 
         endif;
       
         // Get independent variables
-        x = __get_model_x(ly, p, model, ldy, 0, dc, dt);
+        // __get_model_x(yt, p, model, ldy, lagy, c, trend, sink, cosk, br);
+        x = __get_model_x(ly, p, model, ldy, 0, dc, dt, sink, cosk, br);
      
-        // Run OLS
+        // Get full sample tau for stat
+        local tmp1, tmp2, tmp3;
+        { tau_full_p[p+1], tmp1, tmp2, tmp3, ssrp[p+1] } = _runFourierOLS(dep, x, cols(x), fourier);
+        
+        // Enforce standard sample size for lag selection
         if ENFORCE_SAMPLE_SIZE;
             dep = trimr(dep, pmax-p, 0);
             x = trimr(x, pmax-p, 0);
         endif;
-        { taup[p+1], aicp[p+1], sicp[p+1], tstatp[p+1], ssrp[p+1] } = _runFourierOLS(dep, x, cols(x), 0);
+        { taup[p+1], aicp[p+1], sicp[p+1], tstatp[p+1], tmp3 } = _runFourierOLS(dep, x, cols(x), fourier);
         
         // Diagnostic printing
         if diagnostic_print;
@@ -121,8 +144,11 @@ proc (3) = __lag_selection_loop(dy, pmax, ic, model, ly, dc, dt);
     endo;
     
     // Final lag
-    p   = _get_lag(ic, pmax, aicp, sicp, tstatp);
-    tau = taup[p];
+    p_opt   = _get_lag(ic, pmax, aicp, sicp, tstatp);
+    
+    // Get final tau 
+    tau = tau_full_p[p_opt];
+    ssrp = ssrp[p_opt];
     
     retp(p, tau, ssrp);
 endp;

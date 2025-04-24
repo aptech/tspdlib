@@ -33,22 +33,33 @@
 */
 
 proc(5) = ADF_2breaks(y, model, ...);
-    local t, tb, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
-    local taup, aicp, sicp, tstatp, dy, y1, z1, lmat, j, p;
-    local dep, ldy, ly, lz, x, stat;
-    local b, e1, sig2, se, ssr, cv, opt_lag, pmax, ic, trimm, dt_vec, frac;
+    local ssrp, p_opt, t, tb, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
+    local taup, dy;
+    local ly, stat;
+    local cv, opt_lag, pmax, ic, trimm, dt_vec, frac;
     
+    // Check for missings
     _checkForMissings(y, currentprocname());
     
+    // Dynamic arguments
     { pmax, ic, trimm } = dynargsGet(1|3, 8, 3, 0.10);
-            
+    
+    // Look for date variables
     { dt_vec, y } = _checkfordate(y);
     
+    /*
+    ** Set deterministic components
+    */
+    { t, dy, ly, dc, dt } = _getFourierDeterministic(y);
+    
     t = rows(y);
+    
+    // Start counters 
     tb1_min = 0;
     tb2_min = 0;
     ADF_min = 1000;
     
+    // Trim data
     T1 = round(trimm * t);
     T2 = round((1 - trimm) * t);
     t1 = maxc((3 + pmax)|ceil(trimm * t));
@@ -72,16 +83,11 @@ proc(5) = ADF_2breaks(y, model, ...);
         
         do while tb2 <= T2;
             
-            // Deterministic term=constant
-            dc = ones(t, 1);               
-            
-            // Deterministic term=trend
-            dt = seqa(1, 1, t);             
-            
             if model == 1;
                 du1 = zeros(tb1, 1)|ones(t - tb1, 1);
                 du2 = zeros(tb2, 1)|ones(t - tb2, 1);
-                z = dc~dt~du1~du2;
+                dt1 = miss();
+                dt2 = miss();
             endif;
             
             if model == 2;
@@ -89,66 +95,31 @@ proc(5) = ADF_2breaks(y, model, ...);
                 du2 = zeros(tb2, 1)|ones(t - tb2, 1);
                 dt1 = zeros(tb1, 1)|seqa(1, 1, (t - tb1));
                 dt2 = zeros(tb2, 1)|seqa(1, 1, (t - tb2));
-                z = dc~dt~du1~du2~dt1~dt2;
             endif;
             
-            t = rows(y);
-            taup = zeros(pmax + 1, 1);
-            aicp = zeros(pmax + 1, 1);
-            sicp = zeros(pmax + 1, 1);
-            tstatp = zeros(pmax + 1, 1);
+            // Get regression independent variables
+            z = __get_break_z(dc, dt, du1, dt1, miss(), du2, dt2);
             
-            dy = trimr(diff(y, 1), 1, 0);
-            y1 = trimr(lagn(y, 1), 1, 0);
-            z1 = trimr(lagn(z, 1), 1, 0);
+            // Select lags
+            // This uses standard sample size to select lags
+            // Then returns taup and ssrp for full sample 
+            // size at optimal p
+            { p_opt, taup, ssrp } = __lag_selection_loop(dy, pmax, ic, 1, ly, z);
+            stat = taup;
             
-            lmat = zeros(rows(dy), pmax);
-            
-            j = 1;
-            
-            do while j <= pmax;
-                lmat[., j] = lagn(dy, j);
-                j = j + 1;
-            endo;
-            
-            p = 0;
-            
-            do while p <= pmax;
-                dep = trimr(dy, p + 1, 0);
-                ldy = trimr(lmat, p + 1, 0);
-                ly = trimr(y1, p + 1, 0);
-                lz = trimr(z1, p + 1, 0);
-                
-                if p == 0;
-                    x = ly~lz;
-                elseif p > 0;
-                    x = ly~lz~ldy[., 1:p];
-                endif;
-                
-                {b, e1, sig2, se, ssr} = myols(dep, x);
-                taup[p+1] = b[1]/se[1];
-                aicp[p+1] = ln(e1'e1/rows(x)) + 2 * (cols(x) + 2)/rows(x);
-                sicp[p+1] = ln(e1'e1/rows(x)) + (cols(x) + 2) * ln(rows(x))/rows(x);
-                tstatp[p+1] = abs(b[cols(x)]/se[cols(x)]);
-                p = p + 1;
-            endo;
-            
-            p  = _get_lag(ic, pmax, aicp, sicp, tstatp);
-            
-            stat = taup[p];
             if stat < ADF_min;
                 
                 // First break date
                 tb1_min = tb1;
                 
                 // Second break date
-                tb2_min=tb2;  
+                tb2_min = tb2;  
                 
                 // T-statistic with breaks
                 ADF_min = stat;  
                 
                 // Optimal lag
-                opt_lag = p; 
+                opt_lag = p_opt; 
                 
             endif;
             tb2 = tb2 + 1;
