@@ -147,7 +147,7 @@ proc(11) = coint_hatemiJ(y, x, ...);
                 x1 = ones(n, 1)~du1~du2~x;
                 prnt_model = "Constant";
             else;
-                "Error: Only Model 3 is available";
+                "Error: Only Models 1-3 are available";
             endif;
             { b, e1, sig2, se, ssr }    = myols(y,x1);
             

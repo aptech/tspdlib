@@ -360,15 +360,23 @@ proc (1) = Fstat(ssr1, d1, ssr2, d2);
     endif;
 endp;
 
-proc (5) = _getFourierDeterministic(y);
-    local t, dy, ly, dc, dt;
+proc (5) = _getFourierDeterministic(y, ...);
+    local t, dy, ly, dc, dt, model_type;
+    
+    model_type = dynargsGet(1, "adf");
     
     // Get time
     t = rows(y);
     
     // Transform data
     dy = diff(y, 1);
-    ly = lagn(y, 1);
+    
+    // Lag y, dependent on model type
+    if lower(model_type) $== "kss";
+        ly = lagn(y^3, 1);
+    else;
+        ly = lagn(y, 1);
+    endif;
     
     // Deterministic term=constant
     dc = ones(t, 1);

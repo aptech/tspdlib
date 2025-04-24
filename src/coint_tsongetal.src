@@ -21,7 +21,7 @@
 **           bwl     -  Optional, bandwidth for long-run variance computations.
 **                      Default = round(4 * (T/100)^(2/9)).
 **
-**           kmax    -  Optional, maximum number of Fourier frequency. Default = 5.
+**           kmax    -  Optional, maximum number of Fourier frequency. Default = 3.
 **
 **           varm   -   Optional, long-run consistent variance estimation method for PP-based tests
 **                      Default = 1.
