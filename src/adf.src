@@ -40,7 +40,7 @@
 proc(3) = ADF(y, model, ...);
     local t, p, ssrp;
     local dy, ly, dc, dt, tau, cv;
-    local pmax, ic, dt_vec;
+    local pmax, ic, dt_vec, z_det, lmat;
     
     // Check for missings
     _checkForMissings(y, currentprocname());
@@ -54,8 +54,20 @@ proc(3) = ADF(y, model, ...);
     // Get deterministic terms
     { t, dy, ly, dc, dt } = _getFourierDeterministic(y);
     
+    // Get z_det
+    if model == 1;
+        z_det = __get_tspdlib_z_det("ur", dc);
+    elseif model == 2;
+        z_det = __get_tspdlib_z_det("ur", dc, dt);
+    else;
+        z_det = miss();
+    endif;
+    
     // Lag selection loop
-    { p, tau, ssrp } = __lag_selection_loop(dy, pmax, ic, model, ly, dc, dt);
+    //                 __lag_selection_loop(base_x, dep_y, pmax, ic, z_det, ...);
+    // Create matrix of lags
+    lmat = lagn(dy, seqa(1, 1, pmax));
+    { p, tau, ssrp } = __lag_selection_loop(ly, dy, pmax, ic, z_det, lmat);
     
     // T and p adjusted critical values based on response surfaces
     cv = _get_cv_ADFrsf(model, T-p , p);
@@ -73,27 +85,25 @@ proc(3) = ADF(y, model, ...);
     retp(tau, p - 1, cv');
 endp;
 
-proc (3) = __lag_selection_loop(dy, pmax, ic, model, ly, ...);
+proc (3) = __lag_selection_loop(base_x, dep_y, pmax, ic, z_det, ...);
     local brmat, br_x, br, lmat, zero_vec, tau, taup, aicp, sicp, tstatp, ssrp, p, 
-    dep, ldy, x, dc, dt, sink, cosk, tau_full_p, fourier, p_opt;
+    dep, ldy, x, tau_full_p, fourier, tstat_adj, p_opt, reg_lags;
     
     // Check for dt
     local tmp;
     tmp = miss();
-    { dc, dt, br, sink, cosk } = dynargsGet(1|5, tmp, tmp, tmp, tmp, tmp);
-    
-    // Fourier flag
-    fourier = not ismiss(sink);
+//    { dc, dt, br, sink, cosk } = dynargsGet(1|5, tmp, tmp, tmp, tmp, tmp);
+    { lmat, br, fourier, tstat_adj } = dynargsGet(1|4, tmp, tmp, 0, 0);
     
     // Lag y variable
-    lmat = lagn(dy, seqa(1, 1, pmax));
+//    lmat = lagn(dep_y, seqa(1, 1, pmax));
     
     if not ismiss(br);
         brmat = lagn(br, seqa(1, 1, pmax)); 
     endif;
     
     // Zero vector
-    zero_vec = zeros(rows(dy), 1);
+    zero_vec = zeros(rows(dep_y), 1);
     
     // Storage matrices
     tau_full_p = zeros(pmax + 1, 1);
@@ -102,37 +112,52 @@ proc (3) = __lag_selection_loop(dy, pmax, ic, model, ly, ...);
     sicp = zeros(pmax + 1, 1);
     tstatp = zeros(pmax + 1, 1);
     ssrp = zeros(pmax + 1, 1);
+    br_x = miss();
     
     p = 0;
     do while p <= pmax;
         
-        dep = trimr(dy, p + 1, 0);
+        dep = trimr(dep_y, p + 1, 0);
         
         // Get lags of y
-        ldy = trimr(zero_vec, p+1, 0);
+        ldy = trimr(zero_vec, p + 1, 0);
         
+        // Add lags if p is not zero
         if p>0;
-            ldy = trimr(lmat[., 1:p], p+1, 0)~ldy;
+            ldy = trimr(lmat[., 1:p], p + 1, 0)~ldy;
             if not ismiss(br);
-                br_x = trimr(br~brmat[., 1:p], p+1, 0);
-            endif;
-            ldy = ldy; 
+                br_x = trimr(br~brmat[., 1:p], p + 1, 0);
+            endif; 
         endif;
-      
+        
+        // Get regs lags
+        if p>0;
+            reg_lags = ldy[., 1:p];
+        else;
+            reg_lags = miss();
+        endif;
+        
+        if not ismiss(br_x);
+            reg_lags = reg_lags ~ br_x;
+        endif;
+        
         // Get independent variables
-        // __get_model_x(yt, p, model, ldy, lagy, c, trend, sink, cosk, br);
-        x = __get_model_x(ly, p, model, ldy, 0, dc, dt, sink, cosk, br);
-     
+        if not ismiss(z_det);
+            x = __get_model_x(trimr(base_x, p+1, 0), reg_lags, trimr(z_det, p+1, 0));
+        else;
+            x = __get_model_x(trimr(base_x, p+1, 0), reg_lags, z_det);
+        endif;
+        
         // Get full sample tau for stat
         local tmp1, tmp2, tmp3;
-        { tau_full_p[p+1], tmp1, tmp2, tmp3, ssrp[p+1] } = _runFourierOLS(dep, x, cols(x), fourier);
+        { tau_full_p[p+1], tmp1, tmp2, tmp3, ssrp[p+1] } = _runFourierOLS(dep, x, cols(x), fourier, tstat_adj);
         
         // Enforce standard sample size for lag selection
         if ENFORCE_SAMPLE_SIZE;
             dep = trimr(dep, pmax-p, 0);
             x = trimr(x, pmax-p, 0);
         endif;
-        { taup[p+1], aicp[p+1], sicp[p+1], tstatp[p+1], tmp3 } = _runFourierOLS(dep, x, cols(x), fourier);
+        { taup[p+1], aicp[p+1], sicp[p+1], tstatp[p+1], tmp3 } = _runFourierOLS(dep, x, cols(x), fourier, tstat_adj);
         
         // Diagnostic printing
         if diagnostic_print;
@@ -150,7 +175,7 @@ proc (3) = __lag_selection_loop(dy, pmax, ic, model, ly, ...);
     tau = tau_full_p[p_opt];
     ssrp = ssrp[p_opt];
     
-    retp(p, tau, ssrp);
+    retp(p_opt, tau, ssrp);
 endp;
 
 proc (0) = _printHeaderTSPDLIB(ic, varm, model_type, model, breaks, trimmage, test, null_hyp, long);

@@ -139,12 +139,12 @@ proc(4) = Fourier_ADF(y, model, ...);
 endp;
 
 proc (5) = _runFourierOLS(dep, z, k, ...);
-    local fourier, b, e1, sig2, se, ssr, taup, aicp, sicp, tstatp, ssrp, LL, n;
+    local fourier, tstat_adj, b, e1, sig2, se, ssr, taup, aicp, sicp, tstatp, ssrp, LL, n;
     
-    fourier = dynargsGet(1, 0);
+    { fourier, tstat_adj } = dynargsGet(1|2, 0, 0);
     
     {b, e1, sig2, se, ssr} = myols(dep, z);
-    taup = b[1]/se[1];
+    taup = (b[1] - tstat_adj)/se[1];
     
     if fourier;
         aicp = ln(e1'e1/rows(z)) + 2 * (k + 2)/rows(z);
@@ -472,74 +472,223 @@ proc (2) = _getCumFourierTerms(t, k, ...);
     retp(sinp, cosp);
 endp;
 
-proc (1) = __get_model_x(yt, p, model, ldy, ...);
-    local t, f_det, lagy, sink, cosk, c, trend, x;
-    
-    // Get length
-    t = rows(yt);
-    
-    // Get optional arguments
-    { lagy, c, trend, sink, cosk } = dynargsGet(1|5, 0, ones(t, 1),  seqa(1, 1, t), miss(), miss());
-    
-    // Set fourier terms
-    f_det = {};
-    if ismiss(sink) == 0;
-        f_det = sink;
-    endif;
-    
-    if ismiss(cosk) == 0;
-        f_det = f_det ~ cosk;
-    endif;
-    
-    // Lag y option
-    if lagy;
-        yt = lag1(yt);
-    endif;
 
-    x = yt;
-    
-    if ismiss(sink) and ismiss(cosk);
-        
-        // Add constant
-        if model > 0;
-            x = x~c;
-        endif;
-        
-        // Add trend
-        if model == 2;
-            x = trimr(x~trend, p + 1, 0);
-        else;
-            x = trimr(x, p + 1, 0);
-        endif;
-        
-        // Add lags
-        if p > 0;
-            x = x~ldy[., 1:p];
-        endif;
-        
-    else;
-        
-        // Add constant
-        if model > 0;
-            x = x~c;
-        endif;
-        
-        // Add Fourier terms
-        x = x~f_det;
-        
-        // Add trend
-        if model == 2;
-            x = trimr(x~trend, p + 1, 0);
-        else;
-            x = trimr(x, p + 1, 0);
-        endif;
-        
-        // Add lags
-        if p > 0;
-            x = x~ldy[., 1:p];
-        endif;
-        
+
+
+// __get_model_x(yt, p, model, ldy, lagy, c, trend, sink, cosk, br);
+// __get_model_x(struct tspdRegx *xCtl);
+proc (1) = __get_model_x(base_x, reg_lags, x_det);
+    local x;
+    x = base_x;
+    if not ismiss(x_det);
+        x = x~x_det;
     endif;
+    
+    if not ismiss(reg_lags);
+        x = x~reg_lags;
+    endif;
+    
     
     retp(x);
+endp;
+
+proc (1) = __get_tspdlib_z_det(test_type, ...);
+
+    // Set base for UR 
+    if lower(test_type) $== "ur";
+        retp(__get_ur_z_det(...));
+    elseif lower(test_type) $== "coint";
+        retp(__get_coint_z_det(...));
+    endif;
+endp;
+
+//        __get_ur_z_det(dc, dt, du1, du2, dt1, dt2, sink, cosk, br, regime)
+proc(1) = __get_ur_z_det(...);
+    local tmp, x, base_x, dc, dt, du1, du2, dt1, dt2, sink, cosk, br, regime;  
+    
+    // Defaults
+    tmp = miss();
+    
+    { dc, dt, 
+    du1, du2, dt1, dt2, sink, 
+    cosk, br, regime } = dynargsGet(1|10, tmp, tmp, 
+                                           tmp, tmp, tmp, tmp, tmp, 
+                                           tmp, tmp, 0);
+    
+    // Set base
+    x= {};
+    
+    // Add constant 
+    if not ismiss(dc);
+        x = x~dc;
+    endif;
+    
+    // Set trend
+    if not ismiss(dt);
+        x = x~dt;
+    endif;
+    
+    // Add Fourier terms
+    if not ismiss(sink);
+        x = x~sink;
+    endif;
+    if not ismiss(cosk);
+        x = x~cosk;
+    endif;   
+    
+    /*
+    **    Add breaks in constant shift
+    */
+    // First level break
+    if not ismiss(du1);
+        x = x~du1;
+        // Check for regime break1
+        if regime;
+            x = x~du1.*base_x;
+        endif;
+    endif;
+    
+    // First trend break
+    if not ismiss(dt1);
+        x = x~dt1;
+    endif;
+
+    // Second level break
+    if not ismiss(du2);
+        x = x~du2;
+        // Check for regime break1
+        if regime;
+            x = x~du2.*base_x;
+        endif;
+    endif;
+    
+    // Second trend break
+    if not ismiss(dt2);
+        x = x~dt2;
+    endif;
+
+    if not ismiss(br);
+        x = x~br;
+    endif;
+
+    retp(x);
+endp;
+
+proc(1) = __get_coint_z_det(...);
+    local tmp, x, base_x, dc, dt, ly, ldy, du1, du2, dt1, dt2, sink, cosk, br, regime;  
+    
+    // Defaults
+    tmp = miss();
+    
+    { base_x, dc, dt, ly, ldy, 
+    du1, du2, dt1, dt2, sink, 
+    cosk, br, regime } = dynargsGet(1|13, tmp, tmp, tmp, tmp, tmp, 
+                                           tmp, tmp, tmp, tmp, tmp, 
+                                           tmp, tmp, tmp);
+    
+    // Set base
+    x= {};
+    if not ismiss(base_x);
+        x = x~base_x;
+    endif;
+    
+    // Add constant 
+    if not ismiss(dc);
+        x = x~dc;
+    endif;
+    
+    // Set trend
+    if not ismiss(dt);
+        x = x~dt;
+    endif;
+    
+    // Add Fourier terms
+    if not ismiss(sink);
+        x = x~sink;
+    endif;
+    if not ismiss(cosk);
+        x = x~cosk;
+    endif;   
+    
+    /*
+    **    Add breaks in constant shift
+    */
+    // First level break
+    if not ismiss(du1);
+        x = x~du1;
+        // Check for regime break1
+        if regime;
+            x = x~du1.*base_x;
+        endif;
+    endif;
+    
+    // First trend break
+    if not ismiss(dt1);
+        x = x~dt1;
+    endif;
+
+    // Second level break
+    if not ismiss(du2);
+        x = x~du2;
+        // Check for regime break1
+        if regime;
+            x = x~du2.*base_x;
+        endif;
+    endif;
+    
+    // Second trend break
+    if not ismiss(dt2);
+        x = x~dt2;
+    endif;
+
+    if not ismiss(br);
+        x = x~br;
+    endif;
+
+    retp(x);
+endp;
+
+proc(1) = __get_break_z(dc, dt, du1, dt1, br1, ...);
+    local z, du2, dt2;
+    
+    // Get optional second break terms
+    { du2, dt2 } = dynargsGet(1|2);
+    
+    z = {};
+    
+    // Constant
+    if not ismiss(dc);
+        z = z~dc;
+    endif;
+    
+    // Trend
+    if not ismiss(dt);
+        z = z~dt;
+    endif;
+    
+    // Break one
+    if not ismiss(du1);
+        z = z~du1;
+    endif;
+    
+    // Break two
+    if not ismiss(du2);
+        z = z~du2;
+    endif;
+    
+    // Trend break one
+    if not ismiss(dt1);
+        z = z~dt1;
+    endif;
+
+    // Trend break two
+    if not ismiss(dt2);
+        z = z~dt2;
+    endif;
+    
+    if not ismiss(br1);
+        z = z~br1;
+    endif;
+    
+    retp(z);
 endp;

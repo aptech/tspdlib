@@ -41,7 +41,7 @@
 
 proc(4) = ADF_1break(y, model, ...);
     local t, ly, lmat, tb1_min, ADF_min, T1, T2, tb1, dc, dt, du1, dt1, br1,
-        taup, ssrp, aicp, sicp, tstatp, p,  dy, z, x, stat, de, e1, ze, b, 
+        taup, ssrp, aicp, sicp, tstatp, p,  dy, z_det, x, stat, de, e1, ze, b, 
         sig2, se, ssr, resid, e, opt_lag, cv, outlier, pmax, dt_vec,
         ic, trimm, frac, zero_vec, brmat, tau_full_p, p_opt, b_full, se_full;
     
@@ -90,9 +90,10 @@ proc(4) = ADF_1break(y, model, ...);
         // Regression independent variables
         // depends on outlier setting
         if outlier == 1;
-            z = __get_break_z(dc, dt, du1, dt1, br1);
+            //__get_ur_z_det(dc, dt, du1, du2, dt1, dt2, sink, cosk, br, regime)
+            z_det = __get_tspdlib_z_det("ur", dc, dt, du1, miss(), dt1, miss(), miss(), miss(), br1);
         else;
-            z = __get_break_z(dc, dt, du1, dt1, miss());
+            z_det = __get_tspdlib_z_det("ur", dc, dt, du1, miss(), dt1, miss(), miss(), miss(), miss());
         endif;
         
         if outlier == 1;
@@ -100,7 +101,9 @@ proc(4) = ADF_1break(y, model, ...);
             // This uses standard sample size to select lags
             // Then returns taup and ssrp for full sample 
             // size at optimal p
-            { p_opt, taup, ssrp } = __lag_selection_loop(dy, pmax, ic, 1, ly, z);
+            // __lag_selection_loop(base_x, dep_y, pmax, ic, z_det, lmat, [, br, fourier, tstat_adj]);
+            lmat = lagn(dy, seqa(1, 1, pmax));
+            { p_opt, taup, ssrp } = __lag_selection_loop(ly, y, pmax, ic, z_det, lmat, miss(), 0, 1);
             stat = taup;
         endif;
         
@@ -114,7 +117,7 @@ proc(4) = ADF_1break(y, model, ...);
             tstatp = zeros(pmax + 1, 1);
             
             // First round OLS
-            {b, resid, sig2, se, ssr} = myols(y, z);
+            {b, resid, sig2, se, ssr} = myols(y, z_det);
         
             // Select lags
             local tmp;
@@ -440,50 +443,7 @@ proc (2) = _checkfordate(data);
     retp(dt_col, data_new);
 endp;
 
-proc(1) = __get_break_z(dc, dt, du1, dt1, br1, ...);
-    local z, du2, dt2;
-    
-    // Get optional second break terms
-    { du2, dt2 } = dynargsGet(1|2);
-    
-    z = {};
-    
-    // Constant
-    if not ismiss(dc);
-        z = z~dc;
-    endif;
-    
-    // Trend
-    if not ismiss(dt);
-        z = z~dt;
-    endif;
-    
-    // Break one
-    if not ismiss(du1);
-        z = z~du1;
-    endif;
-    
-    // Break two
-    if not ismiss(du2);
-        z = z~du2;
-    endif;
-    
-    // Trend break one
-    if not ismiss(dt1);
-        z = z~dt1;
-    endif;
 
-    // Trend break two
-    if not ismiss(dt2);
-        z = z~dt2;
-    endif;
-    
-    if not ismiss(br1);
-        z = z~br1;
-    endif;
-    
-    retp(z);
-endp;
 
 
 
