@@ -32,11 +32,13 @@
 **
 */
 
+/* TO DO double check sample length, previous version
+trimmed on too many observations.*/
 proc(5) = ADF_2breaks(y, model, ...);
-    local ssrp, p_opt, t, tb, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, z;
+    local ssrp, p_opt, t, tb, tb1, tb2, tb1_min, tb2_min, ADF_min, T1, T2, dc, dt, du1, du2, dt1, dt2, lmat;
     local taup, dy;
     local ly, stat;
-    local cv, opt_lag, pmax, ic, trimm, dt_vec, frac;
+    local cv, opt_lag, pmax, ic, trimm, dt_vec, frac, z_det;
     
     // Check for missings
     _checkForMissings(y, currentprocname());
@@ -98,13 +100,16 @@ proc(5) = ADF_2breaks(y, model, ...);
             endif;
             
             // Get regression independent variables
-            z = __get_break_z(dc, dt, du1, dt1, miss(), du2, dt2);
-            
+            //__get_ur_z_det(dc, dt, du1, du2, dt1, dt2, sink, cosk, br, regime)
+            z_det = __get_tspdlib_z_det("ur", dc, dt, du1, du2, dt1, dt2);
+    
             // Select lags
             // This uses standard sample size to select lags
             // Then returns taup and ssrp for full sample 
             // size at optimal p
-            { p_opt, taup, ssrp } = __lag_selection_loop(dy, pmax, ic, 1, ly, z);
+            // __lag_selection_loop(base_x, dep_y, pmax, ic, z_det, lmat, [, br, fourier, tstat_adj]);
+            lmat = lagn(dy, seqa(1, 1, pmax));
+            { p_opt, taup, ssrp } = __lag_selection_loop(ly, dy, pmax, ic, z_det, lmat);
             stat = taup;
             
             if stat < ADF_min;
