@@ -21,4 +21,4 @@ x = data[., 2:cols(data)];
           
 // Two breaks
 { ADF_min, TB1adf, TB2adf, Zt_min, TB1zt, TB2zt, Za_min, TB1za, TB2za, cvADFZt, cvZa } =
-    coint_hatemiJ(y, x);
+    coint_hatemiJ(y, x, 4);
