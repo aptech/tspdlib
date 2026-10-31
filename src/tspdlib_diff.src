@@ -1,5 +1,5 @@
 
-proc(1) = diff(x, k) ;
+proc(1) = __tspdlib_diff(x, k) ;
     if ( k == 0);
         retp(x);
     endif ;

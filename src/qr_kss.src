@@ -47,7 +47,7 @@ proc(2) = QR_KSS(y, model, tau, ...);
     
     n  = rows(y);
     y1 = lagn(y^3, 1);
-    dy = diff(y, 1);
+    dy = __tspdlib_diff(y, 1);
     
     x = y1;
     

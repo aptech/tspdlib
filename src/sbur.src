@@ -738,7 +738,7 @@ proc(3) = __sbur_adfp(yt,  kstar);
     local reg,  dyt,  i,  rho,  ee,  ff,  nef,  s2e,  xx,  sre,  adf,  sumb,  s2vec;
     
     reg = lagn(yt,  1);
-    dyt = diff(yt,  1);
+    dyt = __tspdlib_diff(yt,  1);
     
     i = 1;
     do while i <= kstar;
@@ -782,7 +782,7 @@ proc (1) = __sbur_s2ar(yts,  penalty,  kmax,  kmin);
     tau = zeros(kmax+1,  1);
     s2e = 999*ones(kmax+1,  1);
     
-    dyts = diff(yts,  1);
+    dyts = __tspdlib_diff(yts,  1);
     reg = lagn(yts,  1);
     
     i = 1;

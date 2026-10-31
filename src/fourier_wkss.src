@@ -96,7 +96,7 @@ endp;
 proc(2) = __get_resid_lags_kss(res, model);
     local dv, v1;
     
-    dv = diff(res, 1);
+    dv = __tspdlib_diff(res, 1);
     
     if model $== "FADF";
         v1 = lagn(res, 1);
@@ -151,7 +151,7 @@ proc(1) = _get_cv_Fourier_KSS(t, model, k, test);
         endif;
         a  = y / z;
         v  = y - z * a;
-        dv = diff(v,1);
+        dv = __tspdlib_diff(v,1);
         if test $== "FADF";
             v1 = lagn(v, 1);
         endif;

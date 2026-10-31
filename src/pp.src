@@ -63,7 +63,7 @@ proc(4) = PP(y, model, ...);
     // Get optional arguments
     { l, varm } = dynargsGet(1|2, l_dftl, 1);
     
-    dy = diff(y, 1);
+    dy = __tspdlib_diff(y, 1);
     ly = lagn(y, 1);
     
     "Phillips-Perron Test";

@@ -130,8 +130,8 @@ proc(7) = RALSLM_breaks(y, model, nbr, ...);
                 endif;
             endif;
             
-            dy = trimr(diff(y, 1), 1, 0);
-            dz = trimr(diff(z, 1), 1, 0);
+            dy = trimr(__tspdlib_diff(y, 1), 1, 0);
+            dz = trimr(__tspdlib_diff(z, 1), 1, 0);
             b0 = dy/dz;
             s0 = y[1] - z[1,.] * b0;
             s  = y - s0- z * b0;
@@ -170,7 +170,7 @@ proc(7) = RALSLM_breaks(y, model, nbr, ...);
             tau_rals = zeros(pmax + 1, 1);
             p2 = zeros(pmax + 1, 1);
             
-            ds = trimr(diff(ylm, 1), 1, 0);
+            ds = trimr(__tspdlib_diff(ylm, 1), 1, 0);
             dsl = zeros(rows(ds), pmax);
             
             j = 1;
@@ -181,9 +181,9 @@ proc(7) = RALSLM_breaks(y, model, nbr, ...);
             
             p = 0;
             do while p <= pmax;
-                dep = trimr(diff(y, 1), p + 1, 0);
+                dep = trimr(__tspdlib_diff(y, 1), p + 1, 0);
                 s1 = trimr(lagn(ylm, 1), p + 1, 0);
-                dz = trimr(diff(z, 1), p + 1, 0);
+                dz = trimr(__tspdlib_diff(z, 1), p + 1, 0);
                 ds = trimr(dsl, p, 0);
                 
                 if p == 0;

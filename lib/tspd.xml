@@ -12,7 +12,7 @@
 <source>coint_shin.src</source>
 <source>coint_tsongetal.src</source>
 <source>coint_maki.src</source>
-<source>diff.src</source>
+<source>tspdlib_diff.src</source>
 <source>fourier_adf.src</source>
 <source>fourier_gls.src</source>
 <source>fourier_kss.src</source>

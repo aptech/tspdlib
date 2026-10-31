@@ -52,14 +52,14 @@ proc(3) = LM(y, ...);
     dc = ones(t, 1);
     dt = seqa(1, 1, t);
     z  = dt;
-    dy = trimr(diff(y, 1), 1, 0);
+    dy = trimr(__tspdlib_diff(y, 1), 1, 0);
     dz = ones(rows(dy), 1);
     b0 = dy/dz;
     psi = y[1] - z[1, .] * b0;
     ylm = y - psi - z * b0;
     ylm = trimr(ylm, 1, 0);
     t  = rows(ylm);
-    ds = diff(ylm, 1);
+    ds = __tspdlib_diff(ylm, 1);
     ly = lagn(ylm, 1);
     
     // Deterministic term=constant

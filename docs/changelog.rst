@@ -4,6 +4,13 @@ Change Log
 
 The following is a list of changes from the previous version of tspdlib.
 
+3.0.4
+-----
+#. ``diff`` is no longer defined by tspdlib. GAUSS 27 has its own ``diff``,
+   which fills with missing values by default. Use ``diff(x, k, fill=0)``
+   for the old result.
+#. ``tspdlib.dec`` is now installed, so ``ADF`` works after a plain install.
+
 3.0.0
 -----
 #. New procedures:

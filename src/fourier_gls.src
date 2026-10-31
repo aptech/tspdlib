@@ -89,7 +89,7 @@ proc(4) = Fourier_GLS(y, model, ...);
         { ygls, SSRa } = glsDetrend(y, z, cbar);
        
         t = rows(ygls);
-        dy = diff(ygls, 1);
+        dy = __tspdlib_diff(ygls, 1);
         ly = lagn(ygls, 1);
         
         // Lag y variable
@@ -190,11 +190,11 @@ proc (2) = fourierGLSFTest(y, model, k, p);
     { ygls2, SSRa } = glsDetrend(y, z2, cbar);
     
     // Restricted model
-    dy1 = diff(ygls1, 1);
+    dy1 = __tspdlib_diff(ygls1, 1);
     ly1 = lagn(ygls1, 1);
     
     // Unrestricted model
-    dy2 = diff(ygls2, 1);
+    dy2 = __tspdlib_diff(ygls2, 1);
     ly2 = lagn(ygls2, 1);
     
     // Lag y variable

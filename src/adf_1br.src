@@ -122,12 +122,12 @@ proc(4) = ADF_1break(y, model, ...);
             // Select lags
             local tmp;
             tmp = miss();
-            e1 = diff(resid, 1);
+            e1 = __tspdlib_diff(resid, 1);
 
             for p(0, pmax, 1);
                 
                 // Check 
-                lmat = lagn(diff(resid, 1), seqa(1, 1, pmax));
+                lmat = lagn(__tspdlib_diff(resid, 1), seqa(1, 1, pmax));
     
                 // Zero vector
                 zero_vec = zeros(rows(resid), 1);

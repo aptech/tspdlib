@@ -240,7 +240,7 @@ proc(1) = _get_s2ar(y_detrended, p);
     
     e = y_detrended;
     // s2 : Autoregressive estimate of the spectral density
-    de  = trimr(diff(e,1) , 1, 0);
+    de  = trimr(__tspdlib_diff(e,1) , 1, 0);
     e1  = trimr(lagn(e,1), 1, 0);
     
     if p == 0;

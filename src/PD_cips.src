@@ -126,9 +126,9 @@ proc(3) = cadf(y, f, model, p);
     local t, dy, ly, df, lf, dyl, dfl, dyp, dfp, y1, f1;
     local d, w, g, Mw, Mg, s2, tau, lm, dp;
     
-    dy = diff(y, 1);
+    dy = __tspdlib_diff(y, 1);
     ly = lagn(y, 1);
-    df = diff(f, 1);
+    df = __tspdlib_diff(f, 1);
     lf = lagn(f, 1);
     
     if p > 0;
@@ -186,9 +186,9 @@ proc(1)=_get_cadf_lag(y, f, model, pmax, ic);
     sicp = zeros(pmax + 1, 1);
     tstatp = zeros(pmax + 1, 1);
     
-    dy = diff(y, 1);
+    dy = __tspdlib_diff(y, 1);
     ly = lagn(y, 1);
-    df = diff(f, 1);
+    df = __tspdlib_diff(f, 1);
     lf = lagn(f, 1);
     dc = ones(t, 1);        /* Deterministic term=constant */
     dt = seqa(1, 1, t);     /* Deterministic term=trend */

@@ -731,7 +731,7 @@ proc(10) = pst_panic(y, ...);
     // Dynamic arguments
     { model, varm, l, kmax, ick } = dynargsGet(1|5, 1, 1, bwl_dftl, 5, 1);
     
-    dx = diff(y, 1);
+    dx = __tspdlib_diff(y, 1);
     x  = dx[2:rows(y), .];
     
     if model == 1;

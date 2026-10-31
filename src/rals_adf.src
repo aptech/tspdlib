@@ -49,7 +49,7 @@ proc(3) = RALSADF(y, model, ...);
         { tauADF, lag_var, cvADF } = ADF(y, model, pmax, ic);
     screen on;
     
-    dy = diff(y, 1);
+    dy = __tspdlib_diff(y, 1);
     ly = lagn(y, 1);
     
     // Deterministic term=constant

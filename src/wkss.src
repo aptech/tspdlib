@@ -80,7 +80,7 @@ proc(2) = WKSS(y, model, ...);
     ssrp = zeros(pmax + 1, 1);
     
     
-    dv = diff(v, 1);
+    dv = __tspdlib_diff(v, 1);
     v1 = lagn(v^3, 1);
     
     if pmax > 0;

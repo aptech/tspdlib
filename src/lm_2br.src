@@ -106,8 +106,8 @@ proc(5) = LM_2breaks(y, model, ...);
                 z = dt~du1~dt1~du2~dt2;
             endif;
             
-            dy = trimr(diff(y, 1), 1, 0);
-            dz = trimr(diff(z, 1), 1, 0);
+            dy = trimr(__tspdlib_diff(y, 1), 1, 0);
+            dz = trimr(__tspdlib_diff(z, 1), 1, 0);
             b0 = dy/dz;
             s0 = y[1]-z[1, .] * b0;
             st = y - s0 - z * b0;
@@ -120,7 +120,7 @@ proc(5) = LM_2breaks(y, model, ...);
             endif;
             
             if pmax > 0;
-                dst = trimr(diff(st, 1), 1, 0);
+                dst = trimr(__tspdlib_diff(st, 1), 1, 0);
                 aicp = zeros(pmax + 1, 1);
                 sicp = zeros(pmax + 1, 1);
                 tstatp = zeros(pmax + 1, 1);
@@ -136,9 +136,9 @@ proc(5) = LM_2breaks(y, model, ...);
                         j = j + 1;
                     endo;
                     
-                    dy = trimr(diff(y, 1), p + 1, 0);
+                    dy = trimr(__tspdlib_diff(y, 1), p + 1, 0);
                     ls = trimr(lagn(st, 1), p + 1, 0);
-                    dz = trimr(diff(z, 1), p + 1, 0);
+                    dz = trimr(__tspdlib_diff(z, 1), p + 1, 0);
                     ds = trimr(lmat, p, 0);
                     //rows(ls);;rows(dz);;rows(ds);
                     

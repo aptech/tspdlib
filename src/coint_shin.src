@@ -99,7 +99,7 @@ proc(3) = coint_shin(y, x, model, ...);
     St1 = cumsumc(e1);
     
     // DOLS estimation
-    dx = diff(x,1);
+    dx = __tspdlib_diff(x,1);
     {dx_leads,dx_lags}=_get_LeadsLags(dx,q);
     xdols = z~dx_leads~dx~dx_lags;
     ydols = trimr(y,q+1,q);

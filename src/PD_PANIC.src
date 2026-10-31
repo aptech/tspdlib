@@ -94,7 +94,7 @@ proc(5) = BNG_PANIC(y, model, ...);
     { pmax, icp, kmax, ick } = dynargsGet(1|4, 8, 3, 5, 1);
     { dt_vec, y } =_checkfordate(y);
     
-    dx = diff(y, 1);
+    dx = __tspdlib_diff(y, 1);
     x = dx[2:rows(y), .];
     
     if model == 0;
@@ -184,7 +184,7 @@ proc(3) = BNG_PANICnew(y, model, ...);
     // Get optional arguments
     { kmax, ick } = dynargsGet(1|2, 5, 1);
     
-    dx = diff(y, 1);
+    dx = __tspdlib_diff(y, 1);
     x  = dx[2:rows(y), .];
     
     if model == 1;
@@ -237,7 +237,7 @@ proc(2) = JWL_PANICadj(y, model, ...);
     T = rows(y);
     N = cols(y);
     
-    dx = diff(y, 1);
+    dx = __tspdlib_diff(y, 1);
     x  = dx[2:T, .];
     
     // Panic tests
@@ -272,7 +272,7 @@ proc(2) = JWL_PANICadj(y, model, ...);
         an[i, 1] = lambda[i, .] * inv(lambda'lambda) * lambda[i, .]';
     endfor;
     
-    de = diff(e, 1);
+    de = __tspdlib_diff(e, 1);
     de0 = vec(de[2:rows(de), .]);
     del = vec(de[1:rows(de)-1, .]);
     rho = inv(del'del) * (del'de0);
@@ -319,7 +319,7 @@ proc(3) = JWR_PANICCA(y, model);
     
     T = rows(y);
     
-    dx = diff(y, 1);
+    dx = __tspdlib_diff(y, 1);
     x  = dx[2:T, .];
     
     // Panic tests

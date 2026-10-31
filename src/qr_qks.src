@@ -179,7 +179,7 @@ proc(1) = QKS_bootstrap(y, model, test, ...);
     endif;
     
     if p > 0;
-        dy  = diff(y,1);
+        dy  = __tspdlib_diff(y,1);
         dyl = zeros(rows(y),p);
         for j(1,p,1);
             dyl[.,j] = lagn(dy,j);

@@ -26,7 +26,7 @@
         "coint_shin.src",
         "coint_tsongetal.src",
         "pd_coint_wedgerton.src",
-        "diff.src",
+        "tspdlib_diff.src",
         "fourier_adf.src",
         "fourier_gls.src",
         "fourier_kpss.src",
@@ -79,8 +79,9 @@
         "coint_maki.src",
         "sbur.src",
         "sbvar_icss.src",
+        "tspdlib.dec",
         "tspdlib.sdf",
         "wkss.src"
     ],
-    "version": "3.0.3"
+    "version": "3.0.4"
 }

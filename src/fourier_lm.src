@@ -68,8 +68,8 @@ proc(4) = Fourier_LM(y, ...);
         // Fourier terms
         { sink, cosk } = _getFourierTerms(t, k);
         
-        dsink = trimr(diff(sink, 1), 1, 0);
-        dcosk = trimr(diff(cosk, 1), 1, 0);
+        dsink = trimr(__tspdlib_diff(sink, 1), 1, 0);
+        dcosk = trimr(__tspdlib_diff(cosk, 1), 1, 0);
         
         z = dt~sink~cosk;
         ylm = _detrendData(y, z, dy0, dsink, dcosk);
@@ -84,8 +84,8 @@ proc(4) = Fourier_LM(y, ...);
         zero_vec = zeros(rows(dy), 1);
         
         // New Fourier Terms
-        sink = diff(sink, 1);
-        cosk = diff(cosk, 1);
+        sink = __tspdlib_diff(sink, 1);
+        cosk = __tspdlib_diff(cosk, 1);
         
         p = 0;
         do while p <= pmax;

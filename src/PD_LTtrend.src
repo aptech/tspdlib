@@ -239,8 +239,8 @@ proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
             z = dt~du1~dt1;
         endif;
         
-        dy = diff(y, 1);
-        dz = diff(z, 1);
+        dy = __tspdlib_diff(y, 1);
+        dz = __tspdlib_diff(z, 1);
         dy = trimr(dy, 1, 0);
         dz = trimr(dz, 1, 0);
         b0 = dy/dz;  //b0=inv(dz'dz)*dz'y;
@@ -262,7 +262,7 @@ proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
         sicp = zeros(pmax + 1, 1);
         tstatp = zeros(pmax + 1, 1);
         
-        dylm = trimr(diff(ylm, 1), 1, 0);
+        dylm = trimr(__tspdlib_diff(ylm, 1), 1, 0);
         
         lmat = zeros(rows(dylm), pmax);
         
@@ -276,9 +276,9 @@ proc(3) = _get_LMtrend_1break(y, model, pmax, ic, trimm);
         p = 0;
         do while p <= pmax;
             
-            dep = trimr(diff(y, 1), p + 1, 0);
+            dep = trimr(__tspdlib_diff(y, 1), p + 1, 0);
             ls = trimr(lagn(ylm, 1), p + 1, 0);
-            dz = trimr(diff(z, 1),p + 1, 0);
+            dz = trimr(__tspdlib_diff(z, 1),p + 1, 0);
             ds = trimr(lmat, p, 0);
             
             if p == 0;
@@ -371,8 +371,8 @@ proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
                 z = dt~du1~dt1~du2~dt2;
             endif;
             
-            dy = trimr(diff(y, 1), 1, 0);
-            dz = trimr(diff(z, 1), 1, 0);
+            dy = trimr(__tspdlib_diff(y, 1), 1, 0);
+            dz = trimr(__tspdlib_diff(z, 1), 1, 0);
             b0 = dy/dz;
             s0 = y[1] - z[1,.] * b0;
             st = y - s0- z * b0;
@@ -394,7 +394,7 @@ proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
             sicp = zeros(pmax + 1, 1);
             tstatp = zeros(pmax + 1, 1);
             
-            dylm = trimr(diff(ylm, 1), 1, 0);
+            dylm = trimr(__tspdlib_diff(ylm, 1), 1, 0);
             
             lmat = zeros(rows(dylm), pmax);
             
@@ -408,9 +408,9 @@ proc(4) = _get_LMtrend_2breaks(y, model, pmax, ic, trimm);
             p = 0;
             do while p <= pmax;
                 
-                dep = trimr(diff(y, 1), p + 1, 0);
+                dep = trimr(__tspdlib_diff(y, 1), p + 1, 0);
                 ls = trimr(lagn(ylm, 1), p + 1, 0);
-                dz = trimr(diff(z, 1), p + 1, 0);
+                dz = trimr(__tspdlib_diff(z, 1), p + 1, 0);
                 ds = trimr(lmat, p, 0);
                 
                 if p == 0;

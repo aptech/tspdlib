@@ -116,7 +116,7 @@ proc(3) = DFGLS(y, model, ...);
     ygls = y - z * bhat;
     
     t = rows(ygls);
-    dy = diff(ygls, 1);
+    dy = __tspdlib_diff(ygls, 1);
     ly = lagn(ygls, 1);
     
     // Deterministic term=constant
@@ -235,7 +235,7 @@ proc(3) = ERSpt(y, model, ...);
     { l, varm } = dynargsGet(1|2, l_dftl, 1);
     { dt_vec, y } =_checkfordate(y);
     
-    dy = diff(y, 1);
+    dy = __tspdlib_diff(y, 1);
     ly = lagn(y, 1);
     
     // Deterministic term=constant

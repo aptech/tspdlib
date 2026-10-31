@@ -369,7 +369,7 @@ proc (5) = _getFourierDeterministic(y, ...);
     t = rows(y);
     
     // Transform data
-    dy = diff(y, 1);
+    dy = __tspdlib_diff(y, 1);
     
     // Lag y, dependent on model type
     if lower(model_type) $== "kss";
